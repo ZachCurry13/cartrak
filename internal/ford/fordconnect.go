@@ -16,7 +16,7 @@ import (
 const (
 	defaultAPIBase  = "https://api.mps.ford.com"
 	defaultTokenURL = "https://dah2vb2cprod.b2clogin.com/914d88b1-3523-4bf6-9be4-1b96b4f6f919/oauth2/v2.0/token?p=B2C_1A_signup_signin_common"
-	linkBase        = "https://fordconnect.cv.ford.com/"
+	linkBase        = "https://fordconnect.cv.ford.com/common/login/"
 	apiVersion      = "2020-06-01"
 )
 

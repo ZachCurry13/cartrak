@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 )
@@ -101,5 +102,24 @@ func TestOptionsApplyWithoutRestart(t *testing.T) {
 	}
 	if got := c.opts().ApplicationID; got != "second" {
 		t.Fatalf("opts not re-read: %q", got)
+	}
+}
+
+func TestLinkURL(t *testing.T) {
+	c := NewConnect(ConnectOpts{ClientID: "cid", ApplicationID: "aid", RedirectURL: "https://cartrak.example.com/ford/callback"}, memKV{})
+	u, err := url.Parse(c.LinkURL("st8"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Host != "fordconnect.cv.ford.com" || u.Path != "/common/login/" {
+		t.Fatalf("wrong link address: %s", u.String())
+	}
+	q := u.Query()
+	want := map[string]string{"make": "F", "application_id": "aid", "client_id": "cid", "response_type": "code",
+		"state": "st8", "scope": "access", "redirect_uri": "https://cartrak.example.com/ford/callback"}
+	for k, v := range want {
+		if q.Get(k) != v {
+			t.Errorf("%s = %q, want %q", k, q.Get(k), v)
+		}
 	}
 }

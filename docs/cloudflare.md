@@ -9,7 +9,7 @@ outbound connection to Cloudflare; nothing connects in.
 2. Name it (for example `cartrak`). On the install screen, copy the **token** (the long string after `--token`). Put it in `TUNNEL_TOKEN` in the YAML.
 3. Add a **public hostname**:
    - Subdomain/domain: for example `cartrak` on your domain.
-   - Service type **HTTP**. URL: `http://localhost:30080` if the tunnel app uses Host Network, otherwise `http://<your TrueNAS address>:30080` (use your own host port). With the one-file YAML install the URL is `http://cartrak:8080`.
+   - Service type **HTTP**. URL: `http://localhost:31000` if the tunnel app uses Host Network, otherwise `http://<your TrueNAS address>:31000` (use your own host port). With the one-file YAML install the URL is `http://cartrak:8080`.
 4. Save. The hostname is now `https://cartrak.yourdomain.com`.
 
 ## Use that hostname for Ford

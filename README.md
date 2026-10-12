@@ -35,8 +35,8 @@ Use **Apps -> Discover Apps -> Custom App** and fill the form. Full field-by-fie
 | Application name | `cartrak` |
 | Image Configuration | Repository `ghcr.io/zachcurry13/cartrak`, Tag `latest`, Pull Policy **always pull** |
 | Security Context | Run as user `568`, group `568` (not privileged) |
-| Network Configuration | Port: host port e.g. `30080` -> container port `8080`, TCP |
-| Portal Configuration | Optional **Web UI** button: HTTP, port `30080` |
+| Network Configuration | Port: host port e.g. `31000` -> container port `8080`, TCP |
+| Portal Configuration | Optional **Web UI** button: HTTP, port `31000` |
 | Storage Configuration | Host Path -> `/data` (database, **back it up**) and Host Path -> `/config` (optional `config.yaml`) |
 | Environment Variables | None required |
 

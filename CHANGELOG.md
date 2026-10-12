@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+### 🐛 Fixes
+- Connect Ford now opens Ford's real sign-in page. Version 0.3.0 sent you to the wrong Ford address and showed "Not Found".
+
 ## 0.3.0
 
 ### ⚙️ Settings in the app

@@ -43,7 +43,7 @@ Fill the form top to bottom. Anything not mentioned can stay at its default.
 ### Network Configuration
 - Leave **Host Network** off.
 - **Add a Port:**
-  - **Host Port:** any free port, for example `30080`
+  - **Host Port:** any free port, for example `31000` (pick one that no other app on your TrueNAS uses)
   - **Container Port:** `8080`
   - **Protocol:** `TCP`
 
@@ -63,7 +63,7 @@ Leave defaults. If you want limits, 1 CPU and 512 MB of memory is plenty.
 Press **Install**. The first start downloads the image.
 
 ## 3. First run
-1. Open the app (the **Web UI** button, or `http://<your TrueNAS address>:30080`).
+1. Open the app (the **Web UI** button, or `http://<your TrueNAS address>:31000`).
 2. Create the admin account (10+ character password).
 3. The **Getting started** page appears. Set up a [separate FordPass account](ford-setup.md#recommended-use-a-separate-ford-account-for-cartrak) first, as recommended.
 
@@ -84,8 +84,8 @@ Install the tunnel as its **own second Custom App** (same form):
 - **Repository:** `cloudflare/cloudflared`, **Tag:** `latest`, Pull Policy: always
 - **Command** (add three entries, in order): `tunnel`, `--no-autoupdate`, `run`
 - **Environment Variable:** `TUNNEL_TOKEN` = the token from Cloudflare
-- **Network:** turn **Host Network** on, so the tunnel can reach CarTrak at `http://localhost:30080`
-  (otherwise use `http://<your TrueNAS address>:30080` as the service URL)
+- **Network:** turn **Host Network** on, so the tunnel can reach CarTrak at `http://localhost:31000`
+  (otherwise use `http://<your TrueNAS address>:31000` as the service URL)
 
 Full steps, including the Cloudflare side and a second login lock: [Cloudflare tunnel](cloudflare.md).
 Set the redirect URL in step 4 to `https://<your hostname>/ford/callback` (the same address you register with Ford).
