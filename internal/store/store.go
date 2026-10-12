@@ -81,3 +81,5 @@ func (s *Store) SetKV(k, v string) error {
 	_, err := s.DB.Exec(`INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v`, k, v)
 	return err
 }
+
+func (s *Store) Close() error { return s.DB.Close() }
