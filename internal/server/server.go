@@ -11,6 +11,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
+	"github.com/ZachCurry13/cartrak/internal/tunnel"
 	"github.com/ZachCurry13/cartrak/internal/updater"
 	"github.com/ZachCurry13/cartrak/internal/web"
 )
@@ -29,6 +30,8 @@ type Server struct {
 	Version     string
 	Cfg         *settings.Settings // admin-panel settings (nil in some tests)
 	Prober      Prober             // optional: Ford diagnostics
+	Tunnel      *tunnel.Supervisor // in-app Cloudflare connector (nil in some tests)
+	Port        string             // port the app listens on, for the setup steps
 	hub         hub
 	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
 	SessionDays int              // "keep me signed in" length; 0 = 30
@@ -49,6 +52,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/admin/settings", s.auth(true, s.getSettings))
 	m.HandleFunc("PUT /api/admin/settings", s.auth(true, s.saveSettings))
 	m.HandleFunc("POST /api/admin/ford-probe", s.auth(true, s.fordProbe))
+	m.HandleFunc("GET /api/admin/remote", s.auth(true, s.getRemote))
+	m.HandleFunc("PUT /api/admin/remote", s.auth(true, s.saveRemote))
 	m.HandleFunc("GET /api/about", s.auth(false, s.about))
 	m.HandleFunc("POST /api/settings/update-check", s.auth(true, s.setUpdateCheck))
 	m.HandleFunc("GET /api/changelog", s.auth(false, s.changelog))
@@ -77,7 +82,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /api/users/{id}", s.auth(true, s.deleteUser))
 
 	m.HandleFunc("GET /ford/connect", s.auth(true, s.fordConnect))
-	m.HandleFunc("GET /ford/callback", s.auth(true, s.fordCallback))
+	m.HandleFunc("GET /ford/callback", s.callbackPage)
 	m.HandleFunc("POST /api/ford/complete", s.auth(true, s.fordComplete))
 	m.HandleFunc("POST /api/poll", s.auth(true, func(w http.ResponseWriter, r *http.Request) { s.P.Now(); ok(w, "queued") }))
 

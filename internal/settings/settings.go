@@ -18,6 +18,7 @@ type Def struct {
 	Help        string `json:"help"`
 	Placeholder string `json:"placeholder"`
 	Secret      bool   `json:"secret"`
+	Group       string `json:"group,omitempty"` // "remote" settings have their own page
 }
 
 var Defs = []Def{
@@ -29,6 +30,9 @@ var Defs = []Def{
 	{Key: "FORD_AUTH_URL", Label: "Ford sign-in address (advanced)", Placeholder: "leave empty to use the built-in address",
 		Help: "Only change this if Ford's documentation gives a different sign-in (authorize) address for FordConnect 2.0."},
 	{Key: "FORD_VIN", Label: "Vehicle ID (optional)", Help: "Only needed if several vehicles are authorized. Default: the first one."},
+	{Key: "CARTRAK_TUNNEL_TOKEN", Label: "Cloudflare tunnel token", Secret: true, Group: "remote"},
+	{Key: "CARTRAK_PUBLIC_ADDRESS", Label: "Public address", Group: "remote"},
+	{Key: "CARTRAK_REMOTE_ENABLED", Label: "Remote access on", Group: "remote"},
 	{Key: "CARTRAK_TZ", Label: "Time zone", Placeholder: "America/Chicago", Help: "IANA name. Work-hour rules use this time zone."},
 }
 

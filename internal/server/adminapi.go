@@ -22,6 +22,9 @@ type settingView struct {
 func (s *Server) settingsView() []settingView {
 	out := make([]settingView, 0, len(settings.Defs))
 	for _, d := range settings.Defs {
+		if d.Group == "remote" { // shown on the Remote access page instead
+			continue
+		}
 		v, src := s.Cfg.Get(d.Key)
 		sv := settingView{Def: d, IsSet: v != "", Source: src, Locked: s.Cfg.Locked(d.Key)}
 		if !d.Secret {
@@ -37,11 +40,16 @@ func (s *Server) getSettings(w http.ResponseWriter, r *http.Request) {
 		fail(w, 503, "settings unavailable")
 		return
 	}
-	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": originOf(r) + "/ford/callback"})
+	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": s.origin(r) + "/ford/callback"})
 }
 
 // originOf rebuilds the address the browser used, e.g. https://cartrak.example.com.
-func originOf(r *http.Request) string {
+func (s *Server) origin(r *http.Request) string {
+	if s.Cfg != nil {
+		if a := s.Cfg.Value("CARTRAK_PUBLIC_ADDRESS"); a != "" { // remote access is set up: that is the address Ford should come back to
+			return "https://" + a
+		}
+	}
 	scheme := "http"
 	if secure(r) {
 		scheme = "https"
@@ -109,7 +117,7 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 	for _, k := range b.Clear {
 		_ = s.Cfg.Set(k, "")
 	}
-	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": originOf(r) + "/ford/callback"})
+	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": s.origin(r) + "/ford/callback"})
 }
 
 // Prober is implemented by providers that can call every endpoint once and

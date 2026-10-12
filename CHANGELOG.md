@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+### ☁️ Remote access inside CarTrak
+- A new Remote access page (More): paste your Cloudflare tunnel token and public address, switch it on, and CarTrak runs the connector for you, with a status and a connector log. The Docker image now includes cloudflared.
+
+### 🔗 Connecting Ford
+- Ford sending the code after a # in the address is now handled: the callback is a page that reads the whole address, and the paste box understands it too.
+
 ## 0.5.1
 
 ### 🔗 Connecting Ford

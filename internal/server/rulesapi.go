@@ -79,7 +79,7 @@ func (s *Server) fordConnect(w http.ResponseWriter, r *http.Request) {
 		if v, src := s.Cfg.Get("FORD_REDIRECT_URL"); v == "" || src == "default" {
 			// No redirect URL chosen: use the address this browser is on. It is
 			// stored so the code exchange sends exactly the same value.
-			_ = s.S.SetKV("derived_redirect", originOf(r)+"/ford/callback")
+			_ = s.S.SetKV("derived_redirect", s.origin(r)+"/ford/callback")
 		}
 	}
 	state := randToken()

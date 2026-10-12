@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
+	"github.com/ZachCurry13/cartrak/internal/tunnel"
 	"github.com/ZachCurry13/cartrak/internal/updater"
 )
 
@@ -64,8 +66,16 @@ func main() {
 	if u := os.Getenv("CARTRAK_UPDATE_URL"); u != "" { // testing aid: point at a fake releases endpoint
 		upd.URL = u
 	}
-	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
+	tun := tunnel.New()
+	if b := os.Getenv("CARTRAK_CLOUDFLARED"); b != "" { // optional: path to the cloudflared program
+		tun.Bin = b
+	}
+	port := cfg.Addr[strings.LastIndex(cfg.Addr, ":")+1:]
+	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober,
+		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
 	p.After = srv.Broadcast
+	srv.ApplyTunnel()
+	defer tun.Stop()
 	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -78,6 +88,7 @@ func main() {
 		<-ctx.Done()
 		sc, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+		tun.Stop()
 		_ = hs.Shutdown(sc)
 	}()
 	log.Printf("cartrak %s listening on %s (provider %s)", version, cfg.Addr, prov.Name())

@@ -1,3 +1,8 @@
+# The Cloudflare connector, copied from Cloudflare's official image (multi-arch).
+# CarTrak runs it for you when remote access is switched on in the app.
+ARG CLOUDFLARED_VERSION=2026.10.0
+FROM cloudflare/cloudflared:${CLOUDFLARED_VERSION} AS cloudflared
+
 FROM golang:1.27-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -9,6 +14,9 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}"
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata && adduser -D -u 568 cartrak && mkdir /data /config && chown cartrak /data /config
 COPY --from=build /out/cartrak /usr/local/bin/cartrak
+COPY --from=cloudflared /usr/local/bin/cloudflared /usr/local/bin/cloudflared
+# Fail the build now (not at run time) if the connector does not run here.
+RUN cloudflared --version
 USER cartrak
 ENV CARTRAK_ADDR=:8080 CARTRAK_DATA=/data CARTRAK_CONFIG=/config
 VOLUME ["/data", "/config"]

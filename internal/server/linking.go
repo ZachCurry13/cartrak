@@ -3,11 +3,14 @@ package server
 import (
 	"context"
 	"crypto/subtle"
+	"io/fs"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ZachCurry13/cartrak/internal/web"
 )
 
 // linkError carries an HTTP status and a message that is safe to show.
@@ -54,21 +57,6 @@ func (s *Server) finishLink(ctx context.Context, state, code string) *linkError 
 	return nil
 }
 
-// fordCallback handles Ford redirecting the browser straight back to CarTrak
-// (when the registered redirect URI is CarTrak's own address).
-func (s *Server) fordCallback(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	if e := q.Get("error"); e != "" {
-		fail(w, 400, explainFordError(e, q.Get("error_description")))
-		return
-	}
-	if le := s.finishLink(r.Context(), q.Get("state"), q.Get("code")); le != nil {
-		fail(w, le.Status, le.Msg)
-		return
-	}
-	http.Redirect(w, r, "/#/settings", http.StatusFound)
-}
-
 // fordComplete finishes a link from a pasted address. When the registered
 // redirect URI is http://localhost the browser lands on a page that does not
 // load, but its address bar holds the code: the admin pastes that address here.
@@ -97,16 +85,35 @@ type returned struct{ Code, State, Err, Desc string }
 // parseReturn accepts the full redirect address, just its query string, or a bare code.
 func parseReturn(in string) returned {
 	in = strings.TrimSpace(strings.Trim(strings.TrimSpace(in), `"'<>`))
+	// Some sign-in services put code and state after a "#" (the fragment), which
+	// browsers never send to servers. Read both the query and the fragment.
+	query, frag := in, ""
+	if i := strings.Index(in, "#"); i >= 0 {
+		query, frag = in[:i], in[i+1:]
+	}
 	var q url.Values
 	switch {
-	case strings.Contains(in, "://"):
-		if u, err := url.Parse(in); err == nil {
+	case strings.Contains(query, "://"):
+		if u, err := url.Parse(query); err == nil {
 			q = u.Query()
 		}
-	case strings.Contains(in, "="):
-		q, _ = url.ParseQuery(strings.TrimPrefix(in, "?"))
-	default:
-		return returned{Code: in}
+	case strings.Contains(query, "="):
+		q, _ = url.ParseQuery(strings.TrimPrefix(query, "?"))
+	case query == "" && frag == "":
+		return returned{}
+	case query != "" && !strings.Contains(query, "?") && frag == "":
+		return returned{Code: query} // a bare code
+	}
+	if q == nil {
+		q = url.Values{}
+	}
+	if frag != "" {
+		fq, _ := url.ParseQuery(frag)
+		for k, v := range fq {
+			if q.Get(k) == "" {
+				q[k] = v
+			}
+		}
 	}
 	return returned{Code: q.Get("code"), State: q.Get("state"), Err: q.Get("error"), Desc: q.Get("error_description")}
 }
@@ -126,4 +133,19 @@ func explainFordError(code, desc string) string {
 		msg += ". The redirect URL set in CarTrak (More > Admin settings) must exactly match a redirect URI registered on your Ford app. If you registered http://localhost, enter exactly that."
 	}
 	return msg
+}
+
+// callbackPage is where Ford sends the browser back to CarTrak. It is a small
+// page, not an API call, because the code may arrive after a "#", which the
+// server never sees: the page reads the full address in the browser and
+// hands it to /api/ford/complete.
+func (s *Server) callbackPage(w http.ResponseWriter, r *http.Request) {
+	b, err := fs.ReadFile(web.Files, "static/ford-callback.html")
+	if err != nil {
+		fail(w, 500, "callback page missing")
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	_, _ = w.Write(b)
 }

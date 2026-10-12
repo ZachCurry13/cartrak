@@ -29,6 +29,7 @@ export default async function settings(root, _a, session) {
       h('p', { class: 'muted' }, 'Auto follows the Data Saver setting of your phone. Normal refreshes every 30 s. Live is pushed the moment a reading arrives. Data saver shows the essentials, refreshes every 5 min, and downloads big things (route, all fields) only when you ask. This does not affect your other devices.')),
     h('section', { class: 'card' }, h('a', { href: '#/rules' }, 'Trip rules (work / personal) →')),
     admin ? h('section', { class: 'card' }, h('a', { href: '#/admin' }, 'Admin settings (Ford credentials, time zone) →')) : null,
+    admin ? h('section', { class: 'card' }, h('a', { href: '#/remote' }, 'Remote access (Cloudflare tunnel) →')) : null,
     admin ? await usersCard() : null,
     h('p', { class: 'muted foot' }, 'CarTrak is an independent open-source project and is not affiliated with or endorsed by Ford Motor Company.'),
     h('p', {}, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },
