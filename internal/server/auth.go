@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	cookieName = "cartrak_session"
-	sessionTTL = 30 * 24 * time.Hour
+	cookieName        = "cartrak_session"
+	defaultSessionTTL = 30 * 24 * time.Hour
 )
 
 type ctxKey struct{}
@@ -35,11 +35,11 @@ func secure(r *http.Request) bool {
 
 func (s *Server) startSession(w http.ResponseWriter, r *http.Request, u *store.User) error {
 	tok := randToken()
-	if err := s.S.NewSession(tok, u.ID, sessionTTL); err != nil {
+	if err := s.S.NewSession(tok, u.ID, s.sessionTTL()); err != nil {
 		return err
 	}
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: tok, Path: "/", HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, Secure: secure(r), MaxAge: int(sessionTTL.Seconds())})
+		SameSite: http.SameSiteLaxMode, Secure: secure(r), MaxAge: int(s.sessionTTL().Seconds())})
 	return nil
 }
 
@@ -108,10 +108,27 @@ func (l *limiter) fail(ip string) {
 	l.fails[ip] = append(l.fails[ip], time.Now())
 }
 
-// clientIP prefers Cloudflare's header, since we sit behind the tunnel.
-func clientIP(r *http.Request) string {
-	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
-		return ip
+func (s *Server) sessionTTL() time.Duration {
+	if s.SessionDays > 0 {
+		return time.Duration(s.SessionDays) * 24 * time.Hour
+	}
+	return defaultSessionTTL
+}
+
+// clientIP returns the caller's address. Only when TrustProxy is set do we
+// believe the proxy headers (Cloudflare sends CF-Connecting-IP); otherwise
+// anyone could spoof them to dodge the login lockout.
+func (s *Server) clientIP(r *http.Request) string {
+	if s.TrustProxy {
+		if ip := strings.TrimSpace(r.Header.Get("CF-Connecting-IP")); ip != "" {
+			return ip
+		}
+		if ip := strings.TrimSpace(r.Header.Get("X-Real-IP")); ip != "" {
+			return ip
+		}
+		if xf := r.Header.Get("X-Forwarded-For"); xf != "" {
+			return strings.TrimSpace(strings.Split(xf, ",")[0])
+		}
 	}
 	h, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {

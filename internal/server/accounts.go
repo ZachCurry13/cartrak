@@ -55,7 +55,7 @@ func (s *Server) makeUser(name, pass, role string) error {
 }
 
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
-	ip := clientIP(r)
+	ip := s.clientIP(r)
 	if s.lim.blocked(ip) {
 		fail(w, 429, "too many attempts, wait a minute")
 		return

@@ -53,7 +53,7 @@ func main() {
 	if u := os.Getenv("CARTRAK_UPDATE_URL"); u != "" { // testing aid: point at a fake releases endpoint
 		upd.URL = u
 	}
-	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd}
+	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
 	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

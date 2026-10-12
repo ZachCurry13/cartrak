@@ -32,3 +32,10 @@ FORD_REDIRECT_URL: ""
 # Forgot the admin password? Set both of these, restart once, then remove them again.
 # CARTRAK_RESET_ADMIN: 1
 # CARTRAK_ADMIN_PASS: "a-new-password-10+-chars"
+
+# Optional: believe CF-Connecting-IP / X-Forwarded-For / X-Real-IP for client IPs.
+# Leave true behind the Cloudflare tunnel; set false if the app is reachable without a proxy.
+# CARTRAK_TRUST_PROXY: true
+
+# Optional: how many days a sign-in lasts (default 30)
+# CARTRAK_SESSION_DAYS: 30

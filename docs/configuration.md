@@ -21,6 +21,8 @@ Restart the app after editing.
 | `FORD_VIN` | choose a vehicle if several are authorized | first authorized |
 | `CARTRAK_ADMIN_USER` / `CARTRAK_ADMIN_PASS` | create the admin at startup (otherwise use first-run setup) | none |
 | `CARTRAK_RESET_ADMIN` | `1` resets the password of `CARTRAK_ADMIN_USER` to `CARTRAK_ADMIN_PASS` on start (recovery) | off |
+| `CARTRAK_TRUST_PROXY` | believe proxy headers (`CF-Connecting-IP`, `X-Forwarded-For`, `X-Real-IP`) for client IPs | `true` |
+| `CARTRAK_SESSION_DAYS` | how long a sign-in lasts | `30` |
 | `CARTRAK_POLL_DRIVING_SEC` | seconds between readings while driving | `30` |
 | `CARTRAK_POLL_CHARGING_SEC` | while charging | `120` |
 | `CARTRAK_POLL_PARKED_SEC` | while parked | `600` |

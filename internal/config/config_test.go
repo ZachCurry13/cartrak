@@ -45,3 +45,17 @@ func TestBadYAMLIsAnError(t *testing.T) {
 		t.Fatal("expected error")
 	}
 }
+
+func TestProxyAndSessionDefaults(t *testing.T) {
+	t.Setenv("CARTRAK_CONFIG", t.TempDir())
+	c, _ := Load()
+	if !c.TrustProxy || c.SessionDays != 30 {
+		t.Fatalf("defaults: %+v", c)
+	}
+	t.Setenv("CARTRAK_TRUST_PROXY", "false")
+	t.Setenv("CARTRAK_SESSION_DAYS", "7")
+	c, _ = Load()
+	if c.TrustProxy || c.SessionDays != 7 {
+		t.Fatalf("overrides: %+v", c)
+	}
+}

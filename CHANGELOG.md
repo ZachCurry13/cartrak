@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### 🔒 Safer sign-in settings
+- New settings for whether to trust proxy headers (on by default behind Cloudflare) and how many days a sign-in lasts.
+
+### 📚 Docs
+- The GitHub front page now has the full TrueNAS install steps, the YAML, and a table of every setting.
 ## 0.2.0
 
 ### 👋 Easier to start

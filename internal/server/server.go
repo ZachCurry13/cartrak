@@ -21,13 +21,15 @@ type Linker interface {
 }
 
 type Server struct {
-	S       *store.Store
-	P       *poller.Poller
-	D       *trips.Detector
-	Link    Linker // nil when the provider needs no account link
-	Version string
-	Upd     *updater.Checker // nil disables update checks
-	lim     limiter
+	S           *store.Store
+	P           *poller.Poller
+	D           *trips.Detector
+	Link        Linker // nil when the provider needs no account link
+	Version     string
+	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
+	SessionDays int              // "keep me signed in" length; 0 = 30
+	Upd         *updater.Checker // nil disables update checks
+	lim         limiter
 }
 
 func (s *Server) Handler() http.Handler {

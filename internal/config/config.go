@@ -31,9 +31,11 @@ type Config struct {
 	FordRedirectURL  string // OAuth redirect URI registered with Ford
 	FordVIN          string // optional vehicle id; default is the first authorized one
 
-	AdminUser  string
-	AdminPass  string
-	ResetAdmin bool // CARTRAK_RESET_ADMIN=1: set the admin password from CARTRAK_ADMIN_PASS on start
+	AdminUser   string
+	AdminPass   string
+	ResetAdmin  bool // CARTRAK_RESET_ADMIN=1: set the admin password from CARTRAK_ADMIN_PASS on start
+	TrustProxy  bool
+	SessionDays int
 
 	PollDriving time.Duration
 	PollCharge  time.Duration
@@ -102,6 +104,8 @@ func Load() (*Config, error) {
 		AdminUser:        src.str("CARTRAK_ADMIN_USER", "admin"),
 		AdminPass:        src.get("CARTRAK_ADMIN_PASS"),
 		ResetAdmin:       src.get("CARTRAK_RESET_ADMIN") == "1",
+		TrustProxy:       src.get("CARTRAK_TRUST_PROXY") != "false",
+		SessionDays:      int(src.secs("CARTRAK_SESSION_DAYS", 30) / time.Second),
 		PollDriving:      src.secs("CARTRAK_POLL_DRIVING_SEC", 30),
 		PollCharge:       src.secs("CARTRAK_POLL_CHARGING_SEC", 120),
 		PollParked:       src.secs("CARTRAK_POLL_PARKED_SEC", 600),
