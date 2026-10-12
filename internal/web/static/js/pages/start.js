@@ -19,7 +19,7 @@ export default async function start(root, _a, session) {
     step(1, true, 'Create your account', 'Done. You are signed in as an admin. Family members can get their own read-only accounts in step 6.'),
     step(2, ob.linked, demo ? 'Connect your Ford (demo mode)' : 'Connect your Ford account',
       demo ? 'CarTrak is running with a simulated car. To use your real car, set the provider to fordconnect in your settings (see the setup guide on GitHub).'
-        : 'You sign in on Ford\'s own page and approve the vehicle. CarTrak never sees your Ford password and only keeps a token that lets it read your car\'s data.',
+        : 'Tip: use a separate FordPass account just for CarTrak, with the car shared to it from your main account, so your main account is never at risk. You sign in on Ford\'s own page and approve the vehicle. CarTrak never sees your Ford password and only keeps a token that lets it read your car\'s data.',
       !demo && admin && ob.canLink ? h('a', { class: 'btn', href: '/ford/connect' }, ob.linked ? 'Reconnect Ford' : 'Connect Ford') : null),
     step(3, ob.hasReading, 'Wait for the first reading',
       ob.hasReading ? 'Data is coming in. Open Home to see it.' : 'After connecting, the first reading arrives within a minute or two. The Home page fills in by itself.'),

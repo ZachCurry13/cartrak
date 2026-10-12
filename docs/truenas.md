@@ -5,7 +5,7 @@ tunnel for access from your phone. Menu names can differ slightly between
 TrueNAS versions.
 
 You need: TrueNAS SCALE with Apps enabled, a Cloudflare account with a domain,
-and a Ford developer app ([Ford setup](ford-setup.md)). To try CarTrak first
+and a Ford developer app (see [Ford setup](ford-setup.md), including the recommendation to use a separate FordPass account for CarTrak). To try CarTrak first
 without Ford, use `CARTRAK_PROVIDER: demo`.
 
 ## 1. Create the two folders
@@ -36,7 +36,8 @@ Copy it to `config.yaml`, fill in your Ford details and restart the app. See
 ## 4. First run
 1. Open `https://cartrak.example.com` on your phone or computer.
 2. Create the admin account (10+ character password).
-3. The **Getting started** page walks you through connecting Ford, installing on your phone, adding a work rule, and adding family.
+3. Before connecting Ford, set up a separate FordPass account as described in [Ford setup](ford-setup.md).
+4. The **Getting started** page walks you through connecting Ford, installing on your phone, adding a work rule, and adding family.
 
 ## 5. Install on your phone
 Android (Chrome): menu -> **Install app**. iPhone (Safari): Share -> **Add to Home Screen**.

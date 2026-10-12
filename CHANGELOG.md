@@ -18,6 +18,7 @@
 
 ### 📚 Docs
 - Step-by-step guides on GitHub for TrueNAS, Cloudflare tunnels, Ford setup, settings, updating and troubleshooting.
+- We now recommend a separate FordPass account for CarTrak, in the guides and in the Getting started page, so your main account is never at risk.
 
 ## 0.1.0
 
