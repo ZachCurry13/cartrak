@@ -78,6 +78,7 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /ford/connect", s.auth(true, s.fordConnect))
 	m.HandleFunc("GET /ford/callback", s.auth(true, s.fordCallback))
+	m.HandleFunc("POST /api/ford/complete", s.auth(true, s.fordComplete))
 	m.HandleFunc("POST /api/poll", s.auth(true, func(w http.ResponseWriter, r *http.Request) { s.P.Now(); ok(w, "queued") }))
 
 	static, _ := fs.Sub(web.Files, "static")

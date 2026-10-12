@@ -46,10 +46,25 @@ That way, if Ford ever restricts the account, your main FordPass login, your
 vehicle ownership and your phone key are not affected. If the second account
 cannot see the vehicle, finish step 2 first and then link again.
 
+
+## Redirect address: automatic or paste
+Ford sends your browser back to a **redirect URI that you registered on your Ford
+app**, and CarTrak must ask for exactly that address. There are two setups:
+
+| You registered | Set the redirect URL in CarTrak to | How linking finishes |
+|---|---|---|
+| `http://localhost` (common for personal apps) | exactly `http://localhost` | After you sign in, the page that opens (on your own device) shows an error or nothing: that is expected. Copy the whole address from the browser's address bar (it contains `code=…`) and paste it into **More -> Connect Ford -> step 2**. |
+| `https://<your hostname>/ford/callback` (needs a [Cloudflare tunnel](cloudflare.md) or another public address) | exactly that address | Automatic: you land back in CarTrak and you are connected. |
+
+Admin settings has buttons for both. If Ford shows `redirect_uri_mismatch` (or
+`AADB2C90006`, "not registered"), the address CarTrak sent is not one registered
+on your Ford app: fix the redirect URL in Admin settings so it matches exactly,
+including `http` or `https` and any path.
+
 ## Linking your car
-1. Open CarTrak as admin -> **More** -> **Connect Ford** (use your separate CarTrak account, see above).
+1. Open CarTrak as admin -> **More** -> **Connect Ford** and press **Open Ford sign-in** (use your separate CarTrak account, see above).
 2. Ford's own page opens. Sign in with the FordPass account you set up for CarTrak and approve the vehicle.
-3. You are sent back to CarTrak. It stores a refresh token and starts reading.
+3. Finish as described under "Redirect address" above (automatic, or paste the address). CarTrak stores a refresh token and starts reading.
 
 CarTrak never sees your Ford password. If Ford expires the link (for example after
 a long period), More shows "not linked": press **Reconnect Ford**.

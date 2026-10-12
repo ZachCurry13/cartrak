@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1
+
+### 🔗 Connecting Ford
+- A new **Connect Ford** page with two steps. If your Ford app was registered with the redirect `http://localhost`, you can now finish linking by pasting the address Ford sends you to. Ford apps registered with CarTrak's own address still connect automatically.
+- Clear messages when Ford refuses: the Azure error is explained in plain words, and the "redirect not registered" mistake tells you exactly what to fix.
+- The Admin page has buttons to fill in the redirect URL.
+
 ## 0.5.0
 
 ### 🔌 FordConnect 2.0

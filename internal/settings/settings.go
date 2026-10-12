@@ -25,7 +25,7 @@ var Defs = []Def{
 	{Key: "FORD_CLIENT_SECRET", Label: "Ford client secret", Secret: true, Help: "Stored on the server only. It is never shown again or sent to the browser."},
 	{Key: "FORD_APPLICATION_ID", Label: "Ford Application-Id (older FordConnect 1 only)", Help: "Not needed for FordConnect 2.0. Leave empty unless you use the older provider fordconnect1."},
 	{Key: "FORD_REDIRECT_URL", Label: "Ford redirect URL", Placeholder: "https://cartrak.example.com/ford/callback",
-		Help: "Must exactly match the redirect URI registered with Ford. If left empty, CarTrak uses the address you are browsing from plus /ford/callback."},
+		Help: "Must exactly match a redirect URI registered on your Ford app. Registered http://localhost? Enter exactly that: after signing in you paste the address Ford sends you to. Registered a CarTrak address? Use that, and linking finishes by itself."},
 	{Key: "FORD_AUTH_URL", Label: "Ford sign-in address (advanced)", Placeholder: "leave empty to use the built-in address",
 		Help: "Only change this if Ford's documentation gives a different sign-in (authorize) address for FordConnect 2.0."},
 	{Key: "FORD_VIN", Label: "Vehicle ID (optional)", Help: "Only needed if several vehicles are authorized. Default: the first one."},

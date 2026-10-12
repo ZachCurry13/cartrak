@@ -1,7 +1,6 @@
 package server
 
 import (
-	"crypto/subtle"
 	"net/http"
 	"strconv"
 	"strings"
@@ -86,33 +85,4 @@ func (s *Server) fordConnect(w http.ResponseWriter, r *http.Request) {
 	state := randToken()
 	_ = s.S.SetKV("ford_state", state+"|"+strconv.FormatInt(time.Now().Add(15*time.Minute).Unix(), 10))
 	http.Redirect(w, r, s.Link.LinkURL(state), http.StatusFound)
-}
-
-func (s *Server) fordCallback(w http.ResponseWriter, r *http.Request) {
-	if s.Link == nil {
-		fail(w, 404, "no link configured")
-		return
-	}
-	parts := strings.SplitN(s.S.GetKV("ford_state"), "|", 2)
-	exp := int64(0)
-	if len(parts) == 2 {
-		exp, _ = strconv.ParseInt(parts[1], 10, 64)
-	}
-	got := r.URL.Query().Get("state")
-	if len(parts) != 2 || time.Now().Unix() > exp || subtle.ConstantTimeCompare([]byte(parts[0]), []byte(got)) != 1 {
-		fail(w, 400, "link expired or state mismatch, start again")
-		return
-	}
-	_ = s.S.SetKV("ford_state", "")
-	code := r.URL.Query().Get("code")
-	if code == "" {
-		fail(w, 400, "Ford did not return a code")
-		return
-	}
-	if err := s.Link.Exchange(r.Context(), code); err != nil {
-		fail(w, 502, "could not finish linking with Ford")
-		return
-	}
-	s.P.Now()
-	http.Redirect(w, r, "/#/settings", http.StatusFound)
 }

@@ -3,6 +3,9 @@
 **The app will not start / "permission denied" in the logs.**
 The `data` and `config` folders must be writable by UID 568 (the `apps` user). Fix the dataset permissions, then Start again.
 
+**Ford says `redirect_uri_mismatch` / AADB2C90006, or I land on a "Not Found" page.**
+The redirect URL CarTrak sent is not registered on your Ford app. If you registered `http://localhost`, set the redirect URL in Admin settings to exactly `http://localhost`; after signing in, the page that opens will not load (that is expected), so copy its address from the address bar and paste it under More -> Connect Ford, step 2. If you registered a CarTrak address, enter that instead. See [Ford setup](ford-setup.md#redirect-address-automatic-or-paste).
+
 **"Not linked" on the dashboard.**
 Open More -> Connect Ford. If Ford shows an error about the redirect, the redirect URI registered with Ford must match `FORD_REDIRECT_URL` exactly, including `https://` and the path `/ford/callback`.
 

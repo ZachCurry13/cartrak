@@ -22,7 +22,7 @@ export default async function settings(root, _a, session) {
     h('section', { class: 'card' }, h('h2', {}, 'Ford connection'),
       h('div', {}, chip(p.linked ? 'ok' : 'bad', p.linked ? 'linked' : 'not linked'), ' ', h('span', { class: 'muted' }, `${p.provider} · last update ${ago(p.lastOk)}`)),
       p.lastError ? h('p', { class: 'muted' }, `Last error: ${p.lastError}`) : null,
-      admin ? h('p', { class: 'seg' }, st.canLink ? h('a', { class: 'btn', href: '/ford/connect' }, p.linked ? 'Reconnect Ford' : 'Connect Ford') : null,
+      admin ? h('p', { class: 'seg' }, st.canLink ? h('a', { class: 'btn', href: '#/connect' }, p.linked ? 'Reconnect Ford' : 'Connect Ford') : null,
         h('button', { class: 'sec', onclick: async (e) => { await api('/api/poll', { method: 'POST' }); e.target.textContent = 'Requested ✓'; } }, 'Sync now')) : null),
     h('section', { class: 'card' }, h('h2', {}, 'Display'), h('label', { for: 'un' }, 'Units (this device)'), (units.id = 'un', units), h('label', { for: 'th' }, 'Theme (this device)'), (theme.id = 'th', theme),
       h('label', { for: 'dm' }, 'Data use (this device only)'), (mode.id = 'dm', mode),

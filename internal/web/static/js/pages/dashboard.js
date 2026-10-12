@@ -43,7 +43,7 @@ export default async function dashboard(root, _args, session) {
     if (!status.poller.linked) {
       out.push(h('div', { class: 'banner' }, h('b', {}, 'Ford account not linked. '),
         status.canLink && session.me.role === 'admin'
-          ? (status.configured ? h('a', { class: 'btn', href: '/ford/connect', style: 'margin-top:8px' }, 'Connect Ford account') : h('a', { class: 'btn', href: '#/admin', style: 'margin-top:8px' }, 'Enter your Ford settings'))
+          ? (status.configured ? h('a', { class: 'btn', href: '#/connect', style: 'margin-top:8px' }, 'Connect Ford account') : h('a', { class: 'btn', href: '#/admin', style: 'margin-top:8px' }, 'Enter your Ford settings'))
           : 'Ask the admin to connect it.'));
     } else if (status.poller.lastError) {
       out.push(h('div', { class: 'banner' }, `Last update failed: ${status.poller.lastError}`));

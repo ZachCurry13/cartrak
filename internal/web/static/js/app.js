@@ -15,6 +15,7 @@ const routes = {
   start: () => import('./pages/start.js'),
   changelog: () => import('./pages/changelog.js'),
   admin: () => import('./pages/admin.js'),
+  connect: () => import('./pages/connect.js'),
   live: () => import('./pages/live.js'),
 };
 
