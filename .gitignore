@@ -1,0 +1,5 @@
+*.db
+*.db-*
+cartrak
+cartrak.exe
+dist/
