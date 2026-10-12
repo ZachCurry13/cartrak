@@ -1,5 +1,7 @@
 import { h, chip, ago, isMetric, setMetric, getTheme, setTheme } from '../ui.js';
 import { api } from '../api.js';
+import { notices } from '../notice.js';
+import { aboutCard } from '../aboutcard.js';
 
 export default async function settings(root, _a, session) {
   const admin = session.me.role === 'admin';
@@ -12,7 +14,7 @@ export default async function settings(root, _a, session) {
   theme.value = getTheme();
   theme.addEventListener('change', () => setTheme(theme.value));
 
-  root.append(h('h2', {}, 'More'),
+  root.append(h('h2', {}, 'More'), ...notices(session), aboutCard(session, admin),
     h('section', { class: 'card' }, h('h2', {}, 'Ford connection'),
       h('div', {}, chip(p.linked ? 'ok' : 'bad', p.linked ? 'linked' : 'not linked'), ' ', h('span', { class: 'muted' }, `${p.provider} · last update ${ago(p.lastOk)}`)),
       p.lastError ? h('p', { class: 'muted' }, `Last error: ${p.lastError}`) : null,

@@ -1,0 +1,34 @@
+# CarTrak settings. Copy this file to config.yaml in the same folder and edit it.
+# Every key here can also be set as an environment variable of the same name,
+# and an environment variable wins over this file. Restart the app after changes.
+# This file contains secrets once filled in: keep it out of git and backups you share.
+
+# fordconnect = your real car, demo = a simulated car for trying the app
+CARTRAK_PROVIDER: fordconnect
+
+# Time zone used by work-hour rules, e.g. America/Chicago (default UTC)
+CARTRAK_TZ: UTC
+
+# From the Ford developer portal (see docs/ford-setup.md)
+FORD_CLIENT_ID: ""
+FORD_CLIENT_SECRET: ""
+FORD_APPLICATION_ID: ""
+
+# Must match the redirect URI registered with Ford, e.g. https://cartrak.example.com/ford/callback
+FORD_REDIRECT_URL: ""
+
+# Optional: pick a vehicle when several are authorized (default: the first one)
+# FORD_VIN: ""
+
+# Optional: create the admin account at startup instead of on first visit
+# CARTRAK_ADMIN_USER: admin
+# CARTRAK_ADMIN_PASS: ""
+
+# Optional: how often to ask Ford, in seconds
+# CARTRAK_POLL_DRIVING_SEC: 30
+# CARTRAK_POLL_CHARGING_SEC: 120
+# CARTRAK_POLL_PARKED_SEC: 600
+
+# Forgot the admin password? Set both of these, restart once, then remove them again.
+# CARTRAK_RESET_ADMIN: 1
+# CARTRAK_ADMIN_PASS: "a-new-password-10+-chars"

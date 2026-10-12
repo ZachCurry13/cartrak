@@ -120,3 +120,21 @@ func TestLoginRateLimit(t *testing.T) {
 		t.Fatalf("expected lockout, got %d", last)
 	}
 }
+
+func TestAdminPasswordReset(t *testing.T) {
+	ts, s := newTestServer(t)
+	srv := &Server{S: s}
+	srv.SeedAdmin("owner", "first-password-1", false)
+	srv.SeedAdmin("owner", "ignored-password-2", false) // not a reset: must not change anything
+	c := &http.Client{}
+	if code, _ := do(t, c, "POST", ts.URL+"/api/login", `{"name":"owner","password":"first-password-1"}`, nil); code != 200 {
+		t.Fatalf("seeded login = %d", code)
+	}
+	srv.SeedAdmin("owner", "second-password-3", true)
+	if code, _ := do(t, c, "POST", ts.URL+"/api/login", `{"name":"owner","password":"first-password-1"}`, nil); code != 401 {
+		t.Fatalf("old password still works: %d", code)
+	}
+	if code, _ := do(t, c, "POST", ts.URL+"/api/login", `{"name":"owner","password":"second-password-3"}`, nil); code != 200 {
+		t.Fatalf("new password rejected: %d", code)
+	}
+}

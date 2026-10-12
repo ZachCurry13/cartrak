@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0
+
+### 👋 Easier to start
+- A Getting started guide opens the first time you sign in: connect Ford, install on your phone, add a work rule, add family. It stays available in More.
+- The home page reminds you until setup is finished.
+
+### 🔔 Versions and updates
+- The version is always shown at the top of the screen and in More -> About.
+- CarTrak tells you when a new version is out (you can turn this off) and how to install it. After an update, a note points you to what changed.
+- A "What's new" page shows every release's changes inside the app.
+
+### 🗂 Settings and storage
+- Settings can live in a `config.yaml` file in a mapped `config` folder, next to the `data` folder, so both survive updates.
+- TrueNAS: the YAML now maps both folders and downloads the newest release when you Stop then Start the app.
+- A password recovery switch for the admin account.
+
+### 📚 Docs
+- Step-by-step guides on GitHub for TrueNAS, Cloudflare tunnels, Ford setup, settings, updating and troubleshooting.
+
 ## 0.1.0
 
 ### 🚗 Your car's data

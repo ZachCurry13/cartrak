@@ -17,6 +17,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/server"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
+	"github.com/ZachCurry13/cartrak/internal/updater"
 )
 
 // version is set at build time (-ldflags -X main.version=...).
@@ -48,12 +49,17 @@ func main() {
 
 	det := &trips.Detector{S: st, TZ: cfg.TZ}
 	p := poller.New(prov, st, det, poller.Intervals{Driving: cfg.PollDriving, Charging: cfg.PollCharge, Parked: cfg.PollParked})
-	srv := &server.Server{S: st, P: p, D: det, Link: link}
-	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass)
+	upd := updater.New(version)
+	if u := os.Getenv("CARTRAK_UPDATE_URL"); u != "" { // testing aid: point at a fake releases endpoint
+		upd.URL = u
+	}
+	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd}
+	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go p.Run(ctx)
+	go upd.Run(ctx, srv.UpdateCheckEnabled)
 
 	hs := &http.Server{Addr: cfg.Addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
 	go func() {

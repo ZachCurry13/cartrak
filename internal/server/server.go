@@ -10,6 +10,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
+	"github.com/ZachCurry13/cartrak/internal/updater"
 	"github.com/ZachCurry13/cartrak/internal/web"
 )
 
@@ -20,11 +21,13 @@ type Linker interface {
 }
 
 type Server struct {
-	S    *store.Store
-	P    *poller.Poller
-	D    *trips.Detector
-	Link Linker // nil when the provider needs no account link
-	lim  limiter
+	S       *store.Store
+	P       *poller.Poller
+	D       *trips.Detector
+	Link    Linker // nil when the provider needs no account link
+	Version string
+	Upd     *updater.Checker // nil disables update checks
+	lim     limiter
 }
 
 func (s *Server) Handler() http.Handler {
@@ -36,6 +39,12 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/login", s.login)
 	m.HandleFunc("POST /api/logout", s.auth(false, s.logout))
 	m.HandleFunc("GET /api/me", s.auth(false, func(w http.ResponseWriter, r *http.Request) { ok(w, userFrom(r)) }))
+
+	m.HandleFunc("GET /api/about", s.auth(false, s.about))
+	m.HandleFunc("POST /api/settings/update-check", s.auth(true, s.setUpdateCheck))
+	m.HandleFunc("GET /api/changelog", s.auth(false, s.changelog))
+	m.HandleFunc("GET /api/onboarding", s.auth(false, s.onboarding))
+	m.HandleFunc("POST /api/onboarding/dismiss", s.auth(true, s.dismissOnboarding))
 
 	m.HandleFunc("GET /api/status", s.auth(false, s.status))
 	m.HandleFunc("GET /api/latest", s.auth(false, s.latest))

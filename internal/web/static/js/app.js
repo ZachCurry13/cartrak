@@ -11,12 +11,42 @@ const routes = {
   data: () => import('./pages/data.js'),
   settings: () => import('./pages/settings.js'),
   rules: () => import('./pages/rules.js'),
+  start: () => import('./pages/start.js'),
+  changelog: () => import('./pages/changelog.js'),
 };
 
 const view = document.getElementById('view');
 const tabs = document.getElementById('tabs');
-export const session = { me: null };
+export const session = { me: null, about: null, installPrompt: null };
 let stopTimer = null;
+
+// Chrome/Android offers a one-tap install; keep the event for the Getting started page.
+addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); session.installPrompt = e; });
+
+const store = {
+  get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
+};
+
+async function loadAbout() {
+  session.about = await api('/api/about');
+  const ver = document.getElementById('ver');
+  ver.textContent = `v${session.about.version}`;
+  ver.classList.toggle('update', !!session.about.update.available);
+  ver.title = session.about.update.available ? `Update available: v${session.about.update.latest}` : 'Version';
+  // Remember which version this device last saw, to announce "What's new" after an update.
+  session.about.justUpdated = !!store.get('seenVersion') && store.get('seenVersion') !== session.about.version;
+  if (!store.get('seenVersion')) store.set('seenVersion', session.about.version);
+}
+
+async function firstRunTour() {
+  if (session.me.role !== 'admin' || store.get('welcomed')) return false;
+  store.set('welcomed', '1');
+  const ob = await api('/api/onboarding');
+  if (ob.dismissed) return false;
+  location.hash = '#/start';
+  return true;
+}
 
 async function render() {
   clearInterval(stopTimer);
@@ -24,7 +54,11 @@ async function render() {
   const tab = ['', 'trips', 'charging', 'data'].includes(name) ? name : name === 'trip' ? 'trips' : 'settings';
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   try {
-    session.me = session.me || await api('/api/me');
+    if (!session.me) {
+      session.me = await api('/api/me');
+      await loadAbout();
+      if (await firstRunTour()) return; // hashchange re-renders onto the tour
+    }
     tabs.hidden = false;
     const mod = await (routes[name] || routes[''])();
     view.replaceChildren();

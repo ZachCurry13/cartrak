@@ -1,39 +1,53 @@
-# Running CarTrak on TrueNAS with a Cloudflare tunnel
+# Install on TrueNAS SCALE (Custom App)
 
-## 1. Storage
-Create a dataset (for example `apps/cartrak`). It holds the SQLite database
-and all cached Ford data. Back it up like any other dataset. The container
-runs as UID 568 (the TrueNAS `apps` user); give that user write access.
+This guide installs CarTrak as a TrueNAS Custom App from YAML, with a Cloudflare
+tunnel for access from your phone. Menu names can differ slightly between
+TrueNAS versions.
+
+You need: TrueNAS SCALE with Apps enabled, a Cloudflare account with a domain,
+and a Ford developer app ([Ford setup](ford-setup.md)). To try CarTrak first
+without Ford, use `CARTRAK_PROVIDER: demo`.
+
+## 1. Create the two folders
+CarTrak keeps everything in two folders that you map from your pool:
+
+| Folder in the container | What it holds | Back it up? |
+|---|---|---|
+| `/data` | the database: every reading, trip, charge, rule and user | **Yes** |
+| `/config` | `config.yaml` with your settings and Ford credentials | Yes, keep it private |
+
+1. Storage -> Datasets: create a dataset such as `apps/cartrak`, then two folders or child datasets inside it: `data` and `config`.
+2. Permissions for both: owner user **apps** (UID 568), owner group **apps**, Read/Write/Execute for the owner. The container runs as 568, so without this it cannot write.
 
 ## 2. Cloudflare tunnel
-1. In Cloudflare Zero Trust, go to Networks -> Tunnels -> Create a tunnel (Cloudflared).
-2. Copy the tunnel token into `TUNNEL_TOKEN` in the YAML.
-3. Add a public hostname, for example `cartrak.yourdomain.com`, with service
-   `HTTP` and URL `cartrak:8080` (the compose service name).
-4. Optional but recommended: add a Cloudflare Access policy for that hostname
-   (one-time PIN to your email). CarTrak has its own login too, so you get two layers.
+Follow [Cloudflare tunnel](cloudflare.md) and keep the **tunnel token** and your
+hostname (for example `cartrak.example.com`) for the next step.
 
-## 3. Ford developer app
-In the Ford developer portal, register
-`https://cartrak.yourdomain.com/ford/callback` as the redirect URI. Put the
-client ID, client secret and Application-Id in the YAML. Treat the secret
-like a password; never commit it.
+## 3. Install
+1. Apps -> Discover Apps -> **Custom App** -> **Install via YAML**.
+2. Name it `cartrak` and paste [`deploy/truenas-compose.yaml`](../deploy/truenas-compose.yaml).
+3. Replace each `CHANGE-ME`: the two host paths under `volumes`, your time zone, and the tunnel token.
+4. Save. The first start downloads the image.
 
-## 4. Install
-Apps -> Discover Apps -> Custom App -> Install via YAML, paste
-`deploy/truenas-compose.yaml` with your values filled in.
+When it starts, CarTrak writes `config.example.yaml` into your `config` folder.
+Copy it to `config.yaml`, fill in your Ford details and restart the app. See
+[Configuration](configuration.md). (Environment variables in the YAML work too and win over the file.)
 
-If the image cannot be pulled, check in GitHub that the
-package visibility is **public** (package settings).
+## 4. First run
+1. Open `https://cartrak.example.com` on your phone or computer.
+2. Create the admin account (10+ character password).
+3. The **Getting started** page walks you through connecting Ford, installing on your phone, adding a work rule, and adding family.
 
-## 5. First run
-Open your hostname, create the admin account, then More -> Connect Ford.
-Ford's own page asks you to sign in and authorize the vehicle; CarTrak never
-sees your Ford password. Add family as read-only viewers under More -> People.
-
-## 6. Install on your phone
-Open the site in Chrome (Android) or Safari (iPhone) and choose
-"Install app" / "Add to Home Screen".
+## 5. Install on your phone
+Android (Chrome): menu -> **Install app**. iPhone (Safari): Share -> **Add to Home Screen**.
 
 ## Updating
-Releases publish `:latest`. Press **Update** on the app in TrueNAS to pull it.
+See [Updating](updating.md). In short: CarTrak shows an "Update available"
+banner; in TrueNAS open the app, **Stop**, then **Start**. The YAML uses
+`pull_policy: always`, so Start downloads the newest release. Your folders are untouched.
+
+## Restoring or moving
+Stop the app, copy the `data` and `config` folders, point the new install at them, start. That is the whole migration.
+
+## Trouble?
+See [Troubleshooting](troubleshooting.md).

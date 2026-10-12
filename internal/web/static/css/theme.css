@@ -26,3 +26,6 @@ nav a{color:var(--muted)}nav a.on{color:var(--accent)}
 :root[data-theme=dark]{--badt:#f87171;--okt:#34d399}
 :root[data-theme=light]{--badt:#c81e1e;--okt:#047857}
 .chip.bad{color:var(--badt)}.chip.ok{color:var(--okt)}
+#ver{font-size:.8rem;margin-left:auto;text-decoration:none}
+#ver.update::after{content:" ●";color:#fbbf24}
+.banner.notice{border-color:var(--accent)}

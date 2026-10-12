@@ -123,9 +123,21 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 var _ = store.User{}
 
-// SeedAdmin creates the first admin from environment settings, if none exist.
-func (s *Server) SeedAdmin(name, pass string) {
-	if pass != "" && s.S.CountUsers() == 0 {
+// SeedAdmin creates the first admin from settings if there are no users. With
+// reset set, it instead changes that user's password (account recovery).
+func (s *Server) SeedAdmin(name, pass string, reset bool) {
+	if pass == "" {
+		return
+	}
+	if reset {
+		if h, err := hashPassword(pass); err == nil {
+			if ok, _ := s.S.SetPassword(name, h); !ok && s.S.CountUsers() == 0 {
+				_ = s.makeUser(name, pass, "admin")
+			}
+		}
+		return
+	}
+	if s.S.CountUsers() == 0 {
 		_ = s.makeUser(name, pass, "admin")
 	}
 }

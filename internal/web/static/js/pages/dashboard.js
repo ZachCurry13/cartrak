@@ -1,5 +1,6 @@
 import { h, stat, chip, dist, speed, temp, pressure, pct, num, ago, duration } from '../ui.js';
 import { api } from '../api.js';
+import { notices } from '../notice.js';
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -26,7 +27,11 @@ export default async function dashboard(root, _args, session) {
   root.append(box);
   async function load() {
     const [latest, status, trips] = await Promise.all([api('/api/latest'), api('/api/status'), api('/api/trips?limit=1')]);
-    const out = [];
+    const out = [...notices(session)];
+    if (session.me.role === 'admin') {
+      const ob = await api('/api/onboarding');
+      if (!ob.dismissed) out.push(h('a', { class: 'card', href: '#/start', style: 'display:block;text-decoration:none' }, h('b', {}, 'Getting started'), h('div', { class: 'muted' }, 'Finish setting up CarTrak: connect Ford, install on your phone, add trip rules →')));
+    }
     if (!status.poller.linked) {
       out.push(h('div', { class: 'banner' }, h('b', {}, 'Ford account not linked. '),
         status.canLink && session.me.role === 'admin'

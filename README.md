@@ -11,6 +11,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Work/personal rules (days, time window, optional "near this place"); manual choices always win
 - CSV export, work/personal mileage totals
 - Built-in login with admin and read-only viewer roles
+- Getting-started guide, version shown in the app, update notices, and the changelog built in
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
 
 > CarTrak is an independent open-source project and is not affiliated with or
@@ -29,11 +30,12 @@ developer portal (client ID, client secret, Application-Id and a redirect URI).
 Then sign in to CarTrak as admin and choose More -> Connect Ford. Ford's own
 page handles your login; CarTrak only stores a refresh token.
 
-## Configuration (environment variables)
+## Configuration (environment variables or `config.yaml`)
 | Variable | Meaning |
 |---|---|
 | `CARTRAK_PROVIDER` | `fordconnect` or `demo` |
 | `CARTRAK_DATA` | data folder (default `./data`, `/data` in Docker) |
+| `CARTRAK_CONFIG` | config folder holding `config.yaml` (default `./config`, `/config` in Docker) |
 | `CARTRAK_ADDR` | listen address (default `:8080`) |
 | `CARTRAK_TZ` | IANA time zone used by work-hour rules (default `UTC`) |
 | `FORD_CLIENT_ID`, `FORD_CLIENT_SECRET`, `FORD_APPLICATION_ID` | from the Ford developer portal |
@@ -43,7 +45,9 @@ page handles your login; CarTrak only stores a refresh token.
 | `CARTRAK_POLL_DRIVING_SEC` / `_CHARGING_SEC` / `_PARKED_SEC` | polling intervals (30 / 120 / 600) |
 
 ## Deploying
-See [docs/truenas.md](docs/truenas.md) and [deploy/truenas-compose.yaml](deploy/truenas-compose.yaml).
+Guides: [TrueNAS install](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) · [Configuration](docs/configuration.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+
+TrueNAS YAML: [deploy/truenas-compose.yaml](deploy/truenas-compose.yaml). Two folders are mapped: `data` (database, back it up) and `config` (`config.yaml`).
 
 ## Development
 ```bash

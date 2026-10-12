@@ -72,3 +72,17 @@ func (s *Store) SessionUser(token string) (*User, error) {
 func (s *Store) DeleteSession(token string) {
 	_, _ = s.DB.Exec(`DELETE FROM sessions WHERE token=?`, token)
 }
+
+// SetPassword changes an existing user's password hash and signs them out everywhere.
+// It reports whether the user existed.
+func (s *Store) SetPassword(name, hash string) (bool, error) {
+	r, err := s.DB.Exec(`UPDATE users SET hash=? WHERE name=?`, hash, name)
+	if err != nil {
+		return false, err
+	}
+	n, _ := r.RowsAffected()
+	if n > 0 {
+		_, _ = s.DB.Exec(`DELETE FROM sessions WHERE user_id=(SELECT id FROM users WHERE name=?)`, name)
+	}
+	return n > 0, nil
+}

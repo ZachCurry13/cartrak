@@ -1,20 +1,26 @@
 # CarTrak for TrueNAS SCALE: Apps -> Discover Apps -> Custom App -> "Install via YAML".
-# Replace every value marked CHANGE-ME. Do not commit real values.
+# Full guide: docs/truenas.md. Replace every value marked CHANGE-ME. Never commit real values.
+#
+# Two folders are mapped from your pool:
+#   /data   the database and cached Ford data (back this up)
+#   /config settings: put a config.yaml here (see config.example.yaml, which CarTrak writes there on first start)
+# Settings can also be given as environment variables below; environment variables win over config.yaml.
 services:
   cartrak:
     image: ghcr.io/zachcurry13/cartrak:latest
-    pull_policy: missing            # TrueNAS's Update button pulls new releases
+    pull_policy: always              # Stop then Start in TrueNAS pulls the newest release
     restart: unless-stopped
     environment:
-      CARTRAK_PROVIDER: fordconnect          # or "demo" to try the app with fake data
-      CARTRAK_TZ: UTC                        # CHANGE-ME, e.g. your IANA time zone, so work-hour rules use local time
-      FORD_CLIENT_ID: CHANGE-ME
-      FORD_CLIENT_SECRET: CHANGE-ME
-      FORD_APPLICATION_ID: CHANGE-ME
-      FORD_REDIRECT_URL: https://CHANGE-ME.example.com/ford/callback   # must match your Ford app settings
-      # CARTRAK_ADMIN_PASS: CHANGE-ME        # optional; otherwise create the admin on first visit
+      CARTRAK_PROVIDER: fordconnect          # "demo" tries the app with a simulated car
+      CARTRAK_TZ: UTC                        # CHANGE-ME: your IANA time zone, so work-hour rules use local time
+      # Ford credentials: either here, or (recommended) in /config/config.yaml
+      # FORD_CLIENT_ID: CHANGE-ME
+      # FORD_CLIENT_SECRET: CHANGE-ME
+      # FORD_APPLICATION_ID: CHANGE-ME
+      # FORD_REDIRECT_URL: https://CHANGE-ME.example.com/ford/callback
     volumes:
-      - /mnt/POOL/apps/cartrak:/data         # CHANGE-ME: a dataset; holds the database and cache
+      - /mnt/POOL/apps/cartrak/data:/data        # CHANGE-ME
+      - /mnt/POOL/apps/cartrak/config:/config    # CHANGE-ME
     # ports:                                 # optional: direct LAN access (the tunnel does not need it)
     #   - "8080:8080"
     healthcheck:
@@ -25,6 +31,7 @@ services:
 
   cloudflared:
     image: cloudflare/cloudflared:latest
+    pull_policy: always
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
