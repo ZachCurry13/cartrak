@@ -23,8 +23,8 @@ like a password; never commit it.
 Apps -> Discover Apps -> Custom App -> Install via YAML, paste
 `deploy/truenas-compose.yaml` with your values filled in.
 
-The first GitHub package is private by default. In GitHub, open the
-package's settings and set it to **public**, or TrueNAS cannot pull it.
+If the image cannot be pulled, check in GitHub that the
+package visibility is **public** (package settings).
 
 ## 5. First run
 Open your hostname, create the admin account, then More -> Connect Ford.
