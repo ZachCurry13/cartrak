@@ -8,6 +8,7 @@
 - A new **Ford diagnostics** tool on the Admin page tests every Ford endpoint and can copy the answers with location and VIN removed, so problems are easy to report.
 - An optional "Ford sign-in address" setting, in case Ford documents a different one.
 - The older API is still available as the provider `fordconnect1`.
+- The docs now spell out that everyone installing CarTrak registers their own Ford developer app; no Ford credentials are included or shared.
 
 ## 0.4.0
 

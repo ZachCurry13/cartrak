@@ -19,6 +19,9 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 
 > CarTrak is an independent open-source project and is not affiliated with or
 > endorsed by Ford Motor Company.
+>
+> **Bring your own Ford developer app.** CarTrak includes no Ford credentials: each person registers
+> their own app with Ford and enters its client ID and secret in their own install ([details](docs/ford-setup.md#you-need-your-own-ford-developer-app)).
 
 ## Try it without a car
 ```bash

@@ -4,6 +4,21 @@ CarTrak reads your car through Ford's **FordConnect 2.0** API. That needs an app
 registered with Ford. Ford controls this program and has changed who can get
 access over time, so check Ford's developer site for the current steps and terms.
 
+
+## You need your own Ford developer app
+CarTrak does not include, share or proxy any Ford credentials. **Every person who
+installs CarTrak registers their own app on Ford's developer site** and enters
+that app's client ID and secret in their own CarTrak. Nobody uses anyone else's
+credentials, including the author's.
+
+- A Ford developer registration is made for a stated purpose. If you registered
+  as **personal use**, use it only for your own vehicle(s). Read Ford's developer
+  terms before sharing access or running CarTrak for other people.
+- Your redirect URI is specific to your own address (`https://<your hostname>/ford/callback`),
+  so each installation registers its own.
+- Ford decides who may get access to its APIs and can change this at any time.
+  CarTrak cannot grant access.
+
 ## What you need from Ford
 - **Client ID** and **Client secret** for your app
 - A **redirect URI** registered for your app: `https://<your hostname>/ford/callback`
