@@ -13,6 +13,7 @@ const routes = {
   rules: () => import('./pages/rules.js'),
   start: () => import('./pages/start.js'),
   changelog: () => import('./pages/changelog.js'),
+  admin: () => import('./pages/admin.js'),
 };
 
 const view = document.getElementById('view');

@@ -22,6 +22,9 @@ Set `CARTRAK_ADMIN_USER` (your admin name), `CARTRAK_ADMIN_PASS` (a new password
 Close the installed app fully and reopen it. If it persists, clear the site data once.
 
 **Cloudflare error 502.**
-The tunnel's service URL must be `http://cartrak:8080` and both containers must be in the same app.
+The tunnel's service URL must point at CarTrak: `http://localhost:<host port>` when the tunnel app uses Host Network, or `http://<TrueNAS address>:<host port>`. (`http://cartrak:8080` only works with the one-file YAML install, where both containers are in the same app.)
+
+**A setting is greyed out ("locked") in Admin settings.**
+It is set by an environment variable or `config.yaml`, which win over the Admin page. Change it there, or remove it there to edit it in the app.
 
 Still stuck? Open an issue at https://github.com/ZachCurry13/cartrak/issues. Do not include your Ford secret or tokens.

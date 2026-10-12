@@ -59,6 +59,7 @@ func (s *Server) onboarding(w http.ResponseWriter, r *http.Request) {
 		"dismissed":  s.S.GetKV("onboarding_dismissed") == "1",
 		"linked":     st.Linked,
 		"canLink":    s.Link != nil,
+		"configured": s.Cfg == nil || s.Cfg.Configured(),
 		"hasReading": latest != nil,
 		"rules":      len(rules),
 		"users":      s.S.CountUsers(),

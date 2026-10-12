@@ -9,7 +9,7 @@ access over time, so check Ford's developer site for the current steps and terms
 - **Application-Id** (sent with every API call)
 - A **redirect URI** registered for your app: `https://<your hostname>/ford/callback`
 
-Put them in `config.yaml` (or the matching environment variables); see
+Enter them in CarTrak under **More -> Admin settings** (easiest), or put them in `config.yaml` or environment variables; see
 [Configuration](configuration.md). Treat the secret like a password. Do not
 commit it, post it, or paste it into chat.
 

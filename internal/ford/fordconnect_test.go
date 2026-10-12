@@ -70,3 +70,36 @@ func TestParseDictionaryNames(t *testing.T) {
 		t.Fatalf("%+v", s)
 	}
 }
+
+func TestOptionsApplyWithoutRestart(t *testing.T) {
+	var gotApp string
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/fordconnect/vehicles/v1", func(w http.ResponseWriter, r *http.Request) {
+		gotApp = r.Header.Get("Application-Id")
+		w.Write([]byte(`{"vehicles":[{"vehicleId":"v1","vehicleAuthorizationIndicator":1}]}`))
+	})
+	mux.HandleFunc("/api/fordconnect/vehicles/v1/v1", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`{}`)) })
+	mux.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"access_token":"A","refresh_token":"R","expires_in":1200}`))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	o := ConnectOpts{ClientID: "i", ClientSecret: "s", ApplicationID: "first", APIBase: srv.URL, TokenURL: srv.URL + "/token"}
+	c := NewConnectFn(func() ConnectOpts { return o }, memKV{"ford_refresh": "R0"})
+	if _, err := c.Fetch(context.Background()); err != nil || gotApp != "first" {
+		t.Fatalf("first: %v %q", err, gotApp)
+	}
+	o.ApplicationID, o.VehicleID = "second", "v1" // changed in the admin panel
+	if _, err := c.Fetch(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	c2 := NewConnectFn(func() ConnectOpts { return o }, memKV{"ford_refresh": "R0"})
+	c2.vid = ""
+	if _, err := c2.vehicleID(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if got := c.opts().ApplicationID; got != "second" {
+		t.Fatalf("opts not re-read: %q", got)
+	}
+}

@@ -72,6 +72,17 @@ func (s *Server) fordConnect(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "this provider needs no link")
 		return
 	}
+	if s.Cfg != nil {
+		if !s.Cfg.Configured() { // credentials missing: send the admin to enter them
+			http.Redirect(w, r, "/#/admin", http.StatusFound)
+			return
+		}
+		if v, src := s.Cfg.Get("FORD_REDIRECT_URL"); v == "" || src == "default" {
+			// No redirect URL chosen: use the address this browser is on. It is
+			// stored so the code exchange sends exactly the same value.
+			_ = s.S.SetKV("derived_redirect", originOf(r)+"/ford/callback")
+		}
+	}
 	state := randToken()
 	_ = s.S.SetKV("ford_state", state+"|"+strconv.FormatInt(time.Now().Add(15*time.Minute).Unix(), 10))
 	http.Redirect(w, r, s.Link.LinkURL(state), http.StatusFound)

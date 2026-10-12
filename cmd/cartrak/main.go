@@ -15,6 +15,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/server"
+	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
 	"github.com/ZachCurry13/cartrak/internal/updater"
@@ -34,12 +35,15 @@ func main() {
 	}
 	defer st.Close()
 
+	cfgs := settings.New(st, cfg.Lookup)
 	var prov ford.Provider
 	var link server.Linker
 	switch cfg.Provider {
 	case "fordconnect":
-		c := ford.NewConnect(ford.ConnectOpts{ClientID: cfg.FordClientID, ClientSecret: cfg.FordClientSecret,
-			ApplicationID: cfg.FordAppID, RedirectURL: cfg.FordRedirectURL, VehicleID: cfg.FordVIN}, st)
+		c := ford.NewConnectFn(func() ford.ConnectOpts {
+			return ford.ConnectOpts{ClientID: cfgs.Value("FORD_CLIENT_ID"), ClientSecret: cfgs.Value("FORD_CLIENT_SECRET"),
+				ApplicationID: cfgs.Value("FORD_APPLICATION_ID"), RedirectURL: cfgs.Value("FORD_REDIRECT_URL"), VehicleID: cfgs.Value("FORD_VIN")}
+		}, st)
 		prov, link = c, c
 	case "demo":
 		prov = ford.NewDemo()
@@ -47,13 +51,13 @@ func main() {
 		log.Fatalf("provider %q is not available (use fordconnect or demo)", cfg.Provider)
 	}
 
-	det := &trips.Detector{S: st, TZ: cfg.TZ}
+	det := &trips.Detector{S: st, TZ: cfg.TZ, TZFn: cfgs.Location}
 	p := poller.New(prov, st, det, poller.Intervals{Driving: cfg.PollDriving, Charging: cfg.PollCharge, Parked: cfg.PollParked})
 	upd := updater.New(version)
 	if u := os.Getenv("CARTRAK_UPDATE_URL"); u != "" { // testing aid: point at a fake releases endpoint
 		upd.URL = u
 	}
-	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
+	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
 	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

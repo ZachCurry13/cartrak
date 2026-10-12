@@ -4,7 +4,8 @@
 # Two folders are mapped from your pool:
 #   /data   the database and cached Ford data (back this up)
 #   /config settings: put a config.yaml here (see config.example.yaml, which CarTrak writes there on first start)
-# Settings can also be given as environment variables below; environment variables win over config.yaml.
+# Ford credentials and the time zone can also be entered in the app (More -> Admin settings), so you can leave them out here.
+# Settings given as environment variables below or in config.yaml win over the Admin page.
 services:
   cartrak:
     image: ghcr.io/zachcurry13/cartrak:latest

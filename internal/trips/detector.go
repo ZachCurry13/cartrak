@@ -10,8 +10,9 @@ import (
 
 // Detector opens and closes trips and charge sessions from successive readings.
 type Detector struct {
-	S  *store.Store
-	TZ *time.Location
+	S    *store.Store
+	TZ   *time.Location
+	TZFn func() *time.Location // optional: read the zone live (admin panel); wins over TZ
 }
 
 // Driving reports whether a reading looks like the car is in use.
@@ -39,7 +40,7 @@ func (d *Detector) Process(st *ford.State) error {
 func (d *Detector) classify(startTS int64, lat, lon *float64) (string, *int64, string) {
 	rules, err := d.S.ListRules()
 	if err == nil {
-		at := time.Unix(startTS, 0).In(d.TZ)
+		at := time.Unix(startTS, 0).In(d.loc())
 		if cat, id, ok := Classify(rules, at, lat, lon); ok {
 			return cat, &id, "rule"
 		}
@@ -153,4 +154,14 @@ func (d *Detector) Reclassify() error {
 		}
 	}
 	return nil
+}
+
+func (d *Detector) loc() *time.Location {
+	if d.TZFn != nil {
+		return d.TZFn()
+	}
+	if d.TZ != nil {
+		return d.TZ
+	}
+	return time.UTC
 }

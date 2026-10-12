@@ -37,6 +37,8 @@ type Config struct {
 	TrustProxy  bool
 	SessionDays int
 
+	src source
+
 	PollDriving time.Duration
 	PollCharge  time.Duration
 	PollParked  time.Duration
@@ -45,6 +47,17 @@ type Config struct {
 type source struct{ file map[string]any }
 
 // get returns the environment value, else the config.yaml value, else "".
+// lookup returns the value and where it came from: "env", "config.yaml" or "".
+func (s source) lookup(k string) (string, string) {
+	if v := os.Getenv(k); v != "" {
+		return v, "env"
+	}
+	if v, ok := s.file[k]; ok && v != nil && fmt.Sprint(v) != "" {
+		return fmt.Sprint(v), "config.yaml"
+	}
+	return "", ""
+}
+
 func (s source) get(k string) string {
 	if v := os.Getenv(k); v != "" {
 		return v
@@ -106,6 +119,7 @@ func Load() (*Config, error) {
 		ResetAdmin:       src.get("CARTRAK_RESET_ADMIN") == "1",
 		TrustProxy:       src.get("CARTRAK_TRUST_PROXY") != "false",
 		SessionDays:      int(src.secs("CARTRAK_SESSION_DAYS", 30) / time.Second),
+		src:              src,
 		PollDriving:      src.secs("CARTRAK_POLL_DRIVING_SEC", 30),
 		PollCharge:       src.secs("CARTRAK_POLL_CHARGING_SEC", 120),
 		PollParked:       src.secs("CARTRAK_POLL_PARKED_SEC", 600),
@@ -131,3 +145,7 @@ func firstNonEmpty(a, b string) string {
 	}
 	return b
 }
+
+// Lookup returns a process-level setting and its source ("env" or "config.yaml").
+// Empty means it is not set there.
+func (c *Config) Lookup(key string) (string, string) { return c.src.lookup(key) }

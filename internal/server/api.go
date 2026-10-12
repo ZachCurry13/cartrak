@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) status(w http.ResponseWriter, r *http.Request) {
-	ok(w, map[string]any{"poller": s.P.Status(), "canLink": s.Link != nil})
+	ok(w, map[string]any{"poller": s.P.Status(), "canLink": s.Link != nil, "configured": s.Cfg == nil || s.Cfg.Configured()})
 }
 
 func (s *Server) latest(w http.ResponseWriter, r *http.Request) {

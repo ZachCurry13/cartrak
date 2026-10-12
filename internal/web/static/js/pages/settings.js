@@ -22,6 +22,7 @@ export default async function settings(root, _a, session) {
         h('button', { class: 'sec', onclick: async (e) => { await api('/api/poll', { method: 'POST' }); e.target.textContent = 'Requested ✓'; } }, 'Sync now')) : null),
     h('section', { class: 'card' }, h('h2', {}, 'Display'), h('label', { for: 'un' }, 'Units (this device)'), (units.id = 'un', units), h('label', { for: 'th' }, 'Theme (this device)'), (theme.id = 'th', theme)),
     h('section', { class: 'card' }, h('a', { href: '#/rules' }, 'Trip rules (work / personal) →')),
+    admin ? h('section', { class: 'card' }, h('a', { href: '#/admin' }, 'Admin settings (Ford credentials, time zone) →')) : null,
     admin ? await usersCard() : null,
     h('p', { class: 'muted foot' }, 'CarTrak is an independent open-source project and is not affiliated with or endorsed by Ford Motor Company.'),
     h('p', {}, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },

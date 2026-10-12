@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+### ⚙️ Settings in the app
+- A new Admin settings page (More -> Admin settings) for your Ford client ID, secret, Application-Id, redirect URL and time zone. Changes apply right away and the secret is never shown again. Settings in config.yaml or environment variables still work and win, and show as locked.
+- Getting started and the home page send you to Admin settings until the Ford details are filled in.
+
 ### 🔒 Safer sign-in settings
 - New settings for whether to trust proxy headers (on by default behind Cloudflare) and how many days a sign-in lasts.
 
 ### 📚 Docs
-- The GitHub front page now has the full TrueNAS install steps, the YAML, and a table of every setting.
+- The GitHub front page and a new field-by-field guide follow TrueNAS's Install Custom App form, with a table of every setting. The one-file YAML install is still available.
 
 ## 0.2.0
 

@@ -35,22 +35,34 @@ type ConnectOpts struct {
 }
 
 type Connect struct {
-	o     ConnectOpts
-	store TokenStore
-	hc    *http.Client
-	mu    sync.Mutex
-	acc   string
-	exp   time.Time
+	optsFn func() ConnectOpts // read on every call so admin-panel changes apply without a restart
+	vid    string             // vehicle picked automatically from the authorized list
+	store  TokenStore
+	hc     *http.Client
+	mu     sync.Mutex
+	acc    string
+	exp    time.Time
 }
 
+// NewConnect uses fixed options.
 func NewConnect(o ConnectOpts, st TokenStore) *Connect {
+	return NewConnectFn(func() ConnectOpts { return o }, st)
+}
+
+// NewConnectFn re-reads its options (credentials, redirect URL...) on each use.
+func NewConnectFn(fn func() ConnectOpts, st TokenStore) *Connect {
+	return &Connect{optsFn: fn, store: st, hc: &http.Client{Timeout: 30 * time.Second}}
+}
+
+func (c *Connect) opts() ConnectOpts {
+	o := c.optsFn()
 	if o.APIBase == "" {
 		o.APIBase = defaultAPIBase
 	}
 	if o.TokenURL == "" {
 		o.TokenURL = defaultTokenURL
 	}
-	return &Connect{o: o, store: st, hc: &http.Client{Timeout: 30 * time.Second}}
+	return o
 }
 
 func (c *Connect) Name() string { return "fordconnect" }
@@ -59,8 +71,8 @@ func (c *Connect) Ready() bool  { return c.store.GetKV("ford_refresh") != "" }
 // LinkURL is where the owner signs in to FordPass and authorizes the vehicle.
 func (c *Connect) LinkURL(state string) string {
 	q := url.Values{
-		"make": {"F"}, "application_id": {c.o.ApplicationID}, "client_id": {c.o.ClientID},
-		"response_type": {"code"}, "state": {state}, "redirect_uri": {c.o.RedirectURL},
+		"make": {"F"}, "application_id": {c.opts().ApplicationID}, "client_id": {c.opts().ClientID},
+		"response_type": {"code"}, "state": {state}, "redirect_uri": {c.opts().RedirectURL},
 		"scope": {"access"},
 	}
 	return linkBase + "?" + q.Encode()
@@ -68,15 +80,18 @@ func (c *Connect) LinkURL(state string) string {
 
 // Exchange trades the one-time code from the link redirect for tokens.
 func (c *Connect) Exchange(ctx context.Context, code string) error {
+	c.mu.Lock()
+	c.vid = "" // a new link may be a different account or vehicle
+	c.mu.Unlock()
 	return c.token(ctx, url.Values{
-		"grant_type": {"authorization_code"}, "code": {code}, "redirect_uri": {c.o.RedirectURL},
+		"grant_type": {"authorization_code"}, "code": {code}, "redirect_uri": {c.opts().RedirectURL},
 	})
 }
 
 func (c *Connect) token(ctx context.Context, form url.Values) error {
-	form.Set("client_id", c.o.ClientID)
-	form.Set("client_secret", c.o.ClientSecret)
-	req, _ := http.NewRequestWithContext(ctx, "POST", c.o.TokenURL, strings.NewReader(form.Encode()))
+	form.Set("client_id", c.opts().ClientID)
+	form.Set("client_secret", c.opts().ClientSecret)
+	req, _ := http.NewRequestWithContext(ctx, "POST", c.opts().TokenURL, strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := c.hc.Do(req)
 	if err != nil {
@@ -127,9 +142,9 @@ func (c *Connect) get(ctx context.Context, path string) (json.RawMessage, error)
 	if err != nil {
 		return nil, err
 	}
-	req, _ := http.NewRequestWithContext(ctx, "GET", c.o.APIBase+"/api/fordconnect/vehicles/v1"+path, nil)
+	req, _ := http.NewRequestWithContext(ctx, "GET", c.opts().APIBase+"/api/fordconnect/vehicles/v1"+path, nil)
 	req.Header.Set("Authorization", "Bearer "+tok)
-	req.Header.Set("Application-Id", c.o.ApplicationID)
+	req.Header.Set("Application-Id", c.opts().ApplicationID)
 	req.Header.Set("api-version", apiVersion)
 	req.Header.Set("Accept", "application/json")
 	resp, err := c.hc.Do(req)
@@ -151,8 +166,11 @@ func (c *Connect) get(ctx context.Context, path string) (json.RawMessage, error)
 
 // vehicleID returns the configured id, else the first authorized vehicle.
 func (c *Connect) vehicleID(ctx context.Context) (string, error) {
-	if c.o.VehicleID != "" {
-		return c.o.VehicleID, nil
+	if v := c.opts().VehicleID; v != "" {
+		return v, nil
+	}
+	if c.vid != "" {
+		return c.vid, nil
 	}
 	b, err := c.get(ctx, "")
 	if err != nil {
@@ -167,7 +185,7 @@ func (c *Connect) vehicleID(ctx context.Context) (string, error) {
 	if json.Unmarshal(b, &l) == nil {
 		for _, v := range l.Vehicles {
 			if v.Auth == 1 {
-				c.o.VehicleID = v.ID
+				c.vid = v.ID
 				return v.ID, nil
 			}
 		}

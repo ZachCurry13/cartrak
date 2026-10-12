@@ -32,3 +32,13 @@ Restart the app after editing.
 
 Things set inside the app (people, rules, units, theme, update-check) are
 stored in the database in `/data`, not in `config.yaml`.
+
+## The Admin settings page
+More -> Admin settings (admins only) edits these keys and stores them in the
+database: `FORD_CLIENT_ID`, `FORD_CLIENT_SECRET`, `FORD_APPLICATION_ID`,
+`FORD_REDIRECT_URL`, `FORD_VIN` and `CARTRAK_TZ`. Changes apply right away, no restart.
+
+- Precedence is environment variable, then `config.yaml`, then the Admin page. A key set by the first two shows as **locked** on the page: change it where it is set.
+- The Ford secret is write-only: the page never shows it again, and a blank secret field keeps the saved one.
+- If the redirect URL is empty, CarTrak uses the address you are browsing from plus `/ford/callback` when you press Connect Ford.
+- Saved values live in `cartrak.db` in the `data` folder, so protect backups of it.

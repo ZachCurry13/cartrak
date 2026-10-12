@@ -11,6 +11,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Work/personal rules (days, time window, optional "near this place"); a manual choice always wins
 - CSV export and work/personal mileage totals
 - Getting-started guide, the version shown in the app, update notices, and the changelog built in
+- Settings in an **Admin page** in the app, or in `config.yaml`, or environment variables
 - Built-in login with admin and read-only viewer roles
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
 
@@ -26,90 +27,76 @@ simulates parking, driving and charging so you can watch trips appear.
 
 ## Install on TrueNAS SCALE (Custom App)
 
-You need TrueNAS SCALE with Apps enabled, and for remote access a Cloudflare
-account with a domain. Menu names can differ slightly between TrueNAS versions.
-Longer guides: [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md).
+Use **Apps -> Discover Apps -> Custom App** and fill the form. Full field-by-field guide:
+**[docs/truenas.md](docs/truenas.md)**. The short version:
 
-**1. Create two folders** in a dataset (for example `apps/cartrak/data` and `apps/cartrak/config`)
-and give the **apps** user (UID 568) read/write access:
+| Form section | Set |
+|---|---|
+| Application name | `cartrak` |
+| Image Configuration | Repository `ghcr.io/zachcurry13/cartrak`, Tag `latest`, Pull Policy **always pull** |
+| Security Context | Run as user `568`, group `568` (not privileged) |
+| Network Configuration | Port: host port e.g. `30080` -> container port `8080`, TCP |
+| Portal Configuration | Optional **Web UI** button: HTTP, port `30080` |
+| Storage Configuration | Host Path -> `/data` (database, **back it up**) and Host Path -> `/config` (optional `config.yaml`) |
+| Environment Variables | None required |
 
-| Folder in the container | What it holds | Back it up? |
-|---|---|---|
-| `/data` | the database: every reading, trip, charge, rule and user | **Yes** |
-| `/config` | `config.yaml` with your settings and Ford credentials | Yes, keep it private |
+Give the **apps** user (UID 568) read/write access to both folders, install, open the app and:
 
-**2. Install:** Apps -> Discover Apps -> **Custom App** -> **Install via YAML**, name it `cartrak`, paste the
-YAML below, and replace each `CHANGE-ME` (your two folder paths, your time zone, the Cloudflare tunnel token).
-
-```yaml
-services:
-  cartrak:
-    image: ghcr.io/zachcurry13/cartrak:latest
-    pull_policy: always              # Stop then Start in TrueNAS pulls the newest release
-    restart: unless-stopped
-    environment:
-      CARTRAK_PROVIDER: fordconnect          # "demo" tries the app with a simulated car
-      CARTRAK_TZ: UTC                        # CHANGE-ME: your IANA time zone, e.g. America/Chicago
-    volumes:
-      - /mnt/POOL/apps/cartrak/data:/data        # CHANGE-ME
-      - /mnt/POOL/apps/cartrak/config:/config    # CHANGE-ME
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    pull_policy: always
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: CHANGE-ME                # Cloudflare Zero Trust -> Networks -> Tunnels
-    depends_on:
-      - cartrak
-```
-The same file with comments is [deploy/truenas-compose.yaml](deploy/truenas-compose.yaml).
-
-**3. Cloudflare:** create a tunnel, add a public hostname pointing at `http://cartrak:8080`
-([details](docs/cloudflare.md)), and add a Cloudflare Access policy for a second lock.
-
-**4. Settings:** on first start CarTrak writes `config.example.yaml` into the `config` folder.
-Copy it to `config.yaml`, fill in your Ford details ([Ford setup](docs/ford-setup.md): we recommend a
-**separate FordPass account** for CarTrak) and restart the app.
-
-**5. First run:** open your hostname, create the admin account, and follow the **Getting started** page
-(connect Ford, install on your phone, add a work rule, add family).
+1. Create the admin account.
+2. Go to **More -> Admin settings** and enter your Ford client ID, secret, Application-Id,
+   redirect URL and time zone, then **Connect Ford**. ([Ford setup](docs/ford-setup.md): we recommend a
+   **separate FordPass account** for CarTrak.)
+3. Follow the **Getting started** page (install on your phone, add a work rule, add family).
+4. For access away from home add a Cloudflare tunnel as a second Custom App
+   ([guide](docs/cloudflare.md)).
 
 **Updating:** CarTrak shows an "Update available" banner. In TrueNAS open the app, **Stop**, then **Start**:
-it downloads the newest release and keeps your folders. See [Updating](docs/updating.md).
+it pulls the newest release and keeps your folders. See [Updating](docs/updating.md).
+
+<details><summary>Prefer YAML? (CarTrak and the tunnel in one app)</summary>
+
+Apps -> Custom App -> **Install via YAML**, paste
+[deploy/truenas-compose.yaml](deploy/truenas-compose.yaml) and replace each `CHANGE-ME`.
+</details>
 
 ## Configuration
 
-Process-level settings are environment variables or keys in `config.yaml` (same names; the
-environment wins). Everything else (people, trip rules, units, theme, update checks) is edited in the app
-and stored in the database.
+Settings come from three places. Highest wins:
 
-| Variable | Default | Description |
-|---|---|---|
-| `CARTRAK_PROVIDER` | `fordconnect` | `fordconnect` (your car) or `demo` (simulated car) |
-| `CARTRAK_ADDR` | `:8080` | Listen address |
-| `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` |
-| `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` |
-| `CARTRAK_TZ` | `UTC` | IANA time zone used by work-hour rules, e.g. `America/Chicago` |
-| `FORD_CLIENT_ID`, `FORD_CLIENT_SECRET` | (empty) | From Ford's developer portal. Keep the secret private |
-| `FORD_APPLICATION_ID` | (empty) | Sent to Ford as `Application-Id` |
-| `FORD_REDIRECT_URL` | (empty) | Must match the redirect URI registered with Ford, e.g. `https://cartrak.example.com/ford/callback` |
-| `FORD_VIN` | (first authorized) | Choose a vehicle if several are authorized |
-| `CARTRAK_ADMIN_USER` | `admin` | Optional, for automated installs: username for a pre-created first admin |
-| `CARTRAK_ADMIN_PASS` | (empty) | Optional: if set and no users exist, creates that admin at startup. Leave empty to create the admin in the browser |
-| `CARTRAK_RESET_ADMIN` | (empty) | `1` resets `CARTRAK_ADMIN_USER`'s password to `CARTRAK_ADMIN_PASS` on start (recovery). Remove it afterwards |
-| `CARTRAK_TRUST_PROXY` | `true` | Use `CF-Connecting-IP` / `X-Forwarded-For` / `X-Real-IP` for client IPs (login lockout). Set `false` if the app is reachable without a proxy |
-| `CARTRAK_SESSION_DAYS` | `30` | How long a sign-in lasts |
-| `CARTRAK_POLL_DRIVING_SEC` | `30` | Seconds between Ford readings while driving |
-| `CARTRAK_POLL_CHARGING_SEC` | `120` | ...while charging |
-| `CARTRAK_POLL_PARKED_SEC` | `600` | ...while parked. Lower values may breach Ford's rate limits |
+1. **Environment variables**
+2. **`config.yaml`** in the config folder (same names as the variables; CarTrak writes a commented `config.example.yaml` next to it)
+3. **Admin settings** in the app (More -> Admin settings), stored in the database
+
+A value set by 1 or 2 shows as *locked* in the Admin page. Everything else (people, trip rules, units,
+theme, update checks) is edited in the app and stored in the database.
+
+| Variable | Default | Description | In Admin page |
+|---|---|---|---|
+| `CARTRAK_PROVIDER` | `fordconnect` | `fordconnect` (your car) or `demo` (simulated car) | |
+| `CARTRAK_ADDR` | `:8080` | Listen address | |
+| `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
+| `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
+| `CARTRAK_TZ` | `UTC` | IANA time zone used by work-hour rules, e.g. `America/Chicago` | yes |
+| `FORD_CLIENT_ID` | (empty) | From Ford's developer portal | yes |
+| `FORD_CLIENT_SECRET` | (empty) | Keep it private; the Admin page never shows it again | yes |
+| `FORD_APPLICATION_ID` | (empty) | Sent to Ford as `Application-Id` | yes |
+| `FORD_REDIRECT_URL` | address you browse from + `/ford/callback` | Must match the redirect URI registered with Ford | yes |
+| `FORD_VIN` | (first authorized) | Choose a vehicle if several are authorized | yes |
+| `CARTRAK_ADMIN_USER` | `admin` | Optional, for automated installs: username for a pre-created first admin | |
+| `CARTRAK_ADMIN_PASS` | (empty) | Optional: if set and no users exist, creates that admin at startup. Leave empty to create the admin in the browser | |
+| `CARTRAK_RESET_ADMIN` | (empty) | `1` resets `CARTRAK_ADMIN_USER`'s password to `CARTRAK_ADMIN_PASS` on start (recovery). Remove it afterwards | |
+| `CARTRAK_TRUST_PROXY` | `true` | Use `CF-Connecting-IP` / `X-Forwarded-For` / `X-Real-IP` for client IPs (login lockout). Set `false` if the app is reachable without a proxy | |
+| `CARTRAK_SESSION_DAYS` | `30` | How long a sign-in lasts | |
+| `CARTRAK_POLL_DRIVING_SEC` | `30` | Seconds between Ford readings while driving | |
+| `CARTRAK_POLL_CHARGING_SEC` | `120` | ...while charging | |
+| `CARTRAK_POLL_PARKED_SEC` | `600` | ...while parked. Lower values may breach Ford's rate limits | |
 
 More detail in [docs/configuration.md](docs/configuration.md).
 
 ## Security notes
-- Data includes your car's location: keep the Cloudflare Access policy, and never publish port 8080 directly.
+- Data includes your car's location: keep a Cloudflare Access policy, and never publish the app's port directly.
 - Passwords are stored hashed (bcrypt); sign-in attempts are rate limited; cookies are `HttpOnly`, `SameSite` and `Secure` over HTTPS.
-- The Ford secret and refresh token are never sent to the browser or written to logs.
+- The Ford secret and refresh token are never sent to the browser or written to logs. They are stored in the database file in `/data`, so protect and encrypt backups of it.
 - Update checks only read GitHub's public release list; turn them off in More -> About.
 
 ## Documentation

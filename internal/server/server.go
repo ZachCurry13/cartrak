@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/ZachCurry13/cartrak/internal/poller"
+	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
 	"github.com/ZachCurry13/cartrak/internal/updater"
@@ -26,9 +27,10 @@ type Server struct {
 	D           *trips.Detector
 	Link        Linker // nil when the provider needs no account link
 	Version     string
-	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
-	SessionDays int              // "keep me signed in" length; 0 = 30
-	Upd         *updater.Checker // nil disables update checks
+	Cfg         *settings.Settings // admin-panel settings (nil in some tests)
+	TrustProxy  bool               // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
+	SessionDays int                // "keep me signed in" length; 0 = 30
+	Upd         *updater.Checker   // nil disables update checks
 	lim         limiter
 }
 
@@ -42,6 +44,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/logout", s.auth(false, s.logout))
 	m.HandleFunc("GET /api/me", s.auth(false, func(w http.ResponseWriter, r *http.Request) { ok(w, userFrom(r)) }))
 
+	m.HandleFunc("GET /api/admin/settings", s.auth(true, s.getSettings))
+	m.HandleFunc("PUT /api/admin/settings", s.auth(true, s.saveSettings))
 	m.HandleFunc("GET /api/about", s.auth(false, s.about))
 	m.HandleFunc("POST /api/settings/update-check", s.auth(true, s.setUpdateCheck))
 	m.HandleFunc("GET /api/changelog", s.auth(false, s.changelog))
