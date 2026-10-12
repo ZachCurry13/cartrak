@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+### 🔌 FordConnect 2.0
+- CarTrak now uses Ford's current FordConnect 2.0 API: telemetry (the live vehicle data), your garage, health alerts, home charger, departure times and charge schedules. Version 0.4 and earlier used the older API, which is why connecting could fail.
+- You only need your Ford client ID and secret now. No Application-Id.
+- A new **Ford diagnostics** tool on the Admin page tests every Ford endpoint and can copy the answers with location and VIN removed, so problems are easy to report.
+- An optional "Ford sign-in address" setting, in case Ford documents a different one.
+- The older API is still available as the provider `fordconnect1`.
+
 ## 0.4.0
 
 ### 📡 Live and on the road

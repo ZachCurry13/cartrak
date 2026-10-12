@@ -83,3 +83,21 @@ func TestValid(t *testing.T) {
 		t.Fatal("known key missing")
 	}
 }
+
+func TestAuthURLAndConfiguredWithoutApplicationID(t *testing.T) {
+	s := New(memKV{}, proc(nil))
+	s.Set("FORD_CLIENT_ID", "a")
+	s.Set("FORD_CLIENT_SECRET", "b")
+	if !s.Configured() {
+		t.Fatal("client id + secret should be enough for FordConnect 2.0")
+	}
+	if Valid("FORD_AUTH_URL", "http://insecure.example/authorize") == nil || Valid("FORD_AUTH_URL", "not a url") == nil {
+		t.Fatal("non-https auth URL accepted")
+	}
+	if err := Valid("FORD_AUTH_URL", "https://login.example/authorize?p=x"); err != nil {
+		t.Fatal(err)
+	}
+	if err := Valid("FORD_AUTH_URL", ""); err != nil {
+		t.Fatal("empty means built-in address")
+	}
+}

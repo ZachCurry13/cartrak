@@ -29,3 +29,13 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - Config precedence: env > /config/config.yaml > defaults. `config.example.yaml` is rewritten on every start.
 - Password recovery: CARTRAK_RESET_ADMIN=1 with CARTRAK_ADMIN_USER/PASS.
 - Changelog is embedded from CHANGELOG.md (root embed.go); the release workflow uses the `## X.Y.Z` section as notes, so every release needs that heading.
+
+## FordConnect 2.0 (v0.5)
+- The user's Ford app is FordConnect **2.0** (Postman collection `FordConnect-2.0.postman_collection.json`, kept in git-excluded `.secrets/`). Provider `fordconnect` = 2.0, `fordconnect1` = the older v1 API (kept), `demo`.
+- 2.0 facts from the collection: token + refresh at `https://api.vehicle.ford.com/dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_FCON_AUTHORIZE` (form: grant_type, code/refresh_token, redirect_uri, client_id, client_secret, scope=`<client_id> offline_access openid`); data via bearer GET `https://api.vehicle.ford.com/fcon-query/v1/` + `telemetry | garage | vehicle-health/alerts | wallbox | electric/departure-times | electric/charge-schedules | fccs` (fccs needs a `chargingStationId` header + startDate/endDate; not polled yet).
+- UNVERIFIED: the authorize (sign-in) URL (guessed from the token URL pattern; override with FORD_AUTH_URL / Admin settings), and every response shape (the collection has no examples). `ParseState` handles `{name,value}` metric lists via metric aliases, but the real shape must be confirmed.
+- Tool for this: Admin settings -> Ford diagnostics (POST /api/admin/ford-probe) returns each endpoint's status and body with location/VIN values redacted. Ask the user to run it and paste the output, then build dashboard cards (tires, battery temp, etc.) from the real shape.
+- Slow endpoints (garage, alerts, wallbox, schedules) are read every 30 min; failures never block telemetry (`_endpointErrors` in raw).
+
+## Other planned work
+- Phone OBD-II recorder (Android Chrome + BLE adapter) and comma 4 push, via a shared ingest API with device tokens.

@@ -38,8 +38,15 @@ func main() {
 	cfgs := settings.New(st, cfg.Lookup)
 	var prov ford.Provider
 	var link server.Linker
+	var prober server.Prober
 	switch cfg.Provider {
-	case "fordconnect":
+	case "fordconnect": // FordConnect 2.0 (current)
+		c := ford.NewConnect2(func() ford.Connect2Opts {
+			return ford.Connect2Opts{ClientID: cfgs.Value("FORD_CLIENT_ID"), ClientSecret: cfgs.Value("FORD_CLIENT_SECRET"),
+				RedirectURL: cfgs.Value("FORD_REDIRECT_URL"), AuthURL: cfgs.Value("FORD_AUTH_URL")}
+		}, st)
+		prov, link, prober = c, c, c
+	case "fordconnect1": // older FordConnect 1 API, kept for apps registered for it
 		c := ford.NewConnectFn(func() ford.ConnectOpts {
 			return ford.ConnectOpts{ClientID: cfgs.Value("FORD_CLIENT_ID"), ClientSecret: cfgs.Value("FORD_CLIENT_SECRET"),
 				ApplicationID: cfgs.Value("FORD_APPLICATION_ID"), RedirectURL: cfgs.Value("FORD_REDIRECT_URL"), VehicleID: cfgs.Value("FORD_VIN")}
@@ -48,7 +55,7 @@ func main() {
 	case "demo":
 		prov = ford.NewDemo()
 	default:
-		log.Fatalf("provider %q is not available (use fordconnect or demo)", cfg.Provider)
+		log.Fatalf("provider %q is not available (use fordconnect, fordconnect1 or demo)", cfg.Provider)
 	}
 
 	det := &trips.Detector{S: st, TZ: cfg.TZ, TZFn: cfgs.Location}
@@ -57,7 +64,7 @@ func main() {
 	if u := os.Getenv("CARTRAK_UPDATE_URL"); u != "" { // testing aid: point at a fake releases endpoint
 		upd.URL = u
 	}
-	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
+	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
 	p.After = srv.Broadcast
 	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
 

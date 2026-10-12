@@ -2,6 +2,6 @@
 
 - Released v0.1.0 and v0.2.0 (tags v0.1.0, v0.2.0; image :0.2.0 and :latest, linux/amd64+arm64, public).
 - Released v0.3.1 (tag v0.3.1, image :0.3.1 and :latest). v0.3.0 added Admin settings, the form-style TrueNAS guide and trust-proxy/session settings; v0.3.1 fixed the Connect Ford link path (/common/login/).
-- In progress (feature/v0.4, unreleased): Live tab + SSE push, Road trip mode (live polling, 429 backoff), per-device Data use (auto/normal/live/saver), responsive layouts, gzip + ETag.
-- Next: test against the real Ford account (needs Application-Id and redirect URI); comma 4 / StarPilot push data source; FordPass fallback.
+- Unreleased: v0.4.0 (feature/v0.4: Live tab/SSE, Road trip mode, per-device Data use, responsive layouts, gzip/ETag) and v0.5.0 (feature/v0.5, on top of v0.4: FordConnect 2.0 provider + Ford diagnostics).
+- Next: user updates TrueNAS and runs Connect Ford + Ford diagnostics; use the copied redacted responses to build proper dashboard cards for the real telemetry shape.
 - Open: Ford endpoints unverified live; Docker image builds only in CI.

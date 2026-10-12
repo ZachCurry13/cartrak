@@ -23,9 +23,11 @@ type Def struct {
 var Defs = []Def{
 	{Key: "FORD_CLIENT_ID", Label: "Ford client ID", Help: "From your app in Ford's developer portal."},
 	{Key: "FORD_CLIENT_SECRET", Label: "Ford client secret", Secret: true, Help: "Stored on the server only. It is never shown again or sent to the browser."},
-	{Key: "FORD_APPLICATION_ID", Label: "Ford Application-Id", Help: "Also from the developer portal; sent with every Ford request."},
+	{Key: "FORD_APPLICATION_ID", Label: "Ford Application-Id (older FordConnect 1 only)", Help: "Not needed for FordConnect 2.0. Leave empty unless you use the older provider fordconnect1."},
 	{Key: "FORD_REDIRECT_URL", Label: "Ford redirect URL", Placeholder: "https://cartrak.example.com/ford/callback",
 		Help: "Must exactly match the redirect URI registered with Ford. If left empty, CarTrak uses the address you are browsing from plus /ford/callback."},
+	{Key: "FORD_AUTH_URL", Label: "Ford sign-in address (advanced)", Placeholder: "leave empty to use the built-in address",
+		Help: "Only change this if Ford's documentation gives a different sign-in (authorize) address for FordConnect 2.0."},
 	{Key: "FORD_VIN", Label: "Vehicle ID (optional)", Help: "Only needed if several vehicles are authorized. Default: the first one."},
 	{Key: "CARTRAK_TZ", Label: "Time zone", Placeholder: "America/Chicago", Help: "IANA name. Work-hour rules use this time zone."},
 }
@@ -82,9 +84,9 @@ func (s *Settings) Location() *time.Location {
 	return time.UTC
 }
 
-// Configured is true when the Ford credentials needed to link are present.
+// Configured is true when the Ford client ID and secret needed to link are present.
 func (s *Settings) Configured() bool {
-	return s.Value("FORD_CLIENT_ID") != "" && s.Value("FORD_CLIENT_SECRET") != "" && s.Value("FORD_APPLICATION_ID") != ""
+	return s.Value("FORD_CLIENT_ID") != "" && s.Value("FORD_CLIENT_SECRET") != ""
 }
 
 // Valid checks a value before it is saved.
@@ -92,6 +94,11 @@ func Valid(key, val string) error {
 	val = strings.TrimSpace(val)
 	if len(val) > 2000 {
 		return fmt.Errorf("too long")
+	}
+	if v, ok := validators[key]; ok {
+		if err := v(val); err != nil {
+			return err
+		}
 	}
 	switch key {
 	case "CARTRAK_TZ":
@@ -120,3 +127,19 @@ func Known(key string) (Def, bool) {
 	}
 	return Def{}, false
 }
+
+func init() {
+	// FORD_AUTH_URL must be a full https address, like the redirect URL.
+	validators["FORD_AUTH_URL"] = func(val string) error {
+		if val == "" {
+			return nil
+		}
+		u, err := url.Parse(val)
+		if err != nil || u.Host == "" || u.Scheme != "https" {
+			return fmt.Errorf("must be a full https:// address")
+		}
+		return nil
+	}
+}
+
+var validators = map[string]func(string) error{}

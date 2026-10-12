@@ -28,6 +28,7 @@ type Server struct {
 	Link        Linker // nil when the provider needs no account link
 	Version     string
 	Cfg         *settings.Settings // admin-panel settings (nil in some tests)
+	Prober      Prober             // optional: Ford diagnostics
 	hub         hub
 	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
 	SessionDays int              // "keep me signed in" length; 0 = 30
@@ -47,6 +48,7 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /api/admin/settings", s.auth(true, s.getSettings))
 	m.HandleFunc("PUT /api/admin/settings", s.auth(true, s.saveSettings))
+	m.HandleFunc("POST /api/admin/ford-probe", s.auth(true, s.fordProbe))
 	m.HandleFunc("GET /api/about", s.auth(false, s.about))
 	m.HandleFunc("POST /api/settings/update-check", s.auth(true, s.setUpdateCheck))
 	m.HandleFunc("GET /api/changelog", s.auth(false, s.changelog))

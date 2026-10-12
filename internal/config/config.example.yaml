@@ -3,16 +3,16 @@
 # and an environment variable wins over this file. Restart the app after changes.
 # This file contains secrets once filled in: keep it out of git and backups you share.
 
-# fordconnect = your real car, demo = a simulated car for trying the app
+# fordconnect = your car via FordConnect 2.0, fordconnect1 = the older API, demo = a simulated car
 CARTRAK_PROVIDER: fordconnect
 
 # Time zone used by work-hour rules, e.g. America/Chicago (default UTC)
 CARTRAK_TZ: UTC
 
-# From the Ford developer portal (see docs/ford-setup.md)
+# From the Ford developer portal (see docs/ford-setup.md). FordConnect 2.0 needs only the client ID and secret.
 FORD_CLIENT_ID: ""
 FORD_CLIENT_SECRET: ""
-FORD_APPLICATION_ID: ""
+# FORD_APPLICATION_ID: ""   # only for the older provider fordconnect1
 
 # Must match the redirect URI registered with Ford, e.g. https://cartrak.example.com/ford/callback
 FORD_REDIRECT_URL: ""

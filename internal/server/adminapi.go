@@ -1,6 +1,10 @@
 package server
 
 import (
+	"context"
+	"time"
+
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"net/http"
 	"strings"
 
@@ -106,4 +110,28 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 		_ = s.Cfg.Set(k, "")
 	}
 	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": originOf(r) + "/ford/callback"})
+}
+
+// Prober is implemented by providers that can call every endpoint once and
+// return the redacted answers (location and VIN removed) for debugging.
+type Prober interface {
+	Probe(ctx context.Context) map[string]ford.ProbeResult
+}
+
+// fordProbe lets an admin see exactly what Ford returns, safe to copy and share.
+func (s *Server) fordProbe(w http.ResponseWriter, r *http.Request) {
+	if s.Prober == nil {
+		fail(w, 404, "this provider has no diagnostics")
+		return
+	}
+	if !s.P.Status().Linked {
+		fail(w, 409, "link your Ford account first")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
+	defer cancel()
+	ok(w, map[string]any{
+		"results": s.Prober.Probe(ctx),
+		"note":    "Location and VIN values are replaced with <redacted>. Tokens are never included.",
+	})
 }

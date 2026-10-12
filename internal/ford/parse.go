@@ -17,6 +17,7 @@ func Flatten(raw []byte) map[string]any {
 		return out
 	}
 	flat("", v, out)
+	addMetricAliases(out)
 	return out
 }
 

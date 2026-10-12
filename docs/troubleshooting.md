@@ -6,8 +6,9 @@ The `data` and `config` folders must be writable by UID 568 (the `apps` user). F
 **"Not linked" on the dashboard.**
 Open More -> Connect Ford. If Ford shows an error about the redirect, the redirect URI registered with Ford must match `FORD_REDIRECT_URL` exactly, including `https://` and the path `/ford/callback`.
 
-**Ford shows "Not Found" or "login service unavailable" when I press Connect Ford.**
-Update to CarTrak 0.3.1 or newer (0.3.0 sent you to the wrong Ford address). If it still fails, check that the Ford client ID and Application-Id are the ones from your Ford app (they can be different values), and that the redirect URL matches what you registered. Ford's own login page is sometimes unavailable; try again later.
+**Ford shows an error, "Not Found" or "login service unavailable" when I press Connect Ford.**
+Run **More -> Admin settings -> Ford diagnostics** after linking to see which endpoints answer. Before linking, check that the client ID and secret are right and that the redirect URL matches the one registered with Ford exactly. If Ford documents a different sign-in address, put it in "Ford sign-in address (advanced)". 
+CarTrak 0.5 and newer use FordConnect 2.0; earlier versions used the older API and may not work with a FordConnect 2.0 app, so update first. Ford's own login page is also sometimes unavailable; try again later.
 
 **Linking works but no data appears.**
 Check More -> Ford connection for the last error. Ford's API may return fewer fields than its dictionary lists, or the vehicle may not be authorized for your app. The Data page shows what actually arrived.

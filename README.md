@@ -45,7 +45,7 @@ Use **Apps -> Discover Apps -> Custom App** and fill the form. Full field-by-fie
 Give the **apps** user (UID 568) read/write access to both folders, install, open the app and:
 
 1. Create the admin account.
-2. Go to **More -> Admin settings** and enter your Ford client ID, secret, Application-Id,
+2. Go to **More -> Admin settings** and enter your Ford client ID, secret,
    redirect URL and time zone, then **Connect Ford**. ([Ford setup](docs/ford-setup.md): we recommend a
    **separate FordPass account** for CarTrak.)
 3. Follow the **Getting started** page (install on your phone, add a work rule, add family).
@@ -74,16 +74,17 @@ theme, update checks) is edited in the app and stored in the database.
 
 | Variable | Default | Description | In Admin page |
 |---|---|---|---|
-| `CARTRAK_PROVIDER` | `fordconnect` | `fordconnect` (your car) or `demo` (simulated car) | |
+| `CARTRAK_PROVIDER` | `fordconnect` | `fordconnect` (FordConnect 2.0, your car), `fordconnect1` (older API) or `demo` (simulated car) | |
 | `CARTRAK_ADDR` | `:8080` | Listen address | |
 | `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
 | `CARTRAK_TZ` | `UTC` | IANA time zone used by work-hour rules, e.g. `America/Chicago` | yes |
 | `FORD_CLIENT_ID` | (empty) | From Ford's developer portal | yes |
 | `FORD_CLIENT_SECRET` | (empty) | Keep it private; the Admin page never shows it again | yes |
-| `FORD_APPLICATION_ID` | (empty) | Sent to Ford as `Application-Id` | yes |
+| `FORD_APPLICATION_ID` | (empty) | Only for the older `fordconnect1` provider; not needed for FordConnect 2.0 | yes |
+| `FORD_AUTH_URL` | (built-in) | Ford sign-in (authorize) address, only if Ford documents a different one | yes |
 | `FORD_REDIRECT_URL` | address you browse from + `/ford/callback` | Must match the redirect URI registered with Ford | yes |
-| `FORD_VIN` | (first authorized) | Choose a vehicle if several are authorized | yes |
+| `FORD_VIN` | (first authorized) | Choose a vehicle if several are authorized (`fordconnect1` only) | yes |
 | `CARTRAK_ADMIN_USER` | `admin` | Optional, for automated installs: username for a pre-created first admin | |
 | `CARTRAK_ADMIN_PASS` | (empty) | Optional: if set and no users exist, creates that admin at startup. Leave empty to create the admin in the browser | |
 | `CARTRAK_RESET_ADMIN` | (empty) | `1` resets `CARTRAK_ADMIN_USER`'s password to `CARTRAK_ADMIN_PASS` on start (recovery). Remove it afterwards | |

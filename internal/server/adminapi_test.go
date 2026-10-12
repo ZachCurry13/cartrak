@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
@@ -127,4 +128,58 @@ func TestConnectNeedsCredentialsThenDerivesRedirect(t *testing.T) {
 		t.Fatalf("redirect not derived: %q", got)
 	}
 	_ = time.Second
+}
+
+type readyProv struct{ fakeProv }
+
+func (readyProv) Ready() bool { return true }
+
+type fakeProber struct{}
+
+func (fakeProber) Probe(context.Context) map[string]ford.ProbeResult {
+	return map[string]ford.ProbeResult{"telemetry": {Status: 200, Bytes: 10, Body: map[string]any{"ok": true}}}
+}
+
+func TestFordProbeEndpoint(t *testing.T) {
+	// Not linked yet: 409 for admins, 403 for viewers.
+	ts, _ := newCfgServer(t, nil)
+	ts2 := ts
+	c := adminClient(t, ts2.URL)
+	if code, _ := do(t, c, "POST", ts2.URL+"/api/admin/ford-probe", "", xh); code != 404 {
+		t.Fatalf("no prober should be 404, got %d", code)
+	}
+
+	s, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	cfg := settings.New(s, func(string) (string, string) { return "", "" })
+	d := &trips.Detector{S: s, TZFn: cfg.Location}
+	linked := &Server{S: s, D: d, P: poller.New(readyProv{}, s, d, poller.Intervals{}), Cfg: cfg, Prober: fakeProber{}}
+	srv := httptest.NewServer(linked.Handler())
+	t.Cleanup(srv.Close)
+	ac := adminClient(t, srv.URL)
+	code, body := do(t, ac, "POST", srv.URL+"/api/admin/ford-probe", "", xh)
+	if code != 200 || !strings.Contains(body, `"telemetry"`) || !strings.Contains(body, "redacted") {
+		t.Fatalf("probe: %d %s", code, body)
+	}
+	if code, _ := do(t, ac, "POST", srv.URL+"/api/admin/ford-probe", "", nil); code != 403 {
+		t.Fatalf("missing CSRF header should be refused, got %d", code)
+	}
+	do(t, ac, "POST", srv.URL+"/api/users", `{"name":"fam","password":"viewer-password-1","role":"viewer"}`, xh)
+	vj, _ := cookieJar()
+	v := &http.Client{Jar: vj}
+	do(t, v, "POST", srv.URL+"/api/login", `{"name":"fam","password":"viewer-password-1"}`, nil)
+	if code, _ := do(t, v, "POST", srv.URL+"/api/admin/ford-probe", "", xh); code != 403 {
+		t.Fatalf("viewer probe = %d", code)
+	}
+
+	// Prober present but account not linked: 409.
+	unlinked := &Server{S: s, D: d, P: poller.New(fakeProv{}, s, d, poller.Intervals{}), Cfg: cfg, Prober: fakeProber{}}
+	srv3 := httptest.NewServer(unlinked.Handler())
+	t.Cleanup(srv3.Close)
+	if code, _ := do(t, ac, "POST", srv3.URL+"/api/admin/ford-probe", "", xh); code != 409 {
+		t.Fatalf("probe before linking should be 409, got %d", code)
+	}
 }

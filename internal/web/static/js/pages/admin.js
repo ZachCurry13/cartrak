@@ -1,5 +1,6 @@
 import { h, chip } from '../ui.js';
 import { api } from '../api.js';
+import { diagCard } from '../diag.js';
 
 const SOURCE = { env: 'an environment variable', 'config.yaml': 'config.yaml', admin: 'this page', default: 'a default' };
 
@@ -10,7 +11,7 @@ export default async function admin(root, _a, session) {
   const msg = h('p', { class: 'muted', role: 'status' });
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, 'Admin settings'),
     h('p', { class: 'muted' }, 'These are saved in CarTrak\'s database. A value set in an environment variable or config.yaml wins and is shown locked: change it there. The Ford secret is stored on the server and is never shown again.'),
-    box, msg);
+    box, msg, diagCard());
 
   function draw() {
     const inputs = {};
@@ -31,7 +32,7 @@ export default async function admin(root, _a, session) {
         ready() ? h('a', { class: 'btn sec', href: '/ford/connect' }, 'Connect Ford') : null)));
   }
 
-  const ready = () => ['FORD_CLIENT_ID', 'FORD_CLIENT_SECRET', 'FORD_APPLICATION_ID'].every((k) => data.settings.find((s) => s.key === k).isSet);
+  const ready = () => ['FORD_CLIENT_ID', 'FORD_CLIENT_SECRET'].every((k) => data.settings.find((s) => s.key === k).isSet);
 
   async function save(inputs) {
     const values = {};

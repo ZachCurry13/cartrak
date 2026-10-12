@@ -13,12 +13,13 @@ Restart the app after editing.
 
 | Key | Meaning | Default |
 |---|---|---|
-| `CARTRAK_PROVIDER` | `fordconnect` (real car) or `demo` (simulated) | `fordconnect` |
+| `CARTRAK_PROVIDER` | `fordconnect` (FordConnect 2.0, your car), `fordconnect1` (older API) or `demo` (simulated) | `fordconnect` |
 | `CARTRAK_TZ` | IANA time zone for work-hour rules, e.g. `America/Chicago` | `UTC` |
 | `FORD_CLIENT_ID` / `FORD_CLIENT_SECRET` | from Ford's developer portal | none |
-| `FORD_APPLICATION_ID` | sent as `Application-Id` | none |
+| `FORD_APPLICATION_ID` | sent as `Application-Id`; only for the older `fordconnect1` provider | none |
+| `FORD_AUTH_URL` | Ford sign-in (authorize) address, only if Ford documents a different one | built-in |
 | `FORD_REDIRECT_URL` | must match the redirect URI registered with Ford | none |
-| `FORD_VIN` | choose a vehicle if several are authorized | first authorized |
+| `FORD_VIN` | choose a vehicle if several are authorized (`fordconnect1` only) | first authorized |
 | `CARTRAK_ADMIN_USER` / `CARTRAK_ADMIN_PASS` | create the admin at startup (otherwise use first-run setup) | none |
 | `CARTRAK_RESET_ADMIN` | `1` resets the password of `CARTRAK_ADMIN_USER` to `CARTRAK_ADMIN_PASS` on start (recovery) | off |
 | `CARTRAK_TRUST_PROXY` | believe proxy headers (`CF-Connecting-IP`, `X-Forwarded-For`, `X-Real-IP`) for client IPs | `true` |
