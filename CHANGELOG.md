@@ -7,6 +7,7 @@
 
 ### 📚 Docs
 - The GitHub front page now has the full TrueNAS install steps, the YAML, and a table of every setting.
+
 ## 0.2.0
 
 ### 👋 Easier to start
