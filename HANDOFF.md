@@ -13,9 +13,9 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - comma 4 + StarPilot: planned as a separate data source; the device pushes drive summaries/GPS to CarTrak over the tunnel with a token (most private; Ford never involved). Ideas: openpilot engagement % per trip, disengagements, efficiency openpilot vs manual, device health.
 
 ## Next immediate steps
-1. Release v0.2.0 only on the user OK (flow in CLAUDE.md), then confirm the image updates on TrueNAS via Stop/Start.
+1. User updates TrueNAS (Stop/Start) and confirms the app shows v0.2.0; then Ford live test (needs Application-Id + redirect URI).
 2. Verify against real Ford: token URL, link URL, api-version, field names (see internal/ford/fordconnect.go, parse.go).
-3. Build the comma push endpoint + device script; add FordPass fallback if wanted.
+2. Build the comma push endpoint + device script; add FordPass fallback if wanted.
 
 ## Known gaps
 - Ford endpoints unverified live. Docker image untested locally (no Docker); CI builds it.
