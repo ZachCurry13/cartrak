@@ -5,6 +5,7 @@ package ford
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -38,3 +39,11 @@ type Provider interface {
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// RateLimitError means Ford answered "too many requests" (HTTP 429).
+// After is how long Ford asked us to wait (zero if it did not say).
+type RateLimitError struct{ After time.Duration }
+
+func (e *RateLimitError) Error() string {
+	return fmt.Sprintf("ford rate limit (retry after %s)", e.After)
+}

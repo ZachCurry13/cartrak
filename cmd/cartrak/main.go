@@ -52,12 +52,13 @@ func main() {
 	}
 
 	det := &trips.Detector{S: st, TZ: cfg.TZ, TZFn: cfgs.Location}
-	p := poller.New(prov, st, det, poller.Intervals{Driving: cfg.PollDriving, Charging: cfg.PollCharge, Parked: cfg.PollParked})
+	p := poller.New(prov, st, det, poller.Intervals{Driving: cfg.PollDriving, Charging: cfg.PollCharge, Parked: cfg.PollParked, Live: cfg.PollLive})
 	upd := updater.New(version)
 	if u := os.Getenv("CARTRAK_UPDATE_URL"); u != "" { // testing aid: point at a fake releases endpoint
 		upd.URL = u
 	}
 	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
+	p.After = srv.Broadcast
 	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

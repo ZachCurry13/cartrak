@@ -27,6 +27,12 @@ Close the installed app fully and reopen it. If it persists, clear the site data
 **Cloudflare error 502.**
 The tunnel's service URL must point at CarTrak: `http://localhost:<host port>` when the tunnel app uses Host Network, or `http://<TrueNAS address>:<host port>`. (`http://cartrak:8080` only works with the one-file YAML install, where both containers are in the same app.)
 
+**The Live page says "Reconnecting…".**
+The live feed is a long-lived connection. It works through a Cloudflare tunnel; if it keeps dropping, check that nothing in front of CarTrak buffers or times out streaming responses, and that the phone has signal. CarTrak sends a heartbeat every 25 seconds and the page reconnects by itself.
+
+**Live view shows "Ford asked CarTrak to slow down".**
+Ford limited how often the app may ask. CarTrak waits as long as Ford requests. Turn off Road trip mode or raise `CARTRAK_POLL_LIVE_SEC`.
+
 **A setting is greyed out ("locked") in Admin settings.**
 It is set by an environment variable or `config.yaml`, which win over the Admin page. Change it there, or remove it there to edit it in the app.
 

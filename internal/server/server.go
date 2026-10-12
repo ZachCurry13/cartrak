@@ -28,9 +28,10 @@ type Server struct {
 	Link        Linker // nil when the provider needs no account link
 	Version     string
 	Cfg         *settings.Settings // admin-panel settings (nil in some tests)
-	TrustProxy  bool               // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
-	SessionDays int                // "keep me signed in" length; 0 = 30
-	Upd         *updater.Checker   // nil disables update checks
+	hub         hub
+	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
+	SessionDays int              // "keep me signed in" length; 0 = 30
+	Upd         *updater.Checker // nil disables update checks
 	lim         limiter
 }
 
@@ -54,6 +55,8 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /api/status", s.auth(false, s.status))
 	m.HandleFunc("GET /api/latest", s.auth(false, s.latest))
+	m.HandleFunc("GET /api/live", s.auth(false, s.liveStream))
+	m.HandleFunc("POST /api/live-mode", s.auth(true, s.setLiveMode))
 	m.HandleFunc("GET /api/trips", s.auth(false, s.listTrips))
 	m.HandleFunc("GET /api/trips/{id}", s.auth(false, s.tripDetail))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
@@ -77,7 +80,7 @@ func (s *Server) Handler() http.Handler {
 
 	static, _ := fs.Sub(web.Files, "static")
 	m.Handle("/", noCacheHTML(http.FileServer(http.FS(static))))
-	return secHeaders(m)
+	return secHeaders(gzipHandler(m))
 }
 
 func secHeaders(next http.Handler) http.Handler {

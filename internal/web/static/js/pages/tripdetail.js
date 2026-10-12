@@ -1,5 +1,6 @@
 import { h, stat, catChip, dist, speed, when, duration, pct, num } from '../ui.js';
 import { api } from '../api.js';
+import { isSaver } from '../mode.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -30,7 +31,19 @@ function route(samples) {
 }
 
 export default async function tripDetail(root, [id], session) {
-  const { trip: t, samples } = await api(`/api/trips/${encodeURIComponent(id)}`);
+  const saver = isSaver();
+  const { trip: t, samples } = await api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`);
+  const routeBox = h('section', { class: 'card' }, h('h2', {}, 'Route'));
+  if (saver) {
+    routeBox.append(h('p', { class: 'muted' }, 'Data saver is on, so the route is not downloaded automatically.'),
+      h('button', { class: 'sec', onclick: async (e) => {
+        e.target.disabled = true;
+        const full = await api(`/api/trips/${encodeURIComponent(id)}`);
+        routeBox.replaceChildren(h('h2', {}, 'Route'), route(full.samples));
+      } }, 'Load route'));
+  } else {
+    routeBox.append(route(samples));
+  }
   const notes = h('input', { value: t.notes || '', placeholder: 'Notes (client, purpose…)', maxlength: 200 });
   const msg = h('p', { class: 'muted', role: 'status' });
   const admin = session.me.role === 'admin';
@@ -43,7 +56,7 @@ export default async function tripDetail(root, [id], session) {
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc))),
       kwh),
-    h('section', { class: 'card' }, h('h2', {}, 'Route'), route(samples)),
+    routeBox,
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),
       h('p', { class: 'seg' }, h('button', { onclick: set('work') }, 'Work'), h('button', { onclick: set('personal') }, 'Personal')),

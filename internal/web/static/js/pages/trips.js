@@ -5,7 +5,7 @@ const RANGES = { week: 7, month: 30, year: 365, all: 0 };
 
 export default async function trips(root) {
   let cat = '', range = 'month';
-  const list = h('div'), sum = h('div', { class: 'card' });
+  const list = h('div', { class: 'cols' }), sum = h('div', { class: 'card' });
   const segCat = h('div', { class: 'seg' }), segRange = h('div', { class: 'seg' });
   const q = () => {
     const p = new URLSearchParams();

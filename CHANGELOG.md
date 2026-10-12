@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0
+
+### 📡 Live and on the road
+- A new **Live** tab: a full-screen dashboard of big tiles (charge, range, speed, charging power, this trip) that updates the moment a new reading arrives. It keeps the screen awake and has a Full screen button.
+- **Road trip mode** asks Ford for readings more often while you drive, and turns itself off after 12 hours. If Ford asks CarTrak to slow down, it waits as long as Ford says and tells you.
+
+### 📱 Phone, tablet and desktop
+- Wider screens get a multi-column home page, multi-column lists, and a sidebar. Phones keep the single column.
+- A per-device **Data use** setting (More): Auto, Normal, Live or **Data saver**. Data saver shows the essentials, refreshes every 5 minutes, and downloads the trip route and the full field list only when you tap. It only affects the device you set it on.
+- Pages are compressed and refreshes with nothing new cost almost nothing.
+
+### 📚 Docs
+- A new guide for the live view, road trip mode and data saver.
+
 ## 0.3.1
 
 ### 🐛 Fixes

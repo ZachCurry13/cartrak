@@ -42,6 +42,7 @@ type Config struct {
 	PollDriving time.Duration
 	PollCharge  time.Duration
 	PollParked  time.Duration
+	PollLive    time.Duration // road-trip (live) mode, while driving
 }
 
 type source struct{ file map[string]any }
@@ -123,6 +124,7 @@ func Load() (*Config, error) {
 		PollDriving:      src.secs("CARTRAK_POLL_DRIVING_SEC", 30),
 		PollCharge:       src.secs("CARTRAK_POLL_CHARGING_SEC", 120),
 		PollParked:       src.secs("CARTRAK_POLL_PARKED_SEC", 600),
+		PollLive:         src.secs("CARTRAK_POLL_LIVE_SEC", 10),
 	}
 	// Optional JSON credentials file: {"clientId":"...","secret":"..."}
 	if f := src.get("CARTRAK_FORD_CREDS_FILE"); f != "" && c.FordClientID == "" {

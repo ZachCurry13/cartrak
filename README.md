@@ -10,6 +10,8 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Trips and charging sessions are detected automatically; routes are drawn without any map service
 - Work/personal rules (days, time window, optional "near this place"); a manual choice always wins
 - CSV export and work/personal mileage totals
+- A full-screen **Live view** and **Road trip mode** for fast updates while driving, with pushed updates instead of polling
+- A per-device **Data saver** mode for limited plans, and layouts for phone, tablet and desktop
 - Getting-started guide, the version shown in the app, update notices, and the changelog built in
 - Settings in an **Admin page** in the app, or in `config.yaml`, or environment variables
 - Built-in login with admin and read-only viewer roles
@@ -89,6 +91,7 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_SESSION_DAYS` | `30` | How long a sign-in lasts | |
 | `CARTRAK_POLL_DRIVING_SEC` | `30` | Seconds between Ford readings while driving | |
 | `CARTRAK_POLL_CHARGING_SEC` | `120` | ...while charging | |
+| `CARTRAK_POLL_LIVE_SEC` | `10` | ...while driving in Road trip mode (minimum 5). See [live view](docs/live-and-data-saver.md) | | |
 | `CARTRAK_POLL_PARKED_SEC` | `600` | ...while parked. Lower values may breach Ford's rate limits | |
 
 More detail in [docs/configuration.md](docs/configuration.md).
@@ -101,7 +104,7 @@ More detail in [docs/configuration.md](docs/configuration.md).
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

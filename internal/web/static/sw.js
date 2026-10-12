@@ -1,8 +1,8 @@
 // Bump CACHE whenever any file in SHELL changes.
-const CACHE = 'cartrak-v0.3.0-1';
-const SHELL = ['/', '/css/app.css', '/css/theme.css', '/manifest.webmanifest', '/icons/icon.svg',
+const CACHE = 'cartrak-v0.4.0-3';
+const SHELL = ['/', '/css/app.css', '/css/theme.css', '/css/responsive.css', '/manifest.webmanifest', '/icons/icon.svg',
   '/js/app.js', '/js/api.js', '/js/ui.js',
-  '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js',
+  '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/live.js', '/js/mode.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js',
   '/js/pages/charging.js', '/js/pages/data.js', '/js/pages/settings.js', '/js/pages/rules.js'];
 
 self.addEventListener('install', (e) => {

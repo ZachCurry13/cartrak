@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -158,10 +159,21 @@ func (c *Connect) get(ctx context.Context, path string) (json.RawMessage, error)
 		c.acc = "" // force a refresh on the next call
 		c.mu.Unlock()
 	}
+	if resp.StatusCode == 429 {
+		return nil, &RateLimitError{After: retryAfter(resp.Header.Get("Retry-After"))}
+	}
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("ford %s: HTTP %d", path, resp.StatusCode)
 	}
 	return b, nil
+}
+
+// retryAfter reads a Retry-After header given in seconds (the usual form).
+func retryAfter(v string) time.Duration {
+	if n, err := strconv.Atoi(strings.TrimSpace(v)); err == nil && n > 0 && n < 3600 {
+		return time.Duration(n) * time.Second
+	}
+	return 0
 }
 
 // vehicleID returns the configured id, else the first authorized vehicle.

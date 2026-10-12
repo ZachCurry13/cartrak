@@ -2,6 +2,7 @@ import { h, ago, applyTheme } from './ui.js';
 applyTheme();
 import { api, AuthError } from './api.js';
 import { loginPage } from './pages/login.js';
+import { startRefresh, effective } from './mode.js';
 
 const routes = {
   '': () => import('./pages/dashboard.js'),
@@ -14,12 +15,13 @@ const routes = {
   start: () => import('./pages/start.js'),
   changelog: () => import('./pages/changelog.js'),
   admin: () => import('./pages/admin.js'),
+  live: () => import('./pages/live.js'),
 };
 
 const view = document.getElementById('view');
 const tabs = document.getElementById('tabs');
 export const session = { me: null, about: null, installPrompt: null };
-let stopTimer = null;
+let stopRefresh = null;
 
 // Chrome/Android offers a one-tap install; keep the event for the Getting started page.
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); session.installPrompt = e; });
@@ -50,9 +52,9 @@ async function firstRunTour() {
 }
 
 async function render() {
-  clearInterval(stopTimer);
+  if (stopRefresh) { stopRefresh(); stopRefresh = null; }
   const [name, ...args] = (location.hash.replace(/^#\/?/, '') || '').split('/');
-  const tab = ['', 'trips', 'charging', 'data'].includes(name) ? name : name === 'trip' ? 'trips' : 'settings';
+  const tab = ['', 'trips', 'live', 'charging', 'data'].includes(name) ? name : name === 'trip' ? 'trips' : 'settings';
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   try {
     if (!session.me) {
@@ -64,7 +66,8 @@ async function render() {
     const mod = await (routes[name] || routes[''])();
     view.replaceChildren();
     const refresh = await mod.default(view, args, session);
-    if (typeof refresh === 'function') stopTimer = setInterval(refresh, 30000);
+    if (typeof refresh === 'function') stopRefresh = startRefresh(refresh); // schedule depends on this device's data mode
+    else if (refresh && refresh.cleanup) stopRefresh = refresh.cleanup;
   } catch (e) {
     if (e instanceof AuthError) return showLogin();
     view.replaceChildren(h('div', { class: 'banner' }, `Something went wrong: ${e.message}`));
@@ -87,7 +90,7 @@ async function syncLabel() {
 }
 
 addEventListener('hashchange', render);
-setInterval(syncLabel, 30000);
+setInterval(() => { if (!document.hidden) syncLabel(); }, effective() === 'saver' ? 300000 : 30000);
 render().then(syncLabel);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

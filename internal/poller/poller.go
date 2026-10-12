@@ -4,6 +4,7 @@ package poller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -13,27 +14,41 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/trips"
 )
 
-type Intervals struct{ Driving, Charging, Parked time.Duration }
+// Intervals are the waits between readings. Live applies only while driving
+// and only while road-trip (live) mode is on.
+type Intervals struct{ Driving, Charging, Parked, Live time.Duration }
+
+const (
+	minLive        = 5 * time.Second
+	minRateLimited = 30 * time.Second
+	liveMaxHours   = 12 // live mode switches itself off so it is never left on by accident
+)
 
 // Status is what the UI shows about the connection to Ford.
 type Status struct {
-	Provider  string `json:"provider"`
-	Linked    bool   `json:"linked"`
-	LastOK    int64  `json:"lastOk"`
-	LastError string `json:"lastError"`
-	LastTry   int64  `json:"lastTry"`
-	NextTry   int64  `json:"nextTry"`
+	Provider    string `json:"provider"`
+	Linked      bool   `json:"linked"`
+	LastOK      int64  `json:"lastOk"`
+	LastError   string `json:"lastError"`
+	LastTry     int64  `json:"lastTry"`
+	NextTry     int64  `json:"nextTry"`
+	Live        bool   `json:"live"`
+	LiveUntil   int64  `json:"liveUntil"`
+	RateLimited bool   `json:"rateLimited"`
 }
 
 type Poller struct {
-	P    ford.Provider
-	S    *store.Store
-	D    *trips.Detector
-	Iv   Intervals
-	kick chan struct{}
+	P  ford.Provider
+	S  *store.Store
+	D  *trips.Detector
+	Iv Intervals
+	// After runs after every reading that was saved (used to push live updates).
+	After func()
+	kick  chan struct{}
 
-	mu sync.Mutex
-	st Status
+	mu        sync.Mutex
+	st        Status
+	liveUntil time.Time
 }
 
 func New(p ford.Provider, s *store.Store, d *trips.Detector, iv Intervals) *Poller {
@@ -45,7 +60,22 @@ func (p *Poller) Status() Status {
 	defer p.mu.Unlock()
 	s := p.st
 	s.Linked = p.P.Ready()
+	if time.Now().Before(p.liveUntil) {
+		s.Live, s.LiveUntil = true, p.liveUntil.Unix()
+	}
 	return s
+}
+
+// SetLive turns road-trip mode on (for up to 12 hours) or off, and polls now.
+func (p *Poller) SetLive(on bool) {
+	p.mu.Lock()
+	if on {
+		p.liveUntil = time.Now().Add(liveMaxHours * time.Hour)
+	} else {
+		p.liveUntil = time.Time{}
+	}
+	p.mu.Unlock()
+	p.Now()
 }
 
 // Now asks for an immediate poll (e.g. right after linking the account).
@@ -82,8 +112,21 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 		if errors.Is(err, ford.ErrNotLinked) {
 			return 15 * time.Second
 		}
+		var rl *ford.RateLimitError
+		if errors.As(err, &rl) { // Ford asked us to slow down: obey it
+			w := rl.After
+			if w < minRateLimited {
+				w = minRateLimited
+			}
+			log.Printf("ford rate limit: waiting %s", w)
+			p.set(func(s *Status) {
+				s.RateLimited = true
+				s.LastError = fmt.Sprintf("Ford asked CarTrak to slow down; trying again in %d s", int(w.Seconds()))
+			})
+			return w
+		}
 		log.Printf("poll failed: %v", err)
-		p.set(func(s *Status) { s.LastError = err.Error() })
+		p.set(func(s *Status) { s.LastError, s.RateLimited = err.Error(), false })
 		return backoff(prev, p.Iv.Parked)
 	}
 	if _, err := p.S.SaveState(p.P.Name(), st); err != nil {
@@ -92,18 +135,31 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 	if err := p.D.Process(st); err != nil {
 		log.Printf("trip detect failed: %v", err)
 	}
-	p.set(func(s *Status) { s.LastOK, s.LastError = now.Unix(), "" })
-	return p.Iv.pick(st)
+	p.set(func(s *Status) { s.LastOK, s.LastError, s.RateLimited = now.Unix(), "", false })
+	if p.After != nil {
+		p.After()
+	}
+	return p.interval(st)
 }
 
-func (iv Intervals) pick(st *ford.State) time.Duration {
+// interval picks the next wait: fastest while driving in live mode.
+func (p *Poller) interval(st *ford.State) time.Duration {
 	switch {
 	case trips.Driving(st):
-		return iv.Driving
+		p.mu.Lock()
+		live := time.Now().Before(p.liveUntil)
+		p.mu.Unlock()
+		if live && p.Iv.Live > 0 {
+			if p.Iv.Live < minLive {
+				return minLive
+			}
+			return p.Iv.Live
+		}
+		return p.Iv.Driving
 	case st.ChargeKw != nil && *st.ChargeKw > 0.2:
-		return iv.Charging
+		return p.Iv.Charging
 	}
-	return iv.Parked
+	return p.Iv.Parked
 }
 
 // backoff doubles the wait after each failure, capped at 30 minutes.

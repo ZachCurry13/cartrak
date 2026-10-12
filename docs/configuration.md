@@ -25,6 +25,7 @@ Restart the app after editing.
 | `CARTRAK_SESSION_DAYS` | how long a sign-in lasts | `30` |
 | `CARTRAK_POLL_DRIVING_SEC` | seconds between readings while driving | `30` |
 | `CARTRAK_POLL_CHARGING_SEC` | while charging | `120` |
+| `CARTRAK_POLL_LIVE_SEC` | while driving in Road trip mode (minimum 5) | `10` |
 | `CARTRAK_POLL_PARKED_SEC` | while parked | `600` |
 | `CARTRAK_ADDR` | listen address | `:8080` |
 | `CARTRAK_DATA` | data folder | `./data` (`/data` in Docker) |

@@ -2,6 +2,7 @@ package ford
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -121,5 +122,22 @@ func TestLinkURL(t *testing.T) {
 		if q.Get(k) != v {
 			t.Errorf("%s = %q, want %q", k, q.Get(k), v)
 		}
+	}
+}
+
+func TestRateLimitResponse(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/fordconnect/vehicles/v1", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Retry-After", "75")
+		w.WriteHeader(429)
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	c := NewConnect(ConnectOpts{ClientID: "i", ClientSecret: "s", ApplicationID: "a", APIBase: srv.URL, TokenURL: srv.URL + "/t"}, memKV{"ford_refresh": "R"})
+	c.acc, c.exp = "A", time.Now().Add(time.Hour) // skip the token step
+	_, err := c.Fetch(context.Background())
+	var rl *RateLimitError
+	if !errors.As(err, &rl) || rl.After != 75*time.Second {
+		t.Fatalf("want RateLimitError(75s), got %v", err)
 	}
 }

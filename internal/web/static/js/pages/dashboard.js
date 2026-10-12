@@ -1,6 +1,7 @@
 import { h, stat, chip, dist, speed, temp, pressure, pct, num, ago, duration } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
+import { isSaver, effective } from '../mode.js';
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -23,13 +24,20 @@ function kv(rows) {
 }
 
 export default async function dashboard(root, _args, session) {
-  const box = h('div');
+  const box = h('div', { class: 'dash' });
   root.append(box);
+  let cache = null; // status, last trip, checklist: refetched every time only in Normal mode
+  let full = !isSaver(); // Data saver starts with the small summary until asked for more
   async function load() {
-    const [latest, status, trips] = await Promise.all([api('/api/latest'), api('/api/status'), api('/api/trips?limit=1')]);
+    const latest = await api(`/api/latest${full ? '' : '?summary=1'}`);
+    if (!cache || effective() === 'normal') {
+      const [status, trips, ob] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
+        session.me.role === 'admin' ? api('/api/onboarding') : null]);
+      cache = { status, trips, ob };
+    }
+    const { status, trips, ob } = cache;
     const out = [...notices(session)];
-    if (session.me.role === 'admin') {
-      const ob = await api('/api/onboarding');
+    if (ob) {
       if (!ob.dismissed) out.push(h('a', { class: 'card', href: '#/start', style: 'display:block;text-decoration:none' }, h('b', {}, 'Getting started'), h('div', { class: 'muted' }, 'Finish setting up CarTrak: connect Ford, install on your phone, add trip rules →')));
     }
     if (!status.poller.linked) {
@@ -70,7 +78,7 @@ export default async function dashboard(root, _args, session) {
         h('p', { class: 'muted' }, `Heading ${pick(x, 'HEADING', 'direction', 'COMPASS_DIRECTION') ?? '—'} · seen ${ago(latest.ts)}`)));
     }
 
-    const tires = latest.tires.some((t) => t != null) ? latest.tires : ['FL', 'FR', 'RL', 'RR'].map((k) => pick(x, `TIRE_PRESSURE_${k}`));
+    const tires = (latest.tires || []).some((t) => t != null) ? latest.tires :['FL', 'FR', 'RL', 'RR'].map((k) => pick(x, `TIRE_PRESSURE_${k}`));
     if (tires.some((t) => t != null) || pick(x, 'tirePressureWarning') != null) {
       out.push(card('Tires', h('div', { class: 'grid' }, ['Front L', 'Front R', 'Rear L', 'Rear R'].map((l, i) => stat(l, pressure(tires[i])))),
         pick(x, 'tirePressureWarning') ? h('p', { class: 'chip bad' }, 'Low pressure warning') : null));
@@ -79,6 +87,10 @@ export default async function dashboard(root, _args, session) {
     const t = trips[0];
     if (t) out.push(card(t.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${t.id}` }, `${dist(t.distanceKm)} · ${t.category}`),
       h('p', { class: 'muted' }, `${new Date(t.startTs * 1000).toLocaleString()} · ${duration(t.startTs, t.endTs)}`)));
+    if (!full) {
+      out.push(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Data saver is on: showing the essentials. Tires, battery details and other fields are skipped.'),
+        h('button', { class: 'sec', onclick: () => { full = true; load(); } }, 'Load full details once')));
+    }
     box.replaceChildren(...out);
   }
   await load();

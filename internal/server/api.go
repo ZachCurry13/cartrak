@@ -20,7 +20,25 @@ func (s *Server) latest(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, x) // null before the first reading
+	if x == nil {
+		ok(w, nil) // null before the first reading
+		return
+	}
+	// ?summary=1 is the small data-saver version. The ETag lets clients get a tiny
+	// "304 unchanged" instead of the whole reading when nothing is new.
+	sum := r.URL.Query().Get("summary") == "1"
+	etag := fmt.Sprintf(`W/"%d-%t"`, x.TS, sum)
+	w.Header().Set("ETag", etag)
+	w.Header().Set("Cache-Control", "no-cache")
+	if r.Header.Get("If-None-Match") == etag {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	if sum {
+		ok(w, summarize(x))
+		return
+	}
+	ok(w, x)
 }
 
 func tripFilter(r *http.Request) store.TripFilter {
@@ -54,6 +72,10 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 	end := time.Now().Unix()
 	if t.EndTS != nil {
 		end = *t.EndTS
+	}
+	if r.URL.Query().Get("samples") == "0" { // data saver: skip the (large) list of route points
+		ok(w, map[string]any{"trip": t, "samples": []any{}, "samplesSkipped": true})
+		return
 	}
 	ss, _ := s.S.SamplesBetween(t.StartTS, end)
 	ok(w, map[string]any{"trip": t, "samples": ss})
