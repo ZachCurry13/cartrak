@@ -1,0 +1,33 @@
+# CarTrak for TrueNAS SCALE: Apps -> Discover Apps -> Custom App -> "Install via YAML".
+# Replace every value marked CHANGE-ME. Do not commit real values.
+services:
+  cartrak:
+    image: ghcr.io/zachcurry13/cartrak:latest
+    pull_policy: missing            # TrueNAS's Update button pulls new releases
+    restart: unless-stopped
+    environment:
+      CARTRAK_PROVIDER: fordconnect          # or "demo" to try the app with fake data
+      CARTRAK_TZ: UTC                        # CHANGE-ME, e.g. your IANA time zone, so work-hour rules use local time
+      FORD_CLIENT_ID: CHANGE-ME
+      FORD_CLIENT_SECRET: CHANGE-ME
+      FORD_APPLICATION_ID: CHANGE-ME
+      FORD_REDIRECT_URL: https://CHANGE-ME.example.com/ford/callback   # must match your Ford app settings
+      # CARTRAK_ADMIN_PASS: CHANGE-ME        # optional; otherwise create the admin on first visit
+    volumes:
+      - /mnt/POOL/apps/cartrak:/data         # CHANGE-ME: a dataset; holds the database and cache
+    # ports:                                 # optional: direct LAN access (the tunnel does not need it)
+    #   - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: CHANGE-ME                # from Cloudflare Zero Trust -> Networks -> Tunnels
+    depends_on:
+      - cartrak

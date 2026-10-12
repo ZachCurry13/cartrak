@@ -1,0 +1,69 @@
+// Command cartrak is a self-hosted trip and data tracker for a Ford EV.
+package main
+
+import (
+	"context"
+	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/ZachCurry13/cartrak/internal/config"
+	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/poller"
+	"github.com/ZachCurry13/cartrak/internal/server"
+	"github.com/ZachCurry13/cartrak/internal/store"
+	"github.com/ZachCurry13/cartrak/internal/trips"
+)
+
+// version is set at build time (-ldflags -X main.version=...).
+var version = "dev"
+
+func main() {
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("config: %v", err)
+	}
+	st, err := store.Open(cfg.DataDir)
+	if err != nil {
+		log.Fatalf("database: %v", err)
+	}
+	defer st.Close()
+
+	var prov ford.Provider
+	var link server.Linker
+	switch cfg.Provider {
+	case "fordconnect":
+		c := ford.NewConnect(ford.ConnectOpts{ClientID: cfg.FordClientID, ClientSecret: cfg.FordClientSecret,
+			ApplicationID: cfg.FordAppID, RedirectURL: cfg.FordRedirectURL, VehicleID: cfg.FordVIN}, st)
+		prov, link = c, c
+	case "demo":
+		prov = ford.NewDemo()
+	default:
+		log.Fatalf("provider %q is not available (use fordconnect or demo)", cfg.Provider)
+	}
+
+	det := &trips.Detector{S: st, TZ: cfg.TZ}
+	p := poller.New(prov, st, det, poller.Intervals{Driving: cfg.PollDriving, Charging: cfg.PollCharge, Parked: cfg.PollParked})
+	srv := &server.Server{S: st, P: p, D: det, Link: link}
+	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	go p.Run(ctx)
+
+	hs := &http.Server{Addr: cfg.Addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
+	go func() {
+		<-ctx.Done()
+		sc, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = hs.Shutdown(sc)
+	}()
+	log.Printf("cartrak %s listening on %s (provider %s)", version, cfg.Addr, prov.Name())
+	if err := hs.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
+	}
+}
