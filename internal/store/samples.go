@@ -30,7 +30,12 @@ func (s *Store) SaveState(provider string, st *ford.State) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return r.LastInsertId()
+	id, err := r.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	_ = s.saveTrend(id, st) // the charted numbers, kept apart from the big row
+	return id, nil
 }
 
 // Sample is one stored reading as served to the UI.
@@ -102,6 +107,26 @@ func (s *Store) SamplesBetween(from, to int64) ([]*Sample, error) {
 	for rows.Next() {
 		x, err := scanSample(rows)
 		if err != nil {
+			return nil, err
+		}
+		out = append(out, x)
+	}
+	return out, rows.Err()
+}
+
+// TrackBetween is SamplesBetween without the large raw fields: just what a route needs (time,
+// position, speed). Use it wherever the other values are not shown; the full rows are slow to
+// read in bulk.
+func (s *Store) TrackBetween(from, to int64) ([]*Sample, error) {
+	rows, err := s.DB.Query(`SELECT ts,lat,lon,speed_kph FROM samples WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []*Sample
+	for rows.Next() {
+		x := &Sample{Extra: json.RawMessage("{}")}
+		if err := rows.Scan(&x.TS, &x.Lat, &x.Lon, &x.SpeedKph); err != nil {
 			return nil, err
 		}
 		out = append(out, x)

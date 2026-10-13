@@ -92,6 +92,11 @@ func main() {
 	go p.Run(ctx)
 	go upd.Run(ctx, srv.UpdateCheckEnabled)
 	go srv.CleanupLoop(ctx)
+	go func() { // copy the charted values of older readings into the small trends table, gently
+		if err := st.BackfillTrends(ctx, 50, 500*time.Millisecond); err != nil && ctx.Err() == nil {
+			log.Printf("trend backfill: %v", err)
+		}
+	}()
 	go alertEngine.Run(ctx)
 
 	hs := &http.Server{Addr: cfg.Addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}

@@ -64,6 +64,10 @@ CREATE TABLE IF NOT EXISTS track_points (
   lat REAL NOT NULL, lon REAL NOT NULL, speed_kph REAL, acc_m REAL);
 CREATE INDEX IF NOT EXISTS track_points_ts ON track_points(ts);
 CREATE TABLE IF NOT EXISTS places (k TEXT PRIMARY KEY, city TEXT NOT NULL, ts INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS trends (
+  id INTEGER PRIMARY KEY, ts INTEGER NOT NULL, battery12v REAL, soc REAL, hv_volts REAL,
+  capacity_kwh REAL, oil_pct REAL, fuel_pct REAL);
+CREATE INDEX IF NOT EXISTS trends_ts ON trends(ts);
 CREATE TABLE IF NOT EXISTS push_subs (
   id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, endpoint TEXT UNIQUE NOT NULL,
   p256dh TEXT NOT NULL, auth TEXT NOT NULL, label TEXT NOT NULL DEFAULT '',

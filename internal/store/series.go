@@ -11,21 +11,23 @@ type Day struct {
 	N   int     `json:"n"`
 }
 
-// trended lists the values the Vehicle health page can chart, and the column holding each.
+// trended lists the values the Vehicle health page can chart, and the column of the trends
+// table holding each.
 var trended = map[string]string{
-	"battery12v": "battery12v_v", "hvVolts": "hv_volts", "capacityKwh": "capacity_kwh",
-	"oilLifePct": "oil_pct", "fuelPct": "fuel_pct", "socPct": "soc_pct",
+	"battery12v": "battery12v", "hvVolts": "hv_volts", "capacityKwh": "capacity_kwh",
+	"oilLifePct": "oil_pct", "fuelPct": "fuel_pct", "socPct": "soc",
 }
 
 // DailySeries returns one row per day, oldest first, for a trended value since from (unix seconds).
-// Only names in trended are accepted, so the column name never comes from the caller.
+// Only names in trended are accepted, so the column name never comes from the caller. It reads the
+// small trends table, never the large sample rows.
 func (s *Store) DailySeries(name string, from int64) ([]Day, error) {
 	col, ok := trended[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown series %q", name)
 	}
 	rows, err := s.DB.Query(`SELECT (ts/86400)*86400 AS d, AVG(`+col+`), MIN(`+col+`), MAX(`+col+`), COUNT(*)
-		FROM samples WHERE ts >= ? AND `+col+` IS NOT NULL GROUP BY d ORDER BY d`, from)
+		FROM trends WHERE ts >= ? AND `+col+` IS NOT NULL GROUP BY d ORDER BY d`, from)
 	if err != nil {
 		return nil, err
 	}

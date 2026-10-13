@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.1
+
+### 🛠 Health tab fix
+- Fixed the Health tab seeming to do nothing on a phone. Every reading carries a large block of raw data, and on an install that had been running for a few days the charts read through all of it, which was slow enough to stall the whole app. The charted values now live in a small table of their own: new readings add to it as they arrive, and readings from before the update are copied across quietly in the background (the charts fill in as it goes, and the app stays responsive).
+- The Health page now says "Loading vehicle health…" while it works, and shows a clear message with a Try again button if something goes wrong, so it never looks dead.
+- Trip routes, the trip distance check and the Trips map read only positions and speed instead of every field, so they open faster too.
+
 ## 0.10.0
 
 ### 🔔 Alerts on your phone

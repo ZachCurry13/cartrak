@@ -117,7 +117,7 @@ func (d *Detector) distance(t *store.Trip) float64 {
 	if t.EndTS == nil {
 		return 0
 	}
-	ss, err := d.S.SamplesBetween(t.StartTS, *t.EndTS)
+	ss, err := d.S.TrackBetween(t.StartTS, *t.EndTS)
 	if err != nil {
 		return 0
 	}
