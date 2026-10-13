@@ -35,6 +35,8 @@ export default async function trips(root, _a, session) {
       ...(s.work.kwh + s.personal.kwh > 0 ? [stat('Energy used', kwhText(s.work.kwh + s.personal.kwh)), stat('Efficiency', efficiency(s.work.energyKm + s.personal.energyKm, s.work.kwh + s.personal.kwh) || '—')] : [])),
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
     lastTs = ts;
+    const unlabelled = ts.filter((x) => !x.open && x.categorySource === 'default').length;
+    review.replaceChildren(...(admin && unlabelled ? [h('a', { class: 'banner notice', href: '#/review', style: 'display:block' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to review. Tap to label them.`)] : []));
     paintList();
     list.hidden = view === 'map';
     mapBox.hidden = view !== 'map';
@@ -64,9 +66,11 @@ export default async function trips(root, _a, session) {
     style: `display:block;color:inherit;text-decoration:none${sel.picked.has(t.id) ? ';border-color:var(--accent)' : sel.state.on && !sel.eligible(t) ? ';opacity:.5' : ''}` },
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, sel.picked.has(t.id) ? '✓ ' : '', t.open ? 'In progress' : dist(t.distanceKm)), t.journeyId ? chip('work', 'journey') : null, ' ', catChip(t)),
     h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}${efficiency(t.distanceKm, t.energyKwh) ? ' · ' + (t.energyEstimated ? '≈ ' : '') + efficiency(t.distanceKm, t.energyKwh) : ''}`),
+    t.startPlace || t.endPlace ? h('div', { class: 'muted' }, `${t.startPlace || '…'} → ${t.endPlace || '…'}`) : null,
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
   const selectRow = h('p');
-  root.append(journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
+  const review = h('div');
+  root.append(review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

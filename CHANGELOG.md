@@ -8,6 +8,12 @@
 ### 🔗 Share a trip or journey
 - Admins can make a **public link** to a trip or a journey from its **Share** card. You choose the route (with the first and last quarter mile left out, the whole route, or numbers only), whether to show city names and the date and time, and when the link expires. The page needs no sign-in and shows only that, never your VIN, live position or other trips. The link is shown once; **More, Security, Shared links** lists every link and turns any of them off at once. See docs/sharing.md.
 
+### 📍 Places, trip review and maintenance
+- **More, Places:** name Home, the office and other places (from where the car is, or from a trip's start or end). Trips then read "Home → Office", and you can get an alert when the car arrives at or leaves a place.
+- **Trips to review:** a banner on Trips and a quick screen to tap Work or Personal on trips that no rule could label.
+- **More, Maintenance:** service reminders by distance, by time or both (tire rotation, cabin filter, brake fluid and so on), with an alert when one comes due and a Done button that starts the next interval.
+- **Charging stopped early:** a new alert (off until you turn it on) for a charge that stops while plugged in at a lower level than your sessions usually end at. See docs/places-and-maintenance.md.
+
 ### 🧭 Road-trip planner
 - **More, Road-trip planner:** enter a trip distance, your starting charge and your average charging power. It uses how far your battery really goes per percent (from your own driving), your reserve and your charge target, and says how many charging stops the trip needs, about how far in each one is, what to charge to, and about how long. It is a guide, not a route.
 

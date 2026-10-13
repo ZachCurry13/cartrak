@@ -25,6 +25,9 @@ const routes = {
   people: () => import('./pages/people.js'),
   mileage: () => import('./pages/mileage.js'),
   plan: () => import('./pages/plan.js'),
+  maintenance: () => import('./pages/maintenance.js'),
+  places: () => import('./pages/places.js'),
+  review: () => import('./pages/review.js'),
   security: () => import('./pages/security.js'),
   backup: () => import('./pages/backup.js'),
   notifications: () => import('./pages/notifications.js'),
@@ -77,7 +80,7 @@ async function firstRunTour() {
 async function render() {
   if (stopRefresh) { stopRefresh(); stopRefresh = null; }
   const [name, ...args] = (location.hash.replace(/^#\/?/, '') || '').split('/');
-  const tab = ['', 'trips', 'live', 'charging', 'health', 'data'].includes(name) ? name : name === 'trip' || name === 'journey' ? 'trips' : 'settings';
+  const tab = ['', 'trips', 'live', 'charging', 'health', 'data'].includes(name) ? name : name === 'trip' || name === 'journey' || name === 'review' ? 'trips' : 'settings';
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   try {
     if (!session.me) {

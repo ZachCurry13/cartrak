@@ -11,6 +11,8 @@ type tripOut struct {
 	*store.Trip
 	EnergyKwh       *float64 `json:"energyKwh"`
 	EnergyEstimated bool     `json:"energyEstimated"` // from battery percent, not the car's own energy reading
+	StartPlace      string   `json:"startPlace"`      // the named place it started or ended at, if any
+	EndPlace        string   `json:"endPlace"`
 }
 
 // capacityKwh is the battery's latest estimated capacity, used to estimate trips that were recorded
@@ -38,7 +40,7 @@ func (s *Server) tripsWithEnergy(ts []*store.Trip) []tripOut {
 	capacity := s.capacityKwh()
 	out := make([]tripOut, 0, len(ts))
 	for _, t := range ts {
-		out = append(out, withEnergy(t, capacity))
+		out = append(out, s.placeNames(withEnergy(t, capacity)))
 	}
 	return out
 }

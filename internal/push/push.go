@@ -20,16 +20,20 @@ import (
 
 // The alerts a device can ask for.
 const (
-	ChargeComplete = "charge_complete"
-	PlugIn         = "plug_in"
-	PlugOut        = "plug_out"
-	LowTire        = "low_tire"
-	Low12V         = "low_12v"
-	Unlocked       = "unlocked"
-	TripStart      = "trip_start"
-	TripEnd        = "trip_end"
-	FordTrouble    = "ford_trouble"
-	PlugReminder   = "plug_reminder"
+	ChargeComplete    = "charge_complete"
+	PlugIn            = "plug_in"
+	PlugOut           = "plug_out"
+	LowTire           = "low_tire"
+	Low12V            = "low_12v"
+	Unlocked          = "unlocked"
+	TripStart         = "trip_start"
+	TripEnd           = "trip_end"
+	FordTrouble       = "ford_trouble"
+	PlugReminder      = "plug_reminder"
+	MaintenanceDue    = "maintenance_due"
+	ArrivePlace       = "arrive_place"
+	LeavePlace        = "leave_place"
+	ChargeInterrupted = "charge_interrupted"
 )
 
 type Kind struct {
@@ -48,6 +52,10 @@ var Kinds = []Kind{
 	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},
 	{TripStart, "Trip started", "A trip began."},
 	{TripEnd, "Trip ended", "A trip finished, with its distance."},
+	{ChargeInterrupted, "Charging stopped early", "Charging stopped while still plugged in at a lower level than your sessions usually end at, which can mean a loose cable or a charger fault."},
+	{ArrivePlace, "Arrived at a named place", "The car arrived at a place you named under More, Places, such as Home or the office."},
+	{LeavePlace, "Left a named place", "The car left a place you named under More, Places."},
+	{MaintenanceDue, "Service due", "A service reminder you set up under More, Maintenance has come due by distance or by time."},
 	{PlugReminder, "Plug in tonight?", "One reminder in the evening if the car is parked, not plugged in and the battery is low. An admin sets the time and level."},
 	{FordTrouble, "Ford connection trouble", "No reading from the car for several hours."},
 }

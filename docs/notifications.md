@@ -8,6 +8,9 @@ CarTrak can send a notification to your phone or computer when something happens
 | Charging complete | Charging stopped while the car is still plugged in (the battery reached its target or is full) |
 | Plugged in / Unplugged | The charging cable was connected or removed |
 | Low tire pressure | The car reports a tire as low (sent once, until the tire is fixed) |
+| Charging stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
+| Service due | A reminder from More, Maintenance came due by distance or time |
+| Arrived at / Left a named place | The car arrived at or left a place named under More, Places |
 | Plug in tonight? | One reminder in the evening (9 pm by default) when the car is parked, not plugged in and below 60 percent. Off by default for each device: turn it on in Notifications. An admin can change the time and the level in Settings (Plug-in reminder). At most once a day, and only if the car has reported in the last two hours |
 | Low 12 V battery | The 12 V battery is below 11.8 V or under 50 percent charge. At most once a day |
 | Car left unlocked | The car has been parked and unlocked for more than 10 minutes (once per time it happens) |

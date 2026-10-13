@@ -4,6 +4,7 @@ import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
 import { efficiency, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
+import { placeCard } from '../placecard.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -69,11 +70,13 @@ export default async function tripDetail(root, [id], session) {
   const kwh = t.startSoc != null && t.endSoc != null ? null : null;
   root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')),
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
+      t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', efficiency(t.distanceKm, t.energyKwh) || '—')),
       kwh),
     routeBox,
+    admin && !t.open ? placeCard(t) : null,
     admin && !t.open ? shareCard('trip', t.id) : null,
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),

@@ -52,6 +52,7 @@ type Engine struct {
 	unlockedFrom time.Time
 	unlockedSent bool
 	silentSent   bool
+	inside       map[int64]bool // which named places the car is inside
 }
 
 func (e *Engine) now() time.Time {
@@ -80,6 +81,8 @@ func (e *Engine) Handle(st *ford.State) {
 	}
 	e.tires(st, first)
 	e.battery12V(st)
+	e.maintenance(st.OdometerKm)
+	e.namedPlaces(st, first)
 	e.unlocked(st)
 	e.trip(first)
 	e.prev = st
@@ -95,7 +98,11 @@ func (e *Engine) plugAndCharge(prev, st *ford.State) {
 		e.send(push.Alert{Kind: push.PlugOut, Title: "Unplugged", Body: "Charging cable removed." + charge(st), URL: "#/charging"})
 	}
 	if charging(prev) && !charging(st) && nowKnown && now { // stopped while still plugged in
-		e.send(push.Alert{Kind: push.ChargeComplete, Title: "Charging complete", Body: strings.TrimSpace(charge(st)), URL: "#/charging"})
+		if e.stoppedEarly(st) {
+			e.send(push.Alert{Kind: push.ChargeInterrupted, Title: "Charging stopped early", Body: fmt.Sprintf("Charging stopped at %.0f%% while still plugged in, lower than it usually stops. Check the cable and the charger.", *st.SoCPct), URL: "#/charging"})
+		} else {
+			e.send(push.Alert{Kind: push.ChargeComplete, Title: "Charging complete", Body: strings.TrimSpace(charge(st)), URL: "#/charging"})
+		}
 	}
 }
 
@@ -180,6 +187,9 @@ func (e *Engine) trip(first bool) {
 func (e *Engine) Tick() {
 	e.mu.Lock()
 	e.plugReminder()
+	if e.prev != nil {
+		e.maintenance(e.prev.OdometerKm)
+	}
 	e.mu.Unlock()
 	if e.Link == nil {
 		return

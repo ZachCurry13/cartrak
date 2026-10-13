@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/maint"
+	"github.com/ZachCurry13/cartrak/internal/places"
 	"github.com/ZachCurry13/cartrak/internal/push"
 	"github.com/ZachCurry13/cartrak/internal/trips"
 )
@@ -50,4 +53,97 @@ func (e *Engine) plugReminder() {
 	_ = e.S.SetKV(kvPlugDay, day)
 	e.send(push.Alert{Kind: push.PlugReminder, Title: "Plug in tonight?",
 		Body: fmt.Sprintf("The car is at %.0f%% and not plugged in.", *st.SoCPct), URL: "#/charging"})
+}
+
+const (
+	interruptedBelowPct = 70.0 // a session that stops lower than this, unlike the ones before it, looks interrupted
+	usualStopPct        = 3.0  // within this of where recent sessions ended counts as the usual stopping point
+)
+
+// stoppedEarly says a charge that just stopped while still plugged in ended lower than usual. Owners who set
+// a low charge limit see their sessions end at the same level every time, so that level is never flagged.
+func (e *Engine) stoppedEarly(st *ford.State) bool {
+	if st.SoCPct == nil || *st.SoCPct >= interruptedBelowPct {
+		return false
+	}
+	recent, err := e.S.ListCharges(7)
+	if err != nil {
+		return false
+	}
+	var ends []float64
+	for _, c := range recent {
+		if !c.Open && c.EndSoC != nil {
+			ends = append(ends, *c.EndSoC)
+		}
+	}
+	for _, v := range ends {
+		if v-*st.SoCPct < usualStopPct && *st.SoCPct-v < usualStopPct {
+			return false // it stopped about where it stopped before
+		}
+	}
+	return true
+}
+
+// maintenance sends one alert when a service reminder becomes due by distance or by time. Marking the work
+// done re-arms it.
+func (e *Engine) maintenance(odoKm *float64) {
+	items, err := e.S.ListMaintenance()
+	if err != nil {
+		return
+	}
+	for _, m := range items {
+		if m.NotifiedTS != 0 {
+			continue
+		}
+		st := maint.Check(m, odoKm, e.now().Unix())
+		if st.State != maint.Overdue {
+			continue
+		}
+		_ = e.S.SetMaintenanceNotified(m.ID)
+		e.send(push.Alert{Kind: push.MaintenanceDue, Title: "Service due: " + m.Name, Body: "This reminder is due. Open Maintenance to see it, and mark it done when it is finished.", URL: "#/maintenance"})
+	}
+}
+
+const leaveMargin = 1.25 // the car must get this much farther than the place's size before it counts as left
+
+// namedPlaces announces arriving at and leaving the places the owner named. The first reading after a restart
+// only sets the starting point, and leaving needs a margin so a wobbling position at the edge does not repeat.
+func (e *Engine) namedPlaces(st *ford.State, first bool) {
+	if st.Lat == nil || st.Lon == nil {
+		return
+	}
+	all, err := e.S.ListNamedPlaces()
+	if err != nil {
+		return
+	}
+	if e.inside == nil {
+		e.inside = map[int64]bool{}
+	}
+	seen := map[int64]bool{}
+	for _, p := range all {
+		seen[p.ID] = true
+		d := places.Distance(*st.Lat, *st.Lon, p)
+		was := e.inside[p.ID]
+		now := was
+		switch {
+		case !was && d <= p.RadiusM:
+			now = true
+		case was && d > p.RadiusM*leaveMargin:
+			now = false
+		}
+		e.inside[p.ID] = now
+		if first || now == was {
+			continue
+		}
+		if now {
+			e.send(push.Alert{Kind: push.ArrivePlace, Title: "Arrived at " + p.Name, Body: "The car is at " + p.Name + "." + charge(st), URL: "#/"})
+		} else {
+			e.send(push.Alert{Kind: push.LeavePlace, Title: "Left " + p.Name, Body: "The car has left " + p.Name + "." + charge(st), URL: "#/"})
+		}
+	}
+	for id := range e.inside {
+		if !seen[id] {
+			delete(e.inside, id)
+		}
+	}
 }
