@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2
+
+### 🔗 Connecting Ford
+- The Connect Ford page now shows the exact address CarTrak asks Ford to return to, with one-tap choices: your site address, the address with /ford/callback, or http://localhost. Tap the one that matches what is registered on your Ford app. If the value is fixed by an environment variable or config.yaml, it says so.
+
 ## 0.7.1
 
 ### 🔗 Connecting Ford

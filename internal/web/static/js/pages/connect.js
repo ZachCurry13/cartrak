@@ -13,6 +13,15 @@ export default async function connect(root, _a, session) {
   }
   const s = await api('/api/admin/settings');
   const redirect = (s.settings.find((x) => x.key === 'FORD_REDIRECT_URL') || {}).value || s.suggestedRedirect;
+  const red = s.settings.find((x) => x.key === 'FORD_REDIRECT_URL') || {};
+  const fixMsg = h('p', { class: 'muted', role: 'status' });
+  const here = location.origin; // the https address you are using right now
+  // One tap to match whatever is registered on the Ford app: the address alone, with /ford/callback, or http://localhost.
+  const choices = [here, `${here}/ford/callback`, 'http://localhost'].map((val) => h('button', {
+    class: redirect === val ? '' : 'sec',
+    onclick: async () => {
+      try { await api('/api/admin/settings', { method: 'PUT', body: { values: { FORD_REDIRECT_URL: val } } }); location.reload(); } catch (e) { fixMsg.textContent = e.message; }
+    } }, val + (redirect === val ? ' ✓' : '')));
 
   const paste = h('textarea', { id: 'pasted', rows: 3, placeholder: 'http://localhost/?code=…&state=…', autocapitalize: 'none', spellcheck: 'false',
     style: 'width:100%;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;font:inherit' });
@@ -34,7 +43,10 @@ export default async function connect(root, _a, session) {
     h('section', { class: 'card' }, h('h2', {}, '1. Sign in at Ford'),
       h('p', { class: 'muted' }, 'CarTrak will ask Ford to send you back to:'),
       h('p', {}, h('code', { style: 'overflow-wrap:anywhere' }, redirect)),
-      h('p', { class: 'muted' }, 'This must exactly match a redirect URI registered on your Ford app (change it in Admin settings if not). Use your separate FordPass account.'),
+      red.locked
+        ? h('p', { class: 'muted' }, `This value is fixed by ${red.source === 'env' ? 'an environment variable' : 'config.yaml'}. Change it there, then restart.`)
+        : h('div', {}, h('p', { class: 'muted' }, 'It must match a redirect URI registered on your Ford app exactly. Tap the one that matches yours:'), h('div', { class: 'seg' }, ...choices), fixMsg),
+      h('p', { class: 'muted' }, 'Use your separate FordPass account to sign in.'),
       h('a', { class: 'btn', href: '/ford/connect' }, 'Open Ford sign-in')),
     h('section', { class: 'card' }, h('h2', {}, '2. Paste the address Ford sends you to'),
       h('p', { class: 'muted' }, 'If your redirect is CarTrak\'s own address, you are connected automatically and can skip this. If you registered http://localhost, the page that opens will show an error or nothing, and that is expected. Copy the whole address from the browser\'s address bar (it contains code=…) and paste it here. It works once and only within 15 minutes of starting the sign-in.'),
