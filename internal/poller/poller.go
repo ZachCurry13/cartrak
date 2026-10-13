@@ -36,6 +36,7 @@ type Status struct {
 	Live        bool   `json:"live"`
 	LiveUntil   int64  `json:"liveUntil"`
 	RateLimited bool   `json:"rateLimited"`
+	FordTrouble bool   `json:"fordTrouble"` // Ford answered with a server error (HTTP 5xx); not a setup problem
 }
 
 type Poller struct {
@@ -52,6 +53,7 @@ type Poller struct {
 	liveUntil time.Time
 	hintUntil time.Time // a phone said a trip is under way until then
 	rlCount   int       // consecutive 429s, for the backoff
+	srvCount  int       // consecutive Ford server errors (HTTP 5xx), for the retry pace
 }
 
 func New(p ford.Provider, s *store.Store, d *trips.Detector, iv Intervals) *Poller {
@@ -123,13 +125,26 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 			p.mu.Unlock()
 			log.Printf("ford rate limit: waiting %s", w)
 			p.set(func(s *Status) {
-				s.RateLimited = true
+				s.RateLimited, s.FordTrouble = true, false
 				s.LastError = fmt.Sprintf("Ford asked CarTrak to slow down; trying again in %d s", int(w.Seconds()))
 			})
 			return w
 		}
+		var se *ford.ServerError
+		if errors.As(err, &se) { // Ford answered HTTP 5xx: its side, so try again soon
+			p.mu.Lock()
+			p.srvCount++
+			w := serverErrorWait(p.srvCount)
+			p.mu.Unlock()
+			log.Printf("ford is having trouble: %v; trying again in %s", err, w)
+			p.set(func(s *Status) { s.LastError, s.RateLimited, s.FordTrouble = err.Error(), false, true })
+			return w
+		}
 		log.Printf("poll failed: %v", err)
-		p.set(func(s *Status) { s.LastError, s.RateLimited = err.Error(), false })
+		p.mu.Lock()
+		p.srvCount = 0
+		p.mu.Unlock()
+		p.set(func(s *Status) { s.LastError, s.RateLimited, s.FordTrouble = err.Error(), false, false })
 		return backoff(prev, p.Iv.Parked)
 	}
 	if _, err := p.S.SaveState(p.P.Name(), st); err != nil {
@@ -140,9 +155,9 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 		log.Printf("trip detect failed: %v", err)
 	}
 	p.mu.Lock()
-	p.rlCount = 0
+	p.rlCount, p.srvCount = 0, 0
 	p.mu.Unlock()
-	p.set(func(s *Status) { s.LastOK, s.LastError, s.RateLimited = now.Unix(), "", false })
+	p.set(func(s *Status) { s.LastOK, s.LastError, s.RateLimited, s.FordTrouble = now.Unix(), "", false, false })
 	if p.After != nil {
 		p.After()
 	}

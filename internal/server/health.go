@@ -62,6 +62,8 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 			wait = 0
 		}
 		add(healthItem{"readings", "Car readings", fmt.Sprintf("Ford is limiting how often CarTrak may ask (normal after linking or pressing Sync now). Waiting, next try in about %d s. Nothing to do.", wait), "warn", "", ""})
+	case st.FordTrouble:
+		add(healthItem{"readings", "Car readings", "Ford's servers are having trouble answering right now (" + st.LastError + "). That is on Ford's side, not a problem with your setup. CarTrak keeps trying every few minutes and your saved data is safe. If it lasts more than a few hours, check whether the FordPass app works.", "warn", "#/ford", "Open Ford connection"})
 	case st.LastError != "":
 		add(healthItem{"readings", "Car readings", "The last update failed: " + st.LastError, "warn", "#/ford", "Open Ford connection"})
 	case latest == nil:

@@ -51,3 +51,19 @@ type RateLimitError struct{ After time.Duration }
 func (e *RateLimitError) Error() string {
 	return fmt.Sprintf("ford rate limit (retry after %s)", e.After)
 }
+
+// ServerError means Ford's servers answered with an error (HTTP 5xx). It is on Ford's side, so
+// CarTrak keeps trying and does not treat it as a setup problem.
+type ServerError struct {
+	Path   string
+	Status int
+	Detail string // what Ford said, shortened, with anything identifying removed
+}
+
+func (e *ServerError) Error() string {
+	s := fmt.Sprintf("ford %s: HTTP %d", e.Path, e.Status)
+	if e.Detail != "" {
+		s += " (Ford said: " + e.Detail + ")"
+	}
+	return s
+}

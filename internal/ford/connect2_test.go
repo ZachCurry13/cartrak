@@ -17,6 +17,7 @@ type fakeFord2 struct {
 	telemetryHit int32
 	garageStatus int
 	limited      bool
+	telemetryErr int // when set, /telemetry answers with this HTTP status and a message
 }
 
 const telemetrySample = `{"vehicles":[{"vin":"1FMTK1234ABCD5678","metrics":[
@@ -47,6 +48,11 @@ func newFake2(t *testing.T) *fakeFord2 {
 			return
 		}
 		atomic.AddInt32(&f.telemetryHit, 1)
+		if f.telemetryErr != 0 {
+			w.WriteHeader(f.telemetryErr)
+			w.Write([]byte(`{"message":"Internal error talking to the vehicle service","status":5000,"vin":"1FMTK1234ABCD5678"}`))
+			return
+		}
 		if f.limited {
 			w.Header().Set("Retry-After", "42")
 			w.WriteHeader(429)
