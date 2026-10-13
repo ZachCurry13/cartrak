@@ -135,6 +135,7 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 	if _, err := p.S.SaveState(p.P.Name(), st); err != nil {
 		log.Printf("save failed: %v", err)
 	}
+	p.LearnCaps(st)
 	if err := p.D.Process(st); err != nil {
 		log.Printf("trip detect failed: %v", err)
 	}

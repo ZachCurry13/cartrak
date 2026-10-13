@@ -120,7 +120,7 @@ func ParseState(raw []byte, at time.Time) *State {
 	s.Ignition = strAt(f, "ignitionStatus.value", "IGNITION_STATUS")
 	s.ChargeState = strAt(f, "chargingStatus.value", "XEV_BATTERY_CHARGE_DISPLAY_STATUS")
 	s.Plug = plug(f)
-	s.OutsideC = numAt(f, "AMBIENT_TEMP", "OUTSIDE_TEMPERATURE", "outsideTemperature")
+	s.OutsideC = numAt(f, "outsideTemperature", "AMBIENT_TEMP") // ambientTemp reads 0 on some cars; outsideTemperature is the real one
 	s.Battery12V = numAt(f, "BATTERY_VOLTAGE", "battery.batteryStatusActual.value")
 	if v := numAt(f, "XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT"); v != nil {
 		if a := numAt(f, "XEV_BATTERY_CHARGER_CURRENT_OUTPUT"); a != nil {
@@ -132,6 +132,7 @@ func ParseState(raw []byte, at time.Time) *State {
 	}
 	parseTires(f, s) // list metrics in the real telemetry layout
 	parseLocks(f, s)
+	parseHealth(f, s)
 	return s
 }
 

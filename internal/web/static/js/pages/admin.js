@@ -4,6 +4,13 @@ import { diagCard } from '../diag.js';
 
 const SOURCE = { env: 'an environment variable', 'config.yaml': 'config.yaml', admin: 'this page', default: 'a default' };
 
+// A setting that offers a list of choices (for example the vehicle type) is a drop-down.
+function choice(s) {
+  const el = h('select', { id: `f-${s.key}`, disabled: s.locked }, ...s.options.map((o) => h('option', { value: o.value }, o.label)));
+  el.value = s.value || '';
+  return el;
+}
+
 export default async function admin(root, _a, session) {
   if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   let data = await api('/api/admin/settings');
@@ -16,14 +23,14 @@ export default async function admin(root, _a, session) {
   function draw() {
     const inputs = {};
     const rows = data.settings.map((s) => {
-      const el = h('input', {
+      const el = s.options ? choice(s) : h('input', {
         id: `f-${s.key}`, type: s.secret ? 'password' : 'text', autocomplete: 'off', autocapitalize: 'none', spellcheck: 'false',
         value: s.secret ? '' : s.value, disabled: s.locked,
         placeholder: s.secret ? (s.isSet ? '•••••••• saved (leave blank to keep)' : '') : (s.key === 'FORD_REDIRECT_URL' ? data.suggestedRedirect : s.placeholder),
       });
       inputs[s.key] = el;
       return h('div', {},
-        h('label', { for: `f-${s.key}` }, s.label, ' ', s.locked ? chip('work', `locked: ${SOURCE[s.source]}`) : s.isSet ? chip('ok', s.source === 'default' ? 'default' : 'saved') : chip('bad', 'not set')),
+        h('label', { for: `f-${s.key}` }, s.label, ' ', s.locked ? chip('work', `locked: ${SOURCE[s.source]}`) : s.options ? null : s.isSet ? chip('ok', s.source === 'default' ? 'default' : 'saved') : chip('bad', 'not set')),
         el, h('div', { class: 'muted', style: 'margin-top:4px' }, s.help),
         s.key === 'FORD_REDIRECT_URL' && !s.locked ? h('p', { class: 'seg', style: 'margin-top:6px' },
           h('button', { class: 'sec', onclick: () => { el.value = 'http://localhost'; } }, 'Use http://localhost'),

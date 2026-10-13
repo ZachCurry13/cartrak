@@ -6,6 +6,10 @@ import "database/sql"
 // if the column is missing, so it is safe on new and old databases alike.
 var migrations = []struct{ table, column, ddl string }{
 	{"trips", "tz", `ALTER TABLE trips ADD COLUMN tz TEXT NOT NULL DEFAULT ''`},
+	{"samples", "fuel_pct", `ALTER TABLE samples ADD COLUMN fuel_pct REAL`},
+	{"samples", "oil_pct", `ALTER TABLE samples ADD COLUMN oil_pct REAL`},
+	{"samples", "hv_volts", `ALTER TABLE samples ADD COLUMN hv_volts REAL`},
+	{"samples", "capacity_kwh", `ALTER TABLE samples ADD COLUMN capacity_kwh REAL`},
 }
 
 func migrate(db *sql.DB) error {

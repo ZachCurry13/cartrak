@@ -1,0 +1,54 @@
+{
+  "telemetry": {
+    "updateTime": "2026-10-12T22:33:23.321Z",
+    "vin": "TESTVIN0000000001",
+    "metrics": {
+      "ambientTemp": {"updateTime": "2026-10-12T22:30:39Z", "value": 0},
+      "outsideTemperature": {"updateTime": "2026-10-09T14:17:20Z", "value": 15.75},
+      "batteryVoltage": {"updateTime": "2026-10-12T22:30:39Z", "value": 12.0625, "vehicleBattery": "PRIMARY_BATTERY"},
+      "batteryStateOfCharge": {"updateTime": "2026-10-12T22:30:39Z", "value": 65, "vehicleBattery": "PRIMARY_BATTERY"},
+      "batteryLoadStatus": {"updateTime": "2026-10-08T21:44:15Z", "value": "NORMAL_OPERATION", "vehicleBattery": "PRIMARY_BATTERY"},
+      "doorLockStatus": [
+        {"value": "LOCKED", "vehicleDoor": "ALL_DOORS", "updateTime": "2026-10-12T22:30:39Z"},
+        {"value": "LOCKED", "vehicleDoor": "UNSPECIFIED_FRONT", "vehicleOccupantRole": "DRIVER", "vehicleSide": "DRIVER"}],
+      "doorStatus": [
+        {"value": "CLOSED", "vehicleDoor": "REAR_LEFT", "vehicleOccupantRole": "PASSENGER", "vehicleSide": "UNKNOWN"},
+        {"value": "AJAR", "vehicleDoor": "TAILGATE", "vehicleOccupantRole": "PASSENGER"},
+        {"value": "CLOSED", "vehicleDoor": "UNSPECIFIED_FRONT", "vehicleOccupantRole": "DRIVER", "vehicleSide": "DRIVER"}],
+      "hoodStatus": {"value": "CLOSED"},
+      "engineCoolantTemp": {"updateTime": "2026-10-08T21:44:08Z", "value": 15},
+      "engineSpeed": {"value": 0},
+      "hybridVehicleModeStatus": {"updateTime": "2026-10-09T14:17:32Z", "value": "AUTO_CHARGE_DEPLETE"},
+      "oilLifeRemaining": {"updateTime": "2026-10-08T21:44:08Z", "value": 100},
+      "tripFuelEconomy": {"value": 0, "tripProgress": "TRIP_IN_PROGRESS"},
+      "ignitionStatus": {"value": "OFF"},
+      "odometer": {"updateTime": "2026-10-12T22:30:39Z", "value": 141942},
+      "position": {"value": {"location": {"alt": 320, "lat": 40.0, "lon": -100.0}}},
+      "speed": {"value": 0},
+      "tirePressure": [
+        {"value": 288, "vehicleWheel": "FRONT_LEFT", "wheelPlacardFront": 268.9},
+        {"value": 290, "vehicleWheel": "FRONT_RIGHT", "wheelPlacardFront": 268.9},
+        {"value": 286, "vehicleWheel": "REAR_LEFT", "wheelPlacardRear": 268.9},
+        {"value": 292, "vehicleWheel": "REAR_RIGHT", "wheelPlacardRear": 268.9}],
+      "tirePressureStatus": [{"value": "NORMAL", "vehicleWheel": "FRONT_LEFT"}, {"value": "NORMAL", "vehicleWheel": "REAR_RIGHT"}],
+      "tirePressureSystemStatus": [{"value": "NORMAL_OPERATION"}],
+      "xevBatteryActualStateOfCharge": {"updateTime": "2026-10-09T14:17:32Z", "value": 86.54},
+      "xevBatteryCapacity": {"updateTime": "2026-10-09T14:17:32Z", "value": 88.45},
+      "xevBatteryChargeDisplayStatus": {"value": "NOT_READY"},
+      "xevBatteryEnergyRemaining": {"updateTime": "2026-10-09T14:17:32Z", "value": 75.3},
+      "xevBatteryIoCurrent": {"value": 0.080078125},
+      "xevBatteryMaximumRange": {"value": 444.6},
+      "xevBatteryPerformanceStatus": {"updateTime": "2026-10-09T14:17:18Z", "value": "NORMAL"},
+      "xevBatteryRange": {"updateTime": "2026-10-09T14:17:32Z", "value": 355},
+      "xevBatteryStateOfCharge": {"updateTime": "2026-10-09T14:17:32Z", "value": 91.5},
+      "xevBatteryTemperature": {"updateTime": "2026-10-09T14:17:32Z", "value": 13},
+      "xevBatteryVoltage": {"updateTime": "2026-10-09T14:17:32Z", "value": 379},
+      "xevChargeStationCommunicationStatus": {"value": "NOT_DETECTED"},
+      "xevPlugChargerStatus": {"value": "DISCONNECTED"},
+      "xevTractionMotorVoltage": {"value": 8}
+    }
+  },
+  "garage": {"engineType": "BEV", "make": "F", "modelName": "Mustang Mach-E", "modelYear": "2021", "vin": "TESTVIN0000000001"},
+  "alerts": {"message": "Success", "status": 2000, "version": "1.0",
+    "VehicleAlertList": [{"StatusCode": 4040, "StatusDesc": "No Data", "Vin": "TESTVIN0000000001"}]}
+}

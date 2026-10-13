@@ -28,7 +28,7 @@ export function words(s) {
 }
 
 const doorName = (d) => {
-  const side = d.vehicleside ? `${String(d.vehicleside).toLowerCase()} ` : '';
+  const side = d.vehicleside && String(d.vehicleside).toUpperCase() !== 'UNKNOWN' ? `${String(d.vehicleside).toLowerCase()} ` : '';
   const door = String(d.vehicledoor || 'door').toLowerCase().replace(/unspecified_/, '').replace(/_/g, ' ');
   return words(`${side}${door}`);
 };

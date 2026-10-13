@@ -13,12 +13,13 @@ import (
 
 // Def describes one setting that can be edited in the admin panel.
 type Def struct {
-	Key         string `json:"key"`
-	Label       string `json:"label"`
-	Help        string `json:"help"`
-	Placeholder string `json:"placeholder"`
-	Secret      bool   `json:"secret"`
-	Group       string `json:"group,omitempty"` // "remote" settings have their own page
+	Key         string   `json:"key"`
+	Label       string   `json:"label"`
+	Help        string   `json:"help"`
+	Placeholder string   `json:"placeholder"`
+	Secret      bool     `json:"secret"`
+	Group       string   `json:"group,omitempty"`   // "remote" settings have their own page
+	Options     []Option `json:"options,omitempty"` // when set, the page shows a choice list instead of a text box
 }
 
 var Defs = []Def{
@@ -147,3 +148,9 @@ func init() {
 }
 
 var validators = map[string]func(string) error{}
+
+// Option is one choice of a Def that offers a list.
+type Option struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
+}

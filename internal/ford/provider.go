@@ -25,6 +25,10 @@ type State struct {
 	OutsideC    *float64
 	Battery12V  *float64
 	Tires       [4]*float64 // FL FR RL RR, kPa
+	FuelPct     *float64    // fuel tank level, gas and hybrid cars
+	OilLifePct  *float64    // remaining oil life, cars with an engine
+	HVVolts     *float64    // traction battery voltage, electrified cars
+	CapacityKwh *float64    // estimated traction battery capacity
 	Locked      *bool
 	Extra       map[string]any // every other field the provider returned
 	Raw         json.RawMessage
