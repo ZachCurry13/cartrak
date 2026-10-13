@@ -29,6 +29,7 @@ type State struct {
 	OilLifePct  *float64    // remaining oil life, cars with an engine
 	HVVolts     *float64    // traction battery voltage, electrified cars
 	CapacityKwh *float64    // estimated traction battery capacity
+	EnergyKwh   *float64    // energy left in the traction battery, kWh
 	Locked      *bool
 	Extra       map[string]any // every other field the provider returned
 	Raw         json.RawMessage

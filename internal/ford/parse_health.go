@@ -7,4 +7,5 @@ func parseHealth(f map[string]any, s *State) {
 	s.OilLifePct = numAt(f, "oilLifeRemaining")
 	s.HVVolts = numAt(f, "xevBatteryVoltage")
 	s.CapacityKwh = numAt(f, "xevBatteryCapacity")
+	s.EnergyKwh = numAt(f, "xevBatteryEnergyRemaining")
 }

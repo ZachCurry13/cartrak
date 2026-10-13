@@ -24,17 +24,19 @@ type Trip struct {
 	RuleID         *int64   `json:"ruleId"`
 	Notes          string   `json:"notes"`
 	Open           bool     `json:"open"`
-	TZ             string   `json:"tz"` // time zone where the trip started, e.g. America/New_York
+	TZ             string   `json:"tz"`       // time zone where the trip started, e.g. America/New_York
+	StartKwh       *float64 `json:"startKwh"` // energy left in the battery at the start and end, kWh
+	EndKwh         *float64 `json:"endKwh"`
 }
 
 const tripCols = `id,start_ts,end_ts,start_lat,start_lon,end_lat,end_lon,start_odo,end_odo,distance_km,
- start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz`
+ start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh`
 
 func scanTrip(r interface{ Scan(...any) error }) (*Trip, error) {
 	var t Trip
 	err := r.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.StartLat, &t.StartLon, &t.EndLat, &t.EndLon,
 		&t.StartOdo, &t.EndOdo, &t.DistanceKm, &t.StartSoC, &t.EndSoC, &t.MaxSpeedKph,
-		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ)
+		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ, &t.StartKwh, &t.EndKwh)
 	return &t, err
 }
 
@@ -52,9 +54,9 @@ func (s *Store) GetTrip(id int64) (*Trip, error) {
 
 func (s *Store) CreateTrip(t *Trip) error {
 	r, err := s.DB.Exec(`INSERT INTO trips(start_ts,start_lat,start_lon,start_odo,start_soc,end_lat,end_lon,
-		end_odo,end_soc,category,category_source,rule_id,tz,open) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,1)`,
+		end_odo,end_soc,category,category_source,rule_id,tz,start_kwh,end_kwh,open) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)`,
 		t.StartTS, t.StartLat, t.StartLon, t.StartOdo, t.StartSoC, t.StartLat, t.StartLon,
-		t.StartOdo, t.StartSoC, t.Category, t.CategorySource, t.RuleID, t.TZ)
+		t.StartOdo, t.StartSoC, t.Category, t.CategorySource, t.RuleID, t.TZ, t.StartKwh, t.StartKwh)
 	if err != nil {
 		return err
 	}
@@ -66,13 +68,13 @@ func (s *Store) CreateTrip(t *Trip) error {
 // UpdateTrip writes the progress fields. Category is only written when the
 // current source is not "manual", so a user's choice is never overwritten.
 func (s *Store) UpdateTrip(t *Trip) error {
-	_, err := s.DB.Exec(`UPDATE trips SET end_ts=?,end_lat=?,end_lon=?,end_odo=?,end_soc=?,distance_km=?,
+	_, err := s.DB.Exec(`UPDATE trips SET end_ts=?,end_lat=?,end_lon=?,end_odo=?,end_soc=?,end_kwh=?,distance_km=?,
 		max_speed_kph=?,open=?,
 		category=CASE WHEN category_source='manual' THEN category ELSE ? END,
 		rule_id=CASE WHEN category_source='manual' THEN rule_id ELSE ? END,
 		category_source=CASE WHEN category_source='manual' THEN 'manual' ELSE ? END
 		WHERE id=?`,
-		t.EndTS, t.EndLat, t.EndLon, t.EndOdo, t.EndSoC, t.DistanceKm, t.MaxSpeedKph, t.Open,
+		t.EndTS, t.EndLat, t.EndLon, t.EndOdo, t.EndSoC, t.EndKwh, t.DistanceKm, t.MaxSpeedKph, t.Open,
 		t.Category, t.RuleID, t.CategorySource, t.ID)
 	return err
 }

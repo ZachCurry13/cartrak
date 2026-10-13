@@ -75,7 +75,7 @@ func (d *Detector) trip(st *ford.State) error {
 	}
 	now := st.TS.Unix()
 	if Driving(st) && open == nil {
-		t := &store.Trip{StartTS: now, StartLat: st.Lat, StartLon: st.Lon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct}
+		t := &store.Trip{StartTS: now, StartLat: st.Lat, StartLon: st.Lon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		var rid *int64
 		loc := d.zone(st.Lat, st.Lon)
 		t.TZ = loc.String()
@@ -88,6 +88,7 @@ func (d *Detector) trip(st *ford.State) error {
 	}
 	open.EndLat, open.EndLon, open.EndOdo, open.EndSoC = pick(st.Lat, open.EndLat), pick(st.Lon, open.EndLon),
 		pick(st.OdometerKm, open.EndOdo), pick(st.SoCPct, open.EndSoC)
+	open.EndKwh = pick(st.EnergyKwh, open.EndKwh)
 	if st.SpeedKph != nil && *st.SpeedKph > open.MaxSpeedKph {
 		open.MaxSpeedKph = *st.SpeedKph
 	}

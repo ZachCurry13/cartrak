@@ -22,11 +22,11 @@ func (s *Store) SaveState(provider string, st *ford.State) (int64, error) {
 	}
 	r, err = s.DB.Exec(`INSERT INTO samples(ts,snapshot_id,odometer_km,soc_pct,range_km,lat,lon,
 		speed_kph,ignition,charge_state,plug,charge_kw,outside_c,battery12v_v,
-		tire_fl,tire_fr,tire_rl,tire_rr,locked,extra,fuel_pct,oil_pct,hv_volts,capacity_kwh) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		tire_fl,tire_fr,tire_rl,tire_rr,locked,extra,fuel_pct,oil_pct,hv_volts,capacity_kwh,energy_kwh) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		st.TS.Unix(), snap, st.OdometerKm, st.SoCPct, st.RangeKm, st.Lat, st.Lon,
 		st.SpeedKph, st.Ignition, st.ChargeState, st.Plug, st.ChargeKw, st.OutsideC, st.Battery12V,
 		st.Tires[0], st.Tires[1], st.Tires[2], st.Tires[3], locked, string(extra),
-		st.FuelPct, st.OilLifePct, st.HVVolts, st.CapacityKwh)
+		st.FuelPct, st.OilLifePct, st.HVVolts, st.CapacityKwh, st.EnergyKwh)
 	if err != nil {
 		return 0, err
 	}
@@ -59,11 +59,12 @@ type Sample struct {
 	OilLifePct  *float64        `json:"oilLifePct"`
 	HVVolts     *float64        `json:"hvVolts"`
 	CapacityKwh *float64        `json:"capacityKwh"`
+	EnergyKwh   *float64        `json:"energyKwh"`
 	Extra       json.RawMessage `json:"extra"`
 }
 
 const sampleCols = `ts,odometer_km,soc_pct,range_km,lat,lon,speed_kph,ignition,charge_state,plug,
- charge_kw,outside_c,battery12v_v,tire_fl,tire_fr,tire_rl,tire_rr,locked,extra,fuel_pct,oil_pct,hv_volts,capacity_kwh`
+ charge_kw,outside_c,battery12v_v,tire_fl,tire_fr,tire_rl,tire_rr,locked,extra,fuel_pct,oil_pct,hv_volts,capacity_kwh,energy_kwh`
 
 func scanSample(r interface{ Scan(...any) error }) (*Sample, error) {
 	var x Sample
@@ -72,7 +73,7 @@ func scanSample(r interface{ Scan(...any) error }) (*Sample, error) {
 	err := r.Scan(&x.TS, &x.OdometerKm, &x.SoCPct, &x.RangeKm, &x.Lat, &x.Lon, &x.SpeedKph,
 		&ign, &cs, &plug, &x.ChargeKw, &x.OutsideC, &x.Battery12V,
 		&x.Tires[0], &x.Tires[1], &x.Tires[2], &x.Tires[3], &locked, &extra,
-		&x.FuelPct, &x.OilLifePct, &x.HVVolts, &x.CapacityKwh)
+		&x.FuelPct, &x.OilLifePct, &x.HVVolts, &x.CapacityKwh, &x.EnergyKwh)
 	if err != nil {
 		return nil, err
 	}

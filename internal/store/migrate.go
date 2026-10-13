@@ -10,6 +10,9 @@ var migrations = []struct{ table, column, ddl string }{
 	{"samples", "oil_pct", `ALTER TABLE samples ADD COLUMN oil_pct REAL`},
 	{"samples", "hv_volts", `ALTER TABLE samples ADD COLUMN hv_volts REAL`},
 	{"samples", "capacity_kwh", `ALTER TABLE samples ADD COLUMN capacity_kwh REAL`},
+	{"samples", "energy_kwh", `ALTER TABLE samples ADD COLUMN energy_kwh REAL`},
+	{"trips", "start_kwh", `ALTER TABLE trips ADD COLUMN start_kwh REAL`},
+	{"trips", "end_kwh", `ALTER TABLE trips ADD COLUMN end_kwh REAL`},
 }
 
 func migrate(db *sql.DB) error {
