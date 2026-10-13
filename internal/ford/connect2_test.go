@@ -91,11 +91,12 @@ func TestLinkURLAndTokenExchangeV2(t *testing.T) {
 	u, _ := url.Parse(c.LinkURL("st8"))
 	q := u.Query()
 	if q.Get("client_id") != "cid" || q.Get("response_type") != "code" || q.Get("state") != "st8" ||
-		q.Get("scope") != "cid offline_access openid" || q.Get("redirect_uri") != "https://cartrak.example.com/ford/callback" {
+		q.Get("redirect_uri") != "https://cartrak.example.com/ford/callback" {
 		t.Fatalf("link parameters wrong: %v", q)
 	}
-	if !strings.Contains(u.String(), "B2C_1A_FCON_AUTHORIZE") {
-		t.Fatalf("policy missing from sign-in address: %s", u)
+	// Ford's own sign-in start, with only the standard fields (no scope, no response_mode).
+	if u.Host != "api.vehicle.ford.com" || u.Path != "/fcon-public/v1/auth/init" || q.Get("scope") != "" || q.Get("response_mode") != "" {
+		t.Fatalf("wrong sign-in start address or extra fields: %s", u)
 	}
 
 	if err := c.Exchange(context.Background(), "the-code"); err != nil || kv[refreshKey] != "REF2" {
@@ -193,5 +194,77 @@ func TestTokenErrorDoesNotLeakBody(t *testing.T) {
 	err := c.Exchange(context.Background(), "x")
 	if err == nil || strings.Contains(err.Error(), "sec-123") || !strings.Contains(err.Error(), "invalid_grant") {
 		t.Fatalf("error should show only the short code: %v", err)
+	}
+}
+
+// Some Ford apps reject the scope field on the token request; the exchange then retries without it.
+func TestTokenExchangeRetriesWithoutScopeOn400(t *testing.T) {
+	var forms []url.Values
+	mux := http.NewServeMux()
+	mux.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		forms = append(forms, r.PostForm)
+		if r.PostForm.Get("scope") != "" {
+			w.WriteHeader(400)
+			w.Write([]byte(`{"error":"invalid_scope"}`))
+			return
+		}
+		w.Write([]byte(`{"access_token":"A","refresh_token":"R","expires_in":1200}`))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	kv := memKV{}
+	c := NewConnect2(func() Connect2Opts {
+		return Connect2Opts{ClientID: "cid", ClientSecret: "sec", RedirectURL: "https://x.example", TokenURL: srv.URL + "/token"}
+	}, kv)
+	if err := c.Exchange(context.Background(), "code1"); err != nil || kv[refreshKey] != "R" {
+		t.Fatalf("exchange should succeed on the retry: %v %v", err, kv)
+	}
+	if len(forms) != 2 || forms[0].Get("scope") == "" || forms[1].Get("scope") != "" || forms[1].Get("code") != "code1" {
+		t.Fatalf("expected a with-scope try then a no-scope retry: %v", forms)
+	}
+}
+
+func TestTokenErrorsOtherThan400AreNotRetried(t *testing.T) {
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { hits++; w.WriteHeader(401) }))
+	defer srv.Close()
+	c := NewConnect2(func() Connect2Opts { return Connect2Opts{ClientID: "c", ClientSecret: "s", TokenURL: srv.URL} }, memKV{})
+	if err := c.Exchange(context.Background(), "x"); err == nil || hits != 1 {
+		t.Fatalf("a 401 must fail once, not retry: err=%v hits=%d", err, hits)
+	}
+}
+
+// The real telemetry shape (as read by other FordConnect Query clients):
+// vehicles[].metrics.<camelCaseName>.value, with position.value.location.{lat,lon}.
+func TestParseRealTelemetryShape(t *testing.T) {
+	raw := []byte(`{"telemetry":{"vehicles":[{"vin":"X","metrics":{
+	  "xevBatteryStateOfCharge":{"value":72.5},
+	  "xevBatteryRange":{"value":260.4},
+	  "odometer":{"value":10234.5},
+	  "ignitionStatus":{"value":"OFF"},
+	  "xevPlugChargerStatus":{"value":"DISCONNECTED"},
+	  "xevBatteryChargeDisplayStatus":{"value":"NOT_READY"},
+	  "outsideTemperature":{"value":12.5},
+	  "batteryVoltage":{"value":12.7},
+	  "speed":{"value":10},
+	  "doorLockStatus":{"value":"LOCKED"},
+	  "position":{"value":{"location":{"lat":42.31,"lon":-83.2,"alt":190}}}
+	}}]}}`)
+	s := ParseState(raw, time.Now())
+	if s.SoCPct == nil || *s.SoCPct != 72.5 || s.RangeKm == nil || *s.RangeKm != 260.4 || s.OdometerKm == nil || *s.OdometerKm != 10234.5 {
+		t.Fatalf("battery/odometer not parsed: soc=%v range=%v odo=%v", s.SoCPct, s.RangeKm, s.OdometerKm)
+	}
+	if s.Lat == nil || *s.Lat != 42.31 || s.Lon == nil || *s.Lon != -83.2 {
+		t.Fatalf("location not parsed: %v %v", s.Lat, s.Lon)
+	}
+	if s.Ignition != "OFF" || s.Plug != "DISCONNECTED" || s.ChargeState != "NOT_READY" {
+		t.Fatalf("status not parsed: %+v", s)
+	}
+	if s.OutsideC == nil || *s.OutsideC != 12.5 || s.Battery12V == nil || *s.Battery12V != 12.7 || s.SpeedKph == nil || *s.SpeedKph != 36 {
+		t.Fatalf("temperature/voltage/speed not parsed: %v %v %v", s.OutsideC, s.Battery12V, s.SpeedKph)
+	}
+	if s.Locked == nil || !*s.Locked {
+		t.Fatalf("lock state not parsed: %v", s.Locked)
 	}
 }

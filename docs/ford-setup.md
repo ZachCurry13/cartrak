@@ -64,8 +64,8 @@ including `http` or `https` and any path.
 ## Linking your car
 Set up [remote access](cloudflare.md) first if you want linking to finish automatically: Ford only redirects to an `https://` address (or `http://localhost`).
 
-1. Open CarTrak as admin -> **More** -> **Connect Ford** and press **Open Ford sign-in** (use your separate CarTrak account, see above).
-2. Ford's own page opens. Sign in with the FordPass account you set up for CarTrak and approve the vehicle.
+1. Open CarTrak as admin -> **More** -> **Ford connection** -> **Connect Ford**, wait for the address check, and press **Open Ford sign-in** (use your separate CarTrak account, see above).
+2. Ford's own pages open: sign in with the FordPass account you set up for CarTrak, choose the vehicle (if you have several) and press **Consent**.
 3. Finish as described under "Redirect address" above (automatic, or paste the address). CarTrak stores a refresh token and starts reading.
 
 CarTrak never sees your Ford password. If Ford expires the link (for example after
@@ -107,3 +107,16 @@ Lowering the polling intervals may breach Ford's rate limits. If Ford answers
 
 ## Not affiliated
 CarTrak is an independent project and is not affiliated with or endorsed by Ford Motor Company.
+
+## After you register the app: wait
+Ford says a newly registered app can take up to **about two hours** to be fully deployed. Until then the
+**Consent** step may show an error. If so, wait and try again. Changes to the redirect addresses on your Ford
+app can take a while to apply too; the address check on the Connect Ford page shows what Ford accepts right now.
+
+## How the sign-in works (for the curious)
+CarTrak sends the browser to Ford's sign-in start (`/fcon-public/v1/auth/init`) with your client ID, your
+redirect address and a short random `state` (Ford allows at most 16 characters). Ford shows its own
+sign-in and vehicle-consent pages, then redirects to your redirect address with a one-time `code`.
+CarTrak exchanges the code for tokens at Ford's token address. The sign-in flow matches the one used by
+other FordConnect Query clients, such as the open-source
+[ha-fordconnect-query](https://github.com/marq24/ha-fordconnect-query) Home Assistant integration.

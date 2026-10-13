@@ -64,7 +64,7 @@ export default async function connect(root, _a, session) {
       red.locked
         ? h('p', { class: 'muted' }, `This value is fixed by ${red.source === 'env' ? 'an environment variable' : 'config.yaml'}. Change it there, then restart.`)
         : h('div', {}, h('p', { class: 'muted' }, 'It must match a redirect URI registered on your Ford app exactly. Tap the one that matches yours:'), h('div', { class: 'seg' }, ...choices), fixMsg),
-      h('p', { class: 'muted' }, 'Use your separate FordPass account to sign in.'),
+      h('p', { class: 'muted' }, 'On Ford pages: sign in (use your separate FordPass account), choose the vehicle, then press Consent. Ford sends you back here.'),
       h('a', { class: 'btn', href: '/ford/connect' }, 'Open Ford sign-in')),
     h('section', { class: 'card' }, h('h2', {}, '2. Paste the address Ford sends you to'),
       h('p', { class: 'muted' }, 'If your redirect is CarTrak\'s own address, you are connected automatically and can skip this. If you registered http://localhost, the page that opens will show an error or nothing, and that is expected. Copy the whole address from the browser\'s address bar (it contains code=…) and paste it here. It works once and only within 15 minutes of starting the sign-in.'),

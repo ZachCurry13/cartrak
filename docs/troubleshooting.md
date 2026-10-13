@@ -16,7 +16,8 @@ Open More -> Connect Ford. If Ford shows an error about the redirect, the redire
 Run **More -> Admin settings -> Ford diagnostics** after linking to see which endpoints answer. Before linking, check that the client ID and secret are right and that the redirect URL matches the one registered with Ford exactly. If Ford documents a different sign-in address, put it in "Ford sign-in address (advanced)". 
 CarTrak 0.5 and newer use FordConnect 2.0; earlier versions used the older API and may not work with a FordConnect 2.0 app, so update first. Ford's own login page is also sometimes unavailable; try again later.
 
-**Ford says AADB2C90075 / "RESTApiCallForUserInfo" after the address is accepted.**
+**Ford says AADB2C90075 / "RESTApiCallForUserInfo".**
+This came from CarTrak 0.8.0 and earlier, which started the sign-in at the wrong Ford address. Update to 0.8.1 or newer and press Connect Ford again. (Details are kept below in case it ever comes back from a different cause.)
 That is a problem inside Ford's own sign-in (its user-info step). Sign in with the FordPass account that owns the car or has had it shared to it, make sure that account has completed FordPass sign-up, and try again. If it repeats, send the exact message to support. If Ford documentation gives a specific sign-in link for FordConnect 2.0, paste it into Admin settings -> Ford sign-in address, using {client_id}, {redirect_uri}, {state} and {scope} where those values belong.
 
 **Linking works but no data appears.**

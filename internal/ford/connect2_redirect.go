@@ -9,21 +9,6 @@ import (
 	"time"
 )
 
-// authURL is Ford's sign-in address for a given redirect address.
-func (c *Connect2) authURL(o Connect2Opts, redirect, state string) string {
-	if strings.Contains(o.AuthURL, "{") { // a link copied from Ford documentation, with placeholders
-		return strings.NewReplacer("{client_id}", url.QueryEscape(o.ClientID), "{redirect_uri}", url.QueryEscape(redirect),
-			"{state}", url.QueryEscape(state), "{scope}", url.QueryEscape(c.scope(o))).Replace(o.AuthURL)
-	}
-	q := url.Values{"client_id": {o.ClientID}, "response_type": {"code"}, "redirect_uri": {redirect},
-		"scope": {c.scope(o)}, "state": {state}, "response_mode": {"query"}}
-	sep := "?"
-	if strings.Contains(o.AuthURL, "?") {
-		sep = "&"
-	}
-	return o.AuthURL + sep + q.Encode()
-}
-
 // RedirectCheck is Ford's answer for one candidate redirect address.
 type RedirectCheck struct {
 	URI      string `json:"uri"`
@@ -38,7 +23,7 @@ type RedirectCheck struct {
 func (c *Connect2) CheckRedirect(ctx context.Context, redirectURI string) (RedirectCheck, error) {
 	o := c.opts()
 	res := RedirectCheck{URI: redirectURI}
-	req, err := http.NewRequestWithContext(ctx, "GET", c.authURL(o, redirectURI, "cartrak-check"), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.checkURL(o, redirectURI), nil)
 	if err != nil {
 		return res, err
 	}
@@ -68,4 +53,32 @@ func (c *Connect2) CheckRedirect(ctx context.Context, redirectURI string) (Redir
 		res.Detail = "Ford accepts this address (it reported: " + desc + ")"
 	}
 	return res, nil
+}
+
+// linkURL is where the browser goes to sign in at Ford and pick the vehicle: Ford's own
+// sign-in and consent pages. It carries only the standard fields, and Ford requires the
+// state value to be short (16 characters). A link copied from Ford documentation, with
+// {client_id} {redirect_uri} {state} {scope} placeholders, is filled in instead.
+func (c *Connect2) linkURL(o Connect2Opts, redirect, state string) string {
+	if strings.Contains(o.AuthURL, "{") {
+		return strings.NewReplacer("{client_id}", url.QueryEscape(o.ClientID), "{redirect_uri}", url.QueryEscape(redirect),
+			"{state}", url.QueryEscape(state), "{scope}", url.QueryEscape(c.scope(o))).Replace(o.AuthURL)
+	}
+	q := url.Values{"response_type": {"code"}, "client_id": {o.ClientID}, "redirect_uri": {redirect}, "state": {state}}
+	sep := "?"
+	if strings.Contains(o.AuthURL, "?") {
+		sep = "&"
+	}
+	return o.AuthURL + sep + q.Encode()
+}
+
+// checkURL asks the back-end policy about a redirect address. It is never used to sign anyone in.
+func (c *Connect2) checkURL(o Connect2Opts, redirect string) string {
+	q := url.Values{"client_id": {o.ClientID}, "response_type": {"code"}, "redirect_uri": {redirect},
+		"scope": {c.scope(o)}, "state": {"cartrak-check"}, "response_mode": {"query"}}
+	sep := "?"
+	if strings.Contains(o.CheckURL, "?") {
+		sep = "&"
+	}
+	return o.CheckURL + sep + q.Encode()
 }

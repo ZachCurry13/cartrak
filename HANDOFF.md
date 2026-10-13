@@ -39,3 +39,10 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 
 ## Other planned work
 - Phone OBD-II recorder (Android Chrome + BLE adapter) and comma 4 push, via a shared ingest API with device tokens.
+
+## FordConnect 2.0 sign-in: how it really works (found in v0.8.1 from marq24/ha-fordconnect-query)
+- Sign-in START: GET https://api.vehicle.ford.com/fcon-public/v1/auth/init?response_type=code&client_id=..&redirect_uri=..&state=<=16 chars> -> 302 to login.ford.com (Ford login + vehicle consent) -> redirect to the registered redirect_uri with code+state. NO scope on the start. state MUST be <=16 chars.
+- Token: POST .../dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_FCON_AUTHORIZE (code, grant_type, redirect_uri, client_id, client_secret; scope optional, CarTrak tries with then without on 400).
+- The B2C_1A_FCON_AUTHORIZE *authorize* endpoint is NOT a sign-in start (always AADB2C90075); CarTrak uses it only to check which redirect URIs are registered (accepted = proceeds to AADB2C90075, rejected = AADB2C90006 mismatch).
+- Newly registered apps can take ~2h to deploy; redirect-address edits also take time (the user's with-path entry became accepted hours after being added).
+- Telemetry shape: vehicles[].metrics.<camelCase>.value, e.g. xevBatteryRange, position.value.location.{lat,lon,alt}, heading, compassDirection, doorLockStatus, hoodStatus, tire/indicator lists, customMetrics.*. Read more in marq24's fordpass_handler.py. Parser matches names ignoring case and underscores.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.1
+
+### 🔗 Connecting Ford (the real fix)
+- CarTrak now starts the sign-in at Ford's real sign-in address (the same one other FordConnect Query apps use), so Ford shows its own sign-in and vehicle-consent pages. Earlier versions started at a back-end address that always failed with "RESTApiCallForUserInfo".
+- The sign-in link now carries a short `state` (Ford rejects a long one) and no extra scope fields.
+- The token step tries Ford's documented form and, if Ford refuses it with a 400, again without the scope field.
+- CarTrak now understands the real telemetry layout (battery, range, odometer, location, ignition, plug and more), so the dashboard fills in once Ford is linked.
+
 ## 0.8.0
 
 ### ✨ A cleaner More page
