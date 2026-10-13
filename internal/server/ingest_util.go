@@ -57,4 +57,3 @@ func (r *rateWindow) allow(id int64) bool {
 	r.seen[id] = append(keep, time.Now())
 	return true
 }
-
