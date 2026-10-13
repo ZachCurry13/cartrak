@@ -23,6 +23,7 @@ func (s *Server) CleanupLoop(ctx context.Context) {
 }
 
 func (s *Server) cleanupOnce(now time.Time) {
+	s.purgeTiles(now)
 	if s.Cfg == nil {
 		return
 	}

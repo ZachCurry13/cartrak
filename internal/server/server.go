@@ -38,7 +38,10 @@ type Server struct {
 	SessionDays int              // "keep me signed in" length; 0 = 30
 	Upd         *updater.Checker // nil disables update checks
 	lim         limiter
-	devRate     rateWindow // per-device call limit for the phone ingest API
+	devRate     rateWindow   // per-device call limit for the phone ingest API
+	TileDir     string       // where downloaded map tiles are kept; empty switches maps off
+	TileClient  *http.Client // optional, for tests
+	tiles       tileFlight
 }
 
 func (s *Server) Handler() http.Handler {
@@ -65,6 +68,8 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /api/health", s.auth(false, s.health))
 	m.HandleFunc("GET /api/vehicle", s.auth(false, s.vehicle))
+	m.HandleFunc("GET /api/map", s.auth(false, s.mapConfig))
+	m.HandleFunc("GET /api/tiles/{z}/{x}/{y}", s.auth(false, s.tile))
 	m.HandleFunc("GET /api/vehicle-health", s.auth(false, s.vehicleHealth))
 	m.HandleFunc("GET /api/status", s.auth(false, s.status))
 	m.HandleFunc("GET /api/latest", s.auth(false, s.latest))

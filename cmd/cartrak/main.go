@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -73,7 +74,8 @@ func main() {
 	}
 	port := cfg.Addr[strings.LastIndex(cfg.Addr, ":")+1:]
 	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
-		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
+		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays,
+		TileDir: filepath.Join(cfg.DataDir, "tiles")}
 	p.After = srv.Broadcast
 	srv.ApplyTunnel()
 	defer tun.Stop()
