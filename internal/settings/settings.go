@@ -28,7 +28,7 @@ var Defs = []Def{
 	{Key: "FORD_REDIRECT_URL", Label: "Ford redirect URL", Placeholder: "https://cartrak.example.com/ford/callback",
 		Help: "Must exactly match a redirect URI registered on your Ford app. Registered http://localhost? Enter exactly that: after signing in you paste the address Ford sends you to. Registered a CarTrak address? Use that, and linking finishes by itself."},
 	{Key: "FORD_AUTH_URL", Label: "Ford sign-in address (advanced)", Placeholder: "leave empty to use the built-in address",
-		Help: "Only change this if Ford's documentation gives a different sign-in (authorize) address for FordConnect 2.0."},
+		Help: "Only if Ford documentation gives a different sign-in link for FordConnect 2.0. You can paste the whole link and write {client_id}, {redirect_uri}, {state} and {scope} where those values belong."},
 	{Key: "FORD_VIN", Label: "Vehicle ID (optional)", Help: "Only needed if several vehicles are authorized. Default: the first one."},
 	{Key: "CARTRAK_TUNNEL_TOKEN", Label: "Cloudflare tunnel token", Secret: true, Group: "remote"},
 	{Key: "CARTRAK_PUBLIC_ADDRESS", Label: "Public address", Group: "remote"},

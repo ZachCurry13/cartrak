@@ -122,6 +122,9 @@ func parseReturn(in string) returned {
 // correlation id and timestamp lines Azure adds, and adding a hint for the
 // most common mistake: a redirect address that is not registered.
 func explainFordError(code, desc string) string {
+	if strings.Contains(desc, "AADB2C90075") || strings.Contains(desc, "RESTApiCallForUserInfo") {
+		return "Ford accepted the address but its own sign-in service reported a problem (AADB2C90075, the user-info step). Sign in with the FordPass account that owns or has been given your car, make sure that account has finished FordPass sign-up, and try again. If it repeats, send the exact message to support."
+	}
 	if i := strings.IndexAny(desc, "\r\n"); i >= 0 {
 		desc = desc[:i]
 	}

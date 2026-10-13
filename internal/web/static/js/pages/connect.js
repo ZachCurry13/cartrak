@@ -38,6 +38,24 @@ export default async function connect(root, _a, session) {
     finish.disabled = false;
   } }, 'Finish connecting');
 
+  // Ask Ford which redirect address is registered on this app, and switch to one it accepts.
+  const check = h('section', { class: 'card' }, h('h2', {}, 'Ford address check'), h('p', { class: 'muted' }, 'Asking Ford which redirect address is registered on your app…'));
+  api('/api/admin/ford/detect-redirect', { method: 'POST' }).then((r) => {
+    if (r.changed) { sessionStorage.setItem('redirectSwitched', r.chosen); location.reload(); return; }
+    const note = sessionStorage.getItem('redirectSwitched');
+    sessionStorage.removeItem('redirectSwitched');
+    check.replaceChildren(...[h('h2', {}, 'Ford address check'),
+      note ? h('p', {}, `CarTrak switched the redirect to ${note} because Ford accepts it.`) : null,
+      ...r.results.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow', style: 'overflow-wrap:anywhere' }, x.uri), chip(x.accepted ? 'ok' : 'bad', x.accepted ? 'registered' : 'not registered'))),
+      r.chosen ? h('p', { class: 'muted' }, `In use: ${r.chosen}`)
+        : h('div', { class: 'banner' }, 'Ford accepts none of these addresses. In the Ford developer portal, add one under Account Linking Info (the plus sign), exactly as written above, then reload this page.'),
+      r.locked ? h('p', { class: 'muted' }, 'The redirect URL is fixed by an environment variable or config.yaml, so CarTrak did not change it.') : null].filter(Boolean));
+  }).catch((e) => {
+    if (/cannot check/.test(e.message)) { check.remove(); return; }
+    check.replaceChildren(h('h2', {}, 'Ford address check'), h('p', { class: 'muted' }, e.message));
+  });
+  root.append(check);
+
   const insecure = redirect.startsWith('http://') && !redirect.startsWith('http://localhost') && !redirect.startsWith('http://127.0.0.1');
   root.append(...(insecure ? [h('div', { class: 'banner' }, h('b', {}, 'Ford will refuse this address. '), 'It is plain http, and Ford only accepts https (or http://localhost). Set up remote access first (More, Remote access) and use its https address, or register http://localhost on your Ford app and use the paste step.', h('p', {}, h('a', { class: 'btn', href: '#/remote' }, 'Set up remote access')))] : []),
     h('section', { class: 'card' }, h('h2', {}, '1. Sign in at Ford'),

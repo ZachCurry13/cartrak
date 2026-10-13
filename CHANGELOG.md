@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.3
+
+### 🔗 Connecting Ford
+- CarTrak now asks Ford which redirect address is registered on your app and uses one Ford accepts. Pressing Connect Ford checks first, so Ford is never sent an address it will reject (the repeating redirect_uri_mismatch error). The Connect Ford page shows what Ford said for each address.
+- Clearer message when Ford accepts the address but reports its own sign-in problem.
+- The Ford sign-in address setting accepts a link copied from Ford documentation, with {client_id}, {redirect_uri}, {state} and {scope} placeholders.
+
 ## 0.7.2
 
 ### 🔗 Connecting Ford
