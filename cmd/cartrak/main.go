@@ -56,7 +56,7 @@ func main() {
 		}, st)
 		prov, link = c, c
 	case "demo":
-		prov = ford.NewDemo()
+		prov = ford.NewDemoKind(os.Getenv("CARTRAK_DEMO_POWERTRAIN")) // demo only: ev (default), gas, hev or phev
 	default:
 		log.Fatalf("provider %q is not available (use fordconnect, fordconnect1 or demo)", cfg.Provider)
 	}

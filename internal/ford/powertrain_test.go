@@ -70,7 +70,7 @@ func TestParseRealBatteryCarResponse(t *testing.T) {
 	near("12 V battery", s.Battery12V, 12.0625)
 	near("charge", s.SoCPct, 91.5)
 	near("range", s.RangeKm, 355)
-	near("odometer", s.OdometerKm, 141942)
+	near("odometer", s.OdometerKm, 50000)
 	near("traction battery volts", s.HVVolts, 379)
 	near("capacity", s.CapacityKwh, 88.45)
 	near("oil life is parsed but a battery car never shows it", s.OilLifePct, 100)

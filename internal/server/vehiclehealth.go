@@ -41,7 +41,7 @@ func (s *Server) vehicleHealth(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// modelName is for example "2021 Mustang Mach-E", from Ford's garage record.
+// modelName is for example "2024 Mustang Mach-E", from Ford's garage record.
 func modelName(f map[string]any) string {
 	var parts []string
 	for _, k := range []string{"garage.modelYear", "garage.modelName"} {

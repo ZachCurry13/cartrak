@@ -12,6 +12,14 @@
 - Tire pressures and the lock state now read Ford's real layout (a list per wheel and per door), so the Tires card and the Locks line fill in with a linked car.
 - The built-in demo car now uses the same layout, so these cards can be previewed without a car.
 
+### 🩺 Vehicle health tab
+- New Health tab: voltages, battery health, oil and fuel, tires, trouble codes, Ford alerts and warning lights, with a "Needs a look" list at the top and small daily trends for the 12 V battery, the main battery's estimated capacity and oil life.
+- Built for each kind of car. CarTrak now knows whether the car is electric, plug-in hybrid, hybrid or gas: it reads Ford's vehicle record first, falls back to the data the car reports, and you can choose the type under Settings, Vehicle type. Oil life and fuel show for cars with an engine; the main battery shows for electric and hybrid cars. Battery cars never show oil, even though Ford lists an oil life of 100 percent for them.
+- Home follows the type too: gas and regular hybrid cars have no Charging tab or card, a gas car has no Battery card, and cars with an engine get a Fuel and oil card.
+- Each value says how old it is when it is more than two hours old (a parked car sends some values only when it wakes). The Home battery card says so as well.
+- Fixed: Home showed the outside temperature as 32 °F on the real car because Ford's ambient temperature field reads 0; the real outside temperature is used now. Door names no longer say "Unknown".
+- The demo car now uses the real data layout and can act as an electric, gas, hybrid or plug-in hybrid car (CARTRAK_DEMO_POWERTRAIN).
+
 ### 📱 Phone tracking (optional)
 - New More, Phone tracking page: pair a phone, get a one-time token, and copy ready-made request examples. A test button confirms the phone can reach CarTrak, and the page lists the latest messages so you can see an automation fired.
 - When a phone says a trip started, CarTrak asks Ford right away and checks more often until Ford reports the trip; when it says the trip ended, CarTrak checks again so the trip closes promptly. Ford still decides what counts as a trip, so odometer and battery numbers stay exact.

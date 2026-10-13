@@ -82,6 +82,7 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
 | `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/Chicago` | yes |
+| `CARTRAK_POWERTRAIN` | (auto) | Vehicle type: `ev`, `phev`, `hev` or `gas`. Empty works it out from Ford. See [vehicle health](docs/vehicle-health.md) | yes |
 | `CARTRAK_TRACK_KEEP_DAYS` | (empty = keep all) | Delete phone GPS points older than this many days. Trips are always kept. See [phone tracking](docs/phone-tracking.md) | yes |
 | `FORD_CLIENT_ID` | (empty) | From Ford's developer portal | yes |
 | `FORD_CLIENT_SECRET` | (empty) | Keep it private; the Admin page never shows it again | yes |
@@ -110,7 +111,7 @@ More detail in [docs/configuration.md](docs/configuration.md).
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

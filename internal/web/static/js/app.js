@@ -10,6 +10,7 @@ const routes = {
   trips: () => import('./pages/trips.js'),
   trip: () => import('./pages/tripdetail.js'),
   charging: () => import('./pages/charging.js'),
+  health: () => import('./pages/vehiclehealth.js'),
   data: () => import('./pages/data.js'),
   settings: () => import('./pages/settings.js'),
   rules: () => import('./pages/rules.js'),
@@ -29,7 +30,7 @@ const routes = {
 
 const view = document.getElementById('view');
 const tabs = document.getElementById('tabs');
-export const session = { me: null, about: null, installPrompt: null };
+export const session = { me: null, about: null, vehicle: null, installPrompt: null };
 let stopRefresh = null;
 
 // Chrome/Android offers a one-tap install; keep the event for the Getting started page.
@@ -51,6 +52,13 @@ async function loadAbout() {
   if (!store.get('seenVersion')) store.set('seenVersion', session.about.version);
 }
 
+// The kind of car (electric, hybrid, gas) decides which tabs make sense: a gas car has no Charging tab.
+async function loadVehicle() {
+  try { session.vehicle = await api('/api/vehicle'); } catch (e) { /* keep what we had */ }
+  const charging = tabs.querySelector('a[href="#/charging"]');
+  if (charging) charging.hidden = !!session.vehicle && !session.vehicle.plug;
+}
+
 async function firstRunTour() {
   if (session.me.role !== 'admin' || store.get('welcomed')) return false;
   store.set('welcomed', '1');
@@ -63,12 +71,13 @@ async function firstRunTour() {
 async function render() {
   if (stopRefresh) { stopRefresh(); stopRefresh = null; }
   const [name, ...args] = (location.hash.replace(/^#\/?/, '') || '').split('/');
-  const tab = ['', 'trips', 'live', 'charging', 'data'].includes(name) ? name : name === 'trip' ? 'trips' : 'settings';
+  const tab = ['', 'trips', 'live', 'charging', 'health', 'data'].includes(name) ? name : name === 'trip' ? 'trips' : 'settings';
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   try {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));
       await loadAbout();
+      await loadVehicle();
       if (await firstRunTour()) return; // hashchange re-renders onto the tour
     }
     tabs.hidden = false;
@@ -95,6 +104,7 @@ async function syncLabel() {
   try {
     const st = await api('/api/status');
     document.getElementById('sync').textContent = st.poller.linked ? `updated ${ago(st.poller.lastOk)}` : 'not linked';
+    loadVehicle();
   } catch (e) { /* offline */ }
 }
 

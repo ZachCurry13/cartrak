@@ -38,7 +38,7 @@ func TestVehicleHealthEndpointForABatteryCar(t *testing.T) {
 	if err := json.Unmarshal([]byte(b), &out); err != nil {
 		t.Fatal(err)
 	}
-	if out.Vehicle.Powertrain != "ev" || out.Vehicle.Source != "garage" || out.Model != "2021 Mustang Mach-E" {
+	if out.Vehicle.Powertrain != "ev" || out.Vehicle.Source != "garage" || out.Model != "2024 Mustang Mach-E" {
 		t.Fatalf("vehicle: %+v model %q", out.Vehicle, out.Model)
 	}
 	ids := map[string]bool{}

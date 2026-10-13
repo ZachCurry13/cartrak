@@ -13,12 +13,19 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - comma 4 + StarPilot: planned as a separate data source; the device pushes drive summaries/GPS to CarTrak over the tunnel with a token (most private; Ford never involved). Ideas: openpilot engagement % per trip, disengagements, efficiency openpilot vs manual, device health.
 
 ## Next immediate steps
-1. Phone tracking is built on feature/v0.9 (store: devices/track_points/device_events; server: ingest.go, ingest_util.go, devices.go, tripphone.go, cleanup.go; poller: PhoneDriving in poller_wait.go; web: pages/phone.js, phonehelp.js, gpslog.js, gpscard.js). Remaining there: nothing blocking; real-phone test by the user (Tasker/MacroDroid/Shortcuts, see docs/phone-tracking.md).
-2. The user asked (mid-session) for a "Vehicle health" tab: voltages, codes, battery health. The data dictionary lists XEV_BATTERY_VOLTAGE, BATTERY_VOLTAGE (12 V), XEV_BATTERY_CAPACITY (estimated kWh), XEV_BATTERY_PERFORMANCE_STATUS, XEV_BATTERY_TEMPERATURE, XEV_BATTERY_IO_CURRENT, XEV_TRACTION_MOTOR_VOLTAGE and DIAGNOSTIC_TROUBLE_CODE/DTC_VALUE; whether this car's API returns them is unconfirmed. Plan and get agreement first.
-3. Then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end).
-4. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.
-5. Ask the user for Admin settings -> Ford diagnostics -> Copy responses once the 429 clears.
-6. Later: comma 4 push endpoint (reuse the device-token ingest), phone OBD-II recorder, FordPass fallback.
+1. Phone tracking and the Vehicle health tab are built on feature/v0.9 (see docs/phone-tracking.md and docs/vehicle-health.md). Needs a real-phone test by the user.
+2. Maps for trips (user request): real map tiles break the "nothing leaves the server" design and the CSP (img-src 'self' data:). Recommended: a server-side tile proxy with a disk cache (the phone never contacts the tile provider), OSM default with attribution, an Admin setting for a custom/keyed tile URL, and an off switch that falls back to the SVG route. Bundle Leaflet (BSD-2) in the repo instead of a CDN. Ask the user to confirm the tile source before building. Start with trip detail, later Home location and a trips overview.
+3. Then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end, low 12 V).
+4. Optional: read-only departure times and charge schedules card (the data is already pulled; the Mach-E lists 14 departure slots, all off).
+5. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.
+6. Later: comma 4 push endpoint (reuse the device-token ingest), phone OBD-II recorder (real DTCs, cell voltages), FordPass control module (off by default, admin-only, confirmations, audit log) only if the user wants commands.
+
+## What the real Ford data looks like (from a real Mach-E; no VIN, location or mileage kept here)
+- Layout: `telemetry.metrics.<name>.value` (no vehicles array), each metric also has `updateTime` and `oemCorrelationId`; list metrics are `<name>[i].value` with vehicleWheel / vehicleDoor / vehicleSide. `garage.engineType` is BEV for the Mach-E (authoritative vehicle type). `alerts.VehicleAlertList` holds a placeholder "No Data" (StatusCode 4040) when there are no alerts.
+- A battery car also reports oilLifeRemaining=100, hybridVehicleModeStatus, engineCoolantTemp, engineSpeed and tripFuelEconomy=0: never treat these as proof of an engine. `ambientTemp` reads 0 while `outsideTemperature` is right.
+- Values update at different times: the xev* battery metrics were 3 days older than the rest (the car reports them when it wakes), so show ages. `batteryStateOfCharge` (PRIMARY_BATTERY) is the 12 V battery's charge; `xevBatteryStateOfCharge` is the main battery as shown on the dash and `xevBatteryActualStateOfCharge` the cells (86.5 vs 91.5). xevBatteryCapacity was 88.45 kWh.
+- No DTC list and no indicators dict were present; their shapes are still unseen (parsed best-effort).
+- Units: odometer km, speed m/s (CarTrak converts), tire kPa, temperatures C.
 
 ## Known gaps
 - Ford endpoints unverified live. Docker image untested locally (no Docker); CI builds it.

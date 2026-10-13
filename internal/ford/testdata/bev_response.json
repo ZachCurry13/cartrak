@@ -22,7 +22,7 @@
       "oilLifeRemaining": {"updateTime": "2026-10-08T21:44:08Z", "value": 100},
       "tripFuelEconomy": {"value": 0, "tripProgress": "TRIP_IN_PROGRESS"},
       "ignitionStatus": {"value": "OFF"},
-      "odometer": {"updateTime": "2026-10-12T22:30:39Z", "value": 141942},
+      "odometer": {"updateTime": "2026-10-12T22:30:39Z", "value": 50000},
       "position": {"value": {"location": {"alt": 320, "lat": 40.0, "lon": -100.0}}},
       "speed": {"value": 0},
       "tirePressure": [
@@ -48,7 +48,7 @@
       "xevTractionMotorVoltage": {"value": 8}
     }
   },
-  "garage": {"engineType": "BEV", "make": "F", "modelName": "Mustang Mach-E", "modelYear": "2021", "vin": "TESTVIN0000000001"},
+  "garage": {"engineType": "BEV", "make": "F", "modelName": "Mustang Mach-E", "modelYear": "2024", "vin": "TESTVIN0000000001"},
   "alerts": {"message": "Success", "status": 2000, "version": "1.0",
     "VehicleAlertList": [{"StatusCode": 4040, "StatusDesc": "No Data", "Vin": "TESTVIN0000000001"}]}
 }

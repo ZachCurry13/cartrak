@@ -22,6 +22,12 @@ const mapLink = (lat, lon) => `https://www.google.com/maps?q=${lat},${lon}`;
 
 function card(title, ...kids) { return h('section', { class: 'card' }, h('h2', {}, title), ...kids); }
 
+// Ford sends some values only when the car wakes, so say when a value is old.
+function oldNote(x, metric) {
+  const t = Date.parse(pick(x, `${metric}.updateTime`) || '') / 1000;
+  return t && Date.now() / 1000 - t > 7200 ? h('p', { class: 'muted' }, `These battery values are from ${ago(t)}; the car reports them when it wakes up.`) : null;
+}
+
 function kv(rows) {
   return h('div', { class: 'kv' }, rows.filter((r) => r[1] != null).flatMap(([k, v]) => [h('span', {}, k), h('span', {}, v)]));
 }
@@ -53,14 +59,23 @@ export default async function dashboard(root, _args, session) {
     }
     const x = latest.extra || {};
     const soc = latest.socPct;
-    out.push(card('Battery',
-      h('div', { class: 'grid' }, stat('Charge', pct(soc)), stat('Range', dist(latest.rangeKm, 0)),
-        stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
-        stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
-      h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, soc || 0))}%` }))));
+    const veh = session.vehicle || { battery: true, plug: true, engine: true }; // unknown type: show everything the car reports
+    if (veh.battery) {
+      out.push(card('Battery',
+        h('div', { class: 'grid' }, stat('Charge', pct(soc)), stat('Range', dist(latest.rangeKm, 0)),
+          stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
+          stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
+        h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, soc || 0))}%` })),
+        oldNote(x, 'xevBatteryStateOfCharge')));
+    }
+    if (veh.engine && latest.fuelPct != null) {
+      out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
+        stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—')),
+        h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, latest.fuelPct))}%` }))));
+    }
 
     const charging = /charg/i.test(latest.chargeState || '') && !/not|complete|stop/i.test(latest.chargeState || '');
-    out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', latest.chargeState || 'Unknown'), ' ', chip(latest.plug === 'Connected' ? 'ok' : 'bad', latest.plug || 'Unknown')),
+    if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', latest.chargeState || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', latest.plug || 'Unknown')),
       kv([['Power', latest.chargeKw != null ? num(latest.chargeKw, 1, ' kW') : null],
         ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null],
         ['Current', pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT'), 0, ' A') : null],
