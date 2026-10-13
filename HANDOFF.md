@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-Released through v0.9.0 (tag v0.9.0, image ghcr.io/zachcurry13/cartrak:0.9.0 and :latest, public; 2026-10-13). v0.9.0 includes everything built in the 0.9 cycle (status screen, dashboard cards, phone tracking, vehicle health, maps, mileage log) and the held v0.8.2 fixes. feature/v0.10 is the next branch. Releases need the user's explicit OK each time.
+Released through v0.9.1 (tag v0.9.1, image ghcr.io/zachcurry13/cartrak:0.9.1 and :latest, public; 2026-10-13). v0.9.0 includes everything built in the 0.9 cycle (status screen, dashboard cards, phone tracking, vehicle health, maps, mileage log) and the held v0.8.2 fixes. feature/v0.10 is the next branch. Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions
@@ -20,6 +20,7 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 4. Optional: read-only departure times and charge schedules card (the data is already pulled; the Mach-E lists 14 departure slots, all off).
 5. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.
 6. Later: comma 4 push endpoint (reuse the device-token ingest), phone OBD-II recorder (real DTCs, cell voltages), FordPass control module (off by default, admin-only, confirmations, audit log) only if the user wants commands.
+7. Open questions from the user: (a) dad using the same server with his own account and car needs multi-vehicle/multi-owner support (not built; the single Ford link and shared data make every account see one car). Plan agreed: first test whether Ford lets a second FordPass account authorize through the user's developer app, using a throwaway copy (cartrak.exe on port 18081, data in data/fordtest, git-excluded; the user enters their own client ID/secret there, dad signs in at Ford, then paste the http://localhost return address on the Connect page step 2). Then decide between a second CarTrak copy for dad or building multi-user. (b) Android Auto: not possible for web apps; needs a native Android app using the Android for Cars App Library (categories such as POI, IoT), sideloadable via Android Auto developer settings; deferred.
 
 ## What the real Ford data looks like (from a real Mach-E; no VIN, location or mileage kept here)
 - Layout: `telemetry.metrics.<name>.value` (no vehicles array), each metric also has `updateTime` and `oemCorrelationId`; list metrics are `<name>[i].value` with vehicleWheel / vehicleDoor / vehicleSide. `garage.engineType` is BEV for the Mach-E (authoritative vehicle type). `alerts.VehicleAlertList` holds a placeholder "No Data" (StatusCode 4040) when there are no alerts.
