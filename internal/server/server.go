@@ -30,6 +30,7 @@ type Server struct {
 	Version     string
 	Cfg         *settings.Settings // admin-panel settings (nil in some tests)
 	Prober      Prober             // optional: Ford diagnostics
+	Redirects   RedirectChecker    // optional: ask Ford which redirect addresses are registered
 	Tunnel      *tunnel.Supervisor // in-app Cloudflare connector (nil in some tests)
 	Port        string             // port the app listens on, for the setup steps
 	hub         hub
@@ -52,6 +53,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/admin/settings", s.auth(true, s.getSettings))
 	m.HandleFunc("PUT /api/admin/settings", s.auth(true, s.saveSettings))
 	m.HandleFunc("POST /api/admin/ford-probe", s.auth(true, s.fordProbe))
+	m.HandleFunc("POST /api/admin/ford/detect-redirect", s.auth(true, s.detectRedirect))
 	m.HandleFunc("GET /api/admin/remote", s.auth(true, s.getRemote))
 	m.HandleFunc("PUT /api/admin/remote", s.auth(true, s.saveRemote))
 	m.HandleFunc("GET /api/about", s.auth(false, s.about))

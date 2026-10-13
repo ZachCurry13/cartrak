@@ -17,13 +17,7 @@ func (c *Connect2) scope(o Connect2Opts) string { return o.ClientID + " offline_
 // LinkURL is where the owner signs in to FordPass and authorizes the vehicle.
 func (c *Connect2) LinkURL(state string) string {
 	o := c.opts()
-	q := url.Values{"client_id": {o.ClientID}, "response_type": {"code"}, "redirect_uri": {o.RedirectURL},
-		"scope": {c.scope(o)}, "state": {state}, "response_mode": {"query"}}
-	sep := "?"
-	if strings.Contains(o.AuthURL, "?") {
-		sep = "&"
-	}
-	return o.AuthURL + sep + q.Encode()
+	return c.authURL(o, o.RedirectURL, state)
 }
 
 // Exchange trades the one-time code from the sign-in redirect for tokens.

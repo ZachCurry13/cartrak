@@ -1,6 +1,5 @@
 # Status
 
-- Released: v0.1.0 to v0.7.2 (latest tag v0.7.2, image :latest, linux/amd64+arm64). Highlights: Ford provider (FordConnect 2.0), trips/charging/rules, Live view + Road trip mode + Data saver, in-app Cloudflare tunnel, per-trip time zones, offline last readings, Connect Ford page with one-tap redirect choices.
-- In progress (feature/v0.8): source and test files split so everything is under 200 lines (done, no behaviour change). Next on this branch: phone tracking foundation (ingest API with device tokens, phone GPS points and start/stop events merged into trips, Ford fast-poll on start), Live-view GPS logger, Android Tasker/MacroDroid and iPhone Shortcuts recipes.
-- Waiting on the user: link Ford and run Admin settings -> Ford diagnostics -> Copy responses, so dashboard cards can be built from the real telemetry shape.
-- Open: Ford sign-in/response shapes unverified live; Docker image builds are verified in CI.
+- Released: v0.1.0 to v0.7.3 (latest tag v0.7.3, image :latest, linux/amd64+arm64). v0.7.3: CarTrak asks Ford which redirect address is registered (verified against the real Ford service: bare site address and http://localhost accepted, /ford/callback rejected) and uses one Ford accepts; Connect Ford checks before sending the browser to Ford; sign-in address setting accepts a pasted link with placeholders.
+- In progress (feature/v0.8): all source/test files under 200 lines (done), cleaner UI (next), then phone tracking (ingest API with device tokens, phone GPS, Android Tasker/MacroDroid + iPhone Shortcuts recipes, Live-view GPS logger).
+- Waiting on the user: finish Ford sign-in on v0.7.3. Unverified: Ford returned AADB2C90075 (user-info step) to a bare authorize request with no signed-in user; the real FordConnect 2.0 sign-in start is unconfirmed until the user tries it or shares Ford's account-linking documentation. Then run Admin settings -> Ford diagnostics -> Copy responses so dashboard cards can use real data.

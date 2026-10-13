@@ -41,13 +41,14 @@ func main() {
 	var prov ford.Provider
 	var link server.Linker
 	var prober server.Prober
+	var redirects server.RedirectChecker
 	switch cfg.Provider {
 	case "fordconnect": // FordConnect 2.0 (current)
 		c := ford.NewConnect2(func() ford.Connect2Opts {
 			return ford.Connect2Opts{ClientID: cfgs.Value("FORD_CLIENT_ID"), ClientSecret: cfgs.Value("FORD_CLIENT_SECRET"),
 				RedirectURL: cfgs.Value("FORD_REDIRECT_URL"), AuthURL: cfgs.Value("FORD_AUTH_URL")}
 		}, st)
-		prov, link, prober = c, c, c
+		prov, link, prober, redirects = c, c, c, c
 	case "fordconnect1": // older FordConnect 1 API, kept for apps registered for it
 		c := ford.NewConnectFn(func() ford.ConnectOpts {
 			return ford.ConnectOpts{ClientID: cfgs.Value("FORD_CLIENT_ID"), ClientSecret: cfgs.Value("FORD_CLIENT_SECRET"),
@@ -71,7 +72,7 @@ func main() {
 		tun.Bin = b
 	}
 	port := cfg.Addr[strings.LastIndex(cfg.Addr, ":")+1:]
-	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober,
+	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
 		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays}
 	p.After = srv.Broadcast
 	srv.ApplyTunnel()

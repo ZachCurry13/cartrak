@@ -82,6 +82,10 @@ func (s *Server) fordConnect(w http.ResponseWriter, r *http.Request) {
 			_ = s.S.SetKV("derived_redirect", s.origin(r)+"/ford/callback")
 		}
 	}
+	if !s.ensureRedirect(r) { // Ford accepts none of our candidate addresses: show why here, not on a Ford error page
+		http.Redirect(w, r, "/#/connect", http.StatusFound)
+		return
+	}
 	state := randToken()
 	_ = s.S.SetKV("ford_state", state+"|"+strconv.FormatInt(time.Now().Add(15*time.Minute).Unix(), 10))
 	http.Redirect(w, r, s.Link.LinkURL(state), http.StatusFound)
