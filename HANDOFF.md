@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-Released through v0.9.1 (tag v0.9.1, image ghcr.io/zachcurry13/cartrak:0.9.1 and :latest, public; 2026-10-13). v0.9.0 includes everything built in the 0.9 cycle (status screen, dashboard cards, phone tracking, vehicle health, maps, mileage log) and the held v0.8.2 fixes. feature/v0.10 is the next branch. Releases need the user's explicit OK each time.
+Released through v0.10.0 (tag v0.10.0, image ghcr.io/zachcurry13/cartrak:0.10.0 and :latest, public; 2026-10-13). v0.9.0 includes everything built in the 0.9 cycle (status screen, dashboard cards, phone tracking, vehicle health, maps, mileage log) and the held v0.8.2 fixes. feature/v0.11 is the next branch. Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions
@@ -13,7 +13,7 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - comma 4 + StarPilot: planned as a separate data source; the device pushes drive summaries/GPS to CarTrak over the tunnel with a token (most private; Ford never involved). Ideas: openpilot engagement % per trip, disengagements, efficiency openpilot vs manual, device health.
 
 ## Next immediate steps
-1. Web Push alerts are built on feature/v0.10 (see docs/notifications.md): push.Service sends via webpush-go with VAPID keys in kv; alerts.Engine compares successive readings (hook p.OnReading) and Tick checks silence; subscriptions in push_subs; only googleapis/mozilla/apple/windows push hosts are contacted. Next: the user tries it on a real phone over the https address, then release 0.10.0 if OK.
+1. Web Push alerts are RELEASED in 0.10.0 (see docs/notifications.md; not yet tried on a real phone): push.Service sends via webpush-go with VAPID keys in kv; alerts.Engine compares successive readings (hook p.OnReading) and Tick checks silence; subscriptions in push_subs; only googleapis/mozilla/apple/windows push hosts are contacted. Next: the user tries it on a real phone over the https address, then release 0.10.0 if OK.
 2. Maps for trips are BUILT (decisions made with the user: server-side OSM tile proxy with disk cache in <data>/tiles, maps on trip page + Home location card + Trips Map view, own slippy map js/map.js, no third-party library, settings CARTRAK_MAP_ENABLED/TILE_URL/ATTRIBUTION). Not yet checked against real OpenStreetMap tiles (tested with a local fake tile server); first real use will show whether OSM answers the CarTrak User-Agent. Docs: docs/maps.md.
 2b. Mileage log is BUILT (docs/mileage.md): internal/geocode (Nominatim client, 1 req/s, rounded to 3 decimals, places cache table), internal/mileage (rows, ISO weeks), /api/mileage (admin only), pages/mileage.js. The user's sheet format: Date (YYYY-MM-DD), Origin City, Destination City (comma list, each city once, origin left out), Description (Customer Visits), Total Miles Driven, then Total Mileage Recorded. The user asked for weeks 26-28 but CarTrak only has data since ~Oct 12 2026 (ISO weeks 26-28 are Jun 22-Jul 12), so earlier weeks are empty.
 3. Then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end, low 12 V).
