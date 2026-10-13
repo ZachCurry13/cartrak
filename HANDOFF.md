@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-Released through v0.10.0 (tag v0.10.0, image ghcr.io/zachcurry13/cartrak:0.10.0 and :latest, public; 2026-10-13). v0.9.0 includes everything built in the 0.9 cycle (status screen, dashboard cards, phone tracking, vehicle health, maps, mileage log) and the held v0.8.2 fixes. feature/v0.11 is the next branch. Releases need the user's explicit OK each time.
+Released through v0.10.1 (tag v0.10.1, image ghcr.io/zachcurry13/cartrak:0.10.1 and :latest, public; 2026-10-13). v0.9.0 includes everything built in the 0.9 cycle (status screen, dashboard cards, phone tracking, vehicle health, maps, mileage log) and the held v0.8.2 fixes. feature/v0.11 is the next branch. Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions
@@ -28,6 +28,10 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - Values update at different times: the xev* battery metrics were 3 days older than the rest (the car reports them when it wakes), so show ages. `batteryStateOfCharge` (PRIMARY_BATTERY) is the 12 V battery's charge; `xevBatteryStateOfCharge` is the main battery as shown on the dash and `xevBatteryActualStateOfCharge` the cells (86.5 vs 91.5). xevBatteryCapacity was 88.45 kWh.
 - No DTC list and no indicators dict were present; their shapes are still unseen (parsed best-effort).
 - Units: odometer km, speed m/s (CarTrak converts), tire kPa, temperatures C.
+
+## Storage and performance (learned in 0.10.1)
+- Each reading stores ~85 KB: samples.extra (flattened, ~50 KB) plus snapshots.raw (~30 KB), roughly 10 GB a year at the current polling. SQLite reads of columns stored after the large extra column (all columns added by migrations: fuel_pct, oil_pct, hv_volts, capacity_kwh) walk overflow pages, so never scan them in bulk; use the trends table (small) for charts and TrackBetween (position only) for routes. The DB uses one connection, so one slow query stalls everything.
+- Open question for the user: keep full detail for ~30 days and only summaries after, or trim extra/raw (not done; the user chose to store all data originally).
 
 ## Known gaps
 - Ford endpoints unverified live. Docker image untested locally (no Docker); CI builds it.
