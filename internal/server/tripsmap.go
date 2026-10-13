@@ -52,7 +52,7 @@ func (s *Server) routeOf(t *store.Trip) [][2]float64 {
 	}
 	if len(line) < 2 {
 		line = line[:0]
-		ss, _ := s.S.SamplesBetween(t.StartTS, end)
+		ss, _ := s.S.TrackBetween(t.StartTS, end)
 		for _, x := range ss {
 			if x.Lat != nil && x.Lon != nil {
 				line = append(line, [2]float64{*x.Lat, *x.Lon})

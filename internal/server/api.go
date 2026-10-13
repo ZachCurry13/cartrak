@@ -77,7 +77,7 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 		ok(w, map[string]any{"trip": t, "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
 		return
 	}
-	ss, _ := s.S.SamplesBetween(t.StartTS, end)
+	ss, _ := s.S.TrackBetween(t.StartTS, end)
 	ok(w, map[string]any{"trip": t, "samples": ss, "phone": s.phoneRoute(t.StartTS, end)})
 }
 

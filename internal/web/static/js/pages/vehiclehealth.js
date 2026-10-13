@@ -1,5 +1,5 @@
 import { h, chip, ago } from '../ui.js';
-import { api } from '../api.js';
+import { api, AuthError } from '../api.js';
 import { rowEl, value, format } from '../healthrows.js';
 import { spark } from '../spark.js';
 
@@ -24,10 +24,19 @@ function attention(report) {
 }
 
 export default async function vehicleHealth(root, _a, session) {
-  const d = await api('/api/vehicle-health');
+  // Say so while loading, so the tab never looks dead; a failure gets a message and a retry.
+  const loading = h('p', { class: 'muted', role: 'status' }, 'Loading vehicle health…');
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Vehicle health')), loading);
+  let d;
+  try {
+    d = await api('/api/vehicle-health');
+  } catch (e) {
+    if (e instanceof AuthError) throw e;
+    return loading.replaceWith(h('div', { class: 'banner' }, `Could not load vehicle health: ${e.message} `, h('button', { class: 'sec', onclick: () => location.reload() }, 'Try again')));
+  }
+  loading.remove();
   const v = d.vehicle;
-  const typeChip = chip('work', v.label);
-  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Vehicle health'), typeChip));
+  root.querySelector('.page-title').append(chip('work', v.label));
   if (!d.ready) return root.append(h('p', { class: 'muted' }, 'No readings yet. This page fills in after the first successful sync.'));
 
   root.append(h('p', { class: 'muted' }, `${d.model || 'Your car'} · reading from ${ago(d.asOf)}. Ford sends some values only when the car wakes up, so older ones say how old they are.`));
