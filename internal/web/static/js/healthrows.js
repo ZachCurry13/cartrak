@@ -1,4 +1,4 @@
-import { h, chip, temp, pressure, dist, ago } from './ui.js';
+import { h, chip, temp, pressure, dist, speed, ago } from './ui.js';
 
 // Formats a row of the Vehicle health report. Units follow this device's metric/imperial choice.
 const fmt = {
@@ -10,6 +10,14 @@ const fmt = {
   tempC: (v) => temp(v),
   km: (v) => dist(v, 0),
   kpa: (v) => pressure(v),
+  kph: (v) => speed(v),
+  minutes: (v) => (v >= 60 ? `${Math.floor(v / 60)} h ${Math.round(v % 60)} min` : `${Math.round(v)} min`),
+  duration: (v) => (v >= 120 ? `${Math.round(v / 60)} min` : `${Math.round(v)} s`),
+  nm: (v) => `${Math.round(v)} N·m`,
+  accel: (v) => `${v.toFixed(2)} m/s²`,
+  degps: (v) => `${v.toFixed(2)} °/s`,
+  deg: (v) => `${Math.round(v)}°`,
+  rpm: (v) => `${Math.round(v)} rpm`,
 };
 
 export const format = (kind, v) => (fmt[kind] ? fmt[kind](v) : String(v));

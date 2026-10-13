@@ -46,3 +46,15 @@ table.mtable{border-collapse:collapse;width:100%;font-size:.9rem}
 .mtable th{color:var(--muted);font-weight:600;white-space:nowrap}
 .mtable td.num{text-align:right;white-space:nowrap}
 .mtable tfoot td{font-weight:700;border-bottom:0}
+.datatabs{flex-wrap:wrap;margin:8px 0}
+.drow{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;padding:10px 0;border-top:1px solid var(--line)}
+section.card>.drow:first-of-type,section.card>h2+.drow,section.card>p+.drow{border-top:0}
+.drow .dl{color:var(--muted)}
+.drow .dv{text-align:right}
+.drow .dn{flex-basis:100%;font-size:.85rem}
+.drow .drhelp{flex-basis:100%;font-size:.9rem;background:var(--bg);border-radius:8px;padding:8px 10px}
+.drow .raw{font-size:.8rem;opacity:.8;margin-top:4px;overflow-wrap:anywhere}
+.why{width:32px;height:32px;margin:-6px 0;min-height:0;padding:0;border-radius:50%;font-size:.8rem;line-height:1;background:var(--bg);color:var(--accent);border:1px solid var(--line);cursor:pointer;vertical-align:middle}
+.tlwrap{margin-top:8px;color:var(--accent)}
+svg.tl{display:block;width:100%;height:auto;background:var(--bg);border-radius:10px}
+.tllegend{font-size:.8rem;margin-top:4px}

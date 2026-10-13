@@ -1,32 +1,91 @@
 import { h, ago } from '../ui.js';
 import { api } from '../api.js';
 import { isSaver } from '../mode.js';
+import { dataRow } from '../datarows.js';
+import { timelineChart } from '../timeline.js';
 
-// Every value Ford returned in the latest reading, searchable.
+const KEY = 'cartrak.datatab';
+const keep = { get: () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } }, set: (v) => { try { localStorage.setItem(KEY, v); } catch (e) { /* ignore */ } } };
+const pad = (n) => String(n).padStart(2, '0');
+const dayOf = (ts) => { const d = new Date(ts * 1000); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const timeOf = (ts) => { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const dayRange = (ts) => { const d = new Date(ts * 1000); d.setHours(0, 0, 0, 0); const a = Math.floor(d.getTime() / 1000); return [a, a + 86399]; };
+const stamp = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+// The car in plain words, in tabs, for any moment in its history.
 export default async function data(root) {
-  if (isSaver()) {
-    // The full field list is the biggest download in the app: ask first on Data saver.
-    const gate = h('div', { class: 'card' }, h('h2', {}, 'All data'),
-      h('p', { class: 'muted' }, 'Data saver is on. This page downloads every field from the latest reading, which is much larger than the home screen.'),
-      h('button', { onclick: async () => { gate.remove(); await show(root); } }, 'Load all fields'));
-    return root.append(gate);
-  }
-  return show(root);
-}
+  let d = null;
+  let tab = keep.get() || 'summary';
+  const head = h('div');
+  const tabs = h('div', { class: 'seg datatabs' });
+  const body = h('div');
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Car data')),
+    h('p', { class: 'muted' }, 'Everything the car tells CarTrak, in plain words. Tap the ? next to anything to see what it means. You can also look at how the car was at any earlier time.'), head, tabs, body);
 
-async function show(root) {
-  const latest = await api('/api/latest');
-  if (!latest) return root.append(h('p', { class: 'muted' }, 'No readings yet.'));
-  const entries = Object.entries(latest.extra || {}).sort((a, b) => a[0].localeCompare(b[0]));
-  const find = h('input', { type: 'search', placeholder: `Search ${entries.length} fields…`, 'aria-label': 'Search fields' });
-  const list = h('section', { class: 'card' });
-  const draw = () => {
-    const q = find.value.trim().toLowerCase();
-    const rows = entries.filter(([k, v]) => !q || k.toLowerCase().includes(q) || String(v).toLowerCase().includes(q));
-    list.replaceChildren(...(rows.length ? rows.map(([k, v]) => h('div', { class: 'row' }, h('span', { class: 'grow muted' }, k), h('b', {}, String(v))))
-      : [h('p', { class: 'muted' }, 'No matches.')]));
-  };
-  find.addEventListener('input', draw);
-  root.append(h('h2', {}, 'All data'), h('p', { class: 'muted' }, `Latest reading from ${ago(latest.ts)}. Raw responses are kept in the database.`), find, h('div', { style: 'height:12px' }), list);
-  draw();
+  async function load(at) {
+    d = await api(`/api/car-data${at ? `?at=${at}` : ''}`);
+    await drawHead();
+    drawBody();
+  }
+
+  async function drawHead() {
+    if (!d.ready) {
+      head.replaceChildren(h('div', { class: 'card' }, h('p', {}, d.first ? `CarTrak has no reading that early. Its first reading is from ${stamp(d.first)}.` : 'No readings yet. Data appears after the first successful sync.'),
+        d.first ? h('button', { onclick: () => load(d.first) }, 'Go to the first reading') : null));
+      tabs.replaceChildren();
+      body.replaceChildren();
+      return;
+    }
+    const date = h('input', { type: 'date', value: dayOf(d.ts), min: d.first ? dayOf(d.first) : undefined, 'aria-label': 'Day' });
+    const time = h('input', { type: 'time', value: timeOf(d.ts), 'aria-label': 'Time' });
+    const go = () => { const t = new Date(`${date.value}T${time.value || '00:00'}`).getTime() / 1000; if (t) load(Math.floor(t)); };
+    const [from, to] = dayRange(d.ts);
+    const line = await api(`/api/timeline?from=${from}&to=${to}`).catch(() => null);
+    head.replaceChildren(h('section', { class: 'card' },
+      h('div', {}, h('b', {}, stamp(d.ts)), ' ', d.latest ? h('span', { class: 'chip ok' }, 'latest reading') : h('span', { class: 'chip work' }, `${ago(d.ts)}`)),
+      h('p', { class: 'seg' },
+        h('button', { class: 'sec', disabled: !d.prev, onclick: () => load(d.prev) }, '◀ Earlier'),
+        h('button', { class: 'sec', disabled: !d.next, onclick: () => load(d.next) }, 'Later ▶'),
+        d.latest ? null : h('button', { onclick: () => load(0) }, 'Latest')),
+      h('div', { class: 'cols2' }, h('div', {}, h('label', {}, 'Day'), date), h('div', {}, h('label', {}, 'Time'), time)),
+      h('p', {}, h('button', { class: 'sec', onclick: go }, 'Show the car at this time'),
+        h('span', { class: 'muted' }, ' It shows the last reading CarTrak had by then.')),
+      line && line.points.length > 1 ? timelineChart(line.points, from, to, d.ts, (t) => load(t)) : null));
+  }
+
+  function drawBody() {
+    if (!d.ready) return;
+    const names = [...d.report.tabs.map((t) => [t.id, t.title]), ['raw', 'All fields']];
+    if (!names.some(([id]) => id === tab)) tab = names[0][0];
+    tabs.replaceChildren(...names.map(([id, title]) => h('button', { class: id === tab ? 'on' : '', onclick: () => { tab = id; keep.set(id); drawBody(); } }, title)));
+    if (tab === 'raw') return raw();
+    const t = d.report.tabs.find((x) => x.id === tab);
+    body.replaceChildren(t.intro ? h('p', { class: 'muted' }, t.intro) : null,
+      ...t.groups.map((g) => h('section', { class: 'card' }, h('h2', {}, g.title), g.intro ? h('p', { class: 'muted' }, g.intro) : null, ...g.rows.map((r) => dataRow(r, d.ts, d.latest)))));
+  }
+
+  // Every raw value, searchable. It is a big download, so Data saver asks first.
+  async function raw() {
+    const show = async () => {
+      const r = await api(`/api/car-data/raw${d.latest ? '' : `?at=${d.ts}`}`);
+      const entries = Object.entries(r.fields || {}).sort((a, b) => a[0].localeCompare(b[0]));
+      const find = h('input', { type: 'search', placeholder: `Search ${entries.length} values…`, 'aria-label': 'Search values' });
+      const list = h('section', { class: 'card' });
+      const draw = () => {
+        const q = find.value.trim().toLowerCase();
+        const rows = entries.filter(([k, v]) => !q || k.toLowerCase().includes(q) || String(v).toLowerCase().includes(q));
+        list.replaceChildren(...(rows.length ? rows.map(([k, v]) => h('div', { class: 'row' }, h('span', { class: 'grow muted' }, k), h('b', {}, String(v)))) : [h('p', { class: 'muted' }, 'No matches.')]));
+      };
+      find.addEventListener('input', draw);
+      body.replaceChildren(h('p', { class: 'muted' }, 'The raw list exactly as Ford sent it, for reference. The other tabs explain these in plain words.'), find, h('div', { style: 'height:8px' }), list);
+      draw();
+    };
+    if (isSaver()) {
+      body.replaceChildren(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Data saver is on. The raw list is a large download.'), h('button', { onclick: show }, 'Load all values')));
+    } else {
+      await show();
+    }
+  }
+
+  await load(0);
 }
