@@ -54,7 +54,7 @@ app**, and CarTrak must ask for exactly that address. There are two setups:
 | You registered | Set the redirect URL in CarTrak to | How linking finishes |
 |---|---|---|
 | `http://localhost` (common for personal apps) | exactly `http://localhost` | After you sign in, the page that opens (on your own device) shows an error or nothing: that is expected. Copy the whole address from the browser's address bar (it contains `code=…`) and paste it into **More -> Connect Ford -> step 2**. |
-| `https://<your hostname>/ford/callback` (needs a [Cloudflare tunnel](cloudflare.md) or another public address) | exactly that address | Automatic: you land back in CarTrak and you are connected. |
+| `https://<your hostname>/ford/callback`, or just `https://<your hostname>` with no path (needs a [Cloudflare tunnel](cloudflare.md)) | exactly what you registered, with or without the path | Automatic: you land back in CarTrak and you are connected. CarTrak accepts Ford returning to either address. |
 
 Admin settings has buttons for both. If Ford shows `redirect_uri_mismatch` (or
 `AADB2C90006`, "not registered"), the address CarTrak sent is not one registered

@@ -37,8 +37,8 @@ export default async function remote(root, _a, session) {
     on.disabled = v.locked.enabled;
     link.replaceChildren(...[v.url ? h('a', { href: v.url, target: '_blank', rel: 'noopener' }, `Open ${v.url}`) : null].filter(Boolean));
     extras.replaceChildren(...[
-      v.redirect ? h('div', {}, h('p', { class: 'muted' }, 'Using this address with Ford? Use it as the redirect URL, then register the same address on your Ford app.'),
-        h('p', { class: 'seg' }, h('button', { class: 'sec', onclick: useForFord }, 'Use as Ford redirect URL'))) : null,
+      v.redirect ? h('div', {}, h('p', { class: 'muted' }, 'Using this address with Ford? Pick the redirect URL that matches EXACTLY what is registered on your Ford app: with the /ford/callback path, or just the address.'),
+        h('p', { class: 'seg' }, h('button', { class: 'sec', onclick: () => useForFord(v.redirect) }, 'Use ' + v.redirect), h('button', { class: 'sec', onclick: () => useForFord(v.url) }, 'Use ' + v.url + ' (no path)'))) : null,
       v.tokenSet && !v.locked.token ? h('p', {}, h('button', { class: 'sec', onclick: removeToken }, 'Remove saved token and turn off')) : null].filter(Boolean));
   }
 
@@ -63,10 +63,10 @@ export default async function remote(root, _a, session) {
     if (!confirm('Remove the saved tunnel token and turn remote access off?')) return;
     try { v = await api('/api/admin/remote', { method: 'PUT', body: { clearToken: true, enabled: false } }); msg.textContent = 'Removed.'; paintAll(); } catch (e) { msg.textContent = e.message; }
   }
-  async function useForFord() {
+  async function useForFord(value) {
     try {
-      await api('/api/admin/settings', { method: 'PUT', body: { values: { FORD_REDIRECT_URL: v.redirect } } });
-      msg.replaceChildren(`Ford redirect URL set to ${v.redirect}. Register this same address on your Ford app, then `, h('a', { href: '#/connect' }, 'connect Ford'), '.');
+      await api('/api/admin/settings', { method: 'PUT', body: { values: { FORD_REDIRECT_URL: value } } });
+      msg.replaceChildren(`Ford redirect URL set to ${value}. It must match the address registered on your Ford app exactly. Then `, h('a', { href: '#/connect' }, 'connect Ford'), '.');
     } catch (e) { msg.textContent = e.message; }
   }
   const paintAll = () => { paintStatus(); paintForm(); };

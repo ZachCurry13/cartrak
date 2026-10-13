@@ -27,7 +27,8 @@ export default async function admin(root, _a, session) {
         el, h('div', { class: 'muted', style: 'margin-top:4px' }, s.help),
         s.key === 'FORD_REDIRECT_URL' && !s.locked ? h('p', { class: 'seg', style: 'margin-top:6px' },
           h('button', { class: 'sec', onclick: () => { el.value = 'http://localhost'; } }, 'Use http://localhost'),
-          h('button', { class: 'sec', onclick: () => { el.value = data.suggestedRedirect; } }, 'Use this site address')) : null,
+          h('button', { class: 'sec', onclick: () => { el.value = data.suggestedRedirect; } }, 'Use this site + /ford/callback'),
+          h('button', { class: 'sec', onclick: () => { el.value = data.suggestedRedirect.replace('/ford/callback', ''); } }, 'Use this site only (no path)')) : null,
         s.secret && s.isSet && !s.locked ? h('button', { class: 'sec', style: 'margin-top:6px', onclick: () => clearSecret(s.key) }, 'Remove saved secret') : null);
     });
     box.replaceChildren(h('section', { class: 'card' }, ...rows,

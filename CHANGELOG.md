@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1
+
+### 🔗 Connecting Ford
+- Ford apps registered with just the site address (no /ford/callback path) now work: CarTrak finishes the link when Ford returns to the site root.
+- The Remote access and Admin pages have buttons for the address with and without the path, so it can match exactly what is registered on your Ford app.
+
 ## 0.7.0
 
 ### 🕒 Time zones that follow the car

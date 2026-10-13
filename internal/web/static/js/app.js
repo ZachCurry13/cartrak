@@ -94,6 +94,10 @@ async function syncLabel() {
 
 addEventListener('hashchange', render);
 setInterval(() => { if (!document.hidden) syncLabel(); }, effective() === 'saver' ? 300000 : 30000);
-render().then(syncLabel);
+// Ford may send the browser back to the site root (the redirect address registered on the Ford app may have
+// no /ford/callback path). If the address carries a sign-in answer, hand it to the callback page to finish.
+const fordReturn = /[?&](code|error)=/.test(location.search) || /[#&](code|error)=/.test(location.hash);
+if (fordReturn) location.replace('/ford/callback' + location.search + location.hash);
+else render().then(syncLabel);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
