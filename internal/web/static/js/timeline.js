@@ -18,7 +18,7 @@ export function timelineChart(points, from, to, markTs, onPick) {
   for (let i = 1; i < points.length; i++) {
     const p = points[i - 1];
     if (!p.driving && !p.charging) continue;
-    svg.append(el('rect', { x: x(p.ts), y: 0, width: Math.max(2, x(points[i].ts) - x(p.ts)), height: ht - 14, fill: p.charging ? '#059669' : '#1b5fc4', opacity: 0.22 }));
+    svg.append(el('rect', { x: x(p.ts), y: 0, width: Math.max(2, x(points[i].ts) - x(p.ts)), height: ht - 14, style: `fill:${p.charging ? 'var(--ok)' : 'var(--personal)'}`, opacity: 0.25 }));
   }
   const line = points.filter((p) => p.soc != null);
   if (line.length > 1) svg.append(el('polyline', { points: line.map((p) => `${x(p.ts).toFixed(1)},${y(p.soc).toFixed(1)}`).join(' '), fill: 'none', stroke: 'currentColor', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }));
@@ -29,12 +29,12 @@ export function timelineChart(points, from, to, markTs, onPick) {
     label.textContent = hr === 24 ? '' : `${hr}:00`;
     svg.append(label);
   }
-  if (markTs >= from && markTs <= to) svg.append(el('line', { x1: x(markTs), x2: x(markTs), y1: 0, y2: ht - 14, stroke: '#dc2626', 'stroke-width': 2 }));
+  if (markTs >= from && markTs <= to) svg.append(el('line', { x1: x(markTs), x2: x(markTs), y1: 0, y2: ht - 14, style: 'stroke:var(--bad)', 'stroke-width': 2 }));
   svg.addEventListener('click', (e) => {
     const r = svg.getBoundingClientRect();
     onPick(Math.round(from + ((e.clientX - r.left) / r.width) * (to - from)));
   });
   svg.style.cursor = 'pointer';
   return h('div', { class: 'tlwrap' }, svg, h('div', { class: 'muted tllegend' },
-    h('span', { class: 'chip work' }, 'battery %'), ' ', h('span', { class: 'chip ok' }, 'charging'), ' ', h('span', { class: 'chip personal' }, 'driving'), '  Tap the chart to jump to a moment.'));
+    h('b', {}, 'Line: battery %'), ' ', h('span', { class: 'chip ok' }, 'charging'), ' ', h('span', { class: 'chip personal' }, 'driving'), '  Tap the chart to jump to a moment.'));
 }

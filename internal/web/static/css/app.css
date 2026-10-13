@@ -1,7 +1,3 @@
-:root{--bg:#f4f6fa;--card:#fff;--text:#111827;--muted:#596273;--line:#e5e7eb;--accent:#2563eb;--accent-text:#fff;
---work:#b45309;--personal:#047857;--bad:#c81e1e;--ok:#047857}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--card:#151d2e;--text:#e5e7eb;--muted:#94a3b8;--line:#243049;--accent:#3b82f6;--work:#fbbf24;--personal:#34d399}}
-:root[data-theme=dark]{--bg:#0b1220;--card:#151d2e;--text:#e5e7eb;--muted:#94a3b8;--line:#243049;--accent:#3b82f6;--work:#fbbf24;--personal:#34d399}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:calc(64px + env(safe-area-inset-bottom))}

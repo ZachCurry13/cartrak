@@ -1,0 +1,67 @@
+/* The look: dark first, one green accent. Light mode keeps the same structure with deeper colours.
+   Loaded after the other stylesheets, so it has the last word. Colours only live in this block. */
+:root{--bg:#0d1117;--card:#161d27;--card2:#1c2531;--line:#232d3a;--text:#e6edf3;--muted:#8b98a5;--accent:#2fd4a0;--accent-text:#04261c;--work:#f5b84a;--personal:#58a6ff;--bad:#ff7b72;--ok:#2fd4a0;--warn:#f5b84a;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#0b8a66;--accent-text:#fff;--work:#b45309;--personal:#1b5fc4;--bad:#c62828;--ok:#0b7a5c;--warn:#b45309;color-scheme:light}}
+:root[data-theme=light]{--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#0b8a66;--accent-text:#fff;--work:#b45309;--personal:#1b5fc4;--bad:#c62828;--ok:#0b7a5c;--warn:#b45309;color-scheme:light}
+
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+header{background:none;color:var(--text);margin:0;padding-bottom:4px}
+header h1{font-size:1.05rem;font-weight:650;letter-spacing:.02em}
+header .muted,#ver{color:var(--muted)}
+#ver{font-size:.8rem;margin-left:auto;text-decoration:none}
+#ver.update::after{content:" \25CF";color:var(--warn)}
+
+/* cards */
+.card{border-radius:18px;padding:16px;box-shadow:none}
+.card>h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:650;margin:0 0 12px}
+.grid .stat{background:var(--card2);border-radius:12px;padding:10px 12px}
+.stat .v{color:var(--text);font-size:1.45rem;font-weight:600}
+.stat .l{font-size:.75rem}
+.bar{height:8px;background:var(--card2)}.bar>i{background:var(--accent);border-radius:6px}
+.banner{border-radius:14px}.banner.notice{border-color:var(--accent)}
+.kv span:nth-child(odd){color:var(--muted)}
+
+/* controls */
+button,.btn{border-radius:12px;background:var(--accent);color:var(--accent-text);font-weight:650;padding:8px 18px}
+button.sec,.btn.sec{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.danger{background:var(--bad);color:#fff}
+.seg button:not(.on){background:transparent;color:var(--text);border:1px solid var(--line)}
+input,select{background:var(--card2);border-radius:12px}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip{border:0;padding:3px 10px;background:color-mix(in srgb,currentColor 15%,transparent)}
+.chip.ok{color:var(--ok)}.chip.bad{color:var(--bad)}.chip.work{color:var(--work)}.chip.personal{color:var(--personal)}
+
+/* bottom bar, and the left sidebar on wide screens */
+nav#tabs{background:var(--card);border-top:1px solid var(--line)}
+nav#tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px;min-height:56px;font-size:.68rem;font-weight:500;color:var(--muted)}
+nav#tabs a svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav#tabs a.on{color:var(--accent);font-weight:650}
+@media (min-width:900px){
+  nav#tabs a{flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 16px;min-height:44px;font-size:.95rem}
+  nav#tabs a.on{background:var(--card2)}
+}
+
+/* battery ring (Home and Live) */
+.ring{display:block;width:min(62vw,190px);height:auto;margin:2px auto 14px}
+.ring .trk{stroke:var(--card2)}
+.ring .arc{stroke:var(--accent);transition:stroke-dasharray .6s}
+.ring.low .arc{stroke:var(--warn)}.ring.crit .arc{stroke:var(--bad)}
+.ring text{fill:var(--text)}.ring .sub{fill:var(--muted)}
+
+/* Live tiles */
+.tile{background:var(--card);border-radius:18px;padding:16px}
+.tile .tl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:650}
+.tile .tv{color:var(--text);font-weight:600}
+.tile.big{text-align:center}
+.tile.big .ring{width:min(100%,260px)}
+
+/* More page and lists */
+.menu{border-radius:18px}
+.avatar{background:var(--card2);color:var(--accent)}
+.item:hover,.item:focus-visible{background:var(--card2)}
+.gt{letter-spacing:.08em}
+.drow .drhelp,pre.code,.map{background:var(--card2)}
+.stat .v{font-size:1.3rem;overflow-wrap:anywhere}
+.seg button{min-height:44px;padding:6px 14px;font-size:.92rem}
+svg.tl{background:var(--card2)}

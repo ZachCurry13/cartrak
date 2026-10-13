@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0
+
+### 🎨 A new look
+- CarTrak now has a darker, calmer look with one green accent. Light mode follows the same design with deeper colours, and it still follows your phone or your choice under More, Display and data.
+- **Home** shows the battery as a ring with the percentage and range inside, then Energy left and Battery temp, your reserve and the 20 to 80% figure. Charging and Vehicle statuses now read as plain words (for example Not ready, Disconnected, Park) instead of Ford's capital letters.
+- **Live** uses the same ring on its big Charge tile. The ring turns amber at 20% or less and red at 10% or less.
+- The bottom bar has an icon above each label, and on a wide screen the left sidebar has them too.
+- Cards, buttons, chips, the Trips filters, the More menu and the Health and Data pages share one set of colours, sizes and corners. The day chart on Data follows the theme.
+- Nothing about what CarTrak records or how it works has changed.
+
 ## 0.13.0
 
 ### ✅ Mileage check

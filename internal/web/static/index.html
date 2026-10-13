@@ -4,22 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>CarTrak</title>
-<meta name="theme-color" content="#003478">
+<meta name="theme-color" content="#0d1117">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CarTrak">
 <link rel="stylesheet" href="/css/app.css">
-<link rel="stylesheet" href="/css/theme.css">
 <link rel="stylesheet" href="/css/menu.css">
 <link rel="stylesheet" href="/css/responsive.css">
+<link rel="stylesheet" href="/css/look.css">
 </head>
 <body>
-<header id="top"><h1>CarTrak</h1><span id="sync" class="muted"></span><a id="ver" class="muted" href="#/settings" style="color:#c7d4ee"></a></header>
+<header id="top"><h1>CarTrak</h1><span id="sync" class="muted"></span><a id="ver" class="muted" href="#/settings"></a></header>
 <main id="view" aria-live="polite"></main>
 <nav id="tabs" hidden>
-  <a href="#/">Home</a><a href="#/trips">Trips</a><a href="#/live">Live</a><a href="#/charging">Charging</a><a href="#/health">Health</a><a href="#/data">Data</a><a href="#/settings">More</a>
+  <a href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>Home</span></a>
+  <a href="#/trips"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Trips</span></a>
+  <a href="#/live"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg><span>Live</span></a>
+  <a href="#/charging"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 01-12 0V7zM12 17v5"/></svg><span>Charging</span></a>
+  <a href="#/health"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><span>Health</span></a>
+  <a href="#/data"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>Data</span></a>
+  <a href="#/settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>More</span></a>
 </nav>
 <script type="module" src="/js/app.js"></script>
 </body>

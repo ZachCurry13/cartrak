@@ -1,4 +1,4 @@
-import { h, stat, chip, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
+import { h, stat, chip, nice, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
 import { isSaver, effective } from '../mode.js';
@@ -9,6 +9,7 @@ import { createMap, mapConfig } from '../map.js';
 import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
 import { bandRow } from '../rangeband.js';
+import { batteryRing } from '../ring.js';
 
 let homeMap = null; // kept between refreshes
 
@@ -74,11 +75,11 @@ export default async function dashboard(root, _args, session) {
     const soc = latest.socPct;
     const veh = session.vehicle || { battery: true, plug: true, engine: true }; // unknown type: show everything the car reports
     if (veh.battery) {
-      out.push(card('Battery',
-        h('div', { class: 'grid' }, stat('Charge', pct(soc)), stat('Range', dist(latest.rangeKm, 0)),
-          stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
+      const ring = batteryRing();
+      ring.set(soc, latest.rangeKm != null ? `${dist(latest.rangeKm, 0)} range` : '');
+      out.push(card('Battery', ring.el,
+        h('div', { class: 'grid' }, stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
-        h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, soc || 0))}%` })),
         reserveRow(latest),
         bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));
@@ -90,16 +91,16 @@ export default async function dashboard(root, _args, session) {
     }
 
     const charging = /charg/i.test(latest.chargeState || '') && !/not|complete|stop/i.test(latest.chargeState || '');
-    if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', latest.chargeState || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', latest.plug || 'Unknown')),
+    if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', nice(latest.chargeState) || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', nice(latest.plug) || 'Unknown')),
       kv([['Power', latest.chargeKw != null ? num(latest.chargeKw, 1, ' kW') : null],
         ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null],
         ['Current', pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT'), 0, ' A') : null],
         ['Time to full', pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') != null ? duration(0, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') * 60) : null],
-        ['Station type', pick(x, 'XEV_CHARGE_STATION_POWER_TYPE')]]),
+        ['Station type', nice(pick(x, 'XEV_CHARGE_STATION_POWER_TYPE'))]]),
       charging ? chargeEtaBox(latest, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE')) : null));
 
     out.push(card('Vehicle',
-      kv([['Ignition', latest.ignition || '—'], ['Gear', pick(x, 'GEAR_LEVER_POSITION')], ['Odometer', dist(latest.odometerKm, 0)],
+      kv([['Ignition', nice(latest.ignition) || '—'], ['Gear', nice(pick(x, 'GEAR_LEVER_POSITION'))], ['Odometer', dist(latest.odometerKm, 0)],
         ['Outside', temp(latest.outsideC)], ['Speed', speed(latest.speedKph)], ['12V battery', latest.battery12v != null ? num(latest.battery12v, 1, ' V') : null],
         ['Locks', latest.locked == null ? null : latest.locked ? 'Locked' : 'Unlocked'], ['Parking brake', pick(x, 'PARKING_BRAKE_STATUS')]])));
 

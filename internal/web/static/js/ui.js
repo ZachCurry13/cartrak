@@ -95,3 +95,6 @@ export const item = (href, title, sub, right) => h('a', { class: 'item', href },
   h('span', { class: 'it' }, h('b', {}, title), sub ? h('span', { class: 'muted' }, sub) : null), right || null);
 export const group = (title, ...items) => h('section', { class: 'group' },
   title ? h('h3', { class: 'gt' }, title) : null, h('div', { class: 'menu' }, ...items.filter(Boolean)));
+
+// Ford sends words like NOT_READY or DISCONNECTED; show them as plain words.
+export const nice = (v) => (v ? String(v).replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase()) : v);

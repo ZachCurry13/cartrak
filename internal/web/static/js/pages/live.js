@@ -1,9 +1,10 @@
-import { h, chip, dist, speed, pct, num, temp, ago, duration } from '../ui.js';
+import { h, chip, nice, dist, speed, pct, num, temp, ago, duration } from '../ui.js';
 import { api } from '../api.js';
 import { effective } from '../mode.js';
 import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, clockAt, PRESETS } from '../charge.js';
 import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
+import { batteryRing } from '../ring.js';
 
 // Full-screen "dock" view for a tablet on a car mount or a laptop: big tiles,
 // updated the moment the server gets a new reading, screen kept awake.
@@ -18,14 +19,14 @@ export default async function live(root, _a, session) {
   const age = h('span', { class: 'muted' });
   const road = h('p', { class: 'muted', role: 'status' });
   const toggle = h('button', { class: 'sec' }, 'Road trip mode');
-  const bar = h('i');
+  const ring = batteryRing();
+  el.soc = { v: h('div', { class: 'tv' }, '—'), s: h('div', { class: 'ts muted' }) };
   const dock = h('div', { class: 'dock' },
     h('div', { class: 'dock-top' }, h('h2', { style: 'margin:0' }, 'Live'), conn, age,
       h('span', { class: 'grow' }),
       h('button', { class: 'sec', onclick: () => (document.fullscreenElement ? document.exitFullscreen() : root.requestFullscreen && root.requestFullscreen()) }, 'Full screen')),
     h('div', { class: 'tiles' },
-      h('div', { class: 'tile big' }, h('div', { class: 'tl muted' }, 'Charge'), (el.soc = { v: h('div', { class: 'tv' }, '—'), s: h('div', { class: 'ts muted' }) }).v,
-        h('div', { class: 'bar' }, bar), el.soc.s),
+      h('div', { class: 'tile big' }, h('div', { class: 'tl muted' }, 'Charge'), ring.el, el.soc.s),
       tile('range', 'Range'), tile('energy', 'Energy left'), tile('reserve', 'To reserve'), tile('speed', 'Speed'), tile('power', 'Charging power'), tile('eta', 'Time to target'),
       tile('trip', 'This trip'), tile('outside', 'Outside'), tile('odo', 'Odometer')),
     h('div', {}, admin ? h('p', {}, toggle) : null, road));
@@ -49,14 +50,14 @@ export default async function live(root, _a, session) {
     if (x) {
       lastTs = x.ts;
       lastX = x;
-      set('soc', pct(x.socPct), x.chargeState || '');
-      bar.style.width = `${Math.max(0, Math.min(100, x.socPct || 0))}%`;
+      set('soc', pct(x.socPct), nice(x.chargeState) || '');
+      ring.set(x.socPct, x.rangeKm != null ? `${dist(x.rangeKm, 0)} range` : '');
       set('range', dist(x.rangeKm, 0));
       set('energy', x.energyKwh != null ? num(x.energyKwh, 1, ' kWh') : '—', x.capacityKwh ? `of about ${num(x.capacityKwh, 0, ' kWh')}` : '');
       showReserve(x);
       showEta(x);
-      set('speed', speed(x.speedKph), x.ignition ? `Ignition ${x.ignition}` : '');
-      set('power', x.chargeKw > 0.2 ? num(x.chargeKw, 1, ' kW') : '—', x.plug || '');
+      set('speed', speed(x.speedKph), x.ignition ? `Ignition ${nice(x.ignition).toLowerCase()}` : '');
+      set('power', x.chargeKw > 0.2 ? num(x.chargeKw, 1, ' kW') : '—', nice(x.plug) || '');
       set('outside', temp(x.outsideC));
       set('odo', dist(x.odometerKm, 0));
     }
