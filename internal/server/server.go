@@ -38,6 +38,7 @@ type Server struct {
 	SessionDays int              // "keep me signed in" length; 0 = 30
 	Upd         *updater.Checker // nil disables update checks
 	lim         limiter
+	devRate     rateWindow // per-device call limit for the phone ingest API
 }
 
 func (s *Server) Handler() http.Handler {
@@ -83,6 +84,12 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/users", s.auth(true, s.listUsers))
 	m.HandleFunc("POST /api/users", s.auth(true, s.addUser))
 	m.HandleFunc("DELETE /api/users/{id}", s.auth(true, s.deleteUser))
+
+	m.HandleFunc("GET /api/devices", s.auth(true, s.listDevices))
+	m.HandleFunc("POST /api/devices", s.auth(true, s.addDevice))
+	m.HandleFunc("DELETE /api/devices/{id}", s.auth(true, s.removeDevice))
+	m.HandleFunc("POST /api/ingest/event", s.deviceAuth(s.ingestEvent))
+	m.HandleFunc("POST /api/ingest/points", s.deviceAuth(s.ingestPoints))
 
 	m.HandleFunc("GET /ford/connect", s.auth(true, s.fordConnect))
 	m.HandleFunc("GET /ford/callback", s.callbackPage)

@@ -50,7 +50,8 @@ type Poller struct {
 	mu        sync.Mutex
 	st        Status
 	liveUntil time.Time
-	rlCount   int // consecutive 429s, for the backoff
+	hintUntil time.Time // a phone said a trip is under way until then
+	rlCount   int       // consecutive 429s, for the backoff
 }
 
 func New(p ford.Provider, s *store.Store, d *trips.Detector, iv Intervals) *Poller {
@@ -147,56 +148,8 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 	return p.interval(st)
 }
 
-// interval picks the next wait: fastest while driving in live mode.
-func (p *Poller) interval(st *ford.State) time.Duration {
-	switch {
-	case trips.Driving(st):
-		p.mu.Lock()
-		live := time.Now().Before(p.liveUntil)
-		p.mu.Unlock()
-		if live && p.Iv.Live > 0 {
-			if p.Iv.Live < minLive {
-				return minLive
-			}
-			return p.Iv.Live
-		}
-		return p.Iv.Driving
-	case st.ChargeKw != nil && *st.ChargeKw > 0.2:
-		return p.Iv.Charging
-	}
-	return p.Iv.Parked
-}
-
-// backoff doubles the wait after each failure, capped at 30 minutes.
-func backoff(prev, floor time.Duration) time.Duration {
-	n := prev * 2
-	if n < floor {
-		n = floor
-	}
-	if n > 30*time.Minute {
-		n = 30 * time.Minute
-	}
-	return n
-}
-
 func (p *Poller) set(f func(*Status)) {
 	p.mu.Lock()
 	f(&p.st)
 	p.mu.Unlock()
-}
-
-// rateLimitWait is how long to wait after the n-th 429 in a row: what Ford asked, at least
-// 30 s, and doubling with each repeat (30 s, 60 s, 2 min ... up to 10 min).
-func rateLimitWait(asked time.Duration, n int) time.Duration {
-	w := minRateLimited
-	for i := 1; i < n && w < maxRateLimited; i++ {
-		w *= 2
-	}
-	if asked > w {
-		w = asked
-	}
-	if w > maxRateLimited {
-		w = maxRateLimited
-	}
-	return w
 }

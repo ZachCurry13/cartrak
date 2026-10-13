@@ -55,6 +55,18 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS devices (
+  id INTEGER PRIMARY KEY, name TEXT NOT NULL, token_hash TEXT UNIQUE NOT NULL,
+  created INTEGER NOT NULL, last_seen INTEGER NOT NULL DEFAULT 0, last_event TEXT NOT NULL DEFAULT '');
+CREATE TABLE IF NOT EXISTS track_points (
+  id INTEGER PRIMARY KEY, device_id INTEGER NOT NULL, ts INTEGER NOT NULL,
+  lat REAL NOT NULL, lon REAL NOT NULL, speed_kph REAL, acc_m REAL);
+CREATE INDEX IF NOT EXISTS track_points_ts ON track_points(ts);
+CREATE TABLE IF NOT EXISTS device_events (
+  id INTEGER PRIMARY KEY, device_id INTEGER NOT NULL, ts INTEGER NOT NULL,
+  type TEXT NOT NULL, lat REAL, lon REAL);
+CREATE INDEX IF NOT EXISTS device_events_ts ON device_events(ts);
 `
 
 func Open(dir string) (*Store, error) {
