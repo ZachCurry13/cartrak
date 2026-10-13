@@ -45,7 +45,7 @@ func TestVehicleHealthEndpointForABatteryCar(t *testing.T) {
 	for _, s := range out.Report.Sections {
 		ids[s.ID] = true
 	}
-	if !ids["12v"] || !ids["traction"] || !ids["warnings"] || ids["engine"] {
+	if !ids["12v"] || !ids["traction"] || !ids["warnings"] || !ids["drain"] || ids["engine"] {
 		t.Fatalf("sections for a battery car: %v", ids)
 	}
 	if strings.Contains(b, "TESTVIN") || strings.Contains(strings.ToLower(b), `"lat"`) {

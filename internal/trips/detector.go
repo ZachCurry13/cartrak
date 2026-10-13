@@ -133,7 +133,7 @@ func (d *Detector) charge(st *ford.State) error {
 	}
 	now := st.TS.Unix()
 	if charging(st) && open == nil {
-		c := &store.Charge{StartTS: now, Lat: st.Lat, Lon: st.Lon, StartSoC: st.SoCPct}
+		c := &store.Charge{StartTS: now, Lat: st.Lat, Lon: st.Lon, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		if st.ChargeKw != nil {
 			c.PeakKw = *st.ChargeKw
 		}
@@ -142,7 +142,7 @@ func (d *Detector) charge(st *ford.State) error {
 	if open == nil {
 		return nil
 	}
-	open.EndTS, open.EndSoC = &now, pick(st.SoCPct, open.EndSoC)
+	open.EndTS, open.EndSoC, open.EndKwh = &now, pick(st.SoCPct, open.EndSoC), pick(st.EnergyKwh, open.EndKwh)
 	if st.ChargeKw != nil && *st.ChargeKw > open.PeakKw {
 		open.PeakKw = *st.ChargeKw
 	}

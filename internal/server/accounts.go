@@ -68,6 +68,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	u, _ := s.S.UserByName(strings.TrimSpace(c.Name))
 	if u == nil || checkPassword(u.Hash, c.Password) != nil {
 		s.lim.fail(ip)
+		s.logSignin(r, strings.TrimSpace(c.Name), false)
 		fail(w, 401, "wrong name or password")
 		return
 	}
@@ -75,6 +76,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "session error")
 		return
 	}
+	s.logSignin(r, u.Name, true)
 	ok(w, u)
 }
 

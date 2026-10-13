@@ -42,6 +42,7 @@ type Server struct {
 	lim         limiter
 	devRate     rateWindow    // per-device call limit for the phone ingest API
 	TileDir     string        // where downloaded map tiles are kept; empty switches maps off
+	DataDir     string        // the data folder: backups are written here while they are made
 	TileClient  *http.Client  // optional, for tests
 	Push        *push.Service // Web Push alerts (nil in some tests)
 	GeoGap      time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
@@ -79,6 +80,10 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/push/unsubscribe", s.auth(false, s.pushUnsubscribe))
 	m.HandleFunc("POST /api/push/test", s.auth(false, s.pushTest))
 	m.HandleFunc("GET /api/mileage", s.auth(true, s.mileageReport))
+	m.HandleFunc("GET /api/security", s.auth(true, s.securityInfo))
+	m.HandleFunc("DELETE /api/security/sessions/{id}", s.auth(true, s.revokeSession))
+	m.HandleFunc("GET /api/backup", s.auth(true, s.backupDownload))
+	m.HandleFunc("GET /api/backup/info", s.auth(true, s.backupInfo))
 	m.HandleFunc("GET /api/mileage/check", s.auth(true, s.mileageCheck))
 	m.HandleFunc("POST /api/trips/missed", s.auth(true, s.addMissedTrip))
 	m.HandleFunc("POST /api/trips/{id}/extend", s.auth(true, s.extendTrip))
@@ -100,6 +105,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/trips/{id}", s.auth(false, s.tripDetail))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
 	m.HandleFunc("GET /api/charges", s.auth(false, s.listCharges))
+	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
+	m.HandleFunc("PATCH /api/charges/{id}", s.auth(true, s.patchCharge))
 	m.HandleFunc("GET /api/summary", s.auth(false, s.summary))
 	m.HandleFunc("GET /api/export/trips.csv", s.auth(false, s.exportCSV))
 

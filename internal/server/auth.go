@@ -38,6 +38,7 @@ func (s *Server) startSession(w http.ResponseWriter, r *http.Request, u *store.U
 	if err := s.S.NewSession(tok, u.ID, s.sessionTTL()); err != nil {
 		return err
 	}
+	_ = s.S.SetSessionInfo(tok, s.clientIP(r), describeAgent(r.UserAgent()))
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: tok, Path: "/", HttpOnly: true,
 		SameSite: http.SameSiteLaxMode, Secure: secure(r), MaxAge: int(s.sessionTTL().Seconds())})
 	return nil

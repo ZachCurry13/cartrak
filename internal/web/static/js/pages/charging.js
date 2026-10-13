@@ -1,11 +1,46 @@
-import { h, chip, when, duration, pct, num } from '../ui.js';
+import { h, chip, when, duration, pct, num, dist, isMetric } from '../ui.js';
 import { api } from '../api.js';
 
-export default async function charging(root) {
-  const cs = await api('/api/charges');
-  root.append(h('h2', {}, 'Charging sessions'));
-  if (!cs.length) return root.append(h('p', { class: 'muted' }, 'No charging sessions recorded yet.'));
-  root.append(h('div', { class: 'cols' }, ...cs.map((c) => h('section', { class: 'card' },
-    h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, when(c.startTs)), c.open ? chip('ok', 'charging') : null),
-    h('div', { class: 'muted' }, `${pct(c.startSoc)} → ${pct(c.endSoc)} · ${duration(c.startTs, c.endTs)} · peak ${num(c.peakKw, 1, ' kW')}`)))));
+const money = (cur, v) => `${cur}${v.toFixed(2)}`;
+const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
+const WHERE = { home: 'Home', public: 'Away from home' };
+
+function perDistance(cur, costPerKm) {
+  return `${money(cur, isMetric() ? costPerKm : costPerKm * 1.609344)} per ${isMetric() ? 'km' : 'mi'}`;
+}
+
+function summaryCard(sum) {
+  const cur = sum.currency;
+  const first = sum.months[0];
+  const rows = sum.months.map((m) => h('div', { class: 'row' },
+    h('span', { class: 'grow' }, monthName(m.month), ' ', h('span', { class: 'muted' }, `${m.sessions} session${m.sessions === 1 ? '' : 's'} · ${num(m.kwh, 0, ' kWh')}${m.km > 0 ? ` · ${dist(m.km, 0)} driven` : ''}`)),
+    h('span', {}, m.priced ? h('b', {}, money(cur, m.cost)) : '—', m.costPerKm != null ? h('div', { class: 'muted' }, perDistance(cur, m.costPerKm)) : null)));
+  return h('section', { class: 'card' }, h('h2', {}, 'Charging cost'),
+    sum.priceSet ? null : h('p', { class: 'banner notice' }, 'Add your price per kWh in More, Settings (Price per kWh at home) to see what charging costs.'),
+    first ? h('p', { class: 'muted' }, 'By month, from the energy that went into the battery. At home on a slow charger about a tenth more is lost as heat, which is included in the cost.') : null,
+    ...rows);
+}
+
+function sessionCard(c, cur, admin, reload) {
+  const added = c.addedKwh != null ? `${num(c.addedKwh, 1, ' kWh')}${c.estimated ? ' (estimate)' : ''} added` : 'energy not known';
+  const where = admin
+    ? h('select', { 'aria-label': 'Where it was charged', onchange: async (e) => { await api(`/api/charges/${c.id}`, { method: 'PATCH', body: { kind: e.target.value } }); reload(); } },
+      ...[['', c.where && !c.kind ? `Automatic (${(WHERE[c.where] || '').toLowerCase()})` : 'Automatic'], ['home', 'Home'], ['public', 'Away from home']].map(([v, t]) => h('option', { value: v, selected: v === (c.kind || '') }, t)))
+    : (c.where ? chip('work', WHERE[c.where]) : null);
+  return h('section', { class: 'card' },
+    h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, when(c.startTs)), c.open ? chip('ok', 'charging') : null, c.cost != null ? h('b', {}, money(cur, c.cost)) : null),
+    h('div', { class: 'muted' }, `${pct(c.startSoc)} → ${pct(c.endSoc)} · ${added} · ${duration(c.startTs, c.endTs)} · peak ${num(c.peakKw, 1, ' kW')}`),
+    where ? h('div', { style: 'margin-top:8px' }, where) : null);
+}
+
+export default async function charging(root, _a, session) {
+  const admin = session.me.role === 'admin';
+  const box = h('div');
+  root.append(h('h2', {}, 'Charging'), box);
+  async function load() {
+    const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
+    if (!cs.length) return box.replaceChildren(h('p', { class: 'muted' }, 'No charging sessions recorded yet.'));
+    box.replaceChildren(summaryCard(sum), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load))));
+  }
+  await load();
 }

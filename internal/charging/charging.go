@@ -1,0 +1,122 @@
+// Package charging turns recorded charging sessions into energy added and a cost.
+package charging
+
+import (
+	"math"
+
+	"github.com/ZachCurry13/cartrak/internal/store"
+)
+
+const (
+	homeRadiusM  = 150.0
+	acKwLimit    = 20.0 // a session that never passed this power was on a slow (AC) charger
+	acEfficiency = 0.9  // about a tenth of the energy from the wall is lost as heat while charging on AC
+	minAddedKwh  = 0.1
+)
+
+// Point is a place on the map.
+type Point struct{ Lat, Lon float64 }
+
+// Prices are per kWh; nil means not set.
+type Prices struct{ Home, Public *float64 }
+
+// Session is a charging session with what it added and cost.
+type Session struct {
+	*store.Charge
+	AddedKwh  *float64 `json:"addedKwh"`  // energy that went into the battery
+	Estimated bool     `json:"estimated"` // worked out from the battery percent, not the car's energy reading
+	WallKwh   *float64 `json:"wallKwh"`   // what the charger delivered, allowing for AC losses
+	Where     string   `json:"where"`     // home, public, or "" when it cannot be told
+	Cost      *float64 `json:"cost"`
+}
+
+func distanceM(a, b Point) float64 {
+	const r = 6371000.0
+	la1, la2 := a.Lat*math.Pi/180, b.Lat*math.Pi/180
+	dLat, dLon := (b.Lat-a.Lat)*math.Pi/180, (b.Lon-a.Lon)*math.Pi/180
+	h := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(la1)*math.Cos(la2)*math.Sin(dLon/2)*math.Sin(dLon/2)
+	return 2 * r * math.Asin(math.Sqrt(h))
+}
+
+// Enrich adds energy, place and cost to a finished or running session. capacityKwh and home may be nil.
+func Enrich(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Session {
+	s := Session{Charge: c, Where: c.Kind}
+	switch {
+	case c.StartKwh != nil && c.EndKwh != nil:
+		if d := *c.EndKwh - *c.StartKwh; d >= minAddedKwh {
+			s.AddedKwh = &d
+		}
+	case c.StartSoC != nil && c.EndSoC != nil && capacityKwh != nil && *capacityKwh > 0:
+		if d := (*c.EndSoC - *c.StartSoC) / 100 * *capacityKwh; d >= minAddedKwh {
+			s.AddedKwh, s.Estimated = &d, true
+		}
+	}
+	if s.Where == "" && home != nil && c.Lat != nil && c.Lon != nil {
+		s.Where = "public"
+		if distanceM(*home, Point{*c.Lat, *c.Lon}) <= homeRadiusM {
+			s.Where = "home"
+		}
+	}
+	if s.AddedKwh == nil {
+		return s
+	}
+	wall := *s.AddedKwh
+	if c.PeakKw < acKwLimit {
+		wall /= acEfficiency
+	}
+	s.WallKwh = &wall
+	price := p.Home // unknown place: the home price, the usual single-price case
+	if s.Where == "public" {
+		price = p.Public
+	}
+	if price != nil {
+		cost := wall * *price
+		s.Cost = &cost
+	}
+	return s
+}
+
+// Month is one calendar month of charging.
+type Month struct {
+	Month    string  `json:"month"` // 2026-09
+	Sessions int     `json:"sessions"`
+	Kwh      float64 `json:"kwh"`  // added to the battery
+	Cost     float64 `json:"cost"` // of the sessions that have one
+	Priced   int     `json:"priced"`
+}
+
+// ByMonth totals sessions by the month they started in the given zone, newest month first.
+func ByMonth(ss []Session, monthOf func(int64) string) []Month {
+	idx := map[string]*Month{}
+	var order []string
+	for _, s := range ss {
+		if s.Open || s.AddedKwh == nil {
+			continue
+		}
+		k := monthOf(s.StartTS)
+		m := idx[k]
+		if m == nil {
+			m = &Month{Month: k}
+			idx[k] = m
+			order = append(order, k)
+		}
+		m.Sessions++
+		m.Kwh += *s.AddedKwh
+		if s.Cost != nil {
+			m.Cost += *s.Cost
+			m.Priced++
+		}
+	}
+	out := make([]Month, 0, len(order))
+	for _, k := range order {
+		out = append(out, *idx[k])
+	}
+	for i := 0; i < len(out); i++ { // newest first; sessions arrive newest first already, but do not rely on it
+		for j := i + 1; j < len(out); j++ {
+			if out[j].Month > out[i].Month {
+				out[i], out[j] = out[j], out[i]
+			}
+		}
+	}
+	return out
+}

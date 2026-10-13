@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.18.0
+
+### 🅿️ Parked drain
+- The Health page has a new **Parked drain** section for electric cars: how much charge the car loses while it sits (not driving, not charging) over the last 7 and 30 days, as a percent a day and in kWh, with a note on whether that is normal and a list of the recent parked stays. It needs about half a day of parked readings.
+
+### 🔋 Charging history and cost
+- The **Charging** tab now shows the energy each session added (in kWh), and a **Charging cost** card with every month: sessions, kWh, cost, miles driven and **cost per mile**.
+- Set your price per kWh at home (and away from home, and a currency symbol) in More, Settings. Mark one session as **Home** and CarTrak recognises home from then on. Slow chargers include about 10% lost as heat.
+
+### 💾 Backup
+- **More, Backup** downloads a copy of your data: a small backup without the raw Ford readings, or a full one. Sign-in sessions are never included. See docs/backup.md for restoring.
+
+### 🔐 Security
+- **More, Security** shows who is signed in right now, with a button to sign a device out, and a **sign-in log** of the last 100 attempts (name, success or failure, device, address). Passwords are never stored.
+
+### 📱 Phone shortcuts
+- On Android, press and hold the CarTrak icon to jump straight to Live, Charging, Trips or Health.
+
 ## 0.15.0
 
 ### 🔌 Plug in tonight?

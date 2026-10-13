@@ -13,6 +13,7 @@ Everything comes from what Ford sends. CarTrak shows only what your car reports,
 | **12 V battery** | Voltage, charge percent and load status, with a daily trend. A weak 12 V battery causes many odd faults, even in an electric car | all |
 | **Main battery** | Charge shown on the dash and the actual charge, energy left, estimated capacity, battery status, voltage, temperature, current, range, with a capacity trend | electric, hybrid, plug-in hybrid |
 | **Engine and oil** | Oil life left, fuel level and range, coolant and oil temperature, hybrid mode, with an oil-life trend | gas, hybrid, plug-in hybrid |
+| **Parked drain** | How much charge the car loses while parked: percent a day (and kWh) over 7 and 30 days, and the recent parked stays | electric, plug-in hybrid |
 | **Tires** | Each tire's pressure against the sticker value, and the car's own tire status | all |
 | **Car systems** | Automatic software updates, alarm, parking brake, car mode, remote start time left | all |
 
@@ -39,3 +40,6 @@ If it guesses wrong, choose the right type in Settings.
 
 ## Trying each type without a car
 The built-in demo car can pretend to be each type. Set `CARTRAK_PROVIDER=demo` and `CARTRAK_DEMO_POWERTRAIN` to `ev` (default), `gas`, `hev` or `phev`.
+
+## Parked drain
+CarTrak looks at the stretches when the car sat for at least three hours, not driving and not charging, and divides the battery percent lost by the hours parked. Many electric cars lose about 1 percent a day or less. It marks **Check** at 2 percent a day or more and **Act** at 4 or more. Things that keep a car awake include Sentry or similar modes, scheduled preconditioning, a weak 12 V battery and frequent app wake-ups. Ford updates the battery level only when the car wakes, so the number is a guide, not a measurement.

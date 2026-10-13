@@ -29,3 +29,10 @@ Home (under the battery) shows how far a stretch of battery goes, for example "2
 How it is worked out: from your own trips. CarTrak adds up the distance and the battery percent used over your finished trips in the last 30 days (trips of at least 2 km that used at least 1 percent; it needs a couple of trips and at least 8 percent in total), which gives the real distance per percent. That already includes the weather, your speeds and the car's hidden top and bottom buffer, so it needs no battery capacity. When there is too little driving it says it is using the car's own range figure instead.
 
 The **Trips** page has a **Range by month** table with the same figure for each month, so you can see how it drops in winter and recovers in summer. It fills in as trips build up.
+
+## Charging history and cost
+The **Charging** tab lists each session with the energy that went into the battery, the battery levels, how long it took and the peak power. The energy is the difference in the car's own energy-left reading; for older sessions without it, it is estimated from the battery percent and marked "(estimate)".
+
+To see what it costs, an admin sets **Price per kWh at home** (and, if you like, a price away from home and a currency symbol) in More, Settings. Then each session shows its cost and the top of the tab shows each month: sessions, kWh, cost, miles driven and **cost per mile**. On a slow (AC) charger about a tenth of the wall energy is lost as heat, so the cost is the energy added divided by 0.9, times the price. Fast (DC) sessions use the energy added.
+
+**Home or away:** pick **Home** on one session you charged at home. CarTrak remembers that place and treats later sessions within about 150 m as home; everything else is priced as away from home. You can change any session by hand, and **Automatic** returns it to CarTrak's guess. Until you mark one, every session uses the home price.

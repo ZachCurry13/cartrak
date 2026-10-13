@@ -97,15 +97,6 @@ func (s *Server) patchTrip(w http.ResponseWriter, r *http.Request) {
 	ok(w, t)
 }
 
-func (s *Server) listCharges(w http.ResponseWriter, r *http.Request) {
-	cs, err := s.S.ListCharges(200)
-	if err != nil {
-		fail(w, 500, "db error")
-		return
-	}
-	ok(w, cs)
-}
-
 // summary totals distance and trip counts per category for a date range.
 func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 	f := tripFilter(r)

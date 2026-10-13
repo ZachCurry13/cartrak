@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/drain"
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/vhealth"
@@ -34,12 +35,19 @@ func (s *Server) vehicleHealth(w http.ResponseWriter, r *http.Request) {
 			trends[name] = d
 		}
 	}
+	pt := ford.Powertrain(info.Powertrain)
+	report := vhealth.Build(f, pt, trends, vhealth.Options{Tested12VUntil: s.tested12V()})
+	if pt == ford.EV || pt == ford.PHEV {
+		if line, err := s.S.Timeline(now.AddDate(0, 0, -31).Unix(), now.Unix(), 0); err == nil {
+			report.Sections = append(report.Sections, drain.Section(drain.Analyze(line, now.Unix()), s.capacityKwh(), s.defaultLoc()))
+		}
+	}
 	ok(w, map[string]any{
 		"vehicle":        info,
 		"ready":          true,
 		"asOf":           x.TS,
 		"model":          modelName(f),
-		"report":         vhealth.Build(f, ford.Powertrain(info.Powertrain), trends, vhealth.Options{Tested12VUntil: s.tested12V()}),
+		"report":         report,
 		"tested12vUntil": unixOrZero(s.tested12V()),
 	})
 }

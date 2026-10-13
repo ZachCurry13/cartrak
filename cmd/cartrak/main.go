@@ -77,7 +77,7 @@ func main() {
 	port := cfg.Addr[strings.LastIndex(cfg.Addr, ":")+1:]
 	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
 		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays,
-		TileDir: filepath.Join(cfg.DataDir, "tiles")}
+		TileDir: filepath.Join(cfg.DataDir, "tiles"), DataDir: cfg.DataDir}
 	p.After = srv.Broadcast
 	pushSvc := &push.Service{KV: st, Subs: st, Location: cfgs.Location}
 	srv.Push = pushSvc
