@@ -46,7 +46,9 @@ type Poller struct {
 	Iv Intervals
 	// After runs after every reading that was saved (used to push live updates).
 	After func()
-	kick  chan struct{}
+	// OnReading runs with every reading that was saved and processed (used for alerts).
+	OnReading func(*ford.State)
+	kick      chan struct{}
 
 	mu        sync.Mutex
 	st        Status
@@ -158,6 +160,9 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 	p.rlCount, p.srvCount = 0, 0
 	p.mu.Unlock()
 	p.set(func(s *Status) { s.LastOK, s.LastError, s.RateLimited, s.FordTrouble = now.Unix(), "", false, false })
+	if p.OnReading != nil { // after the status is updated, so alert rules see this reading as the latest
+		p.OnReading(st)
+	}
 	if p.After != nil {
 		p.After()
 	}

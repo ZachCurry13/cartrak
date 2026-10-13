@@ -97,6 +97,11 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 	if ds, err := s.S.ListDevices(); err == nil {
 		add(phoneItem(ds, now))
 	}
+	if s.Push != nil {
+		if subs, err := s.S.ListPushSubs(0); err == nil {
+			add(alertsItem(len(subs)))
+		}
+	}
 
 	// 5. Updates
 	if s.Upd != nil {
@@ -140,4 +145,16 @@ func phoneItem(ds []store.Device, now int64) healthItem {
 		return healthItem{"phone", "Phone tracking", "A phone is paired but has not sent anything yet. Check its automation.", "info", "#/phone", "Open Phone tracking"}
 	}
 	return healthItem{"phone", "Phone tracking", latest.Name + " last heard from " + ago(now-latest.LastSeen) + ".", "ok", "", ""}
+}
+
+// alertsItem says whether any device is set up for notifications (optional).
+func alertsItem(n int) healthItem {
+	if n == 0 {
+		return healthItem{"alerts", "Alerts", "No device gets alerts. Optional: a notification when charging finishes, a tire is low or the car is left unlocked.", "info", "#/notifications", "Set up alerts"}
+	}
+	word := "devices get"
+	if n == 1 {
+		word = "device gets"
+	}
+	return healthItem{"alerts", "Alerts", fmt.Sprintf("%d %s alerts.", n, word), "ok", "", ""}
 }

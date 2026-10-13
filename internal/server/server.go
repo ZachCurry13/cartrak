@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/poller"
+	"github.com/ZachCurry13/cartrak/internal/push"
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
@@ -42,6 +43,7 @@ type Server struct {
 	devRate     rateWindow    // per-device call limit for the phone ingest API
 	TileDir     string        // where downloaded map tiles are kept; empty switches maps off
 	TileClient  *http.Client  // optional, for tests
+	Push        *push.Service // Web Push alerts (nil in some tests)
 	GeoGap      time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo         geoState
 	tiles       tileFlight
@@ -71,6 +73,11 @@ func (s *Server) Handler() http.Handler {
 
 	m.HandleFunc("GET /api/health", s.auth(false, s.health))
 	m.HandleFunc("GET /api/vehicle", s.auth(false, s.vehicle))
+	m.HandleFunc("GET /api/push/config", s.auth(false, s.pushConfig))
+	m.HandleFunc("POST /api/push/subscribe", s.auth(false, s.pushSubscribe))
+	m.HandleFunc("POST /api/push/prefs", s.auth(false, s.pushPrefs))
+	m.HandleFunc("POST /api/push/unsubscribe", s.auth(false, s.pushUnsubscribe))
+	m.HandleFunc("POST /api/push/test", s.auth(false, s.pushTest))
 	m.HandleFunc("GET /api/mileage", s.auth(true, s.mileageReport))
 	m.HandleFunc("GET /api/map", s.auth(false, s.mapConfig))
 	m.HandleFunc("GET /api/tiles/{z}/{x}/{y}", s.auth(false, s.tile))

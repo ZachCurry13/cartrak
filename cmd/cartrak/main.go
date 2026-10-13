@@ -13,9 +13,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/alerts"
 	"github.com/ZachCurry13/cartrak/internal/config"
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/poller"
+	"github.com/ZachCurry13/cartrak/internal/push"
 	"github.com/ZachCurry13/cartrak/internal/server"
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
@@ -77,6 +79,10 @@ func main() {
 		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays,
 		TileDir: filepath.Join(cfg.DataDir, "tiles")}
 	p.After = srv.Broadcast
+	pushSvc := &push.Service{KV: st, Subs: st, Location: cfgs.Location}
+	srv.Push = pushSvc
+	alertEngine := &alerts.Engine{S: st, N: pushSvc, Async: true, Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}
+	p.OnReading = alertEngine.Handle
 	srv.ApplyTunnel()
 	defer tun.Stop()
 	srv.SeedAdmin(cfg.AdminUser, cfg.AdminPass, cfg.ResetAdmin)
@@ -86,6 +92,7 @@ func main() {
 	go p.Run(ctx)
 	go upd.Run(ctx, srv.UpdateCheckEnabled)
 	go srv.CleanupLoop(ctx)
+	go alertEngine.Run(ctx)
 
 	hs := &http.Server{Addr: cfg.Addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
 	go func() {
