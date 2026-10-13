@@ -119,6 +119,9 @@ func (s *Supervisor) run(ctx context.Context, token string) {
 	for ctx.Err() == nil {
 		bin, err := exec.LookPath(s.Bin)
 		if err != nil {
+			if ctx.Err() != nil { // switched off meanwhile: do not overwrite the Off state
+				return
+			}
 			s.set(NotInstalled, "The Cloudflare connector (cloudflared) is not included in this build. Use the Docker image, or run cloudflared yourself.")
 			return
 		}
