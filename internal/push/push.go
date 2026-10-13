@@ -32,6 +32,7 @@ const (
 	PlugReminder      = "plug_reminder"
 	MaintenanceDue    = "maintenance_due"
 	ArrivePlace       = "arrive_place"
+	WeeklySummary     = "weekly_summary"
 	LeavePlace        = "leave_place"
 	ChargeInterrupted = "charge_interrupted"
 )
@@ -53,6 +54,7 @@ var Kinds = []Kind{
 	{TripStart, "Trip started", "A trip began."},
 	{TripEnd, "Trip ended", "A trip finished, with its distance."},
 	{ChargeInterrupted, "Charging stopped early", "Charging stopped while still plugged in at a lower level than your sessions usually end at, which can mean a loose cable or a charger fault."},
+	{WeeklySummary, "Weekly summary", "A short summary of the week on Sunday evening: distance, trips, charging and efficiency."},
 	{ArrivePlace, "Arrived at a named place", "The car arrived at a place you named under More, Places, such as Home or the office."},
 	{LeavePlace, "Left a named place", "The car left a place you named under More, Places."},
 	{MaintenanceDue, "Service due", "A service reminder you set up under More, Maintenance has come due by distance or by time."},

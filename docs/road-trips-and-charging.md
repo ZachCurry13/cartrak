@@ -51,3 +51,11 @@ A road trip or a work day with several stops is many trips. On **Trips**, admins
 - a map with every leg.
 
 You can remove a trip from a journey, rename it, or **Ungroup trips**. The trips themselves are never deleted, and they keep counting in the mileage log and every total as before.
+
+## Efficiency insights
+**More, Efficiency insights** shows what changes your miles per kWh, from the last year of finished trips of at least 3 miles that have an energy reading:
+- **By temperature:** below freezing, 0 to 10 °C, 10 to 20 °C and 20 °C and above, each with its efficiency and a bar.
+- **By month:** efficiency and average outside temperature, so you can see the winter dip and summer recovery.
+- **Most and least efficient trips** (needs at least six trips), each linking to the trip.
+
+Cold weather, heating, highway speed and wind use more energy. Trips from before CarTrak recorded the car's energy reading use the battery percent and are less exact.

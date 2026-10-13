@@ -27,6 +27,7 @@ const routes = {
   plan: () => import('./pages/plan.js'),
   maintenance: () => import('./pages/maintenance.js'),
   places: () => import('./pages/places.js'),
+  insights: () => import('./pages/insights.js'),
   review: () => import('./pages/review.js'),
   security: () => import('./pages/security.js'),
   backup: () => import('./pages/backup.js'),

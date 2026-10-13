@@ -14,6 +14,10 @@
 - **More, Maintenance:** service reminders by distance, by time or both (tire rotation, cabin filter, brake fluid and so on), with an alert when one comes due and a Done button that starts the next interval.
 - **Charging stopped early:** a new alert (off until you turn it on) for a charge that stops while plugged in at a lower level than your sessions usually end at. See docs/places-and-maintenance.md.
 
+### 📈 Efficiency insights and a weekly summary
+- **More, Efficiency insights:** your miles per kWh by outside temperature and by month, and your most and least efficient trips, so you can see what the cold really costs.
+- **Weekly summary:** an optional Sunday evening notification with the week's distance, trips, charging and efficiency (turn it on under More, Notifications).
+
 ### 🧭 Road-trip planner
 - **More, Road-trip planner:** enter a trip distance, your starting charge and your average charging power. It uses how far your battery really goes per percent (from your own driving), your reserve and your charge target, and says how many charging stops the trip needs, about how far in each one is, what to charge to, and about how long. It is a guide, not a route.
 

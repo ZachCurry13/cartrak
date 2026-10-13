@@ -187,6 +187,7 @@ func (e *Engine) trip(first bool) {
 func (e *Engine) Tick() {
 	e.mu.Lock()
 	e.plugReminder()
+	e.weeklyDigest()
 	if e.prev != nil {
 		e.maintenance(e.prev.OdometerKm)
 	}

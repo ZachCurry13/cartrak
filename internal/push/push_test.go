@@ -199,7 +199,7 @@ func TestEveryKindIsKnown(t *testing.T) {
 			t.Errorf("incomplete kind %+v", k)
 		}
 	}
-	if ValidKind("nonsense") || len(Kinds) != 14 {
+	if ValidKind("nonsense") || len(Kinds) != 15 {
 		t.Fatalf("kinds: %d", len(Kinds))
 	}
 }

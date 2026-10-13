@@ -157,3 +157,35 @@ func TestArrivingAndLeavingANamedPlaceAreAnnouncedOnceWithoutEdgeWobble(t *testi
 		t.Fatalf("arrived, and the wobble at the edge says nothing: %s", r.kinds())
 	}
 }
+
+func TestTheWeeklySummaryComesOnceOnSundayEveningWithTheWeeksNumbers(t *testing.T) {
+	e, r, s := setup(t)
+	sunday := time.Date(2026, 10, 18, 19, 0, 0, 0, time.UTC) // a Sunday
+	now := sunday.Add(-time.Hour)                            // 18:00? no: 18:00 is the hour, this is 18:00
+	e.Now = func() time.Time { return now }
+	e.Loc = func() *time.Location { return time.UTC }
+	mk := func(daysAgo int, km, from, to float64) {
+		start := sunday.AddDate(0, 0, -daysAgo)
+		tr := &store.Trip{StartTS: start.Unix(), StartKwh: &from}
+		if err := s.CreateTrip(tr); err != nil {
+			t.Fatal(err)
+		}
+		end := start.Add(time.Hour).Unix()
+		tr.EndTS, tr.EndKwh, tr.DistanceKm, tr.Open = &end, &to, km, false
+		s.UpdateTrip(tr)
+	}
+	mk(1, 100, 80, 60) // 100 km on 20 kWh
+	mk(3, 60, 60, 50)  // 60 km on 10 kWh
+	mk(20, 500, 80, 10)
+	e.Tick()
+	if r.kinds() != "weekly_summary" || !strings.Contains(r.got[0].Body, "160 km") || !strings.Contains(r.got[0].Body, "2 trips") {
+		t.Fatalf("%s %+v", r.kinds(), r.got)
+	}
+	now = now.Add(30 * time.Minute)
+	e.Tick()
+	now = sunday.AddDate(0, 0, -1)
+	e.Tick() // a Saturday
+	if len(r.got) != 1 {
+		t.Fatalf("once a week, and only on Sunday: %s", r.kinds())
+	}
+}
