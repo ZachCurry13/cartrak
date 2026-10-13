@@ -1,6 +1,7 @@
 import { h, stat, catChip, dist, speed, when, duration, pct, num } from '../ui.js';
 import { api } from '../api.js';
 import { isSaver } from '../mode.js';
+import { createMap, mapConfig } from '../map.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -31,25 +32,31 @@ function route(samples) {
 }
 
 // The phone's GPS track is finer than Ford's readings, so it is drawn when there is one.
-function routeFor(d) {
+function routeFor(d, mc) {
   const phone = (d.phone || []).filter((p) => p.lat != null && p.lon != null);
-  if (phone.length < 2) return [route(d.samples || [])];
-  return [route(phone), h('p', { class: 'muted' }, `Drawn from your phone's GPS (${phone.length} points).`)];
+  const pts = phone.length >= 2 ? phone : (d.samples || []).filter((s) => s.lat != null && s.lon != null);
+  const note = phone.length >= 2 ? h('p', { class: 'muted' }, `Drawn from your phone's GPS (${phone.length} points).`) : null;
+  if (pts.length < 2) return [h('p', { class: 'muted' }, 'No GPS route recorded for this trip.')];
+  if (!mc.enabled) return [route(pts), note];
+  const line = pts.map((p) => [p.lat, p.lon]);
+  const m = createMap(mc, { height: 300 });
+  m.show({ routes: [{ points: line }], markers: [{ lat: line[0][0], lon: line[0][1], color: '#059669' }, { lat: line[line.length - 1][0], lon: line[line.length - 1][1] }] });
+  return [m.el, note];
 }
 
 export default async function tripDetail(root, [id], session) {
   const saver = isSaver();
-  const { trip: t, ...data } = await api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`);
+  const [{ trip: t, ...data }, mc] = await Promise.all([api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`), mapConfig()]);
   const routeBox = h('section', { class: 'card' }, h('h2', {}, 'Route'));
   if (saver) {
     routeBox.append(h('p', { class: 'muted' }, 'Data saver is on, so the route is not downloaded automatically.'),
       h('button', { class: 'sec', onclick: async (e) => {
         e.target.disabled = true;
         const full = await api(`/api/trips/${encodeURIComponent(id)}`);
-        routeBox.replaceChildren(h('h2', {}, 'Route'), ...routeFor(full));
+        routeBox.replaceChildren(h('h2', {}, 'Route'), ...routeFor(full, mc));
       } }, 'Load route'));
   } else {
-    routeBox.append(...routeFor(data));
+    routeBox.append(...routeFor(data, mc));
   }
   const notes = h('input', { value: t.notes || '', placeholder: 'Notes (client, purpose…)', maxlength: 200 });
   const msg = h('p', { class: 'muted', role: 'status' });

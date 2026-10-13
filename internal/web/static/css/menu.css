@@ -30,3 +30,12 @@ section.card>.hrow:first-of-type,section.card>h2+.hrow,section.card>p+.hrow{bord
 .trend{margin-top:12px;color:var(--accent)}
 .trend .muted{color:var(--muted);font-size:.85rem}
 svg.spark{display:block;width:100%;height:56px;margin:4px 0}
+.map{position:relative;overflow:hidden;border-radius:12px;background:var(--bg);border:1px solid var(--line);margin:6px 0}
+.map.live{touch-action:none;cursor:grab}
+.map-tiles img{position:absolute;left:0;top:0;width:256px;height:256px;max-width:none;user-select:none;-webkit-user-drag:none}
+.map-svg{position:absolute;inset:0;width:100%;height:100%}
+.map-hit{pointer-events:stroke}
+.map-credit{position:absolute;right:0;bottom:0;background:rgba(255,255,255,.85);color:#333;font-size:11px;padding:1px 6px;border-top-left-radius:6px}
+.map-credit a{color:#1b4f9c}
+.map-ctl{position:absolute;left:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+.map-btn{width:44px;height:44px;padding:0;font-size:1.4rem;line-height:1;background:#fff;color:#111;border:1px solid #c7ced9;border-radius:10px;cursor:pointer}

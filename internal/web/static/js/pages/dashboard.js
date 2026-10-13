@@ -5,6 +5,9 @@ import { isSaver, effective } from '../mode.js';
 import { cachedEx } from '../offline.js';
 import { healthStrip } from '../healthstrip.js';
 import { doorsCard, healthCard } from '../cards.js';
+import { createMap, mapConfig } from '../map.js';
+
+let homeMap = null; // kept between refreshes
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -33,6 +36,7 @@ function kv(rows) {
 }
 
 export default async function dashboard(root, _args, session) {
+  const mc = await mapConfig();
   const box = h('div', { class: 'dash' });
   root.append(box);
   let cache = null; // status, last trip, checklist: refetched every time only in Normal mode
@@ -88,7 +92,15 @@ export default async function dashboard(root, _args, session) {
         ['Locks', latest.locked == null ? null : latest.locked ? 'Locked' : 'Unlocked'], ['Parking brake', pick(x, 'PARKING_BRAKE_STATUS')]])));
 
     if (latest.lat != null && latest.lon != null) {
-      out.push(card('Location', h('a', { href: mapLink(latest.lat, latest.lon), target: '_blank', rel: 'noopener' }, `${latest.lat.toFixed(5)}, ${latest.lon.toFixed(5)}`),
+      // A small fixed map of where the car is. One map is kept and moved, so a refresh does not reload the tiles.
+      let here = null;
+      if (mc.enabled && effective() !== 'saver') {
+        homeMap = homeMap || createMap(mc, { height: 170, interactive: false });
+        const d = 0.004; // about half a kilometre around the car
+        homeMap.show({ markers: [{ lat: latest.lat, lon: latest.lon }], fit: [[latest.lat - d, latest.lon - d * 1.5], [latest.lat + d, latest.lon + d * 1.5]] });
+        here = homeMap.el;
+      }
+      out.push(card('Location', here, h('a', { href: mapLink(latest.lat, latest.lon), target: '_blank', rel: 'noopener' }, `${latest.lat.toFixed(5)}, ${latest.lon.toFixed(5)}`),
         h('p', { class: 'muted' }, `Heading ${pick(x, 'HEADING', 'direction', 'COMPASS_DIRECTION') ?? '—'} · seen ${ago(latest.ts)}`)));
     }
 

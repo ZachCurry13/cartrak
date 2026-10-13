@@ -14,7 +14,7 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 
 ## Next immediate steps
 1. Phone tracking and the Vehicle health tab are built on feature/v0.9 (see docs/phone-tracking.md and docs/vehicle-health.md). Needs a real-phone test by the user.
-2. Maps for trips (user request): real map tiles break the "nothing leaves the server" design and the CSP (img-src 'self' data:). Recommended: a server-side tile proxy with a disk cache (the phone never contacts the tile provider), OSM default with attribution, an Admin setting for a custom/keyed tile URL, and an off switch that falls back to the SVG route. Bundle Leaflet (BSD-2) in the repo instead of a CDN. Ask the user to confirm the tile source before building. Start with trip detail, later Home location and a trips overview.
+2. Maps for trips are BUILT (decisions made with the user: server-side OSM tile proxy with disk cache in <data>/tiles, maps on trip page + Home location card + Trips Map view, own slippy map js/map.js, no third-party library, settings CARTRAK_MAP_ENABLED/TILE_URL/ATTRIBUTION). Not yet checked against real OpenStreetMap tiles (tested with a local fake tile server); first real use will show whether OSM answers the CarTrak User-Agent. Docs: docs/maps.md.
 3. Then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end, low 12 V).
 4. Optional: read-only departure times and charge schedules card (the data is already pulled; the Mach-E lists 14 departure slots, all off).
 5. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.

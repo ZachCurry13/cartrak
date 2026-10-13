@@ -76,6 +76,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/live", s.auth(false, s.liveStream))
 	m.HandleFunc("POST /api/live-mode", s.auth(true, s.setLiveMode))
 	m.HandleFunc("GET /api/trips", s.auth(false, s.listTrips))
+	m.HandleFunc("GET /api/trips/routes", s.auth(false, s.tripRoutes))
 	m.HandleFunc("GET /api/trips/{id}", s.auth(false, s.tripDetail))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
 	m.HandleFunc("GET /api/charges", s.auth(false, s.listCharges))

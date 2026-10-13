@@ -82,6 +82,9 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
 | `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/Chicago` | yes |
+| `CARTRAK_MAP_ENABLED` | (on) | `off` turns maps off and draws plain route lines. Tiles come through CarTrak, see [maps](docs/maps.md) | yes |
+| `CARTRAK_MAP_TILE_URL` | OpenStreetMap | Another map tile server, with `{z}`, `{x}`, `{y}` in the address | yes |
+| `CARTRAK_MAP_ATTRIBUTION` | OpenStreetMap credit | Credit line shown on maps | yes |
 | `CARTRAK_POWERTRAIN` | (auto) | Vehicle type: `ev`, `phev`, `hev` or `gas`. Empty works it out from Ford. See [vehicle health](docs/vehicle-health.md) | yes |
 | `CARTRAK_TRACK_KEEP_DAYS` | (empty = keep all) | Delete phone GPS points older than this many days. Trips are always kept. See [phone tracking](docs/phone-tracking.md) | yes |
 | `FORD_CLIENT_ID` | (empty) | From Ford's developer portal | yes |
@@ -107,11 +110,12 @@ More detail in [docs/configuration.md](docs/configuration.md).
 - Passwords are stored hashed (bcrypt); sign-in attempts are rate limited; cookies are `HttpOnly`, `SameSite` and `Secure` over HTTPS.
 - The Ford secret and refresh token are never sent to the browser or written to logs. They are stored in the database file in `/data`, so protect and encrypt backups of it.
 - Update checks only read GitHub's public release list; turn them off in More -> About.
+- Maps: tiles are fetched by the CarTrak server and cached on disk, so browsers never contact the map provider; only signed-in people can load tiles. Switch maps off in Settings for no map requests at all.
 - Phone tracking tokens are stored only as a hash and can be removed at any time (More -> Phone tracking); phones can only send data, never read it.
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

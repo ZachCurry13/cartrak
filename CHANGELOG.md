@@ -12,6 +12,12 @@
 - Tire pressures and the lock state now read Ford's real layout (a list per wheel and per door), so the Tires card and the Locks line fill in with a linked car.
 - The built-in demo car now uses the same layout, so these cards can be previewed without a car.
 
+### 🗺️ Maps
+- Trip pages now show the route on a real map with start and end markers (your phone's GPS track when there is one). Home shows a small map of where the car is, and Trips has a new Map view with every trip in the chosen range, work in amber and personal in blue; tap a route to open the trip.
+- Drag to move, + and − buttons, mouse wheel or two-finger pinch to zoom.
+- Private by design: your phone or computer never contacts the map provider. CarTrak's server downloads the tiles from OpenStreetMap, keeps a copy on disk and passes them on, so repeat views are fast. Only signed-in people can load tiles, and only real map images are passed on.
+- Settings: Maps can be switched off (plain route lines, no map requests), and a different tile server and credit line can be set. See docs/maps.md.
+
 ### 🩺 Vehicle health tab
 - New Health tab: voltages, battery health, oil and fuel, tires, trouble codes, Ford alerts and warning lights, with a "Needs a look" list at the top and small daily trends for the 12 V battery, the main battery's estimated capacity and oil life.
 - Built for each kind of car. CarTrak now knows whether the car is electric, plug-in hybrid, hybrid or gas: it reads Ford's vehicle record first, falls back to the data the car reports, and you can choose the type under Settings, Vehicle type. Oil life and fuel show for cars with an engine; the main battery shows for electric and hybrid cars. Battery cars never show oil, even though Ford lists an oil life of 100 percent for them.
