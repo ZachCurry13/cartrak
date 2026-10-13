@@ -34,7 +34,7 @@ export default async function start(root, _a, session) {
       admin ? h('a', { class: 'btn', href: '#/rules' }, 'Add a rule') : null),
     step(7, ob.users > 1, 'Add family (optional)',
       'Give family read-only accounts so they can see the dashboard without changing anything.',
-      admin ? h('a', { class: 'btn', href: '#/settings' }, 'Add people') : null),
+      admin ? h('a', { class: 'btn', href: '#/people' }, 'Add people') : null),
   ];
 
   root.append(h('h2', {}, 'Getting started'),

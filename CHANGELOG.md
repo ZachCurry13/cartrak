@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0
+
+### ✨ A cleaner More page
+- More is now a short grouped menu (Connections, Trips, This device, Admin, Help) with status chips, instead of one long page of cards. Each row opens its own page: Ford connection, Remote access, Display and data, People, Settings, Getting started, About and updates.
+- On tablets and computers the menu uses two columns.
+- Slightly darker grey text in light mode for easier reading.
+
+### 🧹 Under the hood
+- Source files were split so none is over 200 lines; behaviour is unchanged.
+
 ## 0.7.3
 
 ### 🔗 Connecting Ford

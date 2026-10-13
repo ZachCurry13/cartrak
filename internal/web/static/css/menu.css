@@ -1,0 +1,23 @@
+/* Menu rows (More page) and small page furniture */
+.group{margin:0 0 18px}
+.gt{margin:0 0 6px 4px;font-size:.75rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:650}
+.menu{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.item{display:flex;align-items:center;gap:10px;padding:13px 16px;min-height:56px;color:var(--text);text-decoration:none;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .it{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px}
+.item .it b{font-weight:600}
+.item::after{content:"\203A";color:var(--muted);font-size:1.5rem;line-height:1}
+.item:hover,.item:focus-visible{background:var(--bg)}
+.profile{display:flex;align-items:center;gap:12px;margin:4px 0 18px}
+.avatar{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;font-size:1.1rem}
+.profile b{display:block}
+.setting{padding:14px 16px;border-top:1px solid var(--line)}
+.setting:first-child{border-top:0}
+.setting label{margin:0 0 6px;color:var(--text);font-weight:600;font-size:.95rem}
+.setting .muted{margin:6px 0 0}
+.page-title{display:flex;align-items:center;gap:8px;margin:2px 0 14px}
+.page-title h2{margin:0}
+.signout{margin:6px 0 10px}
+@media (min-width:760px){
+  .menu-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px;align-items:start}
+}

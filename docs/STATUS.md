@@ -1,5 +1,5 @@
 # Status
 
 - Released: v0.1.0 to v0.7.3 (latest tag v0.7.3, image :latest, linux/amd64+arm64). v0.7.3: CarTrak asks Ford which redirect address is registered (verified against the real Ford service: bare site address and http://localhost accepted, /ford/callback rejected) and uses one Ford accepts; Connect Ford checks before sending the browser to Ford; sign-in address setting accepts a pasted link with placeholders.
-- In progress (feature/v0.8): all source/test files under 200 lines (done), cleaner UI (next), then phone tracking (ingest API with device tokens, phone GPS, Android Tasker/MacroDroid + iPhone Shortcuts recipes, Live-view GPS logger).
+- In progress (feature/v0.8, unreleased, tests pass): all files under 200 lines, new grouped More menu with Ford/Display/People/About pages. Next: phone tracking as v0.9 (ingest API with device tokens, phone GPS, Android Tasker/MacroDroid + iPhone Shortcuts recipes, Live-view GPS logger).
 - Waiting on the user: finish Ford sign-in on v0.7.3. Unverified: Ford returned AADB2C90075 (user-info step) to a bare authorize request with no signed-in user; the real FordConnect 2.0 sign-in start is unconfirmed until the user tries it or shares Ford's account-linking documentation. Then run Admin settings -> Ford diagnostics -> Copy responses so dashboard cards can use real data.

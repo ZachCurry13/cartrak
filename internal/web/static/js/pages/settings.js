@@ -1,59 +1,39 @@
-import { h, chip, ago, isMetric, setMetric, getTheme, setTheme, getTimeMode, setTimeMode } from '../ui.js';
+import { h, chip, ago, item, group } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
-import { MODES, getPref, setPref } from '../mode.js';
-import { aboutCard } from '../aboutcard.js';
 
+// The More page: a short, grouped menu. Each row opens its own page.
 export default async function settings(root, _a, session) {
   const admin = session.me.role === 'admin';
-  const st = await api('/api/status');
+  const [st, remote, users] = await Promise.all([
+    api('/api/status'),
+    admin ? api('/api/admin/remote').catch(() => null) : null,
+    admin ? api('/api/users').catch(() => []) : [],
+  ]);
   const p = st.poller;
-  const units = h('select', {}, h('option', { value: 'imperial' }, 'Miles, °F, psi'), h('option', { value: 'metric' }, 'Kilometres, °C, kPa'));
-  units.value = isMetric() ? 'metric' : 'imperial';
-  units.addEventListener('change', () => setMetric(units.value === 'metric'));
-  const theme = h('select', {}, h('option', { value: 'auto' }, 'Auto (match phone)'), h('option', { value: 'light' }, 'Light'), h('option', { value: 'dark' }, 'Dark'));
-  theme.value = getTheme();
-  theme.addEventListener('change', () => setTheme(theme.value));
-  const tmode = h('select', {}, h('option', { value: 'trip' }, 'Where the trip happened'), h('option', { value: 'device' }, 'This device'));
-  tmode.value = getTimeMode();
-  tmode.addEventListener('change', () => setTimeMode(tmode.value));
-  const mode = h('select', {}, ...Object.entries(MODES).map(([k, v]) => h('option', { value: k }, v)));
-  mode.value = getPref();
-  mode.addEventListener('change', () => { setPref(mode.value); location.reload(); });
+  const a = session.about;
 
-  root.append(h('h2', {}, 'More'), ...notices(session), aboutCard(session, admin),
-    h('section', { class: 'card' }, h('h2', {}, 'Ford connection'),
-      h('div', {}, chip(p.linked ? 'ok' : 'bad', p.linked ? 'linked' : 'not linked'), ' ', h('span', { class: 'muted' }, `${p.provider} · last update ${ago(p.lastOk)}`)),
-      p.lastError ? h('p', { class: 'muted' }, `Last error: ${p.lastError}`) : null,
-      admin ? h('p', { class: 'seg' }, st.canLink ? h('a', { class: 'btn', href: '#/connect' }, p.linked ? 'Reconnect Ford' : 'Connect Ford') : null,
-        h('button', { class: 'sec', onclick: async (e) => { await api('/api/poll', { method: 'POST' }); e.target.textContent = 'Requested ✓'; } }, 'Sync now')) : null),
-    h('section', { class: 'card' }, h('h2', {}, 'Display'), h('label', { for: 'un' }, 'Units (this device)'), (units.id = 'un', units), h('label', { for: 'th' }, 'Theme (this device)'), (theme.id = 'th', theme),
-      h('label', { for: 'tm' }, 'Show trip times in (this device)'), (tmode.id = 'tm', tmode),
-      h('label', { for: 'dm' }, 'Data use (this device only)'), (mode.id = 'dm', mode),
-      h('p', { class: 'muted' }, 'Auto follows the Data Saver setting of your phone. Normal refreshes every 30 s. Live is pushed the moment a reading arrives. Data saver shows the essentials, refreshes every 5 min, and downloads big things (route, all fields) only when you ask. This does not affect your other devices.')),
-    h('section', { class: 'card' }, h('a', { href: '#/rules' }, 'Trip rules (work / personal) →')),
-    admin ? h('section', { class: 'card' }, h('a', { href: '#/admin' }, 'Admin settings (Ford credentials, time zone) →')) : null,
-    admin ? h('section', { class: 'card' }, h('a', { href: '#/remote' }, 'Remote access (Cloudflare tunnel) →')) : null,
-    admin ? await usersCard() : null,
-    h('p', { class: 'muted foot' }, 'CarTrak is an independent open-source project and is not affiliated with or endorsed by Ford Motor Company.'),
-    h('p', {}, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },
+  const remoteChip = remote && (remote.status.state === 'connected' ? chip('ok', 'On') : remote.enabled ? chip('bad', remote.status.state === 'not-installed' ? 'Unavailable' : 'Connecting') : chip('work', 'Off'));
+
+  root.append(
+    h('div', { class: 'profile' },
+      h('span', { class: 'avatar', 'aria-hidden': 'true' }, (session.me.name || '?').slice(0, 1).toUpperCase()),
+      h('div', {}, h('b', {}, session.me.name), h('span', { class: 'muted' }, `${session.me.role === 'admin' ? 'Admin' : 'Viewer'} · CarTrak v${a.version}`))),
+    ...notices(session),
+    h('div', { class: 'menu-cols' },
+      h('div', {},
+        group('Connections',
+          item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),
+          admin ? item('#/remote', 'Remote access', 'Cloudflare tunnel for use away from home', remoteChip) : null),
+        group('Trips', item('#/rules', 'Trip rules', 'Label trips work or personal automatically')),
+        group('This device', item('#/display', 'Display and data', 'Units, theme, trip times, data use'))),
+      h('div', {},
+        admin ? group('Admin',
+          item('#/people', 'People', `${users.length} ${users.length === 1 ? 'account' : 'accounts'}`),
+          item('#/admin', 'Settings', 'Ford credentials, time zone, diagnostics')) : null,
+        group('Help',
+          item('#/start', 'Getting started', 'A short checklist'),
+          item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
+    h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },
       `Sign out ${session.me.name}`)));
-}
-
-async function usersCard() {
-  const box = h('section', { class: 'card' }, h('h2', {}, 'People'));
-  const msg = h('p', { class: 'muted', role: 'alert' });
-  async function draw() {
-    const us = await api('/api/users');
-    const name = h('input', { placeholder: 'Name', autocapitalize: 'none' }), pw = h('input', { type: 'password', placeholder: 'Password (10+ characters)', autocomplete: 'new-password' });
-    const role = h('select', {}, h('option', { value: 'viewer' }, 'Viewer (read only)'), h('option', { value: 'admin' }, 'Admin'));
-    box.replaceChildren(h('h2', {}, 'People'), ...us.map((u) => h('div', { class: 'row' }, h('span', { class: 'grow' }, u.name), chip('work', u.role),
-      h('button', { class: 'danger', onclick: async () => { if (confirm(`Remove ${u.name}?`)) { try { await api(`/api/users/${u.id}`, { method: 'DELETE' }); draw(); } catch (e) { msg.textContent = e.message; } } } }, 'Remove'))),
-    h('label', {}, 'Add a person'), name, pw, role,
-    h('p', {}, h('button', { onclick: async () => {
-      try { await api('/api/users', { method: 'POST', body: { name: name.value, password: pw.value, role: role.value } }); msg.textContent = ''; draw(); } catch (e) { msg.textContent = e.message; }
-    } }, 'Add')), msg);
-  }
-  await draw();
-  return box;
 }

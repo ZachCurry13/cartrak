@@ -14,7 +14,7 @@ export function aboutCard(session, admin) {
   const status = !a.updateCheck ? 'Update checks are off.'
     : u.error ? `Could not check for updates (${u.error}).`
       : u.checkedAt ? `Checked ${ago(u.checkedAt)}.` : 'Not checked yet.';
-  return h('section', { class: 'card' }, h('h2', {}, 'About'),
+  return h('section', { class: 'card' },
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, `CarTrak v${a.version}`),
       u.available ? chip('work', `v${u.latest} available`) : a.updateCheck && u.checkedAt && !u.error ? chip('ok', 'up to date') : null),
     h('p', { class: 'muted' }, status),

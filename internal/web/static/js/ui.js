@@ -89,3 +89,9 @@ export function when(ts, tz) {
   try { s = new Date(ts * 1000).toLocaleString([], opts); } catch (e) { delete opts.timeZone; s = new Date(ts * 1000).toLocaleString([], opts); }
   return zone && zone !== deviceZone ? `${s} ${zoneName(ts, zone)}` : s;
 }
+
+// ---- menu rows (used by the More page) ----
+export const item = (href, title, sub, right) => h('a', { class: 'item', href },
+  h('span', { class: 'it' }, h('b', {}, title), sub ? h('span', { class: 'muted' }, sub) : null), right || null);
+export const group = (title, ...items) => h('section', { class: 'group' },
+  title ? h('h3', { class: 'gt' }, title) : null, h('div', { class: 'menu' }, ...items.filter(Boolean)));

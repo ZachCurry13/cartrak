@@ -18,6 +18,10 @@ const routes = {
   admin: () => import('./pages/admin.js'),
   connect: () => import('./pages/connect.js'),
   remote: () => import('./pages/remote.js'),
+  ford: () => import('./pages/ford.js'),
+  display: () => import('./pages/display.js'),
+  people: () => import('./pages/people.js'),
+  about: () => import('./pages/about.js'),
   live: () => import('./pages/live.js'),
 };
 
