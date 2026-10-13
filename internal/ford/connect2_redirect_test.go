@@ -25,7 +25,7 @@ func fakeAuth(t *testing.T, registered ...string) *Connect2 {
 		w.WriteHeader(302)
 	}))
 	t.Cleanup(srv.Close)
-	return NewConnect2(func() Connect2Opts { return Connect2Opts{ClientID: "cid", AuthURL: srv.URL + "/authorize?p=P"} }, memKV{})
+	return NewConnect2(func() Connect2Opts { return Connect2Opts{ClientID: "cid", CheckURL: srv.URL + "/authorize?p=P"} }, memKV{})
 }
 
 func TestCheckRedirectAcceptedAndRejected(t *testing.T) {
@@ -63,7 +63,7 @@ func TestCheckRedirectSendsNoSecretAndNeverFollowsRedirects(t *testing.T) {
 	}))
 	defer srv.Close()
 	c := NewConnect2(func() Connect2Opts {
-		return Connect2Opts{ClientID: "cid", ClientSecret: "TOP-SECRET", AuthURL: srv.URL + "/a"}
+		return Connect2Opts{ClientID: "cid", ClientSecret: "TOP-SECRET", CheckURL: srv.URL + "/a"}
 	}, memKV{})
 	if _, err := c.CheckRedirect(context.Background(), "https://x.example.com"); err != nil {
 		t.Fatal(err)
@@ -74,7 +74,7 @@ func TestCheckRedirectSendsNoSecretAndNeverFollowsRedirects(t *testing.T) {
 }
 
 func TestCheckRedirectNetworkErrorIsAnError(t *testing.T) {
-	c := NewConnect2(func() Connect2Opts { return Connect2Opts{ClientID: "c", AuthURL: "http://127.0.0.1:1/a"} }, memKV{})
+	c := NewConnect2(func() Connect2Opts { return Connect2Opts{ClientID: "c", CheckURL: "http://127.0.0.1:1/a"} }, memKV{})
 	if _, err := c.CheckRedirect(context.Background(), "https://x.example.com"); err == nil {
 		t.Fatal("an unreachable Ford must be an error, not 'not registered'")
 	}

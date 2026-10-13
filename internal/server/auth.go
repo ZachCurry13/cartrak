@@ -136,3 +136,11 @@ func (s *Server) clientIP(r *http.Request) string {
 	}
 	return h
 }
+
+// randHex returns 2*n random hex characters. Ford's sign-in rejects a state longer than 16
+// characters, so the link uses randHex(8).
+func randHex(n int) string {
+	b := make([]byte, n)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)
+}

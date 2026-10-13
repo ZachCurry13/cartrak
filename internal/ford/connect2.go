@@ -15,9 +15,13 @@ import (
 // sign-in (authorize) address is not in that collection: it follows the same
 // pattern as the token address, and can be overridden (FORD_AUTH_URL).
 const (
-	v2Host      = "https://api.vehicle.ford.com"
-	v2TokenURL  = v2Host + "/dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_FCON_AUTHORIZE"
-	v2AuthURL   = v2Host + "/dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_FCON_AUTHORIZE"
+	v2Host     = "https://api.vehicle.ford.com"
+	v2TokenURL = v2Host + "/dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_FCON_AUTHORIZE"
+	// Ford's own sign-in and vehicle-consent pages start here (what other FordConnect clients use).
+	v2LinkURL = v2Host + "/fcon-public/v1/auth/init"
+	// The back-end policy answers a redirect address that is not registered with an error, so it is
+	// used only to check which addresses Ford accepts, never to sign anyone in.
+	v2CheckURL  = v2Host + "/dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_FCON_AUTHORIZE"
 	v2QueryBase = v2Host + "/fcon-query/v1"
 	slowEvery   = 30 * time.Minute // how often the rarely-changing endpoints are re-read
 	refreshKey  = "ford2_refresh"
@@ -34,6 +38,7 @@ var slowEndpoints = []struct{ Key, Path string }{
 
 type Connect2Opts struct {
 	ClientID, ClientSecret, RedirectURL, AuthURL string
+	CheckURL                                     string // address used to test redirect addresses (tests override it)
 	APIBase, TokenURL                            string // overridden in tests
 }
 
@@ -64,7 +69,10 @@ func (c *Connect2) opts() Connect2Opts {
 		o.TokenURL = v2TokenURL
 	}
 	if o.AuthURL == "" {
-		o.AuthURL = v2AuthURL
+		o.AuthURL = v2LinkURL
+	}
+	if o.CheckURL == "" {
+		o.CheckURL = v2CheckURL
 	}
 	return o
 }

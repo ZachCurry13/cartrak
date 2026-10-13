@@ -51,8 +51,8 @@ func startLink(t *testing.T, c *http.Client, base string) string {
 		t.Fatalf("connect: %v %v", err, resp)
 	}
 	u, _ := url.Parse(resp.Header.Get("Location"))
-	if u.Query().Get("state") == "" {
-		t.Fatalf("no state in %s", u)
+	if st := u.Query().Get("state"); st == "" || len(st) > 16 { // Ford rejects a state longer than 16 characters
+		t.Fatalf("missing or too long state (Ford allows at most 16 characters) in %s", u)
 	}
 	return u.Query().Get("state")
 }

@@ -47,11 +47,15 @@ func join(p, k string) string {
 
 // lookup finds the first flattened value whose path ends with one of the
 // suffixes (case-insensitive, matched on whole dotted segments).
+// norm lowercases and drops underscores, so the dictionary name XEV_BATTERY_RANGE and the
+// telemetry key xevBatteryRange compare equal.
+func norm(s string) string { return strings.ToLower(strings.ReplaceAll(s, "_", "")) }
+
 func lookup(f map[string]any, suffixes ...string) (any, bool) {
 	for _, s := range suffixes {
-		ls := strings.ToLower(s)
+		ls := norm(s)
 		for p, v := range f {
-			lp := strings.ToLower(p)
+			lp := norm(p)
 			if lp == ls || strings.HasSuffix(lp, "."+ls) ||
 				lp == ls+".value" || strings.HasSuffix(lp, "."+ls+".value") {
 				return v, true
@@ -105,8 +109,8 @@ func ParseState(raw []byte, at time.Time) *State {
 	s.OdometerKm = numAt(f, "vehicleDetails.odometer", "odometer")
 	s.SoCPct = numAt(f, "batteryChargeLevel.value", "XEV_BATTERY_STATE_OF_CHARGE", "batteryFillLevel.value")
 	s.RangeKm = numAt(f, "batteryChargeLevel.distanceToEmpty", "XEV_BATTERY_RANGE", "elVehDTE.value")
-	s.Lat = numAt(f, "vehicleLocation.latitude", "position.latitude", "latitude")
-	s.Lon = numAt(f, "vehicleLocation.longitude", "position.longitude", "longitude")
+	s.Lat = numAt(f, "vehicleLocation.latitude", "position.value.location.lat", "position.location.lat", "position.latitude", "latitude")
+	s.Lon = numAt(f, "vehicleLocation.longitude", "position.value.location.lon", "position.location.lon", "position.longitude", "longitude")
 	s.SpeedKph = numAt(f, "vehicleLocation.speed")
 	if s.SpeedKph == nil {
 		if ms := numAt(f, "SPEED.value", "SPEED"); ms != nil {

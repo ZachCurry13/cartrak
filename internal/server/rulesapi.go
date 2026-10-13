@@ -86,7 +86,7 @@ func (s *Server) fordConnect(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/#/connect", http.StatusFound)
 		return
 	}
-	state := randToken()
+	state := randHex(8) // Ford requires a state of at most 16 characters
 	_ = s.S.SetKV("ford_state", state+"|"+strconv.FormatInt(time.Now().Add(15*time.Minute).Unix(), 10))
 	http.Redirect(w, r, s.Link.LinkURL(state), http.StatusFound)
 }
