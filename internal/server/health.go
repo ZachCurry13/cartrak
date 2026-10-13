@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/tunnel"
 )
 
@@ -90,7 +91,12 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 4. Updates
+	// 4. Phone tracking (optional)
+	if ds, err := s.S.ListDevices(); err == nil {
+		add(phoneItem(ds, now))
+	}
+
+	// 5. Updates
 	if s.Upd != nil {
 		if u := s.Upd.Info(); u.Available {
 			add(healthItem{"update", "CarTrak version", fmt.Sprintf("Version %s is available (you have %s).", u.Latest, s.Version), "info", "#/about", "See what's new"})
@@ -115,4 +121,21 @@ func addressNote(a string) string {
 		return ""
 	}
 	return " (" + a + ")"
+}
+
+// phoneItem summarises the paired phones: none (optional), none heard from yet, or the latest contact.
+func phoneItem(ds []store.Device, now int64) healthItem {
+	var latest *store.Device
+	for i := range ds {
+		if ds[i].LastSeen > 0 && (latest == nil || ds[i].LastSeen > latest.LastSeen) {
+			latest = &ds[i]
+		}
+	}
+	switch {
+	case len(ds) == 0:
+		return healthItem{"phone", "Phone tracking", "Not set up. Optional: a phone adds a finer route and makes trips start showing sooner.", "info", "#/phone", "Set up phone tracking"}
+	case latest == nil:
+		return healthItem{"phone", "Phone tracking", "A phone is paired but has not sent anything yet. Check its automation.", "info", "#/phone", "Open Phone tracking"}
+	}
+	return healthItem{"phone", "Phone tracking", latest.Name + " last heard from " + ago(now-latest.LastSeen) + ".", "ok", "", ""}
 }

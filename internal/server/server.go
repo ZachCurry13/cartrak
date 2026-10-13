@@ -90,6 +90,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /api/devices/{id}", s.auth(true, s.removeDevice))
 	m.HandleFunc("POST /api/ingest/event", s.deviceAuth(s.ingestEvent))
 	m.HandleFunc("POST /api/ingest/points", s.deviceAuth(s.ingestPoints))
+	m.HandleFunc("POST /api/track/points", s.auth(true, s.trackPoints))
 
 	m.HandleFunc("GET /ford/connect", s.auth(true, s.fordConnect))
 	m.HandleFunc("GET /ford/callback", s.callbackPage)

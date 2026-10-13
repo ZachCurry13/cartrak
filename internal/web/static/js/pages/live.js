@@ -1,6 +1,7 @@
 import { h, chip, dist, speed, pct, num, temp, ago, duration } from '../ui.js';
 import { api } from '../api.js';
 import { effective } from '../mode.js';
+import { gpsCard } from '../gpscard.js';
 
 // Full-screen "dock" view for a tablet on a car mount or a laptop: big tiles,
 // updated the moment the server gets a new reading, screen kept awake.
@@ -81,7 +82,8 @@ export default async function live(root, _a, session) {
   const onVisible = () => { if (!document.hidden && !wake) keepAwake(); };
   document.addEventListener('visibilitychange', onVisible);
 
-  root.append(h('p', {}, h('a', { href: '#/' }, '← Home')), dock);
+  const gps = admin ? gpsCard() : null;
+  root.append(h('p', {}, h('a', { href: '#/' }, '← Home')), dock, ...(gps ? [gps.el] : []));
   if (effective() === 'saver') {
     // The live feed keeps a connection open; on a limited plan ask first.
     const gate = h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Data saver is on for this device. The live view keeps a connection open and uses more data.'),
@@ -94,6 +96,7 @@ export default async function live(root, _a, session) {
   return {
     cleanup() {
       if (es) es.close();
+      if (gps) gps.stop();
       clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisible);
       if (wake) { wake.release().catch(() => {}); wake = null; }

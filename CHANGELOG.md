@@ -12,6 +12,15 @@
 - Tire pressures and the lock state now read Ford's real layout (a list per wheel and per door), so the Tires card and the Locks line fill in with a linked car.
 - The built-in demo car now uses the same layout, so these cards can be previewed without a car.
 
+### 📱 Phone tracking (optional)
+- New More, Phone tracking page: pair a phone, get a one-time token, and copy ready-made request examples. A test button confirms the phone can reach CarTrak, and the page lists the latest messages so you can see an automation fired.
+- When a phone says a trip started, CarTrak asks Ford right away and checks more often until Ford reports the trip; when it says the trip ended, CarTrak checks again so the trip closes promptly. Ford still decides what counts as a trip, so odometer and battery numbers stay exact.
+- GPS points from the phone are drawn on the trip page, a finer route than Ford's readings.
+- Live page: Record GPS from this phone sends the phone's location while the page is open (with a queue so a dropped signal loses nothing).
+- Step-by-step recipes for Tasker, MacroDroid and iPhone Shortcuts are in docs/phone-tracking.md.
+- Tokens are stored only as a hash and can be removed any time. Optional setting: delete phone GPS points after a number of days (off by default; trips are never deleted).
+- Status shows a Phone tracking line.
+
 ### 🧹 Under the hood
 - The Ford tests were split into smaller files.
 

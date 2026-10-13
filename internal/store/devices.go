@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"strconv"
 	"time"
 )
 
@@ -75,4 +76,17 @@ func (s *Store) TouchDevice(id int64, event string) error {
 	}
 	_, err := s.DB.Exec(`UPDATE devices SET last_seen=?, last_event=? WHERE id=?`, time.Now().Unix(), event, id)
 	return err
+}
+
+// BrowserDevice is the stand-in "device" for a signed-in browser that records GPS from the
+// Live page. Its token hash is not valid hex, so no bearer token can ever match it.
+func (s *Store) BrowserDevice(userID int64, who string) (*Device, error) {
+	key := "browser:" + strconv.FormatInt(userID, 10)
+	if d, err := s.DeviceByHash(key); d != nil || err != nil {
+		return d, err
+	}
+	if _, err := s.CreateDevice("Browser ("+who+")", key); err != nil {
+		return nil, err
+	}
+	return s.DeviceByHash(key)
 }

@@ -83,6 +83,7 @@ func main() {
 	defer stop()
 	go p.Run(ctx)
 	go upd.Run(ctx, srv.UpdateCheckEnabled)
+	go srv.CleanupLoop(ctx)
 
 	hs := &http.Server{Addr: cfg.Addr, Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
 	go func() {

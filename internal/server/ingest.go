@@ -147,5 +147,20 @@ func (s *Server) ingestPoints(w http.ResponseWriter, r *http.Request, d *store.D
 		}
 	}
 	_ = s.S.TouchDevice(d.ID, "")
+	if s.P != nil && movingNow(keep) {
+		s.P.PhoneDriving(true)
+	}
 	ok(w, map[string]int{"saved": len(keep), "skipped": len(in.Points) - len(keep)})
+}
+
+// movingNow is true when a fresh fix shows the phone travelling faster than walking pace
+// (about 11 km/h), which is as good as a "trip started" message for the poller.
+func movingNow(ps []store.Point) bool {
+	cut := time.Now().Add(-2 * time.Minute).Unix()
+	for _, p := range ps {
+		if p.TS >= cut && p.SpeedKph != nil && *p.SpeedKph >= 10.8 {
+			return true
+		}
+	}
+	return false
 }

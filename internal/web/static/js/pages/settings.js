@@ -5,11 +5,12 @@ import { notices } from '../notice.js';
 // The More page: a short, grouped menu. Each row opens its own page.
 export default async function settings(root, _a, session) {
   const admin = session.me.role === 'admin';
-  const [st, remote, users, health] = await Promise.all([
+  const [st, remote, users, health, phones] = await Promise.all([
     api('/api/status'),
     admin ? api('/api/admin/remote').catch(() => null) : null,
     admin ? api('/api/users').catch(() => []) : [],
     api('/api/health').catch(() => null),
+    admin ? api('/api/devices').catch(() => null) : null,
   ]);
   const p = st.poller;
   const a = session.about;
@@ -25,7 +26,8 @@ export default async function settings(root, _a, session) {
       h('div', {},
         group('Connections',
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),
-          admin ? item('#/remote', 'Remote access', 'Cloudflare tunnel for use away from home', remoteChip) : null),
+          admin ? item('#/remote', 'Remote access', 'Cloudflare tunnel for use away from home', remoteChip) : null,
+          admin ? item('#/phone', 'Phone tracking', 'Automatic trip start and a finer route from your phone', phones && phones.devices.length ? chip('ok', String(phones.devices.length)) : chip('work', 'Optional')) : null),
         group('Trips', item('#/rules', 'Trip rules', 'Label trips work or personal automatically')),
         group('This device', item('#/display', 'Display and data', 'Units, theme, trip times, data use'))),
       h('div', {},

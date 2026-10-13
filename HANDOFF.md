@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-Released through v0.8.1 (tag v0.8.1, image `ghcr.io/zachcurry13/cartrak:0.8.1` and `:latest`, public). v0.8.2 (Ford rate-limit fixes) is on `feature/v0.8.2`, merged into `feature/v0.9`, NOT released (user: "Not yet"). `feature/v0.9` also holds the Status screen and the real-data dashboard cards (Doors and locks, Health, list-based tires and locks); CHANGELOG `## 0.9.0` is drafted. Releases need the user's explicit OK each time.
+Released through v0.8.1 (tag v0.8.1, image `ghcr.io/zachcurry13/cartrak:0.8.1` and `:latest`, public). v0.8.2 (Ford rate-limit fixes) is on `feature/v0.8.2`, merged into `feature/v0.9`, NOT released (user: "Not yet"). `feature/v0.9` also holds the Status screen and the real-data dashboard cards (Doors and locks, Health, list-based tires and locks); CHANGELOG `## 0.9.0` is drafted. Phone tracking (device tokens, ingest API, poller wake-up, trip route, Live GPS recorder) is also on it. Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions
@@ -13,10 +13,12 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - comma 4 + StarPilot: planned as a separate data source; the device pushes drive summaries/GPS to CarTrak over the tunnel with a token (most private; Ford never involved). Ideas: openpilot engagement % per trip, disengagements, efficiency openpilot vs manual, device health.
 
 ## Next immediate steps
-1. Commit and push feature/v0.9 (status screen + dashboard cards), check CI, then continue the 0.9 build order: phone tracking foundation (ingest API with per-device tokens, phone GPS points and start/stop events merged into trips, Ford fast-poll on start, Android Tasker/MacroDroid + iPhone Shortcuts recipes in docs, Live-view GPS logger with wake lock and offline queue), then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end).
-2. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.
-3. Ask the user for Admin settings -> Ford diagnostics -> Copy responses once the 429 clears, to confirm the real alerts, wallbox and schedule shapes before building cards for them.
-4. Later: comma 4 push endpoint, phone OBD-II recorder, FordPass fallback.
+1. Phone tracking is built on feature/v0.9 (store: devices/track_points/device_events; server: ingest.go, ingest_util.go, devices.go, tripphone.go, cleanup.go; poller: PhoneDriving in poller_wait.go; web: pages/phone.js, phonehelp.js, gpslog.js, gpscard.js). Remaining there: nothing blocking; real-phone test by the user (Tasker/MacroDroid/Shortcuts, see docs/phone-tracking.md).
+2. The user asked (mid-session) for a "Vehicle health" tab: voltages, codes, battery health. The data dictionary lists XEV_BATTERY_VOLTAGE, BATTERY_VOLTAGE (12 V), XEV_BATTERY_CAPACITY (estimated kWh), XEV_BATTERY_PERFORMANCE_STATUS, XEV_BATTERY_TEMPERATURE, XEV_BATTERY_IO_CURRENT, XEV_TRACTION_MOTOR_VOLTAGE and DIAGNOSTIC_TROUBLE_CODE/DTC_VALUE; whether this car's API returns them is unconfirmed. Plan and get agreement first.
+3. Then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end).
+4. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.
+5. Ask the user for Admin settings -> Ford diagnostics -> Copy responses once the 429 clears.
+6. Later: comma 4 push endpoint (reuse the device-token ingest), phone OBD-II recorder, FordPass fallback.
 
 ## Known gaps
 - Ford endpoints unverified live. Docker image untested locally (no Docker); CI builds it.

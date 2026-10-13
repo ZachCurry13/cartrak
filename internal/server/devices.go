@@ -18,7 +18,19 @@ func (s *Server) listDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	es, _ := s.S.RecentEvents(15)
-	ok(w, map[string]any{"devices": ds, "events": es})
+	ok(w, map[string]any{"devices": ds, "events": es, "address": s.origin(r)})
+}
+
+// trackPoints takes GPS fixes from the Live page of a signed-in admin's browser. They are
+// stored exactly like fixes from a paired phone, under a stand-in device for that person.
+func (s *Server) trackPoints(w http.ResponseWriter, r *http.Request) {
+	u := userFrom(r)
+	d, err := s.S.BrowserDevice(u.ID, u.Name)
+	if err != nil || d == nil {
+		fail(w, 500, "could not start recording")
+		return
+	}
+	s.ingestPoints(w, r, d)
 }
 
 // addDevice creates a device and returns its token once; only a hash is kept.

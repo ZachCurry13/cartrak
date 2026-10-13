@@ -30,19 +30,26 @@ function route(samples) {
   return svg;
 }
 
+// The phone's GPS track is finer than Ford's readings, so it is drawn when there is one.
+function routeFor(d) {
+  const phone = (d.phone || []).filter((p) => p.lat != null && p.lon != null);
+  if (phone.length < 2) return [route(d.samples || [])];
+  return [route(phone), h('p', { class: 'muted' }, `Drawn from your phone's GPS (${phone.length} points).`)];
+}
+
 export default async function tripDetail(root, [id], session) {
   const saver = isSaver();
-  const { trip: t, samples } = await api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`);
+  const { trip: t, ...data } = await api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`);
   const routeBox = h('section', { class: 'card' }, h('h2', {}, 'Route'));
   if (saver) {
     routeBox.append(h('p', { class: 'muted' }, 'Data saver is on, so the route is not downloaded automatically.'),
       h('button', { class: 'sec', onclick: async (e) => {
         e.target.disabled = true;
         const full = await api(`/api/trips/${encodeURIComponent(id)}`);
-        routeBox.replaceChildren(h('h2', {}, 'Route'), route(full.samples));
+        routeBox.replaceChildren(h('h2', {}, 'Route'), ...routeFor(full));
       } }, 'Load route'));
   } else {
-    routeBox.append(route(samples));
+    routeBox.append(...routeFor(data));
   }
   const notes = h('input', { value: t.notes || '', placeholder: 'Notes (client, purpose…)', maxlength: 200 });
   const msg = h('p', { class: 'muted', role: 'status' });

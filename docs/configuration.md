@@ -15,6 +15,7 @@ Restart the app after editing.
 |---|---|---|
 | `CARTRAK_PROVIDER` | `fordconnect` (FordConnect 2.0, your car), `fordconnect1` (older API) or `demo` (simulated) | `fordconnect` |
 | `CARTRAK_TZ` | IANA time zone for work-hour rules, e.g. `America/Chicago` | `UTC` |
+| `CARTRAK_TRACK_KEEP_DAYS` | delete phone GPS points older than this many days (empty keeps everything; trips are always kept) | keep all |
 | `FORD_CLIENT_ID` / `FORD_CLIENT_SECRET` | from Ford's developer portal | none |
 | `FORD_APPLICATION_ID` | sent as `Application-Id`; only for the older `fordconnect1` provider | none |
 | `FORD_AUTH_URL` | Ford sign-in (authorize) address, only if Ford documents a different one | built-in |
@@ -38,7 +39,7 @@ stored in the database in `/data`, not in `config.yaml`.
 ## The Admin settings page
 More -> Admin settings (admins only) edits these keys and stores them in the
 database: `FORD_CLIENT_ID`, `FORD_CLIENT_SECRET`, `FORD_APPLICATION_ID`,
-`FORD_REDIRECT_URL`, `FORD_VIN` and `CARTRAK_TZ`. Changes apply right away, no restart.
+`FORD_REDIRECT_URL`, `FORD_VIN`, `CARTRAK_TZ` and `CARTRAK_TRACK_KEEP_DAYS`. Changes apply right away, no restart.
 
 - Precedence is environment variable, then `config.yaml`, then the Admin page. A key set by the first two shows as **locked** on the page: change it where it is set.
 - The Ford secret is write-only: the page never shows it again, and a blank secret field keeps the saved one.
