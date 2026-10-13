@@ -83,3 +83,53 @@ func TestChargeSession(t *testing.T) {
 		t.Fatalf("bad charge: %+v", cs)
 	}
 }
+
+// The same instant is 8:30 in Minnesota and 9:30 in New York, so a "9 to 5" work
+// rule must treat the two trips differently.
+func TestRulesUseTheTimeZoneWhereTheTripStarts(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	s.SaveRule(store.Rule{Name: "9 to 5", Category: Work, Enabled: true, Days: 62, StartMin: 9 * 60, EndMin: 17 * 60})
+	d := &Detector{S: s, TZ: time.UTC} // default zone is UTC; locations decide
+	at := time.Date(2026, 10, 14, 13, 30, 0, 0, time.UTC)
+
+	drive := func(lat, lon float64, ts time.Time) *store.Trip {
+		st := reading(ts, "ON", 100, 80)
+		st.Lat, st.Lon = &lat, &lon
+		if err := d.Process(st); err != nil {
+			t.Fatal(err)
+		}
+		off := reading(ts.Add(10*time.Minute), "OFF", 110, 78)
+		off.Lat, off.Lon = &lat, &lon
+		d.Process(off)
+		ts2, _ := s.ListTrips(store.TripFilter{Limit: 1})
+		return ts2[0]
+	}
+	mn := drive(44.9778, -93.2650, at)                  // Minneapolis
+	ny := drive(40.7128, -74.0060, at.Add(2*time.Hour)) // New York, an hour later by the clock there
+	if mn.TZ != "America/Chicago" || mn.Category != Personal {
+		t.Fatalf("Minnesota 8:30 should be personal in America/Chicago: %+v", mn)
+	}
+	if ny.TZ != "America/New_York" || ny.Category != Work {
+		t.Fatalf("New York 10:30 should be work in America/New_York: %+v", ny)
+	}
+
+	// Without a location the default zone is used.
+	noGPS := reading(at.Add(48*time.Hour), "ON", 200, 60)
+	d.Process(noGPS)
+	d.Process(reading(at.Add(48*time.Hour+10*time.Minute), "OFF", 210, 58))
+	last, _ := s.ListTrips(store.TripFilter{Limit: 1})
+	if last[0].TZ != "UTC" {
+		t.Fatalf("no location should fall back to the default zone, got %q", last[0].TZ)
+	}
+
+	// Re-applying rules keeps judging each trip by its own zone.
+	if err := d.Reclassify(); err != nil {
+		t.Fatal(err)
+	}
+	mn2, _ := s.GetTrip(mn.ID)
+	ny2, _ := s.GetTrip(ny.ID)
+	if mn2.Category != Personal || ny2.Category != Work {
+		t.Fatalf("reclassify changed the result: mn=%s ny=%s", mn2.Category, ny2.Category)
+	}
+}

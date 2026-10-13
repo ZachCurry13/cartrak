@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0
+
+### 🕒 Time zones that follow the car
+- Each trip now uses the time zone where it **starts**, worked out from its location (no internet needed). "Weekdays 8am to 5pm" means 8 to 5 wherever you are driving, so a trip in New York is judged on New York time even if your server is in Minnesota.
+- Trip times are shown in that local time with the zone name (for example "10:16 PM EDT") when it differs from your device. A per-device setting (More, Show trip times in) switches to your own device time.
+- The time zone setting is now the **default**, used only when the car location is unknown. The CSV export gains local start time and time zone columns.
+
+### 📴 Works without signal
+- Home keeps the last readings on your device and shows them with an "offline" banner when there is no connection. Your server keeps collecting from Ford while your phone is offline, so nothing is lost; open the app again to see it all.
+
 ## 0.6.0
 
 ### ☁️ Remote access inside CarTrak

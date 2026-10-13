@@ -31,10 +31,6 @@ export const pressure = (kpa) => n(kpa) ? dash : metric ? `${Math.round(kpa)} kP
 export const pct = (v) => n(v) ? dash : `${Math.round(v)}%`;
 export const num = (v, d = 1, u = '') => n(v) ? dash : `${(+v).toFixed(d)}${u}`;
 
-export function when(ts) {
-  if (!ts) return dash;
-  return new Date(ts * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-}
 export function ago(ts) {
   if (!ts) return 'never';
   const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
@@ -63,4 +59,33 @@ export function applyTheme() {
   const t = getTheme();
   if (t === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', t);
+}
+
+// ---- times: where a trip happened, or this device's own clock ----
+let timeMode = 'trip';
+try { timeMode = localStorage.getItem('timeMode') || 'trip'; } catch (e) { /* storage blocked */ }
+export const getTimeMode = () => timeMode;
+export function setTimeMode(m) {
+  timeMode = m;
+  try { localStorage.setItem('timeMode', m); } catch (e) { /* ignore */ }
+}
+const deviceZone = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return ''; } })();
+
+function zoneName(ts, zone) {
+  try {
+    const p = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'short' }).formatToParts(new Date(ts * 1000));
+    return (p.find((x) => x.type === 'timeZoneName') || {}).value || zone;
+  } catch (e) { return zone; }
+}
+
+// when(ts, tz): a trip's time in the zone where it started (default), or this
+// device's time. The zone name is added when it differs from the device's.
+export function when(ts, tz) {
+  if (!ts) return dash;
+  const opts = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+  const zone = timeMode === 'trip' && tz ? tz : '';
+  if (zone) opts.timeZone = zone;
+  let s;
+  try { s = new Date(ts * 1000).toLocaleString([], opts); } catch (e) { delete opts.timeZone; s = new Date(ts * 1000).toLocaleString([], opts); }
+  return zone && zone !== deviceZone ? `${s} ${zoneName(ts, zone)}` : s;
 }

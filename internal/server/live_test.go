@@ -157,3 +157,18 @@ func TestLiveModeAdminOnly(t *testing.T) {
 		t.Fatal("live mode not off")
 	}
 }
+
+func TestCSVHasLocalStartAndZone(t *testing.T) {
+	ts, _, s := liveServer(t)
+	c := adminClient(t, ts.URL)
+	// 13:30 UTC is 9:30 in New York (daylight time).
+	start := time.Date(2026, 10, 14, 13, 30, 0, 0, time.UTC).Unix()
+	tr := &store.Trip{StartTS: start, Category: "work", CategorySource: "rule", TZ: "America/New_York"}
+	if err := s.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	code, body := do(t, c, "GET", ts.URL+"/api/export/trips.csv", "", nil)
+	if code != 200 || !strings.Contains(body, "start_local,timezone") || !strings.Contains(body, "2026-10-14 09:30:00,America/New_York") {
+		t.Fatalf("csv: %d\n%s", code, body)
+	}
+}

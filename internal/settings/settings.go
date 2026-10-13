@@ -33,7 +33,7 @@ var Defs = []Def{
 	{Key: "CARTRAK_TUNNEL_TOKEN", Label: "Cloudflare tunnel token", Secret: true, Group: "remote"},
 	{Key: "CARTRAK_PUBLIC_ADDRESS", Label: "Public address", Group: "remote"},
 	{Key: "CARTRAK_REMOTE_ENABLED", Label: "Remote access on", Group: "remote"},
-	{Key: "CARTRAK_TZ", Label: "Time zone", Placeholder: "America/Chicago", Help: "IANA name. Work-hour rules use this time zone."},
+	{Key: "CARTRAK_TZ", Label: "Default time zone", Placeholder: "America/Chicago", Help: "IANA name. Used only when the car's location is unknown. Each trip is otherwise judged and shown by the time zone where it starts."},
 }
 
 // Lookup reads a process-level (env or config.yaml) value and its source.

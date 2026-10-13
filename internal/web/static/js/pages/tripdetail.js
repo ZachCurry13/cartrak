@@ -52,7 +52,7 @@ export default async function tripDetail(root, [id], session) {
   };
   const kwh = t.startSoc != null && t.endSoc != null ? null : null;
   root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')),
-    h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs)), catChip(t)),
+    h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc))),
       kwh),

@@ -8,7 +8,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Mobile-first web app you can **install on your phone** (PWA), light and dark themes
 - Every field Ford returns is kept (raw responses plus parsed readings) and browsable
 - Trips and charging sessions are detected automatically; routes are drawn without any map service
-- Work/personal rules (days, time window, optional "near this place"); a manual choice always wins
+- Work/personal rules (days, time window, optional "near this place"), judged in the local time where each trip starts; a manual choice always wins
 - CSV export and work/personal mileage totals
 - A full-screen **Live view** and **Road trip mode** for fast updates while driving, with pushed updates instead of polling
 - A per-device **Data saver** mode for limited plans, and layouts for phone, tablet and desktop
@@ -81,7 +81,7 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_ADDR` | `:8080` | Listen address | |
 | `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
-| `CARTRAK_TZ` | `UTC` | IANA time zone used by work-hour rules, e.g. `America/Chicago` | yes |
+| `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/Chicago` | yes |
 | `FORD_CLIENT_ID` | (empty) | From Ford's developer portal | yes |
 | `FORD_CLIENT_SECRET` | (empty) | Keep it private; the Admin page never shows it again | yes |
 | `FORD_APPLICATION_ID` | (empty) | Only for the older `fordconnect1` provider; not needed for FordConnect 2.0 | yes |

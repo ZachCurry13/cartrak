@@ -24,16 +24,17 @@ type Trip struct {
 	RuleID         *int64   `json:"ruleId"`
 	Notes          string   `json:"notes"`
 	Open           bool     `json:"open"`
+	TZ             string   `json:"tz"` // time zone where the trip started, e.g. America/New_York
 }
 
 const tripCols = `id,start_ts,end_ts,start_lat,start_lon,end_lat,end_lon,start_odo,end_odo,distance_km,
- start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open`
+ start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz`
 
 func scanTrip(r interface{ Scan(...any) error }) (*Trip, error) {
 	var t Trip
 	err := r.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.StartLat, &t.StartLon, &t.EndLat, &t.EndLon,
 		&t.StartOdo, &t.EndOdo, &t.DistanceKm, &t.StartSoC, &t.EndSoC, &t.MaxSpeedKph,
-		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open)
+		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ)
 	return &t, err
 }
 
@@ -51,9 +52,9 @@ func (s *Store) GetTrip(id int64) (*Trip, error) {
 
 func (s *Store) CreateTrip(t *Trip) error {
 	r, err := s.DB.Exec(`INSERT INTO trips(start_ts,start_lat,start_lon,start_odo,start_soc,end_lat,end_lon,
-		end_odo,end_soc,category,category_source,rule_id,open) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,1)`,
+		end_odo,end_soc,category,category_source,rule_id,tz,open) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,1)`,
 		t.StartTS, t.StartLat, t.StartLon, t.StartOdo, t.StartSoC, t.StartLat, t.StartLon,
-		t.StartOdo, t.StartSoC, t.Category, t.CategorySource, t.RuleID)
+		t.StartOdo, t.StartSoC, t.Category, t.CategorySource, t.RuleID, t.TZ)
 	if err != nil {
 		return err
 	}

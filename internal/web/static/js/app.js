@@ -3,6 +3,7 @@ applyTheme();
 import { api, AuthError } from './api.js';
 import { loginPage } from './pages/login.js';
 import { startRefresh, effective } from './mode.js';
+import { cached } from './offline.js';
 
 const routes = {
   '': () => import('./pages/dashboard.js'),
@@ -34,7 +35,7 @@ const store = {
 };
 
 async function loadAbout() {
-  session.about = await api('/api/about');
+  session.about = await cached('about', () => api('/api/about'));
   const ver = document.getElementById('ver');
   ver.textContent = `v${session.about.version}`;
   ver.classList.toggle('update', !!session.about.update.available);
@@ -60,7 +61,7 @@ async function render() {
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   try {
     if (!session.me) {
-      session.me = await api('/api/me');
+      session.me = await cached('me', () => api('/api/me'));
       await loadAbout();
       if (await firstRunTour()) return; // hashchange re-renders onto the tour
     }

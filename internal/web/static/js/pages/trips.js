@@ -27,7 +27,7 @@ export default async function trips(root) {
   }
   const row = (t) => h('a', { class: 'card', href: `#/trip/${t.id}`, style: 'display:block;color:inherit;text-decoration:none' },
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, t.open ? 'In progress' : dist(t.distanceKm)), catChip(t)),
-    h('div', { class: 'muted' }, `${when(t.startTs)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}`),
+    h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}`),
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
   root.append(segCat, segRange, sum, list);
   await draw();

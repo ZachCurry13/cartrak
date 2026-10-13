@@ -44,3 +44,11 @@ database: `FORD_CLIENT_ID`, `FORD_CLIENT_SECRET`, `FORD_APPLICATION_ID`,
 - The Ford secret is write-only: the page never shows it again, and a blank secret field keeps the saved one.
 - If the redirect URL is empty, CarTrak uses the address you are browsing from plus `/ford/callback` when you press Connect Ford.
 - Saved values live in `cartrak.db` in the `data` folder, so protect backups of it.
+
+## Time zones
+CarTrak works out each trip's time zone from **where the trip starts** (boundary data is built in,
+so this needs no internet). Work and personal rules, and the times shown for the trip, use that local time:
+"Mon-Fri 8am-5pm" means 8 to 5 wherever you are driving. The `CARTRAK_TZ` setting (Admin settings, "Default
+time zone") is only the fallback when a reading has no location. Each trip stores its zone, so old trips keep
+the zone they were recorded in. On a device, More -> **Show trip times in** chooses between the trip's local
+time (default) and the device's own time.

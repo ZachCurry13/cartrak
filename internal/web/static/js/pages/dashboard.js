@@ -1,7 +1,8 @@
-import { h, stat, chip, dist, speed, temp, pressure, pct, num, ago, duration } from '../ui.js';
+import { h, stat, chip, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
 import { isSaver, effective } from '../mode.js';
+import { cachedEx } from '../offline.js';
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -29,14 +30,15 @@ export default async function dashboard(root, _args, session) {
   let cache = null; // status, last trip, checklist: refetched every time only in Normal mode
   let full = !isSaver(); // Data saver starts with the small summary until asked for more
   async function load() {
-    const latest = await api(`/api/latest${full ? '' : '?summary=1'}`);
-    if (!cache || effective() === 'normal') {
+    const { value: latest, staleSince } = await cachedEx(`latest${full ? '' : '-s'}`, () => api(`/api/latest${full ? '' : '?summary=1'}`));
+    if (staleSince) cache = cache || { status: { poller: { linked: true }, canLink: false }, trips: [], ob: null }; // offline: nothing to refetch
+    else if (!cache || effective() === 'normal') {
       const [status, trips, ob] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
         session.me.role === 'admin' ? api('/api/onboarding') : null]);
       cache = { status, trips, ob };
     }
     const { status, trips, ob } = cache;
-    const out = [...notices(session)];
+    const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
       if (!ob.dismissed) out.push(h('a', { class: 'card', href: '#/start', style: 'display:block;text-decoration:none' }, h('b', {}, 'Getting started'), h('div', { class: 'muted' }, 'Finish setting up CarTrak: connect Ford, install on your phone, add trip rules →')));
     }
@@ -86,7 +88,7 @@ export default async function dashboard(root, _args, session) {
 
     const t = trips[0];
     if (t) out.push(card(t.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${t.id}` }, `${dist(t.distanceKm)} · ${t.category}`),
-      h('p', { class: 'muted' }, `${new Date(t.startTs * 1000).toLocaleString()} · ${duration(t.startTs, t.endTs)}`)));
+      h('p', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)}`)));
     if (!full) {
       out.push(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Data saver is on: showing the essentials. Tires, battery details and other fields are skipped.'),
         h('button', { class: 'sec', onclick: () => { full = true; load(); } }, 'Load full details once')));

@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS trips (
   start_soc REAL, end_soc REAL, max_speed_kph REAL DEFAULT 0,
   category TEXT NOT NULL DEFAULT 'personal',
   category_source TEXT NOT NULL DEFAULT 'default',
-  rule_id INTEGER, notes TEXT DEFAULT '', open INTEGER NOT NULL DEFAULT 1);
+  rule_id INTEGER, notes TEXT DEFAULT '', open INTEGER NOT NULL DEFAULT 1,
+  tz TEXT NOT NULL DEFAULT '');
 CREATE INDEX IF NOT EXISTS trips_start ON trips(start_ts);
 
 CREATE TABLE IF NOT EXISTS charges (
@@ -67,6 +68,9 @@ func Open(dir string) (*Store, error) {
 	}
 	db.SetMaxOpenConns(1) // SQLite: serialize writers, avoids SQLITE_BUSY
 	if _, err := db.Exec(schema); err != nil {
+		return nil, err
+	}
+	if err := migrate(db); err != nil {
 		return nil, err
 	}
 	return &Store{DB: db}, nil

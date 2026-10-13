@@ -142,14 +142,14 @@ func (s *Server) exportCSV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", `attachment; filename="cartrak-trips.csv"`)
 	c := csv.NewWriter(w)
-	_ = c.Write([]string{"id", "start", "end", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes"})
+	_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes"})
 	for _, t := range ts {
 		end := ""
 		if t.EndTS != nil {
 			end = time.Unix(*t.EndTS, 0).UTC().Format(time.RFC3339)
 		}
 		_ = c.Write([]string{strconv.FormatInt(t.ID, 10), time.Unix(t.StartTS, 0).UTC().Format(time.RFC3339), end,
-			t.Category, t.CategorySource, fmt.Sprintf("%.2f", t.DistanceKm), fl(t.StartSoC), fl(t.EndSoC),
+			localStart(t), t.TZ, t.Category, t.CategorySource, fmt.Sprintf("%.2f", t.DistanceKm), fl(t.StartSoC), fl(t.EndSoC),
 			fmt.Sprintf("%.0f", t.MaxSpeedKph), csvSafe(t.Notes)})
 	}
 	c.Flush()
@@ -168,4 +168,15 @@ func csvSafe(s string) string {
 		return "'" + s
 	}
 	return s
+}
+
+// localStart is the trip's start time on the clock where it happened.
+func localStart(t *store.Trip) string {
+	loc := time.UTC
+	if t.TZ != "" {
+		if l, err := time.LoadLocation(t.TZ); err == nil {
+			loc = l
+		}
+	}
+	return time.Unix(t.StartTS, 0).In(loc).Format("2006-01-02 15:04:05")
 }

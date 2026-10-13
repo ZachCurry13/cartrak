@@ -1,4 +1,4 @@
-import { h, chip, ago, isMetric, setMetric, getTheme, setTheme } from '../ui.js';
+import { h, chip, ago, isMetric, setMetric, getTheme, setTheme, getTimeMode, setTimeMode } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
 import { MODES, getPref, setPref } from '../mode.js';
@@ -14,6 +14,9 @@ export default async function settings(root, _a, session) {
   const theme = h('select', {}, h('option', { value: 'auto' }, 'Auto (match phone)'), h('option', { value: 'light' }, 'Light'), h('option', { value: 'dark' }, 'Dark'));
   theme.value = getTheme();
   theme.addEventListener('change', () => setTheme(theme.value));
+  const tmode = h('select', {}, h('option', { value: 'trip' }, 'Where the trip happened'), h('option', { value: 'device' }, 'This device'));
+  tmode.value = getTimeMode();
+  tmode.addEventListener('change', () => setTimeMode(tmode.value));
   const mode = h('select', {}, ...Object.entries(MODES).map(([k, v]) => h('option', { value: k }, v)));
   mode.value = getPref();
   mode.addEventListener('change', () => { setPref(mode.value); location.reload(); });
@@ -25,6 +28,7 @@ export default async function settings(root, _a, session) {
       admin ? h('p', { class: 'seg' }, st.canLink ? h('a', { class: 'btn', href: '#/connect' }, p.linked ? 'Reconnect Ford' : 'Connect Ford') : null,
         h('button', { class: 'sec', onclick: async (e) => { await api('/api/poll', { method: 'POST' }); e.target.textContent = 'Requested ✓'; } }, 'Sync now')) : null),
     h('section', { class: 'card' }, h('h2', {}, 'Display'), h('label', { for: 'un' }, 'Units (this device)'), (units.id = 'un', units), h('label', { for: 'th' }, 'Theme (this device)'), (theme.id = 'th', theme),
+      h('label', { for: 'tm' }, 'Show trip times in (this device)'), (tmode.id = 'tm', tmode),
       h('label', { for: 'dm' }, 'Data use (this device only)'), (mode.id = 'dm', mode),
       h('p', { class: 'muted' }, 'Auto follows the Data Saver setting of your phone. Normal refreshes every 30 s. Live is pushed the moment a reading arrives. Data saver shows the essentials, refreshes every 5 min, and downloads big things (route, all fields) only when you ask. This does not affect your other devices.')),
     h('section', { class: 'card' }, h('a', { href: '#/rules' }, 'Trip rules (work / personal) →')),

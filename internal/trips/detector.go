@@ -6,6 +6,7 @@ import (
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
+	"github.com/ZachCurry13/cartrak/internal/tzlookup"
 )
 
 // Detector opens and closes trips and charge sessions from successive readings.
@@ -37,10 +38,29 @@ func (d *Detector) Process(st *ford.State) error {
 	return d.charge(st)
 }
 
-func (d *Detector) classify(startTS int64, lat, lon *float64) (string, *int64, string) {
+// zone is the time zone where a trip started: found from its location, else the
+// default time zone setting. So "weekdays 8am-5pm" means 8 to 5 wherever you are driving.
+func (d *Detector) zone(lat, lon *float64) *time.Location {
+	if lat != nil && lon != nil {
+		return tzlookup.Location(*lat, *lon, d.loc())
+	}
+	return d.loc()
+}
+
+// tripZone prefers the zone stored with the trip over looking it up again.
+func (d *Detector) tripZone(t *store.Trip) *time.Location {
+	if t.TZ != "" {
+		if l, err := time.LoadLocation(t.TZ); err == nil {
+			return l
+		}
+	}
+	return d.zone(t.StartLat, t.StartLon)
+}
+
+func (d *Detector) classify(startTS int64, lat, lon *float64, loc *time.Location) (string, *int64, string) {
 	rules, err := d.S.ListRules()
 	if err == nil {
-		at := time.Unix(startTS, 0).In(d.loc())
+		at := time.Unix(startTS, 0).In(loc)
 		if cat, id, ok := Classify(rules, at, lat, lon); ok {
 			return cat, &id, "rule"
 		}
@@ -57,7 +77,9 @@ func (d *Detector) trip(st *ford.State) error {
 	if Driving(st) && open == nil {
 		t := &store.Trip{StartTS: now, StartLat: st.Lat, StartLon: st.Lon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct}
 		var rid *int64
-		t.Category, rid, t.CategorySource = d.classify(now, st.Lat, st.Lon)
+		loc := d.zone(st.Lat, st.Lon)
+		t.TZ = loc.String()
+		t.Category, rid, t.CategorySource = d.classify(now, st.Lat, st.Lon, loc)
 		t.RuleID = rid
 		return d.S.CreateTrip(t)
 	}
@@ -147,7 +169,7 @@ func (d *Detector) Reclassify() error {
 		if t.CategorySource == "manual" {
 			continue
 		}
-		cat, rid, src := d.classify(t.StartTS, t.StartLat, t.StartLon)
+		cat, rid, src := d.classify(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t))
 		t.Category, t.RuleID, t.CategorySource = cat, rid, src
 		if err := d.S.UpdateTrip(t); err != nil {
 			return err

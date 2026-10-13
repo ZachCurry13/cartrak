@@ -1,8 +1,8 @@
 // Bump CACHE whenever any file in SHELL changes.
-const CACHE = 'cartrak-v0.6.0-4';
+const CACHE = 'cartrak-v0.7.0-2';
 const SHELL = ['/', '/css/app.css', '/css/theme.css', '/css/responsive.css', '/manifest.webmanifest', '/icons/icon.svg',
   '/js/app.js', '/js/api.js', '/js/ui.js',
-  '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/connect.js', '/js/pages/remote.js', '/js/pages/live.js', '/js/mode.js', '/js/diag.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js',
+  '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/connect.js', '/js/offline.js', '/js/pages/remote.js', '/js/pages/live.js', '/js/mode.js', '/js/diag.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js',
   '/js/pages/charging.js', '/js/pages/data.js', '/js/pages/settings.js', '/js/pages/rules.js'];
 
 self.addEventListener('install', (e) => {

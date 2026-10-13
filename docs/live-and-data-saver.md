@@ -45,3 +45,8 @@ nothing new costs almost nothing. Nothing is cached offline except the app files
 | `CARTRAK_POLL_LIVE_SEC` | `10` | Seconds between readings while driving in Road trip mode (minimum 5) |
 
 The normal intervals are in [Configuration](configuration.md).
+
+## Offline
+Your server keeps collecting from Ford even when your phone has no signal, so nothing is lost: open the app
+again and the history is there. The app also remembers the last readings on each device, so Home opens with a
+clear "You are offline" banner instead of an error. Anything not yet saved on the device (other pages) needs a connection.
