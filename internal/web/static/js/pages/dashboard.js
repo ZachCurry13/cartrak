@@ -4,6 +4,7 @@ import { notices } from '../notice.js';
 import { isSaver, effective } from '../mode.js';
 import { cachedEx } from '../offline.js';
 import { healthStrip } from '../healthstrip.js';
+import { doorsCard, healthCard } from '../cards.js';
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -80,6 +81,11 @@ export default async function dashboard(root, _args, session) {
       out.push(card('Tires', h('div', { class: 'grid' }, ['Front L', 'Front R', 'Rear L', 'Rear R'].map((l, i) => stat(l, pressure(tires[i])))),
         pick(x, 'tirePressureWarning') ? h('p', { class: 'chip bad' }, 'Low pressure warning') : null));
     }
+
+    const doors = doorsCard(latest, x, pick);
+    if (doors) out.push(doors);
+    const hc = healthCard(x);
+    if (hc) out.push(hc);
 
     const t = trips[0];
     if (t) out.push(card(t.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${t.id}` }, `${dist(t.distanceKm)} · ${t.category}`),

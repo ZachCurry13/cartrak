@@ -130,6 +130,8 @@ func ParseState(raw []byte, at time.Time) *State {
 	if st := strAt(f, "lockStatus.value", "DOOR_LOCK_STATUS"); st != "" {
 		s.Locked = ptr(strings.EqualFold(st, "LOCKED") || strings.EqualFold(st, "DOUBLE_LOCKED"))
 	}
+	parseTires(f, s) // list metrics in the real telemetry layout
+	parseLocks(f, s)
 	return s
 }
 

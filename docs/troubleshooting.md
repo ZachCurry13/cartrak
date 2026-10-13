@@ -1,5 +1,8 @@
 # Troubleshooting
 
+**Start here: More -> Status.**
+It checks the whole setup (Ford settings, Ford link, last reading, remote access, updates) in plain language, and each problem has a button that opens the right page. The same result shows as a strip on Home. It never shows keys or passwords.
+
 **The app will not start / "permission denied" in the logs.**
 The `data` and `config` folders must be writable by UID 568 (the `apps` user). Fix the dataset permissions, then Start again.
 

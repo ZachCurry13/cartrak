@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-v0.1.0 is released (tag v0.1.0, image `ghcr.io/zachcurry13/cartrak:0.1.0` and `:latest`, public). `feature/v0.2` holds v0.2.0 (finished, pushed, NOT released).
+Released through v0.8.1 (tag v0.8.1, image `ghcr.io/zachcurry13/cartrak:0.8.1` and `:latest`, public). v0.8.2 (Ford rate-limit fixes) is on `feature/v0.8.2`, merged into `feature/v0.9`, NOT released (user: "Not yet"). `feature/v0.9` also holds the Status screen and the real-data dashboard cards (Doors and locks, Health, list-based tires and locks); CHANGELOG `## 0.9.0` is drafted. Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions
@@ -13,10 +13,10 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - comma 4 + StarPilot: planned as a separate data source; the device pushes drive summaries/GPS to CarTrak over the tunnel with a token (most private; Ford never involved). Ideas: openpilot engagement % per trip, disengagements, efficiency openpilot vs manual, device health.
 
 ## Next immediate steps
-1. User updates TrueNAS to 0.3.1 (Stop/Start) and retries Connect Ford; fix whatever Ford returns (link/token/field names are still unverified live).
-2. Planned (awaiting user priorities): live/roadtrip mode (SSE push, adaptive polling), responsive PC/tablet layout, per-device data-saver mode, ingest API with device tokens (shared by comma push and phone OBD-II recorder), more FordConnect endpoints.
-2. Verify against real Ford: token URL, link URL, api-version, field names (see internal/ford/fordconnect.go, parse.go).
-2. Build the comma push endpoint + device script; add FordPass fallback if wanted.
+1. Commit and push feature/v0.9 (status screen + dashboard cards), check CI, then continue the 0.9 build order: phone tracking foundation (ingest API with per-device tokens, phone GPS points and start/stop events merged into trips, Ford fast-poll on start, Android Tasker/MacroDroid + iPhone Shortcuts recipes in docs, Live-view GPS logger with wake lock and offline queue), then Web Push alerts (charge complete, plug in/out, low tire, unlocked, trip start/end).
+2. Ask the user (AskUserQuestion) before any release; decide whether v0.8.2 ships alone or inside 0.9.0.
+3. Ask the user for Admin settings -> Ford diagnostics -> Copy responses once the 429 clears, to confirm the real alerts, wallbox and schedule shapes before building cards for them.
+4. Later: comma 4 push endpoint, phone OBD-II recorder, FordPass fallback.
 
 ## Known gaps
 - Ford endpoints unverified live. Docker image untested locally (no Docker); CI builds it.

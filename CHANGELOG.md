@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.0
+
+### 🩺 A Status screen that says what to do next
+- A new Status page (More, then Status) checks the whole setup in plain language: Ford settings entered, Ford linked, last reading and how old it is, remote access, and whether an update is available. Each line says what is wrong and has a button to fix it.
+- Home shows a short strip with the same result, so a problem is visible without opening any menu. Anyone signed in can see it; it never shows keys or passwords.
+
+### 🚗 A dashboard built from the real car data
+- New Doors and locks card: whether the car is locked and which doors, the tailgate or the hood are open.
+- New Health card: warning lights the car reports and low tire pressure alerts, or "No warnings".
+- Tire pressures and the lock state now read Ford's real layout (a list per wheel and per door), so the Tires card and the Locks line fill in with a linked car.
+- The built-in demo car now uses the same layout, so these cards can be previewed without a car.
+
+### 🧹 Under the hood
+- The Ford tests were split into smaller files.
+
 ## 0.8.2
 
 ### 🐢 Playing by Ford's request limit

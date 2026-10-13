@@ -53,18 +53,47 @@ func (d *Demo) Fetch(ctx context.Context) (*State, error) {
 				"tirePressureWarning": false,
 			},
 		},
-		"location":                     map[string]any{"vehicleLocation": map[string]any{"latitude": lat, "longitude": lon, "speed": spd}},
+		"location": map[string]any{"vehicleLocation": map[string]any{"latitude": lat, "longitude": lon, "speed": spd}},
+		// The real telemetry layout: vehicles[].metrics.<name>, with list metrics for wheels and doors.
+		"telemetry": map[string]any{"vehicles": []any{map[string]any{"metrics": map[string]any{
+			"tirePressure": []any{
+				map[string]any{"vehicleWheel": "FRONT_LEFT", "value": 255.0}, map[string]any{"vehicleWheel": "FRONT_RIGHT", "value": 253.0},
+				map[string]any{"vehicleWheel": "REAR_LEFT", "value": 260.0}, map[string]any{"vehicleWheel": "REAR_RIGHT", "value": 258.0}},
+			"tirePressureStatus": []any{
+				map[string]any{"vehicleWheel": "FRONT_LEFT", "value": "NORMAL"}, map[string]any{"vehicleWheel": "REAR_RIGHT", "value": "NORMAL"}},
+			"doorLockStatus": []any{
+				map[string]any{"vehicleDoor": "UNSPECIFIED_FRONT", "vehicleSide": "DRIVER", "value": lockWord(phase)},
+				map[string]any{"vehicleDoor": "UNSPECIFIED_FRONT", "vehicleSide": "PASSENGER", "value": lockWord(phase)}},
+			"doorStatus": []any{
+				map[string]any{"vehicleDoor": "UNSPECIFIED_FRONT", "vehicleSide": "DRIVER", "value": "CLOSED"},
+				map[string]any{"vehicleDoor": "TAILGATE", "value": tailgate(phase)}},
+			"hoodStatus": map[string]any{"value": "CLOSED"},
+			"indicators": map[string]any{"tirePressureWarning": map[string]any{"value": false}, "brakePadWearWarning": map[string]any{"value": phase == 8}},
+		}}}},
 		"XEV_BATTERY_TEMPERATURE":      map[string]any{"value": 24.5},
 		"XEV_BATTERY_ENERGY_REMAINING": map[string]any{"value": d.soc * 0.88},
 		"GEAR_LEVER_POSITION":          map[string]any{"value": gear},
 		"AMBIENT_TEMP":                 map[string]any{"value": 18.0},
-		"TIRE_PRESSURE_FL":             map[string]any{"value": 255.0}, "TIRE_PRESSURE_FR": map[string]any{"value": 253.0},
-		"TIRE_PRESSURE_RL": map[string]any{"value": 260.0}, "TIRE_PRESSURE_RR": map[string]any{"value": 258.0},
-		"BATTERY_VOLTAGE":            map[string]any{"value": 12.6},
-		"ACCELERATOR_PEDAL_POSITION": map[string]any{"value": spd / 4},
+		"BATTERY_VOLTAGE":              map[string]any{"value": 12.6},
+		"ACCELERATOR_PEDAL_POSITION":   map[string]any{"value": spd / 4},
 	}
 	raw, _ := json.Marshal(doc)
 	s := ParseState(raw, time.Now())
 	s.ChargeKw = ptr(kw)
 	return s, nil
+}
+
+// lockWord and tailgate vary a little with the demo's cycle so the cards show different states.
+func lockWord(phase int) string {
+	if phase >= 4 && phase < 12 {
+		return "UNLOCKED" // while "driving"
+	}
+	return "LOCKED"
+}
+
+func tailgate(phase int) string {
+	if phase == 18 {
+		return "AJAR"
+	}
+	return "CLOSED"
 }
