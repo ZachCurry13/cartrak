@@ -12,6 +12,11 @@
 - Tire pressures and the lock state now read Ford's real layout (a list per wheel and per door), so the Tires card and the Locks line fill in with a linked car.
 - The built-in demo car now uses the same layout, so these cards can be previewed without a car.
 
+### 🧾 Mileage log
+- New More, Mileage log: pick calendar weeks (for example 26-28) or dates and get a business mileage log in your sheet's layout: Date, Origin City, Destination City, Description, Total Miles Driven, plus Total Mileage Recorded. One row per day; the destination list is the city where you parked after each trip, each city once and in order, without your starting city.
+- One-tap copy, tab-separated so it pastes cell by cell, with or without the headings and total.
+- City names come from OpenStreetMap's Nominatim service, asked by your server only when you build a log, with locations rounded to about 100 m, and every answer is remembered. It can be switched off in Settings (then only remembered places are named). See docs/mileage.md.
+
 ### 🗺️ Maps
 - Trip pages now show the route on a real map with start and end markers (your phone's GPS track when there is one). Home shows a small map of where the car is, and Trips has a new Map view with every trip in the chosen range, work in amber and personal in blue; tap a route to open the trip.
 - Drag to move, + and − buttons, mouse wheel or two-finger pinch to zoom.

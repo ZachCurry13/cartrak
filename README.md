@@ -82,6 +82,8 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
 | `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/Chicago` | yes |
+| `CARTRAK_GEOCODE_ENABLED` | (on) | `off` stops the mileage log from asking a place-lookup service for city names. See [mileage log](docs/mileage.md) | yes |
+| `CARTRAK_GEOCODE_URL` | OpenStreetMap Nominatim | Another Nominatim-compatible lookup service | yes |
 | `CARTRAK_MAP_ENABLED` | (on) | `off` turns maps off and draws plain route lines. Tiles come through CarTrak, see [maps](docs/maps.md) | yes |
 | `CARTRAK_MAP_TILE_URL` | OpenStreetMap | Another map tile server, with `{z}`, `{x}`, `{y}` in the address | yes |
 | `CARTRAK_MAP_ATTRIBUTION` | OpenStreetMap credit | Credit line shown on maps | yes |
@@ -110,12 +112,13 @@ More detail in [docs/configuration.md](docs/configuration.md).
 - Passwords are stored hashed (bcrypt); sign-in attempts are rate limited; cookies are `HttpOnly`, `SameSite` and `Secure` over HTTPS.
 - The Ford secret and refresh token are never sent to the browser or written to logs. They are stored in the database file in `/data`, so protect and encrypt backups of it.
 - Update checks only read GitHub's public release list; turn them off in More -> About.
+- Mileage log: to name cities, the server asks OpenStreetMap Nominatim only when an admin builds a log, with locations rounded to about 100 m, and remembers answers. Switch it off in Settings to send nothing.
 - Maps: tiles are fetched by the CarTrak server and cached on disk, so browsers never contact the map provider; only signed-in people can load tiles. Switch maps off in Settings for no map requests at all.
 - Phone tracking tokens are stored only as a hash and can be removed at any time (More -> Phone tracking); phones can only send data, never read it.
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

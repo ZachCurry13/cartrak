@@ -22,6 +22,7 @@ const routes = {
   ford: () => import('./pages/ford.js'),
   display: () => import('./pages/display.js'),
   people: () => import('./pages/people.js'),
+  mileage: () => import('./pages/mileage.js'),
   phone: () => import('./pages/phone.js'),
   about: () => import('./pages/about.js'),
   status: () => import('./pages/status.js'),

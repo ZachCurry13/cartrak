@@ -15,6 +15,7 @@ Restart the app after editing.
 |---|---|---|
 | `CARTRAK_PROVIDER` | `fordconnect` (FordConnect 2.0, your car), `fordconnect1` (older API) or `demo` (simulated) | `fordconnect` |
 | `CARTRAK_TZ` | IANA time zone for work-hour rules, e.g. `America/Chicago` | `UTC` |
+| `CARTRAK_GEOCODE_ENABLED` / `CARTRAK_GEOCODE_URL` | the mileage log looks up city names; `off` never sends locations, or point it at your own Nominatim; see [mileage log](mileage.md) | OpenStreetMap |
 | `CARTRAK_MAP_ENABLED` / `CARTRAK_MAP_TILE_URL` / `CARTRAK_MAP_ATTRIBUTION` | maps on or `off`, another tile server, and its credit line; see [maps](maps.md) | OpenStreetMap |
 | `CARTRAK_POWERTRAIN` | vehicle type: `ev`, `phev`, `hev` or `gas`; empty works it out from Ford (garage record, then the data the car reports) | auto |
 | `CARTRAK_TRACK_KEEP_DAYS` | delete phone GPS points older than this many days (empty keeps everything; trips are always kept) | keep all |
