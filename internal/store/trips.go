@@ -27,16 +27,17 @@ type Trip struct {
 	TZ             string   `json:"tz"`       // time zone where the trip started, e.g. America/New_York
 	StartKwh       *float64 `json:"startKwh"` // energy left in the battery at the start and end, kWh
 	EndKwh         *float64 `json:"endKwh"`
+	JourneyID      *int64   `json:"journeyId"` // the journey this trip belongs to, if any
 }
 
 const tripCols = `id,start_ts,end_ts,start_lat,start_lon,end_lat,end_lon,start_odo,end_odo,distance_km,
- start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh`
+ start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh,journey_id`
 
 func scanTrip(r interface{ Scan(...any) error }) (*Trip, error) {
 	var t Trip
 	err := r.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.StartLat, &t.StartLon, &t.EndLat, &t.EndLon,
 		&t.StartOdo, &t.EndOdo, &t.DistanceKm, &t.StartSoC, &t.EndSoC, &t.MaxSpeedKph,
-		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ, &t.StartKwh, &t.EndKwh)
+		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ, &t.StartKwh, &t.EndKwh, &t.JourneyID)
 	return &t, err
 }
 

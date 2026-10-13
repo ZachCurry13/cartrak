@@ -41,3 +41,13 @@ To see what it costs, an admin sets **Price per kWh at home** (and, if you like,
 **More, Road-trip planner** tells you how many charging stops a trip needs. Enter the distance, your starting charge (it starts at the car's current charge) and the average charging power you get over a stop (many cars average well below their peak; 100 kW is a starting guess and is remembered on this device). It uses how far your battery goes per percent, from your own recent driving (or the car's range figure when there is too little driving), your road-trip reserve and your charge target from Display and data and Live.
 
 It lists each stop: about how far into the trip, what charge you arrive with (your reserve), what to charge to (only as much as the rest of the trip needs, up to your target), and about how long it takes, then the charge you arrive with. It is a guide, not a route: hills, highway speed, wind and cold use more battery, and fast chargers slow down above 80%.
+
+## Journeys: combining trips
+A road trip or a work day with several stops is many trips. On **Trips**, admins can tap **Select trips to combine**, tap the trips that belong together (finished trips that are not already in a journey), name it and press **Combine**. The journey has its own page with:
+- total distance, driving time and elapsed time;
+- the energy used and the efficiency (estimated for trips recorded without the car's energy reading);
+- the stops between legs, with how long the car was parked and how much it charged;
+- what charging cost: the cost of the charging sessions during the journey when they have a price, otherwise an estimate from the energy used at your price per kWh (set in More, Settings);
+- a map with every leg.
+
+You can remove a trip from a journey, rename it, or **Ungroup trips**. The trips themselves are never deleted, and they keep counting in the mileage log and every total as before.

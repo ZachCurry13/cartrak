@@ -2,6 +2,9 @@
 
 ## 0.19.0
 
+### 🧳 Journeys
+- On **Trips**, admins can select several trips and **combine** them into a journey (a road trip, or a work day with several stops). The journey page shows total distance, driving and elapsed time, the stops between legs (and how much you charged), energy used and efficiency, what charging cost, and a map of every leg. Trips stay as they are and can be removed from a journey at any time. See docs/road-trips-and-charging.md.
+
 ### 🧭 Road-trip planner
 - **More, Road-trip planner:** enter a trip distance, your starting charge and your average charging power. It uses how far your battery really goes per percent (from your own driving), your reserve and your charge target, and says how many charging stops the trip needs, about how far in each one is, what to charge to, and about how long. It is a guide, not a route.
 

@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
@@ -27,7 +28,13 @@ func (s *Server) tripRoutes(w http.ResponseWriter, r *http.Request) {
 	if f.Limit <= 0 || f.Limit > overviewMax {
 		f.Limit = overviewTrips
 	}
-	ts, err := s.S.ListTrips(f)
+	var ts []*store.Trip
+	var err error
+	if jid, _ := strconv.ParseInt(r.URL.Query().Get("journey"), 10, 64); jid > 0 {
+		ts, err = s.S.JourneyTrips(jid) // the legs of one journey
+	} else {
+		ts, err = s.S.ListTrips(f)
+	}
 	if err != nil {
 		fail(w, 500, "db error")
 		return
