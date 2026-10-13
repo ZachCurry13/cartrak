@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { notices } from '../notice.js';
 import { isSaver, effective } from '../mode.js';
 import { cachedEx } from '../offline.js';
+import { healthStrip } from '../healthstrip.js';
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -33,23 +34,17 @@ export default async function dashboard(root, _args, session) {
     const { value: latest, staleSince } = await cachedEx(`latest${full ? '' : '-s'}`, () => api(`/api/latest${full ? '' : '?summary=1'}`));
     if (staleSince) cache = cache || { status: { poller: { linked: true }, canLink: false }, trips: [], ob: null }; // offline: nothing to refetch
     else if (!cache || effective() === 'normal') {
-      const [status, trips, ob] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
-        session.me.role === 'admin' ? api('/api/onboarding') : null]);
-      cache = { status, trips, ob };
+      const [status, trips, ob, health] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
+        session.me.role === 'admin' ? api('/api/onboarding') : null, api('/api/health').catch(() => null)]);
+      cache = { status, trips, ob, health };
     }
-    const { status, trips, ob } = cache;
+    const { status, trips, ob, health } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
       if (!ob.dismissed) out.push(h('a', { class: 'card', href: '#/start', style: 'display:block;text-decoration:none' }, h('b', {}, 'Getting started'), h('div', { class: 'muted' }, 'Finish setting up CarTrak: connect Ford, install on your phone, add trip rules →')));
     }
-    if (!status.poller.linked) {
-      out.push(h('div', { class: 'banner' }, h('b', {}, 'Ford account not linked. '),
-        status.canLink && session.me.role === 'admin'
-          ? (status.configured ? h('a', { class: 'btn', href: '#/connect', style: 'margin-top:8px' }, 'Connect Ford account') : h('a', { class: 'btn', href: '#/admin', style: 'margin-top:8px' }, 'Enter your Ford settings'))
-          : 'Ask the admin to connect it.'));
-    } else if (status.poller.lastError) {
-      out.push(h('div', { class: 'banner' }, `Last update failed: ${status.poller.lastError}`));
-    }
+    const strip = healthStrip(health, session.me.role === 'admin');
+    if (strip) out.push(strip);
     if (!latest) {
       out.push(h('p', { class: 'muted' }, 'No readings yet. Data appears after the first successful sync.'));
       return box.replaceChildren(...out);

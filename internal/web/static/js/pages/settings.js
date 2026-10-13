@@ -5,10 +5,11 @@ import { notices } from '../notice.js';
 // The More page: a short, grouped menu. Each row opens its own page.
 export default async function settings(root, _a, session) {
   const admin = session.me.role === 'admin';
-  const [st, remote, users] = await Promise.all([
+  const [st, remote, users, health] = await Promise.all([
     api('/api/status'),
     admin ? api('/api/admin/remote').catch(() => null) : null,
     admin ? api('/api/users').catch(() => []) : [],
+    api('/api/health').catch(() => null),
   ]);
   const p = st.poller;
   const a = session.about;
@@ -32,6 +33,7 @@ export default async function settings(root, _a, session) {
           item('#/people', 'People', `${users.length} ${users.length === 1 ? 'account' : 'accounts'}`),
           item('#/admin', 'Settings', 'Ford credentials, time zone, diagnostics')) : null,
         group('Help',
+          item('#/status', 'Status', 'Is everything working?', health ? chip(health.overall === 'ok' ? 'ok' : health.overall === 'bad' ? 'bad' : 'work', health.overall === 'ok' ? 'OK' : health.overall === 'bad' ? 'Fix' : 'Check') : null),
           item('#/start', 'Getting started', 'A short checklist'),
           item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
     h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },

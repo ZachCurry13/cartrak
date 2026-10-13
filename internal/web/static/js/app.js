@@ -22,6 +22,7 @@ const routes = {
   display: () => import('./pages/display.js'),
   people: () => import('./pages/people.js'),
   about: () => import('./pages/about.js'),
+  status: () => import('./pages/status.js'),
   live: () => import('./pages/live.js'),
 };
 

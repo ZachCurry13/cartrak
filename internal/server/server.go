@@ -62,6 +62,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/onboarding", s.auth(false, s.onboarding))
 	m.HandleFunc("POST /api/onboarding/dismiss", s.auth(true, s.dismissOnboarding))
 
+	m.HandleFunc("GET /api/health", s.auth(false, s.health))
 	m.HandleFunc("GET /api/status", s.auth(false, s.status))
 	m.HandleFunc("GET /api/latest", s.auth(false, s.latest))
 	m.HandleFunc("GET /api/live", s.auth(false, s.liveStream))
