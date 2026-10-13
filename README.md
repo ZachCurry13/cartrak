@@ -83,6 +83,7 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
 | `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/Chicago` | yes |
 | `CARTRAK_GEOCODE_ENABLED` | (on) | `off` stops the mileage log from asking a place-lookup service for city names. See [mileage log](docs/mileage.md) | yes |
+| `CARTRAK_PLUG_REMINDER_TIME` / `CARTRAK_PLUG_REMINDER_BELOW` | (9 pm, below 60%) | When the evening Plug in tonight? alert applies; see [notifications](docs/notifications.md) | yes |
 | `CARTRAK_GEOCODE_URL` | OpenStreetMap Nominatim | Another Nominatim-compatible lookup service | yes |
 | `CARTRAK_MAP_ENABLED` | (on) | `off` turns maps off and draws plain route lines. Tiles come through CarTrak, see [maps](docs/maps.md) | yes |
 | `CARTRAK_MAP_TILE_URL` | OpenStreetMap | Another map tile server, with `{z}`, `{x}`, `{y}` in the address | yes |

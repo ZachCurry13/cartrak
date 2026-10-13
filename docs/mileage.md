@@ -15,6 +15,7 @@ and a **Total Mileage Recorded** line underneath.
 4. Press **Build the log**. Look at the table, then press **Copy rows to paste into your sheet** (just the rows, to paste under your own headings) or **Copy with headings and total**. The copy is tab-separated, so each value lands in its own cell.
 
 ## How each row is made
+- **Miles:** each trip is counted in whole miles, **rounded up to the next mile** (0.1 mi counts as 1, 26.2 as 27), then the trips of the day are added. Under **Miles** you can choose to add the day first and round to the nearest mile instead. The choice is remembered on this device.
 - One row per **day**, by the date each trip started, in the time zone where that trip started.
 - **Origin City:** the city where the day's first trip started.
 - **Destination City:** the city where the car was parked at the end of each trip, in the order you visited them, **each city once** (no repeats). Your origin city is left out, because ending the day back home is not a destination.

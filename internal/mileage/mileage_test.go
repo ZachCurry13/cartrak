@@ -163,3 +163,20 @@ func TestISOWeeks(t *testing.T) {
 		}
 	}
 }
+
+func TestEachTripCanBeRoundedUpToTheNextMile(t *testing.T) {
+	// 0.16 km is 0.1 mi, 42.2 km is 26.2 mi, and 16.0934 km is exactly 10 mi.
+	trips := []*store.Trip{
+		trip(at(15, 8), 0.16, "Springfield", "Rivertown"),
+		trip(at(15, 10), 42.2, "Rivertown", "Oakdale"),
+		trip(at(15, 14), 16.09344, "Oakdale", "Springfield"),
+	}
+	up := Build(context.Background(), trips, places(true), Options{Default: local, RoundUp: true})
+	if up.Rows[0].Miles != 1+27+10 || up.TotalMiles != 38 {
+		t.Fatalf("0.1 becomes 1, 26.2 becomes 27 and a whole 10 stays 10: %+v", up.Rows[0])
+	}
+	near := Build(context.Background(), trips, places(true), Options{Default: local})
+	if near.Rows[0].Miles != 36 { // 26.2 + 0.1 + 10 = 36.3
+		t.Fatalf("the old way adds the day first: %+v", near.Rows[0])
+	}
+}

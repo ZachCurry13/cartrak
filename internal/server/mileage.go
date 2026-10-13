@@ -72,7 +72,7 @@ func (s *Server) mileageReport(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
 	defer cancel()
-	rep := mileage.Build(ctx, trips, s.places(), mileage.Options{Description: q.Get("description"), Default: loc})
+	rep := mileage.Build(ctx, trips, s.places(), mileage.Options{Description: q.Get("description"), Default: loc, RoundUp: q.Get("rounding") != "nearest"})
 	ok(w, map[string]any{
 		"from": start.Format("2006-01-02"), "to": end.AddDate(0, 0, -1).Format("2006-01-02"),
 		"report": rep, "tsv": rep.TSV(false), "tsvFull": rep.TSV(true),

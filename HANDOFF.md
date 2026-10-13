@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-Released through v0.14.0 (tag v0.14.0, image ghcr.io/zachcurry13/cartrak:0.14.0 and :latest, public; 2026-10-13). 0.14.0 is the UI polish; 0.13.0 added the mileage check. 0.13.0 added the mileage check. 0.12.0 had: Car data tabs with plain-English help and a time machine, calmer 12 V warnings with a 'tested and fine' pause, and the range between two battery levels. feature/v0.15 is the next branch (plug-in reminder first). Releases need the user's explicit OK each time.
+Released through v0.14.0 (tag v0.14.0, image ghcr.io/zachcurry13/cartrak:0.14.0 and :latest, public; 2026-10-13). 0.14.0 is the UI polish; 0.13.0 added the mileage check. 0.13.0 added the mileage check. 0.12.0 had: Car data tabs with plain-English help and a time machine, calmer 12 V warnings with a 'tested and fine' pause, and the range between two battery levels. feature/v0.15 holds the plug-in reminder and the per-trip round-up for the mileage log (the user rounds each leg up to the next mile for work: 0.1 mi is 1, 26.2 is 27). Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions

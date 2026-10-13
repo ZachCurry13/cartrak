@@ -55,6 +55,9 @@ func TestMileageReportForCalendarWeeks(t *testing.T) {
 	addTrip(t, srv, day.Add(6*time.Hour), 10, home, plym, "personal")                      // not a work trip
 	addTrip(t, srv, time.Date(2026, 7, 14, 14, 0, 0, 0, time.UTC), 99, home, plym, "work") // week 29: out of range
 
+	if _, b := do(t, admin, "GET", ts.URL+"/api/mileage?weeks=26-28&year=2026&rounding=nearest", "", nil); !strings.Contains(b, `"miles":81`) {
+		t.Fatalf("rounding the day to the nearest mile: %s", b)
+	}
 	code, body := do(t, admin, "GET", ts.URL+"/api/mileage?weeks=26-28&year=2026", "", nil)
 	if code != 200 {
 		t.Fatalf("report = %d %s", code, body)
@@ -75,10 +78,10 @@ func TestMileageReportForCalendarWeeks(t *testing.T) {
 		t.Fatalf("rows: %+v", out.Report.Rows)
 	}
 	r := out.Report.Rows[0]
-	if r.Date != "2026-06-22" || r.Origin != "Springfield" || r.Destinations != "Rivertown, Oakdale" || r.Miles != 81 || r.Description != "Customer Visits" {
+	if r.Date != "2026-06-22" || r.Origin != "Springfield" || r.Destinations != "Rivertown, Oakdale" || r.Miles != 82 || r.Description != "Customer Visits" {
 		t.Fatalf("the row: %+v", r)
 	}
-	if out.TSV != "2026-06-22\tSpringfield\tRivertown, Oakdale\tCustomer Visits\t81\n" || !strings.HasSuffix(out.TSVFull, "Total Mileage Recorded:\t\t\t\t81\n") {
+	if out.TSV != "2026-06-22\tSpringfield\tRivertown, Oakdale\tCustomer Visits\t82\n" || !strings.HasSuffix(out.TSVFull, "Total Mileage Recorded:\t\t\t\t82\n") {
 		t.Fatalf("copy blocks: %q / %q", out.TSV, out.TSVFull)
 	}
 	if *hits != 3 {

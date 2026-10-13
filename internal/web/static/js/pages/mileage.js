@@ -19,12 +19,15 @@ export default async function mileage(root, _a, session) {
   const to = h('input', { id: 'mt', type: 'date' });
   const desc = h('input', { id: 'md', value: store.get('desc', 'Customer Visits'), maxlength: 60 });
   const which = h('select', { id: 'mc' }, h('option', { value: 'work' }, 'Work trips only'), h('option', { value: 'all' }, 'All trips'), h('option', { value: 'personal' }, 'Personal trips only'));
+  const rounding = h('select', { id: 'mr' }, h('option', { value: 'up' }, 'Round each trip up to the next mile'), h('option', { value: 'nearest' }, 'Round the day to the nearest mile'));
+  rounding.value = store.get('rounding', 'up');
   const msg = h('p', { class: 'muted', role: 'status' });
   const out = h('div');
   const go = h('button', { onclick: build }, 'Build the log');
 
   async function build() {
-    const p = new URLSearchParams({ category: which.value, description: desc.value.trim() });
+    const p = new URLSearchParams({ category: which.value, description: desc.value.trim(), rounding: rounding.value });
+    store.set('rounding', rounding.value);
     if (weeks.value.trim()) { p.set('weeks', weeks.value.trim()); p.set('year', yr.value); } else { p.set('from', from.value); p.set('to', to.value); }
     store.set('weeks', weeks.value.trim());
     store.set('desc', desc.value.trim());
@@ -61,6 +64,7 @@ export default async function mileage(root, _a, session) {
       h('div', { class: 'cols2' }, field('mf', 'From', from), field('mt', 'To (included)', to)),
       h('h2', {}, 'Format'),
       h('div', { class: 'cols2' }, field('md', 'Description column', desc), field('mc', 'Which trips', which)),
+      field('mr', 'Miles', rounding),
       h('p', {}, go), msg,
       h('p', { class: 'muted' }, 'To name cities, CarTrak asks OpenStreetMap from your server, only when you build a log, with locations rounded to about 100 m. Every answer is remembered. You can switch this off in Settings.')),
     out);

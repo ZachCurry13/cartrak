@@ -25,6 +25,9 @@ type Options struct {
 	Description string // the Description column; default "Customer Visits"
 	MaxLookups  int    // new places to look up in one run; default 40
 	Default     *time.Location
+	// RoundUp counts each trip as whole miles, rounded up (0.1 mi is 1 mi, 26.2 is 27), then adds the trips
+	// of the day. Otherwise the day's distance is added first and rounded to the nearest mile.
+	RoundUp bool
 }
 
 type Row struct {
@@ -109,7 +112,7 @@ func Build(ctx context.Context, trips []*store.Trip, pl Places, opt Options) Rep
 	r := &resolver{pl: pl, max: opt.MaxLookups, memo: map[string]string{}, pending: map[string]bool{}}
 	rep := Report{Rows: []Row{}, Notes: []string{}}
 	for _, d := range order {
-		row := dayRow(ctx, r, d, days[d], opt.Description, &rep)
+		row := dayRow(ctx, r, d, days[d], opt, &rep)
 		rep.Rows = append(rep.Rows, row)
 		rep.TotalMiles += row.Miles
 	}
@@ -133,12 +136,21 @@ func zone(t *store.Trip, def *time.Location) *time.Location {
 	return def
 }
 
-func dayRow(ctx context.Context, r *resolver, date string, ts []*store.Trip, desc string, rep *Report) Row {
+// tripMiles is a trip's distance in whole miles, rounded up. The tiny allowance keeps a distance that
+// is exactly a whole number of miles from being pushed up by floating-point noise.
+func tripMiles(km float64) int { return int(math.Ceil(km*kmToMiles - 1e-9)) }
+
+func dayRow(ctx context.Context, r *resolver, date string, ts []*store.Trip, opt Options, rep *Report) Row {
 	var km float64
+	miles := 0
 	for _, t := range ts {
 		km += t.DistanceKm
+		miles += max(0, tripMiles(t.DistanceKm))
 	}
-	row := Row{Date: date, Description: desc, Trips: len(ts), Miles: int(math.Round(km * kmToMiles))}
+	if !opt.RoundUp {
+		miles = int(math.Round(km * kmToMiles))
+	}
+	row := Row{Date: date, Description: opt.Description, Trips: len(ts), Miles: miles}
 	if c, ok := r.city(ctx, ts[0].StartLat, ts[0].StartLon); ok {
 		row.Origin = c
 	}

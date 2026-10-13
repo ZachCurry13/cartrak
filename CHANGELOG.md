@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0
+
+### 🔌 Plug in tonight?
+- A new alert, off until you turn it on under More, Notifications: one reminder in the evening (9 pm by default) if the car is parked, not plugged in and the battery is below 60 percent. An admin can change the time and the level in Settings. It is sent at most once a day, and only if the car has reported in the last two hours.
+
+### 🧾 Mileage log rounding
+- The mileage log now rounds **each trip up to the next whole mile** before adding the day, so 0.1 mi counts as 1 and 26.2 as 27. You can switch to the old way (add the day, then round to the nearest mile) with the new **Miles** choice on the Mileage log page.
+
 ## 0.14.0
 
 ### 🎨 A new look

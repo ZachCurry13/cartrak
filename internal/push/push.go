@@ -29,6 +29,7 @@ const (
 	TripStart      = "trip_start"
 	TripEnd        = "trip_end"
 	FordTrouble    = "ford_trouble"
+	PlugReminder   = "plug_reminder"
 )
 
 type Kind struct {
@@ -47,6 +48,7 @@ var Kinds = []Kind{
 	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},
 	{TripStart, "Trip started", "A trip began."},
 	{TripEnd, "Trip ended", "A trip finished, with its distance."},
+	{PlugReminder, "Plug in tonight?", "One reminder in the evening if the car is parked, not plugged in and the battery is low. An admin sets the time and level."},
 	{FordTrouble, "Ford connection trouble", "No reading from the car for several hours."},
 }
 

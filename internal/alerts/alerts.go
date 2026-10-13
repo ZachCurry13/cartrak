@@ -39,6 +39,11 @@ type Engine struct {
 	Async bool             // send without waiting (the real server); tests send in line
 	Now   func() time.Time // for tests
 
+	// The evening plug-in reminder: the time of day ("" is off), the battery level, and the local time zone.
+	ReminderTime  func() string
+	ReminderBelow func() float64
+	Loc           func() *time.Location
+
 	mu           sync.Mutex
 	prev         *ford.State
 	started      bool // the first reading only sets the baseline: nothing is "new" after a restart
@@ -173,6 +178,9 @@ func (e *Engine) trip(first bool) {
 
 // Tick runs every few minutes: it notices when Ford has gone quiet for hours.
 func (e *Engine) Tick() {
+	e.mu.Lock()
+	e.plugReminder()
+	e.mu.Unlock()
 	if e.Link == nil {
 		return
 	}
