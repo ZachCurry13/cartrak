@@ -21,8 +21,9 @@
 - Tokens are stored only as a hash and can be removed any time. Optional setting: delete phone GPS points after a number of days (off by default; trips are never deleted).
 - Status shows a Phone tracking line.
 
-### ✨ Tidier on computers
+### ✨ Tidier Home and sidebar
 - The tabs in the left sidebar on a computer or wide tablet were stretched to fill the whole column. They are now compact, normal-sized rows.
+- The Getting started card on Home now only shows while Ford is not linked yet. Once you are set up it is gone; the checklist stays available under More, Getting started.
 
 ### 🧹 Under the hood
 - The Ford tests were split into smaller files.
