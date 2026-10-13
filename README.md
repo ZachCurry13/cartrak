@@ -112,13 +112,14 @@ More detail in [docs/configuration.md](docs/configuration.md).
 - Passwords are stored hashed (bcrypt); sign-in attempts are rate limited; cookies are `HttpOnly`, `SameSite` and `Secure` over HTTPS.
 - The Ford secret and refresh token are never sent to the browser or written to logs. They are stored in the database file in `/data`, so protect and encrypt backups of it.
 - Update checks only read GitHub's public release list; turn them off in More -> About.
+- Notifications: alerts are encrypted for each device and sent through the push service of its browser maker (Google, Mozilla or Apple), which can see that one was sent but not its content; they never carry a location, and only real push-service addresses are contacted.
 - Mileage log: to name cities, the server asks OpenStreetMap Nominatim only when an admin builds a log, with locations rounded to about 100 m, and remembers answers. Switch it off in Settings to send nothing.
 - Maps: tiles are fetched by the CarTrak server and cached on disk, so browsers never contact the map provider; only signed-in people can load tiles. Switch maps off in Settings for no map requests at all.
 - Phone tracking tokens are stored only as a hash and can be removed at any time (More -> Phone tracking); phones can only send data, never read it.
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

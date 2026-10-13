@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.0
+
+### 🔔 Alerts on your phone
+- New More, Notifications: turn alerts on for this phone or computer and get a notification for charging complete, plugged in, unplugged, a low tire, a low 12 V battery, the car left unlocked, a trip started or ended, and no readings from the car for hours. Each device chooses its own alerts and can set quiet hours, and a button sends a test alert.
+- Each alert is sent once, and a restart does not repeat what was already true.
+- Private: alerts are encrypted for your device, say things like "Charging complete" and never include a location. They go through your browser maker's push service, which can see that one was sent but not what it says. CarTrak only contacts real push services.
+- Needs the secure address (for example your Cloudflare address). On iPhone, add CarTrak to the Home Screen first. See docs/notifications.md.
+- Status shows an Alerts line.
+
 ## 0.9.1
 
 ### 🛠 When Ford's servers return an error
