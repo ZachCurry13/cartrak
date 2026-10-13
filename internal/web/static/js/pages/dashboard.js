@@ -6,6 +6,8 @@ import { cachedEx } from '../offline.js';
 import { healthStrip } from '../healthstrip.js';
 import { doorsCard, healthCard } from '../cards.js';
 import { createMap, mapConfig } from '../map.js';
+import { reserveKm, getReserve } from '../charge.js';
+import { chargeEtaBox } from '../chargecard.js';
 
 let homeMap = null; // kept between refreshes
 
@@ -22,6 +24,12 @@ export function pick(extra, ...names) {
 }
 
 const mapLink = (lat, lon) => `https://www.google.com/maps?q=${lat},${lon}`;
+
+// How far the car can go before the battery falls to this device's reserve percent.
+function reserveRow(latest) {
+  const km = reserveKm(latest);
+  return km == null ? null : h('p', { style: 'margin:10px 0 0' }, h('span', { class: 'muted' }, `Until ${getReserve()}%: `), h('b', {}, km > 0 ? dist(km, 0) : 'already below'));
+}
 
 function card(title, ...kids) { return h('section', { class: 'card' }, h('h2', {}, title), ...kids); }
 
@@ -70,6 +78,7 @@ export default async function dashboard(root, _args, session) {
           stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
         h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, soc || 0))}%` })),
+        reserveRow(latest),
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
     if (veh.engine && latest.fuelPct != null) {
@@ -84,7 +93,8 @@ export default async function dashboard(root, _args, session) {
         ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null],
         ['Current', pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT'), 0, ' A') : null],
         ['Time to full', pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') != null ? duration(0, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') * 60) : null],
-        ['Station type', pick(x, 'XEV_CHARGE_STATION_POWER_TYPE')]])));
+        ['Station type', pick(x, 'XEV_CHARGE_STATION_POWER_TYPE')]]),
+      charging ? chargeEtaBox(latest, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE')) : null));
 
     out.push(card('Vehicle',
       kv([['Ignition', latest.ignition || '—'], ['Gear', pick(x, 'GEAR_LEVER_POSITION')], ['Odometer', dist(latest.odometerKm, 0)],

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"math"
 	"strconv"
@@ -57,3 +58,6 @@ func (r *rateWindow) allow(id int64) bool {
 	r.seen[id] = append(keep, time.Now())
 	return true
 }
+
+// jsonDecode reads a JSON document from bytes (the OwnTracks handler reads the body itself).
+func jsonDecode(b []byte, v any) error { return json.Unmarshal(b, v) }

@@ -1,5 +1,6 @@
 import { h, isMetric, setMetric, getTheme, setTheme, getTimeMode, setTimeMode } from '../ui.js';
 import { MODES, getPref, setPref } from '../mode.js';
+import { getReserve, setReserve } from '../charge.js';
 
 // One labelled choice with optional help text.
 function setting(id, label, select, help) {
@@ -14,12 +15,20 @@ function choice(options, value, onchange) {
   return s;
 }
 
+// The battery level you do not want to go below on a road trip; Home and Live show the distance left until it.
+function reserveInput() {
+  const i = h('input', { type: 'number', min: 1, max: 90, inputmode: 'numeric', value: getReserve(), style: 'width:6em' });
+  i.addEventListener('change', () => { setReserve(Number(i.value) || 20); i.value = getReserve(); });
+  return i;
+}
+
 // These choices apply to this device only.
 export default async function display(root) {
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Display and data')),
     h('p', { class: 'muted' }, 'These choices apply to this device only.'),
     h('section', { class: 'group' }, h('div', { class: 'menu' },
       setting('s-un', 'Units', choice([['imperial', 'Miles, °F, psi'], ['metric', 'Kilometres, °C, kPa']], isMetric() ? 'metric' : 'imperial', (v) => setMetric(v === 'metric'))),
+      setting('s-rs', 'Road-trip reserve (%)', reserveInput(), 'Home and Live show how far you can go before the battery reaches this level.'),
       setting('s-th', 'Theme', choice([['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']], getTheme(), setTheme)),
       setting('s-tm', 'Trip times', choice([['trip', 'Where the trip happened'], ['device', 'This device']], getTimeMode(), setTimeMode),
         'Trips show the local time where they started, with the zone name.'),

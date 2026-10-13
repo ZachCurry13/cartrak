@@ -119,7 +119,7 @@ More detail in [docs/configuration.md](docs/configuration.md).
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Road trips and charging](docs/road-trips-and-charging.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Vehicle health](docs/vehicle-health.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

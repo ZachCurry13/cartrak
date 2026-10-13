@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
@@ -24,10 +23,10 @@ func (s *Server) deviceAuth(next func(http.ResponseWriter, *http.Request, *store
 			fail(w, 429, "too many wrong tokens; try again in a minute")
 			return
 		}
-		tok, found := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+		tok := deviceToken(r)
 		var d *store.Device
-		if found && tok != "" {
-			d, _ = s.S.DeviceByHash(store.TokenHash(strings.TrimSpace(tok)))
+		if tok != "" {
+			d, _ = s.S.DeviceByHash(store.TokenHash(tok))
 		}
 		if d == nil {
 			s.lim.fail(ip)

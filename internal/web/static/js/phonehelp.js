@@ -20,5 +20,7 @@ export function recipes(address, token) {
       `POST ${address}/api/ingest/event\n${auth}\nContent-Type: application/json\n\n{"type":"drive_start"}\n\nUse "drive_end" when the trip ends.`),
     block('Location points (optional)',
       `POST ${address}/api/ingest/points\n${auth}\nContent-Type: application/json\n\n{"points":[{"ts":1700000000,"lat":44.98,"lon":-93.26,"speed":12,"acc":8}]}\n\nts is unix seconds, speed is metres per second, acc is metres.`),
-    h('p', { class: 'muted' }, 'Step by step for Tasker, MacroDroid and iPhone Shortcuts: see docs/phone-tracking.md in the CarTrak repository on GitHub.'));
+    block('Background tracking with OwnTracks (iPhone and Android)',
+      `Mode: HTTP\nURL: ${address}/api/ingest/owntracks\nUsername: anything\nPassword: ${token || 'YOUR_TOKEN'}`),
+    h('p', { class: 'muted' }, 'Step by step for GPSLogger, OwnTracks, Tasker, MacroDroid and iPhone Shortcuts: see docs/phone-tracking.md in the CarTrak repository on GitHub.'));
 }

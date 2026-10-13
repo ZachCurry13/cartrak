@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.11.0
+
+### ⚡ Road trips and charging
+- **Energy left** is now on the Live screen (kWh, and about how much the battery holds when full).
+- **Miles until your reserve:** set the level you do not want to go below (default 20%) under More, Display and data. Home and Live show how far you can go before the battery reaches it.
+- **Time until a charge level:** while charging, pick 80%, 90%, 100% or any percent and see how long it will take and around what time. For 100% it uses the car's own figure; otherwise it is an estimate from the charging power, allowing for fast chargers slowing down above 80%. On Live, tap the tile to switch between 80, 90 and 100.
+- **Trip efficiency:** every trip shows the energy it used and its miles per kWh (or kWh per 100 km if your units are metric), in the trip, in the trips list and as a total for the period. Trips from before this update are estimated from the battery percentage and marked as approximate. While a trip is in progress, Live shows its efficiency so far.
+
+### 📍 GPS in the background
+- CarTrak now accepts the **OwnTracks** app (iPhone and Android) and the docs have step-by-step settings for **GPSLogger** (Android), so your phone can send its position while the app is closed, with nothing to keep open. The phone sign-in also accepts a user name and password (the token is the password), which these apps use. See docs/phone-tracking.md.
+
 ## 0.10.1
 
 ### 🛠 Health tab fix

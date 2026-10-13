@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
+	"github.com/ZachCurry13/cartrak/internal/trips"
 )
 
 func (s *Server) status(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +60,7 @@ func (s *Server) listTrips(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, ts)
+	ok(w, s.tripsWithEnergy(ts))
 }
 
 func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
@@ -74,11 +75,11 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 		end = *t.EndTS
 	}
 	if r.URL.Query().Get("samples") == "0" { // data saver: skip the (large) list of route points
-		ok(w, map[string]any{"trip": t, "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
+		ok(w, map[string]any{"trip": withEnergy(t, s.capacityKwh()), "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
 		return
 	}
 	ss, _ := s.S.TrackBetween(t.StartTS, end)
-	ok(w, map[string]any{"trip": t, "samples": ss, "phone": s.phoneRoute(t.StartTS, end)})
+	ok(w, map[string]any{"trip": withEnergy(t, s.capacityKwh()), "samples": ss, "phone": s.phoneRoute(t.StartTS, end)})
 }
 
 func (s *Server) patchTrip(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +119,9 @@ func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 		Trips      int     `json:"trips"`
 		DistanceKm float64 `json:"distanceKm"`
 		KWh        float64 `json:"kwh"`
+		EnergyKm   float64 `json:"energyKm"` // distance of the trips that have an energy figure, for efficiency
 	}
+	capacity := s.capacityKwh()
 	out := map[string]*agg{"work": {}, "personal": {}}
 	for _, t := range ts {
 		a := out[t.Category]
@@ -127,6 +130,10 @@ func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 		}
 		a.Trips++
 		a.DistanceKm += t.DistanceKm
+		if e, ok := trips.EnergyUsed(t, capacity); ok {
+			a.KWh += e.Kwh
+			a.EnergyKm += t.DistanceKm
+		}
 	}
 	ok(w, out)
 }

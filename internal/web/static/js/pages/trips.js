@@ -1,6 +1,7 @@
 import { h, stat, catChip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
+import { efficiency, kwhText } from '../energy.js';
 
 const RANGES = { week: 7, month: 30, year: 365, all: 0 };
 
@@ -24,7 +25,8 @@ export default async function trips(root) {
     if (mc.enabled) seg(segView, [['list', 'List'], ['map', 'Map']], () => view, (v) => { view = v; });
     const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=\w+&?/, '')}`)]);
     sum.replaceChildren(h('div', { class: 'grid' }, stat('Work', dist(s.work.distanceKm, 0)), stat('Personal', dist(s.personal.distanceKm, 0)),
-      stat('Work trips', s.work.trips), stat('Personal trips', s.personal.trips)),
+      stat('Work trips', s.work.trips), stat('Personal trips', s.personal.trips),
+      ...(s.work.kwh + s.personal.kwh > 0 ? [stat('Energy used', kwhText(s.work.kwh + s.personal.kwh)), stat('Efficiency', efficiency(s.work.energyKm + s.personal.energyKm, s.work.kwh + s.personal.kwh) || '—')] : [])),
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
     list.replaceChildren(...(ts.length ? ts.map(row) : [h('p', { class: 'muted' }, 'No trips in this range yet.')]));
     list.hidden = view === 'map';
@@ -41,7 +43,7 @@ export default async function trips(root) {
   }
   const row = (t) => h('a', { class: 'card', href: `#/trip/${t.id}`, style: 'display:block;color:inherit;text-decoration:none' },
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, t.open ? 'In progress' : dist(t.distanceKm)), catChip(t)),
-    h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}`),
+    h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}${efficiency(t.distanceKm, t.energyKwh) ? ' · ' + (t.energyEstimated ? '≈ ' : '') + efficiency(t.distanceKm, t.energyKwh) : ''}`),
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
   root.append(segCat, segRange, ...(mc.enabled ? [segView] : []), sum, list, mapBox);
   await draw();

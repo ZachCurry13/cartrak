@@ -1,7 +1,9 @@
 import { h, chip, dist, speed, pct, num, temp, ago, duration } from '../ui.js';
 import { api } from '../api.js';
 import { effective } from '../mode.js';
+import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, clockAt, PRESETS } from '../charge.js';
 import { gpsCard } from '../gpscard.js';
+import { efficiency } from '../energy.js';
 
 // Full-screen "dock" view for a tablet on a car mount or a laptop: big tiles,
 // updated the moment the server gets a new reading, screen kept awake.
@@ -9,8 +11,8 @@ export default async function live(root, _a, session) {
   const admin = session.me.role === 'admin';
   const el = {};
   const tile = (key, label, cls = '') => {
-    el[key] = { v: h('div', { class: 'tv' }, '—'), s: h('div', { class: 'ts muted' }) };
-    return h('div', { class: `tile ${cls}` }, h('div', { class: 'tl muted' }, label), el[key].v, el[key].s);
+    el[key] = { l: h('div', { class: 'tl muted' }, label), v: h('div', { class: 'tv' }, '—'), s: h('div', { class: 'ts muted' }) };
+    return h('div', { class: `tile ${cls}` }, el[key].l, el[key].v, el[key].s);
   };
   const conn = chip('work', 'Connecting…');
   const age = h('span', { class: 'muted' });
@@ -24,11 +26,19 @@ export default async function live(root, _a, session) {
     h('div', { class: 'tiles' },
       h('div', { class: 'tile big' }, h('div', { class: 'tl muted' }, 'Charge'), (el.soc = { v: h('div', { class: 'tv' }, '—'), s: h('div', { class: 'ts muted' }) }).v,
         h('div', { class: 'bar' }, bar), el.soc.s),
-      tile('range', 'Range'), tile('speed', 'Speed'), tile('power', 'Charging power'),
+      tile('range', 'Range'), tile('energy', 'Energy left'), tile('reserve', 'To reserve'), tile('speed', 'Speed'), tile('power', 'Charging power'), tile('eta', 'Time to target'),
       tile('trip', 'This trip'), tile('outside', 'Outside'), tile('odo', 'Odometer')),
     h('div', {}, admin ? h('p', {}, toggle) : null, road));
 
   let lastTs = 0;
+  let lastX = null;
+  const etaTile = el.eta.v.parentElement;
+  etaTile.style.cursor = 'pointer';
+  etaTile.setAttribute('role', 'button');
+  etaTile.setAttribute('tabindex', '0');
+  const cycleEta = () => { const t = getTarget(); setTarget(PRESETS[(PRESETS.indexOf(t) + 1) % PRESETS.length] || PRESETS[0]); if (lastX) showEta(lastX); };
+  etaTile.onclick = cycleEta;
+  etaTile.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleEta(); } };
   let wake = null;
   let es = null;
   let timer = null;
@@ -38,20 +48,41 @@ export default async function live(root, _a, session) {
     const x = ev.sample;
     if (x) {
       lastTs = x.ts;
+      lastX = x;
       set('soc', pct(x.socPct), x.chargeState || '');
       bar.style.width = `${Math.max(0, Math.min(100, x.socPct || 0))}%`;
       set('range', dist(x.rangeKm, 0));
+      set('energy', x.energyKwh != null ? num(x.energyKwh, 1, ' kWh') : '—', x.capacityKwh ? `of about ${num(x.capacityKwh, 0, ' kWh')}` : '');
+      showReserve(x);
+      showEta(x);
       set('speed', speed(x.speedKph), x.ignition ? `Ignition ${x.ignition}` : '');
       set('power', x.chargeKw > 0.2 ? num(x.chargeKw, 1, ' kW') : '—', x.plug || '');
       set('outside', temp(x.outsideC));
       set('odo', dist(x.odometerKm, 0));
     }
     const t = ev.trip;
-    set('trip', t ? dist(t.distanceKm) : '—', t ? `${duration(t.startTs, Math.floor(Date.now() / 1000))} · top ${speed(t.maxSpeedKph)}` : 'No trip in progress');
+    const used = t && t.startKwh != null && x && x.energyKwh != null ? t.startKwh - x.energyKwh : null;
+    const eff = t ? efficiency(t.distanceKm, used) : null;
+    set('trip', t ? dist(t.distanceKm) : '—', t ? `${duration(t.startTs, Math.floor(Date.now() / 1000))} · top ${speed(t.maxSpeedKph)}${eff ? ` · ${eff}` : ''}` : 'No trip in progress');
     showRoad(ev.status);
     tickAge();
   }
 
+
+  // Miles until the battery falls to this device's reserve, and the time to the charging target.
+  function showReserve(x) {
+    const r = getReserve();
+    el.reserve.l.textContent = `To ${r}%`;
+    const km = reserveKm(x, r);
+    set('reserve', km == null ? '—' : km > 0 ? dist(km, 0) : 'below', km === 0 ? `already under ${r}%` : 'at the current range estimate');
+  }
+  function showEta(x) {
+    const t = getTarget();
+    el.eta.l.textContent = `Time to ${t}%`;
+    const e = chargeEta(x, t);
+    const text = !e ? '—' : e.done ? 'reached' : e.idle ? '—' : minutesText(e.minutes);
+    set('eta', text, e && e.minutes ? `about ${clockAt(e.minutes)} · tap to change` : e && e.idle ? 'not charging' : 'tap to change');
+  }
   function showRoad(st) {
     if (!st) return;
     toggle.textContent = st.live ? 'Turn off road trip mode' : 'Road trip mode';

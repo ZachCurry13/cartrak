@@ -54,9 +54,35 @@ Any message can also carry a position: `"lat":44.98,"lon":-93.26`, plus optional
 ## 3. GPS points (optional)
 For a route you can send `POST /api/ingest/points` with `{"points":[{"ts":1700000000,"lat":44.98,"lon":-93.26,"speed":12,"acc":8}]}` (up to 1000 points per call; `ts` is unix seconds or milliseconds). Automation apps can do this on a timer while driving.
 
-Without an automation app, open **Live** on the phone and press **Record GPS from this phone**. That records while the page is open with the screen on, and keeps points in the browser until they are sent, so a dropped signal loses nothing.
+Without an app, open **Live** on the phone and press **Record GPS from this phone**. That records only while the page is open with the screen on (see 3b for background tracking), and keeps points in the browser until they are sent, so a dropped signal loses nothing.
 
 A phone that reports travelling faster than walking pace also counts as "trip started" for the faster checks.
+
+## 3b. Tracking in the background (so the page does not need to be open)
+A web page cannot track you once you leave it: phones put it to sleep. A free tracking app can run in the background and send each position to CarTrak. Two work well; pick the one for your phone. Both use the token from step 1, so create a device first.
+
+### Android: GPSLogger (open source)
+1. Install **GPSLogger** from F-Droid or Google Play.
+2. Open Settings, **Logging details**, then **Log to custom URL** and switch it on.
+3. Set the **URL** to `https://YOUR-ADDRESS/api/ingest/points` and the **HTTP method** to `POST`.
+4. Under **HTTP headers** add two lines: `Authorization: Bearer YOUR_TOKEN` and `Content-Type: application/json`.
+5. Under **HTTP body** enter: `{"points":[{"ts":%TIMESTAMP,"lat":%LAT,"lon":%LON,"speed":%SPD,"acc":%ACC}]}`
+6. Turn on **Allow auto sending** and leave **Discard offline locations** off, so positions recorded without a signal are sent later.
+7. Set the **logging interval** to about 5 to 10 seconds, switch off battery optimisation for the app, and turn on **Start on boot**.
+
+Check it worked: More, Phone tracking should show "Heard from just now" and a growing point count for that device. The placeholder names above (`%LAT`, `%LON`, `%SPD`, `%ACC`, `%TIMESTAMP`) come from published setup guides; if the app lists different names in its own help, use those. If a language setting makes it write decimals with commas, switch the phone to a region that uses dots. GPSLogger can also be started and stopped by Tasker or MacroDroid, for example when the car's Bluetooth connects.
+
+### iPhone and Android: OwnTracks
+1. Install **OwnTracks** from the App Store or Google Play and allow location **Always**.
+2. Open Preferences, **Connection**, and set **Mode** to **HTTP**.
+3. Set the **URL** to `https://YOUR-ADDRESS/api/ingest/owntracks`.
+4. Under **Identification** set any **Username** (for example `phone`) and use the device **token as the Password**.
+5. Choose a monitoring mode: **Significant** is gentle on the battery, **Move** sends positions often while you are moving.
+6. Press **Report location** to test; the device shows as heard from.
+
+OwnTracks only sends when the phone decides to, and iPhones sometimes pause background apps; if it goes quiet, opening the app resumes it. One Home Assistant document says the Android version of OwnTracks is no longer supported, so on Android GPSLogger is the safer choice.
+
+A phone that reports travelling faster than walking pace also makes CarTrak check the car more often, exactly like the "trip started" message.
 
 ## Privacy and housekeeping
 - Tokens are stored only as a hash. Removing a phone makes its token stop working at once; points it already sent are kept.

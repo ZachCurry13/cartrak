@@ -29,6 +29,8 @@ type summary struct {
 	Locked      *bool    `json:"locked"`
 	FuelPct     *float64 `json:"fuelPct"`
 	OilLifePct  *float64 `json:"oilLifePct"`
+	EnergyKwh   *float64 `json:"energyKwh"`   // energy left in the traction battery
+	CapacityKwh *float64 `json:"capacityKwh"` // its estimated capacity
 }
 
 func summarize(x *store.Sample) *summary {
@@ -37,7 +39,7 @@ func summarize(x *store.Sample) *summary {
 	}
 	return &summary{TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
 		ChargeState: x.ChargeState, Plug: x.Plug, ChargeKw: x.ChargeKw, OutsideC: x.OutsideC,
-		OdometerKm: x.OdometerKm, Lat: x.Lat, Lon: x.Lon, Locked: x.Locked, FuelPct: x.FuelPct, OilLifePct: x.OilLifePct}
+		OdometerKm: x.OdometerKm, Lat: x.Lat, Lon: x.Lon, Locked: x.Locked, FuelPct: x.FuelPct, OilLifePct: x.OilLifePct, EnergyKwh: x.EnergyKwh, CapacityKwh: x.CapacityKwh}
 }
 
 // liveEvent is pushed to every open live connection after each new reading.
