@@ -121,10 +121,10 @@ func Load() (*Config, error) {
 		TrustProxy:       src.get("CARTRAK_TRUST_PROXY") != "false",
 		SessionDays:      int(src.secs("CARTRAK_SESSION_DAYS", 30) / time.Second),
 		src:              src,
-		PollDriving:      src.secs("CARTRAK_POLL_DRIVING_SEC", 30),
-		PollCharge:       src.secs("CARTRAK_POLL_CHARGING_SEC", 120),
-		PollParked:       src.secs("CARTRAK_POLL_PARKED_SEC", 600),
-		PollLive:         src.secs("CARTRAK_POLL_LIVE_SEC", 10),
+		PollDriving:      src.secsMin("CARTRAK_POLL_DRIVING_SEC", 30, 30),
+		PollCharge:       src.secsMin("CARTRAK_POLL_CHARGING_SEC", 120, 30),
+		PollParked:       src.secsMin("CARTRAK_POLL_PARKED_SEC", 600, 60),
+		PollLive:         src.secsMin("CARTRAK_POLL_LIVE_SEC", 30, 30),
 	}
 	// Optional JSON credentials file: {"clientId":"...","secret":"..."}
 	if f := src.get("CARTRAK_FORD_CREDS_FILE"); f != "" && c.FordClientID == "" {
@@ -151,3 +151,13 @@ func firstNonEmpty(a, b string) string {
 // Lookup returns a process-level setting and its source ("env" or "config.yaml").
 // Empty means it is not set there.
 func (c *Config) Lookup(key string) (string, string) { return c.src.lookup(key) }
+
+// secsMin is secs with a floor: Ford allows about one request per endpoint per 30 s,
+// so asking more often only earns HTTP 429 errors.
+func (s source) secsMin(k string, def, min int) time.Duration {
+	d := s.secs(k, def)
+	if floor := time.Duration(min) * time.Second; d < floor {
+		return floor
+	}
+	return d
+}

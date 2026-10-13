@@ -3,6 +3,7 @@ package ford
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,12 +53,17 @@ type Connect2 struct {
 	exp     time.Time
 	slow    map[string]json.RawMessage
 	slowErr map[string]string
-	slowAt  time.Time
+	slowAt  map[string]time.Time // when each slow endpoint was last read
+
+	cache     map[string]cachedAnswer // recent good answers, served instead of asking Ford again too soon
+	holdUntil time.Time               // Ford asked us to wait: nothing is sent before this
+	minGap    time.Duration           // tests shorten it; zero means the default
 }
 
 func NewConnect2(fn func() Connect2Opts, st TokenStore) *Connect2 {
 	return &Connect2{optsFn: fn, store: st, hc: &http.Client{Timeout: 30 * time.Second},
-		slow: map[string]json.RawMessage{}, slowErr: map[string]string{}}
+		slow: map[string]json.RawMessage{}, slowErr: map[string]string{}, slowAt: map[string]time.Time{},
+		cache: map[string]cachedAnswer{}}
 }
 
 func (c *Connect2) opts() Connect2Opts {
@@ -80,8 +86,9 @@ func (c *Connect2) opts() Connect2Opts {
 func (c *Connect2) Name() string { return "fordconnect" }
 func (c *Connect2) Ready() bool  { return c.store.GetKV(refreshKey) != "" }
 
-// call performs one GET and returns the body and status without judging it.
-func (c *Connect2) call(ctx context.Context, path string) ([]byte, int, error) {
+// callRaw performs one GET and returns the body and status without judging it.
+// Use call, which also respects Ford's request limits.
+func (c *Connect2) callRaw(ctx context.Context, path string) ([]byte, int, error) {
 	tok, err := c.bearer(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -135,24 +142,22 @@ func (c *Connect2) Fetch(ctx context.Context) (*State, error) {
 	}
 	doc := map[string]any{"telemetry": asJSON(tel)}
 
-	c.mu.Lock()
-	due := time.Since(c.slowAt) > slowEvery
-	c.mu.Unlock()
-	if due {
-		got, errs := map[string]json.RawMessage{}, map[string]string{}
-		for _, e := range slowEndpoints {
-			b, status, err := c.call(ctx, e.Path)
-			switch {
-			case err != nil:
-				errs[e.Key] = err.Error()
-			case status != 200:
-				errs[e.Key] = fmt.Sprintf("HTTP %d", status)
-			default:
-				got[e.Key] = asJSON(b)
-			}
-		}
+	// At most ONE slow endpoint per reading (the most overdue), so a burst of requests
+	// never trips Ford's limit. Each is re-read every slowEvery.
+	if e, ok := c.nextSlow(); ok {
+		b, status, err := c.call(ctx, e.Path)
 		c.mu.Lock()
-		c.slow, c.slowErr, c.slowAt = got, errs, time.Now()
+		switch {
+		case err != nil: // includes Ford asking us to wait: try again on a later reading
+			c.slowErr[e.Key] = err.Error()
+		case status != 200:
+			c.slowErr[e.Key] = fmt.Sprintf("HTTP %d", status)
+			c.slowAt[e.Key] = time.Now()
+		default:
+			c.slow[e.Key] = asJSON(b)
+			delete(c.slowErr, e.Key)
+			c.slowAt[e.Key] = time.Now()
+		}
 		c.mu.Unlock()
 	}
 	c.mu.Lock()
@@ -176,6 +181,7 @@ type ProbeResult struct {
 	Error  string `json:"error,omitempty"`
 	Bytes  int    `json:"bytes"`
 	Body   any    `json:"body,omitempty"`
+	Note   string `json:"note,omitempty"` // plain-words explanation, for example when Ford is limiting requests
 }
 
 // Probe calls every endpoint once and returns the redacted answers, so the
@@ -188,6 +194,10 @@ func (c *Connect2) Probe(ctx context.Context) map[string]ProbeResult {
 	for _, e := range paths {
 		b, status, err := c.call(ctx, e.Path)
 		r := ProbeResult{Status: status, Bytes: len(b)}
+		var rl *RateLimitError
+		if errors.As(err, &rl) {
+			r.Note = fmt.Sprintf("Ford is limiting requests. Wait about %d seconds and try again.", int(rl.After.Seconds())+1)
+		}
 		if err != nil && status != 429 {
 			r.Error = err.Error()
 		} else {

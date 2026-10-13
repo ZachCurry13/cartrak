@@ -24,10 +24,10 @@ Restart the app after editing.
 | `CARTRAK_RESET_ADMIN` | `1` resets the password of `CARTRAK_ADMIN_USER` to `CARTRAK_ADMIN_PASS` on start (recovery) | off |
 | `CARTRAK_TRUST_PROXY` | believe proxy headers (`CF-Connecting-IP`, `X-Forwarded-For`, `X-Real-IP`) for client IPs | `true` |
 | `CARTRAK_SESSION_DAYS` | how long a sign-in lasts | `30` |
-| `CARTRAK_POLL_DRIVING_SEC` | seconds between readings while driving | `30` |
+| `CARTRAK_POLL_DRIVING_SEC` | seconds between readings while driving (minimum 30: Ford's limit) | `30` |
 | `CARTRAK_POLL_CHARGING_SEC` | while charging | `120` |
-| `CARTRAK_POLL_LIVE_SEC` | while driving in Road trip mode (minimum 5) | `10` |
-| `CARTRAK_POLL_PARKED_SEC` | while parked | `600` |
+| `CARTRAK_POLL_LIVE_SEC` | while driving in Road trip mode (minimum 30) | `30` |
+| `CARTRAK_POLL_PARKED_SEC` | while parked (minimum 60) | `600` |
 | `CARTRAK_ADDR` | listen address | `:8080` |
 | `CARTRAK_DATA` | data folder | `./data` (`/data` in Docker) |
 | `CARTRAK_CONFIG` | config folder | `./config` (`/config` in Docker) |

@@ -28,7 +28,7 @@ func newPoller(t *testing.T, p ford.Provider) *Poller {
 	}
 	t.Cleanup(func() { s.Close() })
 	return New(p, s, &trips.Detector{S: s, TZ: time.UTC},
-		Intervals{Driving: 30 * time.Second, Charging: 2 * time.Minute, Parked: 10 * time.Minute, Live: 10 * time.Second})
+		Intervals{Driving: 90 * time.Second, Charging: 2 * time.Minute, Parked: 10 * time.Minute, Live: 45 * time.Second})
 }
 
 func TestRateLimitIsObeyed(t *testing.T) {
@@ -51,11 +51,11 @@ func TestLiveModeSpeedsUpOnlyWhileDriving(t *testing.T) {
 	driving := &ford.State{Ignition: "ON"}
 	parked := &ford.State{Ignition: "OFF"}
 
-	if got := p.interval(driving); got != 30*time.Second {
+	if got := p.interval(driving); got != 90*time.Second {
 		t.Fatalf("normal driving: %v", got)
 	}
 	p.SetLive(true)
-	if got := p.interval(driving); got != 10*time.Second {
+	if got := p.interval(driving); got != 45*time.Second {
 		t.Fatalf("live driving: %v", got)
 	}
 	if got := p.interval(parked); got != 10*time.Minute {
@@ -66,7 +66,7 @@ func TestLiveModeSpeedsUpOnlyWhileDriving(t *testing.T) {
 		t.Fatalf("status: %+v", st)
 	}
 	p.SetLive(false)
-	if got := p.interval(driving); got != 30*time.Second || p.Status().Live {
+	if got := p.interval(driving); got != 90*time.Second || p.Status().Live {
 		t.Fatalf("live mode did not turn off: %v", got)
 	}
 	// A silly setting cannot go below the safety floor.
@@ -86,4 +86,52 @@ func TestSuccessfulPollRunsAfterHook(t *testing.T) {
 	if called != 1 || p.Status().LastOK == 0 {
 		t.Fatalf("after hook calls=%d status=%+v", called, p.Status())
 	}
+}
+
+func TestRateLimitBackoffDoublesAndIsCapped(t *testing.T) {
+	cases := []struct {
+		asked time.Duration
+		n     int
+		want  time.Duration
+	}{
+		{0, 1, 30 * time.Second}, {0, 2, time.Minute}, {0, 3, 2 * time.Minute}, {0, 4, 4 * time.Minute},
+		{0, 5, 8 * time.Minute}, {0, 6, 10 * time.Minute}, {0, 20, 10 * time.Minute},
+		{5 * time.Second, 1, 30 * time.Second}, // never below the floor
+		{3 * time.Minute, 1, 3 * time.Minute},  // obey a longer request from Ford
+		{time.Hour, 1, 10 * time.Minute},       // but never wait forever
+	}
+	for _, c := range cases {
+		if got := rateLimitWait(c.asked, c.n); got != c.want {
+			t.Errorf("rateLimitWait(%v, %d) = %v, want %v", c.asked, c.n, got, c.want)
+		}
+	}
+}
+
+func TestRepeatedRateLimitsBackOffMoreThenRecover(t *testing.T) {
+	rl := &ford.RateLimitError{}
+	pr := &flaky{err: rl}
+	p := newPoller(t, pr)
+	w1 := p.once(context.Background(), time.Second)
+	w2 := p.once(context.Background(), time.Second)
+	if w1 != 30*time.Second || w2 != time.Minute {
+		t.Fatalf("waits should double: %v then %v", w1, w2)
+	}
+	soc := 50.0
+	pr.err, pr.state = nil, &ford.State{TS: time.Now(), Ignition: "OFF", SoCPct: &soc, Raw: []byte(`{}`)}
+	p.once(context.Background(), time.Second)
+	pr.err = rl
+	if w := p.once(context.Background(), time.Second); w != 30*time.Second {
+		t.Fatalf("a success must reset the backoff: %v", w)
+	}
+}
+
+type flaky struct {
+	err   error
+	state *ford.State
+}
+
+func (*flaky) Name() string { return "flaky" }
+func (*flaky) Ready() bool  { return true }
+func (f *flaky) Fetch(context.Context) (*ford.State, error) {
+	return f.state, f.err
 }

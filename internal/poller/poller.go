@@ -19,8 +19,9 @@ import (
 type Intervals struct{ Driving, Charging, Parked, Live time.Duration }
 
 const (
-	minLive        = 5 * time.Second
+	minLive        = 30 * time.Second // Ford allows about one request per endpoint per 30 s, so faster is pointless
 	minRateLimited = 30 * time.Second
+	maxRateLimited = 10 * time.Minute
 	liveMaxHours   = 12 // live mode switches itself off so it is never left on by accident
 )
 
@@ -49,6 +50,7 @@ type Poller struct {
 	mu        sync.Mutex
 	st        Status
 	liveUntil time.Time
+	rlCount   int // consecutive 429s, for the backoff
 }
 
 func New(p ford.Provider, s *store.Store, d *trips.Detector, iv Intervals) *Poller {
@@ -114,10 +116,10 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 		}
 		var rl *ford.RateLimitError
 		if errors.As(err, &rl) { // Ford asked us to slow down: obey it
-			w := rl.After
-			if w < minRateLimited {
-				w = minRateLimited
-			}
+			p.mu.Lock()
+			p.rlCount++
+			w := rateLimitWait(rl.After, p.rlCount)
+			p.mu.Unlock()
 			log.Printf("ford rate limit: waiting %s", w)
 			p.set(func(s *Status) {
 				s.RateLimited = true
@@ -135,6 +137,9 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 	if err := p.D.Process(st); err != nil {
 		log.Printf("trip detect failed: %v", err)
 	}
+	p.mu.Lock()
+	p.rlCount = 0
+	p.mu.Unlock()
 	p.set(func(s *Status) { s.LastOK, s.LastError, s.RateLimited = now.Unix(), "", false })
 	if p.After != nil {
 		p.After()
@@ -178,4 +183,20 @@ func (p *Poller) set(f func(*Status)) {
 	p.mu.Lock()
 	f(&p.st)
 	p.mu.Unlock()
+}
+
+// rateLimitWait is how long to wait after the n-th 429 in a row: what Ford asked, at least
+// 30 s, and doubling with each repeat (30 s, 60 s, 2 min ... up to 10 min).
+func rateLimitWait(asked time.Duration, n int) time.Duration {
+	w := minRateLimited
+	for i := 1; i < n && w < maxRateLimited; i++ {
+		w *= 2
+	}
+	if asked > w {
+		w = asked
+	}
+	if w > maxRateLimited {
+		w = maxRateLimited
+	}
+	return w
 }

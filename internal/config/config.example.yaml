@@ -28,7 +28,7 @@ FORD_REDIRECT_URL: ""
 # CARTRAK_POLL_DRIVING_SEC: 30
 # CARTRAK_POLL_CHARGING_SEC: 120
 # CARTRAK_POLL_PARKED_SEC: 600
-# CARTRAK_POLL_LIVE_SEC: 10   # while driving in Road trip mode (minimum 5)
+# CARTRAK_POLL_LIVE_SEC: 30   # while driving in Road trip mode (minimum 30: Ford limits requests)
 
 # Forgot the admin password? Set both of these, restart once, then remove them again.
 # CARTRAK_RESET_ADMIN: 1

@@ -46,3 +46,7 @@ Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.m
 - The B2C_1A_FCON_AUTHORIZE *authorize* endpoint is NOT a sign-in start (always AADB2C90075); CarTrak uses it only to check which redirect URIs are registered (accepted = proceeds to AADB2C90075, rejected = AADB2C90006 mismatch).
 - Newly registered apps can take ~2h to deploy; redirect-address edits also take time (the user's with-path entry became accepted hours after being added).
 - Telemetry shape: vehicles[].metrics.<camelCase>.value, e.g. xevBatteryRange, position.value.location.{lat,lon,alt}, heading, compassDirection, doorLockStatus, hoodStatus, tire/indicator lists, customMetrics.*. Read more in marq24's fordpass_handler.py. Parser matches names ignoring case and underscores.
+
+## Ford rate limit (v0.8.2)
+- Real behaviour seen: right after linking, all 6 endpoints returned 429 (~230-250 byte bodies). Users of this API report the 2nd call to the same endpoint within seconds gets 429 and ~30 s spacing avoids it (evcc discussion #25639; HA integration defaults to a 60 s scan, minimum 30 s).
+- CarTrak: internal/ford/connect2_throttle.go (30 s per-endpoint gap with cached answers, global holdUntil after a 429, one slow endpoint per reading), poller backoff 30 s doubling to 10 min (rateLimitWait), config floors (secsMin). The exact 429 body/Retry-After from Ford is still unseen: ask the user for Copy responses after waiting a few minutes.
