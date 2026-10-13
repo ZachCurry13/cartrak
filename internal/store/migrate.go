@@ -11,6 +11,12 @@ var migrations = []struct{ table, column, ddl string }{
 	{"samples", "hv_volts", `ALTER TABLE samples ADD COLUMN hv_volts REAL`},
 	{"samples", "capacity_kwh", `ALTER TABLE samples ADD COLUMN capacity_kwh REAL`},
 	{"samples", "energy_kwh", `ALTER TABLE samples ADD COLUMN energy_kwh REAL`},
+	{"trends", "range_km", `ALTER TABLE trends ADD COLUMN range_km REAL`},
+	{"trends", "odometer_km", `ALTER TABLE trends ADD COLUMN odometer_km REAL`},
+	{"trends", "speed_kph", `ALTER TABLE trends ADD COLUMN speed_kph REAL`},
+	{"trends", "outside_c", `ALTER TABLE trends ADD COLUMN outside_c REAL`},
+	{"trends", "driving", `ALTER TABLE trends ADD COLUMN driving INTEGER NOT NULL DEFAULT 0`},
+	{"trends", "charging", `ALTER TABLE trends ADD COLUMN charging INTEGER NOT NULL DEFAULT 0`},
 	{"trips", "start_kwh", `ALTER TABLE trips ADD COLUMN start_kwh REAL`},
 	{"trips", "end_kwh", `ALTER TABLE trips ADD COLUMN end_kwh REAL`},
 }

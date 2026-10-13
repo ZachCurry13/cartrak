@@ -104,8 +104,14 @@ func strAt(f map[string]any, suffixes ...string) string {
 // dictionary are m/s and are converted to km/h; FordConnect v1 speed is
 // already km/h.
 func ParseState(raw []byte, at time.Time) *State {
-	f := Flatten(raw)
-	s := &State{TS: at, Raw: raw, Extra: f}
+	s := ParseFlat(Flatten(raw), at)
+	s.Raw = raw
+	return s
+}
+
+// ParseFlat is ParseState for a reading that is already flattened (as stored with each sample).
+func ParseFlat(f map[string]any, at time.Time) *State {
+	s := &State{TS: at, Extra: f}
 	s.OdometerKm = numAt(f, "vehicleDetails.odometer", "odometer")
 	s.SoCPct = numAt(f, "batteryChargeLevel.value", "XEV_BATTERY_STATE_OF_CHARGE", "batteryFillLevel.value")
 	s.RangeKm = numAt(f, "batteryChargeLevel.distanceToEmpty", "XEV_BATTERY_RANGE", "elVehDTE.value")

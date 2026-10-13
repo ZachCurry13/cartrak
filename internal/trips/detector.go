@@ -1,7 +1,6 @@
 package trips
 
 import (
-	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
@@ -17,18 +16,9 @@ type Detector struct {
 }
 
 // Driving reports whether a reading looks like the car is in use.
-func Driving(st *ford.State) bool {
-	switch strings.ToUpper(st.Ignition) {
-	case "ON", "RUN", "START", "STARTING", "RUNNING":
-		return true
-	}
-	return st.SpeedKph != nil && *st.SpeedKph > 3
-}
+func Driving(st *ford.State) bool { return st.Driving() }
 
-func charging(st *ford.State) bool {
-	return strings.Contains(strings.ToLower(st.ChargeState), "charging") ||
-		(st.ChargeKw != nil && *st.ChargeKw > 0.2)
-}
+func charging(st *ford.State) bool { return st.Charging() }
 
 // Process applies one reading. Call it once per poll, oldest first.
 func (d *Detector) Process(st *ford.State) error {
