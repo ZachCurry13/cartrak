@@ -45,3 +45,16 @@ Note that parking locations, including your home if a trip ends there, are sent 
 - The place name is the city, town or village Nominatim reports. A spot that is inside a township with no town name may be named by its county.
 - Names come from OpenStreetMap, so a few places may be spelled differently from your own list (for example "Pt. Lakeside" versus "Port Lakeside"). Edit the pasted text in your sheet if you need a particular spelling.
 - Trips with no end location (the car had no GPS fix) are listed in a note, and their city is missing from the row.
+
+## Does it add up? (the mileage check)
+Under the log, a card compares the car's **odometer** with the trips CarTrak recorded for the same period. The odometer only moves when the car does, so the miles it moved are exact even if CarTrak missed a trip. The card says either **Matches** or how many miles are missing, and lists each stretch of driving that no trip covers, with its time window and the cities where the car was at each end (when they are already remembered).
+
+Each stretch has a one-tap fix:
+- **A whole missed trip:** **Add as work trip** or **Add as personal trip** creates the trip with the miles from the odometer, the start and end places and times, and the battery levels. It then counts in the log and in every other screen. Adding the same miles twice is refused.
+- **Miles at the edge of a recorded trip:** when the stretch sits right before or after one trip (CarTrak noticed that trip a little late or closed it a little late), **Add to that trip** widens that trip instead of creating a new one.
+
+Notes:
+- The check counts work and personal trips together, because the odometer does not know the difference.
+- Ford reports the odometer only when the car wakes, so the times inside a stretch are approximate. The total is exact.
+- It needs at least two odometer readings in the period. Readings from before CarTrak was linked do not exist.
+- Only admins can see and use it.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.0
+
+### ✅ Mileage check
+- The **Mileage log** now has a **Does it add up?** card. It compares the car's odometer, which is exact, with the trips CarTrak recorded for the same weeks or dates, and says **Matches** or how many miles are missing.
+- Every stretch of driving that no trip covers is listed with its time window and where the car was. **Add as work trip** or **Add as personal trip** fills it in from the odometer in one tap. When the miles sit right before or after a recorded trip (it was noticed or closed a little late), **Add to that trip** widens that trip instead.
+- Admins only. See docs/mileage.md.
+
 ## 0.12.0
 
 ### 🔎 Car data, explained

@@ -1,6 +1,7 @@
 import { h, chip } from '../ui.js';
 import { api } from '../api.js';
 import { copyButton } from '../phonehelp.js';
+import { checkCard } from '../mileagecheck.js';
 
 const store = {
   get: (k, d) => { try { return localStorage.getItem(`mileage.${k}`) || d; } catch (e) { return d; } },
@@ -32,6 +33,7 @@ export default async function mileage(root, _a, session) {
     msg.textContent = 'Building. The first time, each new place is looked up (about a second each), then remembered.';
     try {
       show(await api(`/api/mileage?${p}`));
+      out.append(checkCard(p, build));
       msg.textContent = '';
     } catch (e) { msg.textContent = e.message; }
     go.disabled = false;

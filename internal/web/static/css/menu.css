@@ -58,3 +58,4 @@ section.card>.drow:first-of-type,section.card>h2+.drow,section.card>p+.drow{bord
 .tlwrap{margin-top:8px;color:var(--accent)}
 svg.tl{display:block;width:100%;height:auto;background:var(--bg);border-radius:10px}
 .tllegend{font-size:.8rem;margin-top:4px}
+.gap{border-top:1px solid var(--line);padding:10px 0}
