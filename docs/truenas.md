@@ -67,18 +67,7 @@ Press **Install**. The first start downloads the image.
 2. Create the admin account (10+ character password).
 3. The **Getting started** page appears. Set up a [separate FordPass account](ford-setup.md#recommended-use-a-separate-ford-account-for-cartrak) first, as recommended.
 
-## 4. Enter your Ford settings (no files needed)
-In CarTrak: **More -> Admin settings**. Fill in the Ford client ID, client secret,
-Application-Id, the redirect URL and your time zone, then **Save**. They apply
-immediately and are stored in the database (`/data`). The secret is never shown
-again or sent to the browser. Then press **Connect Ford**.
-
-Prefer files? Put the same values in `/config/config.yaml` (CarTrak writes a
-commented `config.example.yaml` there on first start) or in environment
-variables. Those win over the admin page and show as "locked" there. See
-[Configuration](configuration.md).
-
-## 5. Remote access (Cloudflare tunnel)
+## 4. Remote access (Cloudflare tunnel)
 Easiest: in CarTrak open **More -> Remote access (Cloudflare tunnel)**, paste your tunnel token and public hostname, and turn it on. CarTrak runs the connector itself, so no second app is needed. Details: [Cloudflare tunnel](cloudflare.md). The separate-app steps below are the alternative.
 
 Install the tunnel as its **own second Custom App** (same form):
@@ -91,6 +80,17 @@ Install the tunnel as its **own second Custom App** (same form):
 
 Full steps, including the Cloudflare side and a second login lock: [Cloudflare tunnel](cloudflare.md).
 Set the redirect URL in step 4 to `https://<your hostname>/ford/callback` (the same address you register with Ford).
+
+## 5. Enter your Ford settings and connect
+In CarTrak: **More -> Admin settings**. Fill in the Ford client ID, client secret,
+Application-Id, the redirect URL and your time zone, then **Save**. They apply
+immediately and are stored in the database (`/data`). The secret is never shown
+again or sent to the browser. Then press **Connect Ford**.
+
+Prefer files? Put the same values in `/config/config.yaml` (CarTrak writes a
+commented `config.example.yaml` there on first start) or in environment
+variables. Those win over the admin page and show as "locked" there. See
+[Configuration](configuration.md).
 
 ## 6. Install on your phone
 Android (Chrome): menu -> **Install app**. iPhone (Safari): Share -> **Add to Home Screen**.

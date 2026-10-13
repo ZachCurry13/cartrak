@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ZachCurry13/cartrak"
+	"github.com/ZachCurry13/cartrak/internal/tunnel"
 	"github.com/ZachCurry13/cartrak/internal/updater"
 )
 
@@ -60,6 +61,7 @@ func (s *Server) onboarding(w http.ResponseWriter, r *http.Request) {
 		"linked":     st.Linked,
 		"canLink":    s.Link != nil,
 		"configured": s.Cfg == nil || s.Cfg.Configured(),
+		"remote":     s.Tunnel != nil && s.Tunnel.Status().State == tunnel.Connected,
 		"hasReading": latest != nil,
 		"rules":      len(rules),
 		"users":      s.S.CountUsers(),

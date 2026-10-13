@@ -62,6 +62,8 @@ on your Ford app: fix the redirect URL in Admin settings so it matches exactly,
 including `http` or `https` and any path.
 
 ## Linking your car
+Set up [remote access](cloudflare.md) first if you want linking to finish automatically: Ford only redirects to an `https://` address (or `http://localhost`).
+
 1. Open CarTrak as admin -> **More** -> **Connect Ford** and press **Open Ford sign-in** (use your separate CarTrak account, see above).
 2. Ford's own page opens. Sign in with the FordPass account you set up for CarTrak and approve the vehicle.
 3. Finish as described under "Redirect address" above (automatic, or paste the address). CarTrak stores a refresh token and starts reading.

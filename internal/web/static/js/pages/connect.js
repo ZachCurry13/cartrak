@@ -29,7 +29,8 @@ export default async function connect(root, _a, session) {
     finish.disabled = false;
   } }, 'Finish connecting');
 
-  root.append(
+  const insecure = redirect.startsWith('http://') && !redirect.startsWith('http://localhost') && !redirect.startsWith('http://127.0.0.1');
+  root.append(...(insecure ? [h('div', { class: 'banner' }, h('b', {}, 'Ford will refuse this address. '), 'It is plain http, and Ford only accepts https (or http://localhost). Set up remote access first (More, Remote access) and use its https address, or register http://localhost on your Ford app and use the paste step.', h('p', {}, h('a', { class: 'btn', href: '#/remote' }, 'Set up remote access')))] : []),
     h('section', { class: 'card' }, h('h2', {}, '1. Sign in at Ford'),
       h('p', { class: 'muted' }, 'CarTrak will ask Ford to send you back to:'),
       h('p', {}, h('code', { style: 'overflow-wrap:anywhere' }, redirect)),

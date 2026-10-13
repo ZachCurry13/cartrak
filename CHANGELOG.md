@@ -7,6 +7,7 @@
 
 ### 🔗 Connecting Ford
 - Ford sending the code after a # in the address is now handled: the callback is a page that reads the whole address, and the paste box understands it too.
+- Getting started now puts remote access before linking Ford, and the Connect Ford page warns when the redirect is a plain http address that Ford will refuse.
 
 ## 0.5.1
 
