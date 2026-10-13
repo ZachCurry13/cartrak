@@ -16,7 +16,9 @@ Everything comes from what Ford sends. CarTrak shows only what your car reports,
 | **Tires** | Each tire's pressure against the sticker value, and the car's own tire status | all |
 | **Car systems** | Automatic software updates, alarm, parking brake, car mode, remote start time left | all |
 
-Flags: the 12 V battery is marked **Check** below 12.1 V or 70 percent charge, and **Act** below 11.8 V or 50 percent. Oil life is **Check** at 15 percent and **Act** at 5 percent. Fuel is **Check** at 10 percent. A main battery status other than Normal, a tire the car says is low, any trouble code and any warning light are flagged too.
+Flags: the 12 V battery is marked **Check** below 11.9 V or 50 percent charge, and **Act** below 11.6 V or 30 percent. A parked car often reads a little lower (about 12.0 V, 50 to 70 percent) until it next wakes and recharges the battery, so those readings get an explanation instead of a flag. Oil life is **Check** at 15 percent and **Act** at 5 percent. Fuel is **Check** at 10 percent. A main battery status other than Normal, a tire the car says is low, any trouble code and any warning light are flagged too.
+
+**The 12 V percentage is the car's estimate, not a test.** If a shop has tested the battery and it is fine, an admin can tap **It was tested and is fine** under the 12 V battery. That quiets its warnings and its push alert for 90 days (the numbers still show), and **Resume warnings** turns them back on.
 
 Honest limits:
 - **Battery health is an estimate.** Ford does not send a state-of-health figure. The estimated capacity is the car's own number; CarTrak charts it so you can watch for a steady fall over months. It needs a couple of days of readings before a trend appears.

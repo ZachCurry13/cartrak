@@ -82,6 +82,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/map", s.auth(false, s.mapConfig))
 	m.HandleFunc("GET /api/tiles/{z}/{x}/{y}", s.auth(false, s.tile))
 	m.HandleFunc("GET /api/vehicle-health", s.auth(false, s.vehicleHealth))
+	m.HandleFunc("POST /api/health/battery12v-tested", s.auth(true, s.testedBattery))
+	m.HandleFunc("DELETE /api/health/battery12v-tested", s.auth(true, s.testedBattery))
 	m.HandleFunc("GET /api/car-data", s.auth(false, s.carData))
 	m.HandleFunc("GET /api/car-data/raw", s.auth(false, s.carDataRaw))
 	m.HandleFunc("GET /api/timeline", s.auth(false, s.timeline))

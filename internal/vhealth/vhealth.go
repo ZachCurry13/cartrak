@@ -4,6 +4,8 @@
 package vhealth
 
 import (
+	"time"
+
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -40,11 +42,16 @@ type Report struct {
 	Overall  string    `json:"overall"` // ok | warn | bad
 }
 
+// Options are choices that change how the report judges things.
+type Options struct {
+	Tested12VUntil time.Time // the owner had the 12 V battery tested and it was fine: do not warn about it until then
+}
+
 // Trends are the daily values already read from the database, by series name.
 type Trends map[string][]store.Day
 
 // Build assembles the report for a car of the given type from its latest flattened reading.
-func Build(f map[string]any, pt ford.Powertrain, trends Trends) Report {
+func Build(f map[string]any, pt ford.Powertrain, trends Trends, opts Options) Report {
 	var secs []Section
 	add := func(s Section) {
 		if len(s.Rows) > 0 {
@@ -52,7 +59,7 @@ func Build(f map[string]any, pt ford.Powertrain, trends Trends) Report {
 		}
 	}
 	add(attention(f))
-	add(twelveVolt(f, trends))
+	add(twelveVolt(f, trends, opts))
 	if pt.HasBattery() {
 		add(traction(f, trends))
 	}

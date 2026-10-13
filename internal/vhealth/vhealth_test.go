@@ -1,8 +1,11 @@
 package vhealth
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
 )
@@ -35,16 +38,16 @@ func TestRealBatteryCarShowsVoltagesAndBatteryButNoOil(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := Build(ford.Flatten(raw), ford.EV, nil)
+	r := Build(ford.Flatten(raw), ford.EV, nil, Options{})
 
 	if section(r, "engine") != nil {
 		t.Fatal("a battery car must not get an oil section, even though Ford lists oil life 100 for it")
 	}
 	v := row(section(r, "12v"), "Voltage")
-	if v == nil || v.Num == nil || *v.Num != 12.0625 || v.State != "warn" || v.At == "" {
+	if v == nil || v.Num == nil || *v.Num != 12.0625 || v.State != "ok" || v.Note == "" || v.At == "" {
 		t.Fatalf("12 V voltage: %+v", v)
 	}
-	if c := row(section(r, "12v"), "Charge"); c == nil || *c.Num != 65 || c.State != "warn" {
+	if c := row(section(r, "12v"), "Charge"); c == nil || *c.Num != 65 || c.State != "ok" || c.Note == "" {
 		t.Fatalf("12 V charge: %+v", c)
 	}
 	tr := section(r, "traction")
@@ -67,15 +70,15 @@ func TestRealBatteryCarShowsVoltagesAndBatteryButNoOil(t *testing.T) {
 			t.Errorf("tire %+v", x)
 		}
 	}
-	if r.Overall != "warn" {
-		t.Fatalf("a lowish 12 V battery makes the overall state a warning: %s", r.Overall)
+	if r.Overall != "ok" {
+		t.Fatalf("a middling 12 V reading on a parked car is explained, not flagged: %s", r.Overall)
 	}
 }
 
 func TestGasCarShowsOilAndFuelButNoMainBattery(t *testing.T) {
 	f := flat(t, `{"telemetry":{"metrics":{"oilLifeRemaining":{"value":12},"fuelLevel":{"value":8},"fuelRange":{"value":60},
 	  "engineCoolantTemp":{"value":90},"batteryVoltage":{"value":12.7},"hybridVehicleModeStatus":{"value":"AUTO"}}}}`)
-	r := Build(f, ford.Gas, nil)
+	r := Build(f, ford.Gas, nil, Options{})
 	if section(r, "traction") != nil {
 		t.Fatal("a gas car has no main battery section")
 	}
@@ -93,14 +96,14 @@ func TestGasCarShowsOilAndFuelButNoMainBattery(t *testing.T) {
 		t.Fatalf("12.7 V is healthy: %+v", v)
 	}
 	f2 := flat(t, `{"m":{"oilLifeRemaining":{"value":4}}}`)
-	if o := row(section(Build(f2, ford.Gas, nil), "engine"), "Oil life left"); o.State != "bad" {
+	if o := row(section(Build(f2, ford.Gas, nil, Options{}), "engine"), "Oil life left"); o.State != "bad" {
 		t.Fatalf("oil at 4%%: %+v", o)
 	}
 }
 
 func TestHybridShowsBothBatteryAndOil(t *testing.T) {
 	f := flat(t, `{"m":{"xevBatteryStateOfCharge":{"value":55},"oilLifeRemaining":{"value":70},"fuelLevel":{"value":40},"hybridVehicleModeStatus":{"value":"AUTO_CHARGE_DEPLETE"}}}`)
-	r := Build(f, ford.PHEV, nil)
+	r := Build(f, ford.PHEV, nil, Options{})
 	if section(r, "traction") == nil || section(r, "engine") == nil || row(section(r, "engine"), "Hybrid mode").Text != "Auto charge deplete" {
 		t.Fatalf("plug-in hybrid sections: %+v", r.Sections)
 	}
@@ -108,11 +111,11 @@ func TestHybridShowsBothBatteryAndOil(t *testing.T) {
 
 func TestUnknownTypeNeverShowsOilUnlessThereIsFuel(t *testing.T) {
 	f := flat(t, `{"m":{"oilLifeRemaining":{"value":100},"xevBatteryStateOfCharge":{"value":80}}}`)
-	if section(Build(f, ford.Unknown, nil), "engine") != nil {
+	if section(Build(f, ford.Unknown, nil, Options{}), "engine") != nil {
 		t.Fatal("oil life alone must not create an engine section before the type is known")
 	}
 	f2 := flat(t, `{"m":{"oilLifeRemaining":{"value":100},"fuelLevel":{"value":50}}}`)
-	if section(Build(f2, ford.Unknown, nil), "engine") == nil {
+	if section(Build(f2, ford.Unknown, nil, Options{}), "engine") == nil {
 		t.Fatal("a fuel level proves there is an engine")
 	}
 }
@@ -121,7 +124,7 @@ func TestCodesAlertsAndWarningLightsAreListed(t *testing.T) {
 	f := flat(t, `{"telemetry":{"metrics":{"diagnosticTroubleCode":[{"value":"P0A80","system":"POWERTRAIN"},{"value":"U0100","system":"NETWORK"}],
 	  "indicators":{"brakePadWearWarning":{"value":true},"tirePressureWarning":{"value":false}}}},
 	  "alerts":{"VehicleAlertList":[{"StatusCode":4040,"StatusDesc":"No Data"},{"StatusCode":1,"StatusDesc":"Service required"}]}}`)
-	w := section(Build(f, ford.EV, nil), "warnings")
+	w := section(Build(f, ford.EV, nil, Options{}), "warnings")
 	var codes, alerts, lights []string
 	for _, x := range w.Rows {
 		switch x.Label {
@@ -140,16 +143,58 @@ func TestCodesAlertsAndWarningLightsAreListed(t *testing.T) {
 
 func TestLowTirePressureIsFlaggedAndTrendsNeedTwoDays(t *testing.T) {
 	f := flat(t, `{"m":{"tirePressure":[{"value":200,"vehicleWheel":"FRONT_LEFT","wheelPlacardFront":269}],"tirePressureStatus":[{"value":"LOW","vehicleWheel":"FRONT_LEFT"}]}}`)
-	if x := row(section(Build(f, ford.EV, nil), "tires"), "Front left"); x == nil || x.State != "warn" {
+	if x := row(section(Build(f, ford.EV, nil, Options{}), "tires"), "Front left"); x == nil || x.State != "warn" {
 		t.Fatalf("tire: %+v", x)
 	}
 	one := Trends{"battery12v": {{TS: 1, Avg: 12.5}}}
 	two := Trends{"battery12v": {{TS: 1, Avg: 12.5}, {TS: 86401, Avg: 12.4}}}
 	g := flat(t, `{"m":{"batteryVoltage":{"value":12.5}}}`)
-	if s := section(Build(g, ford.EV, one), "12v"); len(s.Series) != 0 {
+	if s := section(Build(g, ford.EV, one, Options{}), "12v"); len(s.Series) != 0 {
 		t.Fatal("one day is not a trend")
 	}
-	if s := section(Build(g, ford.EV, two), "12v"); len(s.Series) != 1 || s.Series[0].Name != "battery12v" {
+	if s := section(Build(g, ford.EV, two, Options{}), "12v"); len(s.Series) != 1 || s.Series[0].Name != "battery12v" {
 		t.Fatalf("two days make a trend: %+v", s.Series)
+	}
+}
+
+func TestTwelveVoltLinesAreForRealProblemsAndATestedBatteryPausesThem(t *testing.T) {
+	volts := func(v, soc float64) map[string]any {
+		return ford.Flatten([]byte(fmt.Sprintf(`{"m":{"batteryVoltage":{"value":%v},"batteryStateOfCharge":{"value":%v}}}`, v, soc)))
+	}
+	state := func(f map[string]any, opts Options, label string) string {
+		x := row(section(Build(f, ford.EV, nil, opts), "12v"), label)
+		if x == nil {
+			t.Fatalf("no %s row", label)
+		}
+		return x.State
+	}
+	for _, c := range []struct {
+		v, soc     float64
+		volt, chrg string
+	}{
+		{12.7, 90, "ok", "ok"}, {12.06, 61, "ok", "ok"}, {11.85, 45, "warn", "warn"}, {11.5, 25, "bad", "bad"}, {12.1, 49, "ok", "warn"},
+	} {
+		f := volts(c.v, c.soc)
+		if got := state(f, Options{}, "Voltage"); got != c.volt {
+			t.Errorf("%v V: %s, want %s", c.v, got, c.volt)
+		}
+		if got := state(f, Options{}, "Charge"); got != c.chrg {
+			t.Errorf("%v%%: %s, want %s", c.soc, got, c.chrg)
+		}
+	}
+	low := volts(11.5, 25)
+	paused := Options{Tested12VUntil: time.Now().Add(24 * time.Hour)}
+	if state(low, paused, "Voltage") != "ok" || state(low, paused, "Charge") != "ok" {
+		t.Fatal("a battery the owner had tested and found fine must not be flagged during the pause")
+	}
+	if x := row(section(Build(low, ford.EV, nil, paused), "12v"), "Voltage"); !strings.Contains(x.Note, "tested") {
+		t.Fatalf("the page says why it is quiet: %q", x.Note)
+	}
+	expired := Options{Tested12VUntil: time.Now().Add(-time.Hour)}
+	if state(low, expired, "Voltage") != "bad" {
+		t.Fatal("an ended pause no longer hides a real problem")
+	}
+	if intro := section(Build(low, ford.EV, nil, Options{}), "12v").Intro; !strings.Contains(intro, "estimate") {
+		t.Fatalf("the section explains that the percentage is the car's estimate: %q", intro)
 	}
 }

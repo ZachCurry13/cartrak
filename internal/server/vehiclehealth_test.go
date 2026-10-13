@@ -55,3 +55,38 @@ func TestVehicleHealthEndpointForABatteryCar(t *testing.T) {
 		t.Fatalf("anonymous: %d", code)
 	}
 }
+
+func TestTheOwnerCanPauseTheTwelveVoltWarningsAfterATest(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	raw, err := os.ReadFile("../ford/testdata/bev_response.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv.S.SaveState("test", ford.ParseState(raw, time.Now()))
+
+	until := func() float64 {
+		_, b := do(t, admin, "GET", ts.URL+"/api/vehicle-health", "", nil)
+		var out struct {
+			Tested float64 `json:"tested12vUntil"`
+		}
+		json.Unmarshal([]byte(b), &out)
+		return out.Tested
+	}
+	if until() != 0 {
+		t.Fatal("nothing is paused by default")
+	}
+	if code, _ := do(t, &http.Client{}, "POST", ts.URL+"/api/health/battery12v-tested", `{}`, xh); code != 401 {
+		t.Fatalf("anonymous: %d", code)
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/health/battery12v-tested", `{"days":9999}`, xh); code != 200 {
+		t.Fatalf("pause: %d", code)
+	}
+	got := time.Unix(int64(until()), 0)
+	if d := time.Until(got); d < 360*24*time.Hour || d > 366*24*time.Hour {
+		t.Fatalf("the pause is capped at a year, got %v", d)
+	}
+	if code, _ := do(t, admin, "DELETE", ts.URL+"/api/health/battery12v-tested", "", xh); code != 200 || until() != 0 {
+		t.Fatal("warnings can be resumed")
+	}
+}

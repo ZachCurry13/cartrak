@@ -90,3 +90,6 @@ func (s *Store) BrowserDevice(userID int64, who string) (*Device, error) {
 	}
 	return s.DeviceByHash(key)
 }
+
+// KV12VTested is when the owner's "tested and fine" pause for the 12 V battery warnings ends (unix seconds).
+const KV12VTested = "battery12v_ok_until"

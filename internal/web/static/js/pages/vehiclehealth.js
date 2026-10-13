@@ -23,6 +23,20 @@ function attention(report) {
       r.note ? h('span', { class: 'hn muted' }, r.note) : null)));
 }
 
+// The owner can record that the 12 V battery was tested and is fine, which pauses its warnings and alert.
+function testedBox(until, admin) {
+  const active = until * 1000 > Date.now();
+  const text = active
+    ? `Tested and fine. Warnings are paused until ${new Date(until * 1000).toLocaleDateString([], { month: 'short', day: 'numeric' })}.`
+    : 'Had this battery tested and it was fine? Pause the 12 V warnings and alert for 90 days.';
+  return h('p', {}, h('span', { class: 'muted' }, text), ' ', admin
+    ? h('button', { class: 'sec', onclick: async (e) => {
+      e.currentTarget.disabled = true;
+      await api('/api/health/battery12v-tested', { method: active ? 'DELETE' : 'POST', body: { days: 90 } });
+      location.reload();
+    } }, active ? 'Resume warnings' : 'It was tested and is fine') : null);
+}
+
 export default async function vehicleHealth(root, _a, session) {
   // Say so while loading, so the tab never looks dead; a failure gets a message and a retry.
   const loading = h('p', { class: 'muted', role: 'status' }, 'Loading vehicle health…');
@@ -43,7 +57,7 @@ export default async function vehicleHealth(root, _a, session) {
   root.append(attention(d.report));
   for (const s of d.report.sections) {
     root.append(h('section', { class: 'card' }, h('h2', {}, s.title), s.intro ? h('p', { class: 'muted' }, s.intro) : null,
-      ...s.rows.map(rowEl), ...(s.series || []).map((x) => spark(x, format))));
+      ...s.rows.map(rowEl), s.id === '12v' ? testedBox(d.tested12vUntil, session.me.role === 'admin') : null, ...(s.series || []).map((x) => spark(x, format))));
   }
   root.append(h('p', { class: 'muted' }, `Vehicle type: ${v.label} (${SOURCE[v.source] || ''}). `,
     session.me.role === 'admin' ? h('a', { href: '#/admin' }, 'Wrong? Change it in Settings.') : ''));

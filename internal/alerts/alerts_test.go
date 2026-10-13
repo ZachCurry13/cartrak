@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -208,5 +209,23 @@ func TestSilenceFromFordIsReportedOnceAndRearms(t *testing.T) {
 	e.Tick()
 	if len(r.got) != 2 {
 		t.Fatal("an account that is not linked has nothing to be silent about")
+	}
+}
+
+func TestATestedBatteryPausesTheTwelveVoltAlert(t *testing.T) {
+	e, r, s := setup(t)
+	now := t0
+	e.Now = func() time.Time { return now }
+	low := func(st *ford.State) { v := 11.5; st.Battery12V = &v }
+	s.SetKV(store.KV12VTested, strconv.FormatInt(now.Add(48*time.Hour).Unix(), 10))
+	e.Handle(reading(0, low))
+	e.Handle(reading(5, low))
+	if len(r.got) != 0 {
+		t.Fatalf("no alert while the pause lasts: %s", r.kinds())
+	}
+	now = now.Add(72 * time.Hour) // the pause has ended
+	e.Handle(reading(4320, low))
+	if r.kinds() != "low_12v" {
+		t.Fatalf("a real low battery alerts again once the pause is over: %s", r.kinds())
 	}
 }

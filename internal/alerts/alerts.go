@@ -112,6 +112,9 @@ func (e *Engine) tires(st *ford.State, first bool) {
 
 // battery12V alerts at most once a day, and the time is kept so a restart does not repeat it.
 func (e *Engine) battery12V(st *ford.State) {
+	if n, err := strconv.ParseInt(e.S.GetKV(store.KV12VTested), 10, 64); err == nil && e.now().Before(time.Unix(n, 0)) {
+		return // the owner had the battery tested and it was fine
+	}
 	soc := ford.Number(st.Extra, "batteryStateOfCharge")
 	low := (st.Battery12V != nil && *st.Battery12V < lowVoltage) || (soc != nil && *soc < lowChargePct)
 	if !low {

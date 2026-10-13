@@ -3,10 +3,12 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/vhealth"
 )
 
@@ -33,11 +35,12 @@ func (s *Server) vehicleHealth(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	ok(w, map[string]any{
-		"vehicle": info,
-		"ready":   true,
-		"asOf":    x.TS,
-		"model":   modelName(f),
-		"report":  vhealth.Build(f, ford.Powertrain(info.Powertrain), trends),
+		"vehicle":        info,
+		"ready":          true,
+		"asOf":           x.TS,
+		"model":          modelName(f),
+		"report":         vhealth.Build(f, ford.Powertrain(info.Powertrain), trends, vhealth.Options{Tested12VUntil: s.tested12V()}),
+		"tested12vUntil": unixOrZero(s.tested12V()),
 	})
 }
 
@@ -50,4 +53,42 @@ func modelName(f map[string]any) string {
 		}
 	}
 	return strings.Join(parts, " ")
+}
+
+// tested12V is when the owner's "I had the 12 V battery tested and it is fine" pause ends (zero if none).
+func (s *Server) tested12V() time.Time {
+	if n, err := strconv.ParseInt(s.S.GetKV(store.KV12VTested), 10, 64); err == nil && n > 0 {
+		return time.Unix(n, 0)
+	}
+	return time.Time{}
+}
+
+func unixOrZero(t time.Time) int64 {
+	if t.IsZero() {
+		return 0
+	}
+	return t.Unix()
+}
+
+// testedBattery records or clears the pause. POST {"days":90} pauses the 12 V warnings and alert for that
+// long (default 90, at most 365); DELETE resumes them. Admin only.
+func (s *Server) testedBattery(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		_ = s.S.SetKV(store.KV12VTested, "")
+		ok(w, map[string]any{"until": 0})
+		return
+	}
+	var in struct {
+		Days int `json:"days"`
+	}
+	_ = decode(r, &in)
+	if in.Days <= 0 {
+		in.Days = 90
+	}
+	if in.Days > 365 {
+		in.Days = 365
+	}
+	until := time.Now().AddDate(0, 0, in.Days).Unix()
+	_ = s.S.SetKV(store.KV12VTested, strconv.FormatInt(until, 10))
+	ok(w, map[string]any{"until": until})
 }

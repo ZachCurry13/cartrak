@@ -8,7 +8,7 @@ func (s src) battery() Tab {
 	if s.pt.HasBattery() {
 		main = group("Main battery", "The large battery that drives the car.",
 			s.num("Charge shown on the dash", "pct", "The percentage on the car's display.", "xevBatteryStateOfCharge"),
-			s.num("Actual charge", "pct", "The true charge of the battery cells. The car shows a slightly higher number on the dash so you keep a small cushion.", "xevBatteryActualStateOfCharge"),
+			s.num("Actual charge", "pct", "The true charge of the battery cells. It includes a small buffer at the top and bottom that the car hides from the dash to protect the battery, so the two percentages differ by a few points. Plan with the dash number.", "xevBatteryActualStateOfCharge"),
 			s.num("Energy left", "kwh", "Usable energy left, like gallons in a fuel tank. A kilowatt-hour (kWh) is the unit electricity is sold in.", "xevBatteryEnergyRemaining"),
 			s.num("Battery size (estimated)", "kwh", "How much the battery can hold when full, as the car estimates it. It shrinks very slowly as the battery ages.", "xevBatteryCapacity"),
 			s.num("Range now", "km", "How far the car expects to go on the current charge.", "xevBatteryRange"),

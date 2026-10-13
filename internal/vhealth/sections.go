@@ -87,47 +87,12 @@ func attention(f map[string]any) Section {
 	return s
 }
 
-// twelveVolt is the small battery that runs the electronics; a weak one causes many odd faults.
-func twelveVolt(f map[string]any, t Trends) Section {
-	v := num(f, "Voltage", "volts", "batteryVoltage")
-	if v != nil {
-		switch {
-		case *v.Num < 11.8:
-			v.with("bad", "Very low. The car may not start or wake. Have the 12 V battery tested.")
-		case *v.Num < 12.1:
-			v.with("warn", "Lowish for a parked car (a healthy one rests near 12.4 to 12.8 V). The car tops it up from the main battery when it wakes.")
-		default:
-			v.with("ok", "")
-		}
-	}
-	c := num(f, "Charge", "pct", "batteryStateOfCharge")
-	if c != nil {
-		switch {
-		case *c.Num < 50:
-			c.with("bad", "Low charge")
-		case *c.Num < 70:
-			c.with("warn", "Below 70 percent. Worth watching if it keeps dropping.")
-		default:
-			c.with("ok", "")
-		}
-	}
-	load := text(f, "Load", "batteryLoadStatus")
-	if load != nil {
-		load.State = "ok"
-		if !strings.Contains(strings.ToUpper(load.Text), "NORMAL") {
-			load.State = "warn"
-		}
-		load.wordy()
-	}
-	return Section{ID: "12v", Title: "12 V battery", Rows: rows(v, c, load), Series: series(t, "battery12v", "Voltage, daily average", "volts")}
-}
-
 // traction is the large drive battery of an electric or hybrid car.
 func traction(f map[string]any, t Trends) Section {
 	shown := num(f, "Charge shown on the dash", "pct", "xevBatteryStateOfCharge")
 	actual := num(f, "Actual charge", "pct", "xevBatteryActualStateOfCharge")
 	if actual != nil && shown != nil && *shown.Num != *actual.Num {
-		actual.Note = "The cells hold a little less than the dash shows; the car keeps a small reserve."
+		actual.Note = "The true charge of the battery cells. It includes a small buffer at the top and bottom that the dash hides to protect the battery, so the dash percentage is scaled to the part you can use."
 	}
 	capKwh := num(f, "Estimated capacity", "kwh", "xevBatteryCapacity")
 	if capKwh != nil {
