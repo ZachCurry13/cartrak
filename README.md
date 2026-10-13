@@ -52,8 +52,8 @@ Give the **apps** user (UID 568) read/write access to both folders, install, ope
    redirect URL and time zone, then **Connect Ford**. ([Ford setup](docs/ford-setup.md): we recommend a
    **separate FordPass account** for CarTrak.)
 3. Follow the **Getting started** page (install on your phone, add a work rule, add family).
-4. For access away from home add a Cloudflare tunnel as a second Custom App
-   ([guide](docs/cloudflare.md)).
+4. For access away from home (and automatic Ford linking) open **More -> Remote access** and paste a Cloudflare tunnel token; CarTrak runs the connector itself
+   ([guide](docs/cloudflare.md)). A separate tunnel app also works.
 
 **Updating:** CarTrak shows an "Update available" banner. In TrueNAS open the app, **Stop**, then **Start**:
 it pulls the newest release and keeps your folders. See [Updating](docs/updating.md).

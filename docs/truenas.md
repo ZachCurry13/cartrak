@@ -79,6 +79,8 @@ variables. Those win over the admin page and show as "locked" there. See
 [Configuration](configuration.md).
 
 ## 5. Remote access (Cloudflare tunnel)
+Easiest: in CarTrak open **More -> Remote access (Cloudflare tunnel)**, paste your tunnel token and public hostname, and turn it on. CarTrak runs the connector itself, so no second app is needed. Details: [Cloudflare tunnel](cloudflare.md). The separate-app steps below are the alternative.
+
 Install the tunnel as its **own second Custom App** (same form):
 - **Application Name:** `cloudflared`
 - **Repository:** `cloudflare/cloudflared`, **Tag:** `latest`, Pull Policy: always
