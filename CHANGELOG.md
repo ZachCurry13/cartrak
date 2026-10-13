@@ -3,9 +3,13 @@
 ## 0.12.0
 
 ### 🔎 Car data, explained
-- The **Car data** page now sorts everything the car reports into tabs: Summary, Battery, Driving, Body and locks, Settings and schedules, and Car. Every value has a plain-English name, and a **?** next to it explains what it means and shows Ford's own name for it. **All fields** still lists every raw value, with search.
+- The **Car data** page now sorts everything the car reports into tabs: Summary, Battery and charging, Driving, Body and security, Settings and schedules, and Car. Every value has a plain-English name, and a **?** next to it explains what it means and shows Ford's own name for it. **All fields** still lists every raw value, with search.
 - **Look back in time.** Pick any day and time (or step Earlier and Later) to see the car as it was then. A chart of the day shows the battery, with bands for driving and charging; tap it to jump to that moment.
 - Values that Ford updates only when the car wakes now say how old they are.
+
+### 🧭 How far between two charge levels
+- Home now shows how far a stretch of battery goes, for example **20 to 80%: 142 mi**, worked out from how you have really been driving lately (so it follows the seasons), not just from the car's guess. The low end is your road-trip reserve and the high end is your charging target.
+- **Trips** has a **Range by month** table, so you can see the winter drop and the summer recovery. It fills in as trips build up.
 
 ### 🔋 Calmer 12 V battery warnings
 - A parked car often shows a middling 12 V reading (around 12 V and 50 to 70 percent) until it wakes and recharges, so the Health page now explains that instead of flagging it. Real problems (below 11.9 V or 50 percent) are still flagged.

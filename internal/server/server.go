@@ -85,6 +85,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/health/battery12v-tested", s.auth(true, s.testedBattery))
 	m.HandleFunc("DELETE /api/health/battery12v-tested", s.auth(true, s.testedBattery))
 	m.HandleFunc("GET /api/car-data", s.auth(false, s.carData))
+	m.HandleFunc("GET /api/range-band", s.auth(false, s.rangeBand))
 	m.HandleFunc("GET /api/car-data/raw", s.auth(false, s.carDataRaw))
 	m.HandleFunc("GET /api/timeline", s.auth(false, s.timeline))
 	m.HandleFunc("GET /api/status", s.auth(false, s.status))

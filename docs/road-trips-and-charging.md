@@ -22,3 +22,10 @@ Each trip now shows **Energy used** and **Efficiency**: miles per kWh, or kWh pe
 - A figure appears only when there is a real distance (over 1 mile) and a real amount of energy (over 0.3 kWh), and never when the battery gained charge (for example a long downhill).
 - Ford updates some battery values only when the car wakes, so a very short trip can look odd. Longer trips are more reliable.
 - While a trip is in progress, the **This trip** tile on Live shows its efficiency so far.
+
+## Range between two battery levels
+Home (under the battery) shows how far a stretch of battery goes, for example "20 to 80%: 142 mi from your last 30 days of driving". The two levels are your **road-trip reserve** (the low end) and your **charging target** (the high end, 80% unless you changed it on Live).
+
+How it is worked out: from your own trips. CarTrak adds up the distance and the battery percent used over your finished trips in the last 30 days (trips of at least 2 km that used at least 1 percent; it needs a couple of trips and at least 8 percent in total), which gives the real distance per percent. That already includes the weather, your speeds and the car's hidden top and bottom buffer, so it needs no battery capacity. When there is too little driving it says it is using the car's own range figure instead.
+
+The **Trips** page has a **Range by month** table with the same figure for each month, so you can see how it drops in winter and recovers in summer. It fills in as trips build up.

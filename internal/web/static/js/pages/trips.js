@@ -2,6 +2,7 @@ import { h, stat, catChip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { efficiency, kwhText } from '../energy.js';
+import { monthsCard } from '../rangeband.js';
 
 const RANGES = { week: 7, month: 30, year: 365, all: 0 };
 
@@ -45,6 +46,6 @@ export default async function trips(root) {
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, t.open ? 'In progress' : dist(t.distanceKm)), catChip(t)),
     h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}${efficiency(t.distanceKm, t.energyKwh) ? ' · ' + (t.energyEstimated ? '≈ ' : '') + efficiency(t.distanceKm, t.energyKwh) : ''}`),
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
-  root.append(segCat, segRange, ...(mc.enabled ? [segView] : []), sum, list, mapBox);
+  root.append(segCat, segRange, ...(mc.enabled ? [segView] : []), sum, list, mapBox, monthsCard());
   await draw();
 }

@@ -8,6 +8,7 @@ import { doorsCard, healthCard } from '../cards.js';
 import { createMap, mapConfig } from '../map.js';
 import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
+import { bandRow } from '../rangeband.js';
 
 let homeMap = null; // kept between refreshes
 
@@ -79,6 +80,7 @@ export default async function dashboard(root, _args, session) {
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
         h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, soc || 0))}%` })),
         reserveRow(latest),
+        bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
     if (veh.engine && latest.fuelPct != null) {
