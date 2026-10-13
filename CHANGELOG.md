@@ -2,6 +2,12 @@
 
 ## 0.19.0
 
+### 🧭 Road-trip planner
+- **More, Road-trip planner:** enter a trip distance, your starting charge and your average charging power. It uses how far your battery really goes per percent (from your own driving), your reserve and your charge target, and says how many charging stops the trip needs, about how far in each one is, what to charge to, and about how long. It is a guide, not a route.
+
+### 🏠 Home Assistant
+- A read-only address for smart-home tools (`/api/ha/state`, read with a phone-tracking device token) gives the battery, range, plugged in, charging, locked and a few more values, with no location or VIN. See docs/home-assistant.md for sensor examples.
+
 ### ☁️ Update the Cloudflare connector from the app
 - When Cloudflare publishes a newer connector, **More, Remote access** says so and has an **Update** button. It downloads the file from GitHub, checks it against the checksum GitHub publishes, runs it once, switches the tunnel over, and puts the old connector back on its own if the tunnel does not reconnect within 90 seconds.
 - **More, About** now lists the versions of CarTrak, the connector, SQLite and Go, and which of them have an update.

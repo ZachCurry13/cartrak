@@ -128,6 +128,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/devices", s.auth(true, s.listDevices))
 	m.HandleFunc("POST /api/devices", s.auth(true, s.addDevice))
 	m.HandleFunc("DELETE /api/devices/{id}", s.auth(true, s.removeDevice))
+	m.HandleFunc("GET /api/ha/state", s.deviceAuth(s.haState))
 	m.HandleFunc("POST /api/ingest/event", s.deviceAuth(s.ingestEvent))
 	m.HandleFunc("POST /api/ingest/points", s.deviceAuth(s.ingestPoints))
 	m.HandleFunc("POST /api/ingest/owntracks", s.deviceAuth(s.ingestOwnTracks))

@@ -23,6 +23,7 @@ const routes = {
   display: () => import('./pages/display.js'),
   people: () => import('./pages/people.js'),
   mileage: () => import('./pages/mileage.js'),
+  plan: () => import('./pages/plan.js'),
   security: () => import('./pages/security.js'),
   backup: () => import('./pages/backup.js'),
   notifications: () => import('./pages/notifications.js'),
