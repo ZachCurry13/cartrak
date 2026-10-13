@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/connector"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/push"
 	"github.com/ZachCurry13/cartrak/internal/settings"
@@ -34,6 +35,7 @@ type Server struct {
 	Prober      Prober             // optional: Ford diagnostics
 	Redirects   RedirectChecker    // optional: ask Ford which redirect addresses are registered
 	Tunnel      *tunnel.Supervisor // in-app Cloudflare connector (nil in some tests)
+	Conn        *connector.Manager // keeps the connector up to date (nil in some tests)
 	Port        string             // port the app listens on, for the setup steps
 	hub         hub
 	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
@@ -80,6 +82,9 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/push/unsubscribe", s.auth(false, s.pushUnsubscribe))
 	m.HandleFunc("POST /api/push/test", s.auth(false, s.pushTest))
 	m.HandleFunc("GET /api/mileage", s.auth(true, s.mileageReport))
+	m.HandleFunc("GET /api/connector", s.auth(true, s.connectorInfo))
+	m.HandleFunc("POST /api/connector/check", s.auth(true, s.connectorCheck))
+	m.HandleFunc("POST /api/connector/update", s.auth(true, s.connectorUpdate))
 	m.HandleFunc("GET /api/security", s.auth(true, s.securityInfo))
 	m.HandleFunc("DELETE /api/security/sessions/{id}", s.auth(true, s.revokeSession))
 	m.HandleFunc("GET /api/backup", s.auth(true, s.backupDownload))

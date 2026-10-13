@@ -26,7 +26,7 @@ export default async function settings(root, _a, session) {
       h('div', {},
         group('Connections',
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),
-          admin ? item('#/remote', 'Remote access', 'Cloudflare tunnel for use away from home', remoteChip) : null,
+          admin ? item('#/remote', 'Remote access', remote && remote.connectorUpdate ? 'A newer Cloudflare connector is available' : 'Cloudflare tunnel for use away from home', remoteChip) : null,
           admin ? item('#/phone', 'Phone tracking', 'Automatic trip start and a finer route from your phone', phones && phones.devices.length ? chip('ok', String(phones.devices.length)) : chip('work', 'Optional')) : null),
         group('Trips', item('#/rules', 'Trip rules', 'Label trips work or personal automatically'),
           admin ? item('#/mileage', 'Mileage log', 'Copy a business mileage log by week') : null),

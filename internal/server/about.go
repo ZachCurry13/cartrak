@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"net/http"
+	"runtime"
+	"strings"
 
 	"github.com/ZachCurry13/cartrak"
 	"github.com/ZachCurry13/cartrak/internal/tunnel"
@@ -24,7 +26,28 @@ func (s *Server) about(w http.ResponseWriter, r *http.Request) {
 		"provider":      s.P.Status().Provider,
 		"releasesUrl":   "https://github.com/ZachCurry13/cartrak/releases",
 		"changelogSeen": s.Version,
+		"components":    s.components(info),
 	})
+}
+
+type component struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Latest  string `json:"latest,omitempty"`
+	Update  bool   `json:"update"`
+	Note    string `json:"note,omitempty"`
+}
+
+// components lists the parts CarTrak is built from, and which of them can be updated from the app.
+func (s *Server) components(info updater.Info) []component {
+	out := []component{{Name: "CarTrak", Version: s.Version, Latest: info.Latest, Update: info.Available, Note: "Updates through your TrueNAS app (Stop, then Start)."}}
+	if s.Conn != nil {
+		c := s.Conn.Info()
+		out = append(out, component{Name: "Cloudflare connector", Version: c.Current, Latest: c.Latest, Update: c.Available, Note: "Can be updated from Remote access."})
+	}
+	var sq string
+	_ = s.S.DB.QueryRow(`SELECT sqlite_version()`).Scan(&sq)
+	return append(out, component{Name: "SQLite", Version: sq, Note: "Comes with CarTrak."}, component{Name: "Go", Version: strings.TrimPrefix(runtime.Version(), "go"), Note: "Comes with CarTrak."})
 }
 
 func (s *Server) setUpdateCheck(w http.ResponseWriter, r *http.Request) {

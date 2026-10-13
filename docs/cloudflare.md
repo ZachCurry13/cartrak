@@ -44,3 +44,17 @@ Ford's redirect happens in your own signed-in browser, so Access does not get in
 - CarTrak trusts Cloudflare's `CF-Connecting-IP` header for its login lockout and marks its cookie Secure over HTTPS (`CARTRAK_TRUST_PROXY`, default on).
 - Do not publish CarTrak's own port to the internet directly.
 - The connector needs outbound access to Cloudflare (port 7844, TCP and UDP).
+
+## Updating the Cloudflare connector
+Cloudflare publishes a new connector (cloudflared) every month or so. The Docker image ships one version, and once a day CarTrak asks GitHub whether a newer one exists (the same switch as the CarTrak update check, under More, About). If there is, **More, Remote access** says so, and the **Cloudflare connector** card on that page has an **Update** button.
+
+What the button does, step by step:
+1. Downloads the Linux file for your machine from github.com over https (no other address is allowed, including redirects).
+2. Checks its SHA-256 against the checksum GitHub publishes for that file. If GitHub published none, or it does not match, nothing is installed.
+3. Runs it once to confirm it works and reports the expected version. If the data folder does not allow running programs, the update stops here.
+4. Switches the tunnel to it. Remote access drops for a few seconds. If the tunnel is not connected within 90 seconds, the previous connector is put back, and that version is not offered again.
+5. Keeps the two newest connectors in the data folder (the `bin` folder) and uses the new one at every start.
+
+If you are using CarTrak through the tunnel while you update, the page may reload when it reconnects. CarTrak itself cannot be updated from the app on TrueNAS: the whole container is replaced, so update it with Stop, then Start. When CarTrak itself updates to a newer image, it uses the newer of the two connectors.
+
+The **Components** list under More, About shows the versions of CarTrak, the connector, SQLite and Go. The repository also asks Dependabot for a weekly pull request when a library, GitHub Action or base image has a newer version; nothing is released without review.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.19.0
+
+### ☁️ Update the Cloudflare connector from the app
+- When Cloudflare publishes a newer connector, **More, Remote access** says so and has an **Update** button. It downloads the file from GitHub, checks it against the checksum GitHub publishes, runs it once, switches the tunnel over, and puts the old connector back on its own if the tunnel does not reconnect within 90 seconds.
+- **More, About** now lists the versions of CarTrak, the connector, SQLite and Go, and which of them have an update.
+- The repository gets a weekly Dependabot check for newer libraries and base images.
+
 ## 0.18.0
 
 ### 🅿️ Parked drain

@@ -20,6 +20,7 @@ export function aboutCard(session, admin) {
     h('p', { class: 'muted' }, status),
     h('p', {}, h('a', { href: '#/changelog' }, "What's new"), ' · ', h('a', { href: '#/start' }, 'Getting started'), ' · ',
       h('a', { href: a.releasesUrl, target: '_blank', rel: 'noopener' }, 'Releases on GitHub')),
+    ...(a.components || []).map((c) => h('div', { class: 'hrow' }, h('span', { class: 'hl' }, c.name), h('span', { class: 'hv' }, c.version || 'unknown', ' ', c.update ? chip('work', `${c.latest} available`) : null), c.note ? h('span', { class: 'hn muted' }, c.note) : null)),
     h('label', { for: 'uc', style: 'display:flex;gap:8px;align-items:center;color:var(--text)' }, check,
       'Check GitHub once a day for new versions (sends no vehicle or personal data)'));
 }

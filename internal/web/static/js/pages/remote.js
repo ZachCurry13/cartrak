@@ -1,4 +1,5 @@
 import { h, chip } from '../ui.js';
+import { connectorCard } from '../connectorcard.js';
 import { api } from '../api.js';
 
 const STATE = {
@@ -81,10 +82,12 @@ export default async function remote(root, _a, session) {
       h('p', {}, h('button', { onclick: save }, 'Save & connect')), msg, link, extras,
       h('details', {}, h('summary', { class: 'muted' }, 'Connector log'), logPre)));
   paintAll();
+  const connector = connectorCard();
+  root.append(connector.el);
 
   const timer = setInterval(async () => {
     if (document.hidden) return;
     try { v = { ...v, ...(await api('/api/admin/remote')) }; paintStatus(); } catch (e) { /* ignore a missed refresh */ }
   }, 4000);
-  return { cleanup: () => clearInterval(timer) };
+  return { cleanup: () => { clearInterval(timer); connector.cleanup(); } };
 }

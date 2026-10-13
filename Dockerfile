@@ -1,7 +1,8 @@
 # The Cloudflare connector, copied from Cloudflare's official image (multi-arch).
 # CarTrak runs it for you when remote access is switched on in the app.
-ARG CLOUDFLARED_VERSION=2026.10.0
-FROM cloudflare/cloudflared:${CLOUDFLARED_VERSION} AS cloudflared
+# The version is written out so Dependabot can propose newer ones. An admin can also install a newer
+# connector from the app (Remote access) without rebuilding this image.
+FROM cloudflare/cloudflared:2026.10.0 AS cloudflared
 
 FROM golang:1.27-alpine AS build
 WORKDIR /src

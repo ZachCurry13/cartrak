@@ -1,0 +1,13 @@
+# Weekly pull requests for newer Go libraries, GitHub Actions and the base Docker images. Nothing is merged
+# or released without review.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: docker
+    directory: /
+    schedule: { interval: weekly }

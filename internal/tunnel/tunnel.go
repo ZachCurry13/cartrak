@@ -50,7 +50,7 @@ func New() *Supervisor {
 
 // Installed reports whether the connector program can be found.
 func (s *Supervisor) Installed() bool {
-	_, err := exec.LookPath(s.Bin)
+	_, err := exec.LookPath(s.Program())
 	return err == nil
 }
 
@@ -90,6 +90,10 @@ func (s *Supervisor) Apply(enabled bool, token string) {
 		return
 	}
 	s.stopLocked()
+	s.startLocked(token)
+}
+
+func (s *Supervisor) startLocked(token string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel, s.token = cancel, token
 	s.st = Status{State: Starting, Message: "Starting the connector…", Since: time.Now().Unix()}
@@ -114,7 +118,7 @@ func (s *Supervisor) stopLocked() {
 func (s *Supervisor) run(ctx context.Context, token string) {
 	wait := s.backoff
 	for ctx.Err() == nil {
-		bin, err := exec.LookPath(s.Bin)
+		bin, err := exec.LookPath(s.Program())
 		if err != nil {
 			if ctx.Err() != nil { // switched off meanwhile: do not overwrite the Off state
 				return

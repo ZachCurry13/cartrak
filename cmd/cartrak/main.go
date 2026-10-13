@@ -15,6 +15,7 @@ import (
 
 	"github.com/ZachCurry13/cartrak/internal/alerts"
 	"github.com/ZachCurry13/cartrak/internal/config"
+	"github.com/ZachCurry13/cartrak/internal/connector"
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/push"
@@ -74,9 +75,11 @@ func main() {
 	if b := os.Getenv("CARTRAK_CLOUDFLARED"); b != "" { // optional: path to the cloudflared program
 		tun.Bin = b
 	}
+	conn := &connector.Manager{Sup: tun, Dir: filepath.Join(cfg.DataDir, "bin"), KV: st}
+	conn.Restore() // use the connector installed from the app last time, before the tunnel starts
 	port := cfg.Addr[strings.LastIndex(cfg.Addr, ":")+1:]
 	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
-		Tunnel: tun, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays,
+		Tunnel: tun, Conn: conn, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays,
 		TileDir: filepath.Join(cfg.DataDir, "tiles"), DataDir: cfg.DataDir}
 	p.After = srv.Broadcast
 	pushSvc := &push.Service{KV: st, Subs: st, Location: cfgs.Location}
@@ -91,6 +94,8 @@ func main() {
 	defer stop()
 	go p.Run(ctx)
 	go upd.Run(ctx, srv.UpdateCheckEnabled)
+	conn.Enabled = srv.UpdateCheckEnabled
+	go conn.Run(ctx)
 	go srv.CleanupLoop(ctx)
 	go func() { // copy the charted values of older readings into the small trends table, gently
 		if err := st.BackfillTrends(ctx, 50, 500*time.Millisecond); err != nil && ctx.Err() == nil {

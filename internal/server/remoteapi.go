@@ -24,6 +24,8 @@ type remoteView struct {
 	URL       string        `json:"url"`
 	Redirect  string        `json:"fordRedirect"`
 	Port      string        `json:"port"`
+	// ConnectorUpdate is true when a newer Cloudflare connector can be installed.
+	ConnectorUpdate bool `json:"connectorUpdate"`
 }
 
 type remoteLocks struct {
@@ -53,6 +55,9 @@ func (s *Server) remoteState() remoteView {
 	if v.Address != "" {
 		v.URL = "https://" + v.Address
 		v.Redirect = v.URL + "/ford/callback"
+	}
+	if s.Conn != nil {
+		v.ConnectorUpdate = s.Conn.Info().Available
 	}
 	if s.Tunnel != nil {
 		v.Status, v.Installed = s.Tunnel.Status(), s.Tunnel.Installed()
