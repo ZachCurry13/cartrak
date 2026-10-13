@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
 import { efficiency, kwhText } from '../energy.js';
+import { shareCard } from '../sharecard.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -73,6 +74,7 @@ export default async function tripDetail(root, [id], session) {
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', efficiency(t.distanceKm, t.energyKwh) || '—')),
       kwh),
     routeBox,
+    admin && !t.open ? shareCard('trip', t.id) : null,
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),
       h('p', { class: 'seg' }, h('button', { onclick: set('work') }, 'Work'), h('button', { onclick: set('personal') }, 'Personal')),

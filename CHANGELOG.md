@@ -5,6 +5,9 @@
 ### 🧳 Journeys
 - On **Trips**, admins can select several trips and **combine** them into a journey (a road trip, or a work day with several stops). The journey page shows total distance, driving and elapsed time, the stops between legs (and how much you charged), energy used and efficiency, what charging cost, and a map of every leg. Trips stay as they are and can be removed from a journey at any time. See docs/road-trips-and-charging.md.
 
+### 🔗 Share a trip or journey
+- Admins can make a **public link** to a trip or a journey from its **Share** card. You choose the route (with the first and last quarter mile left out, the whole route, or numbers only), whether to show city names and the date and time, and when the link expires. The page needs no sign-in and shows only that, never your VIN, live position or other trips. The link is shown once; **More, Security, Shared links** lists every link and turns any of them off at once. See docs/sharing.md.
+
 ### 🧭 Road-trip planner
 - **More, Road-trip planner:** enter a trip distance, your starting charge and your average charging power. It uses how far your battery really goes per percent (from your own driving), your reserve and your charge target, and says how many charging stops the trip needs, about how far in each one is, what to charge to, and about how long. It is a guide, not a route.
 

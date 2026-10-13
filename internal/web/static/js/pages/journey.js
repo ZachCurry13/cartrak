@@ -2,6 +2,7 @@ import { h, stat, chip, catChip, dist, when, duration, num } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { efficiency, kwhText } from '../energy.js';
+import { shareCard } from '../sharecard.js';
 
 const hm = (sec) => { const m = Math.round(sec / 60); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`; };
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
@@ -41,6 +42,7 @@ export default async function journey(root, args, session) {
               admin ? h('button', { class: 'sec', onclick: async (e) => { e.preventDefault(); await api(`/api/journeys/${id}`, { method: 'PATCH', body: { remove: [t.id] } }); load(); } }, 'Remove') : null),
           ];
         }).filter(Boolean)),
+      admin ? shareCard('journey', id, d.journey.name) : null,
       admin ? h('section', { class: 'card' }, h('h2', {}, 'Manage'), name,
         h('p', { class: 'seg' }, save, h('button', { class: 'sec', onclick: async () => { if (!confirm('Ungroup this journey? The trips stay.')) return; await api(`/api/journeys/${id}`, { method: 'DELETE' }); location.hash = '#/trips'; } }, 'Ungroup trips'))) : null);
     if (map) {

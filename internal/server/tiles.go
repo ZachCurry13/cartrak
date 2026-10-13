@@ -66,6 +66,11 @@ func (s *Server) tile(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "bad tile")
 		return
 	}
+	s.serveTile(w, z, x, y)
+}
+
+// serveTile sends one map tile from the cache, downloading it first when needed.
+func (s *Server) serveTile(w http.ResponseWriter, z, x, y int) {
 	path := filepath.Join(s.TileDir, strconv.Itoa(z), strconv.Itoa(x), strconv.Itoa(y))
 	key := fmt.Sprintf("%d/%d/%d", z, x, y)
 	l := s.tiles.lock(key)

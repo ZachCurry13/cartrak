@@ -1,9 +1,9 @@
 // Bump CACHE whenever any file in SHELL changes.
-const CACHE = 'cartrak-v0.19.0-6';
+const CACHE = 'cartrak-v0.19.0-9';
 const SHELL = ['/', '/css/app.css', '/css/menu.css', '/css/responsive.css', '/css/look.css', '/manifest.webmanifest', '/icons/icon.svg',
   '/js/app.js', '/js/api.js', '/js/ui.js',
   '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/connect.js', '/js/offline.js', '/js/pages/remote.js', '/js/pages/ford.js', '/js/pages/display.js', '/js/pages/people.js', '/js/pages/about.js', '/js/pages/status.js', '/js/healthstrip.js', '/js/cards.js', '/js/pages/live.js', '/js/datarows.js', '/js/timeline.js',
-  '/js/rangeband.js', '/js/ring.js', '/js/connectorcard.js', '/js/mileagecheck.js', '/js/energy.js', '/js/charge.js', '/js/chargecard.js', '/js/pages/notifications.js', '/js/push.js', '/js/pages/mileage.js', '/js/pages/security.js', '/js/pages/plan.js', '/js/pages/journey.js', '/js/tripselect.js', '/js/tripplan.js', '/js/pages/backup.js', '/js/map.js', '/js/pages/vehiclehealth.js', '/js/healthrows.js', '/js/spark.js', '/js/pages/phone.js', '/js/phonehelp.js', '/js/gpslog.js', '/js/gpscard.js', '/js/mode.js', '/js/diag.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js',
+  '/js/rangeband.js', '/js/ring.js', '/js/connectorcard.js', '/js/mileagecheck.js', '/js/energy.js', '/js/charge.js', '/js/chargecard.js', '/js/pages/notifications.js', '/js/push.js', '/js/pages/mileage.js', '/js/pages/security.js', '/js/pages/plan.js', '/js/pages/journey.js', '/js/tripselect.js', '/js/sharecard.js', '/js/tripplan.js', '/js/pages/backup.js', '/js/map.js', '/js/pages/vehiclehealth.js', '/js/healthrows.js', '/js/spark.js', '/js/pages/phone.js', '/js/phonehelp.js', '/js/gpslog.js', '/js/gpscard.js', '/js/mode.js', '/js/diag.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js',
   '/js/pages/charging.js', '/js/pages/data.js', '/js/pages/settings.js', '/js/pages/rules.js'];
 
 self.addEventListener('install', (e) => {
@@ -16,7 +16,7 @@ self.addEventListener('activate', (e) => {
 // (never cached: they carry private vehicle data).
 self.addEventListener('fetch', (e) => {
   const u = new URL(e.request.url);
-  if (e.request.method !== 'GET' || u.origin !== location.origin || u.pathname.startsWith('/api/') || u.pathname.startsWith('/ford/')) return;
+  if (e.request.method !== 'GET' || u.origin !== location.origin || u.pathname.startsWith('/api/') || u.pathname.startsWith('/ford/') || u.pathname.startsWith('/s/')) return;
   e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
 });
 
