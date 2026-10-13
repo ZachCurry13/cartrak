@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.2
+
+### 🐢 Playing by Ford's request limit
+- Ford only allows about one request per endpoint every 30 seconds, and answers HTTP 429 ("too many requests") to anything faster. CarTrak was making a burst of six requests right after linking and your Test Ford connection added six more, so every endpoint was refused. CarTrak now never asks the same endpoint more than once per 30 seconds, reuses a recent answer instead of asking again, adds only one of the slower endpoints per reading, and after a 429 stops sending anything and waits (30 s, then 1 min, 2 min, up to 10 min).
+- Road trip mode now means a reading every 30 seconds (it was 10, which Ford would refuse). All polling intervals have a 30 second minimum.
+- Test Ford connection says "Rate limited" with how long to wait, instead of a plain red error.
+
 ## 0.8.1
 
 ### 🔗 Connecting Ford (the real fix)

@@ -12,7 +12,7 @@ Cloudflare tunnel.
 
 ## Road trip mode
 Press **Road trip mode** on the Live page (admins). While you are driving, CarTrak
-asks Ford for a reading every `CARTRAK_POLL_LIVE_SEC` seconds (default 10, never below 5)
+asks Ford for a reading every `CARTRAK_POLL_LIVE_SEC` seconds (default 30, never below 30)
 instead of every 30. It turns itself off after 12 hours so it cannot be left on by accident.
 Parked and charging cars are not polled faster.
 
@@ -50,3 +50,10 @@ The normal intervals are in [Configuration](configuration.md).
 Your server keeps collecting from Ford even when your phone has no signal, so nothing is lost: open the app
 again and the history is there. The app also remembers the last readings on each device, so Home opens with a
 clear "You are offline" banner instead of an error. Anything not yet saved on the device (other pages) needs a connection.
+
+## Ford's request limit (why 30 seconds)
+Ford only allows an app roughly **one request per endpoint every 30 seconds**; asking sooner returns HTTP 429
+("too many requests"). So CarTrak never goes faster than that, even in Road trip mode, serves a recent answer from
+memory instead of asking again too soon, adds at most one of the slower endpoints per reading, and after a 429 stops
+sending anything and waits (30 s, then 1 min, 2 min... up to 10 min, or longer if Ford says so). For finer detail
+than every 30 seconds on a road trip, the phone's own GPS (planned) is the way, not faster polling of Ford.

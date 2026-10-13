@@ -93,9 +93,9 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_RESET_ADMIN` | (empty) | `1` resets `CARTRAK_ADMIN_USER`'s password to `CARTRAK_ADMIN_PASS` on start (recovery). Remove it afterwards | |
 | `CARTRAK_TRUST_PROXY` | `true` | Use `CF-Connecting-IP` / `X-Forwarded-For` / `X-Real-IP` for client IPs (login lockout). Set `false` if the app is reachable without a proxy | |
 | `CARTRAK_SESSION_DAYS` | `30` | How long a sign-in lasts | |
-| `CARTRAK_POLL_DRIVING_SEC` | `30` | Seconds between Ford readings while driving | |
+| `CARTRAK_POLL_DRIVING_SEC` | `30` | Seconds between Ford readings while driving (minimum 30: Ford limits requests) | |
 | `CARTRAK_POLL_CHARGING_SEC` | `120` | ...while charging | |
-| `CARTRAK_POLL_LIVE_SEC` | `10` | ...while driving in Road trip mode (minimum 5). See [live view](docs/live-and-data-saver.md) | | |
+| `CARTRAK_POLL_LIVE_SEC` | `30` | ...while driving in Road trip mode (minimum 30). See [live view](docs/live-and-data-saver.md) | | |
 | `CARTRAK_POLL_PARKED_SEC` | `600` | ...while parked. Lower values may breach Ford's rate limits | |
 
 More detail in [docs/configuration.md](docs/configuration.md).

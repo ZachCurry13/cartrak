@@ -15,7 +15,8 @@ export function diagCard() {
       out.replaceChildren(...Object.entries(last.results).map(([name, r]) => h('div', { class: 'row' },
         h('span', { class: 'grow' }, name),
         r.error ? h('span', { class: 'muted' }, r.error) : h('span', { class: 'muted' }, `${r.bytes} bytes`),
-        chip(r.status === 200 ? 'ok' : 'bad', r.status ? `HTTP ${r.status}` : 'no answer'))));
+        chip(r.status === 200 ? 'ok' : 'bad', r.status === 429 ? 'Rate limited' : r.status ? `HTTP ${r.status}` : 'no answer'),
+        r.note ? h('div', { class: 'muted', style: 'flex-basis:100%' }, r.note) : null)));
       copy.hidden = false;
     } catch (e) { msg.textContent = e.message; }
     run.disabled = false;

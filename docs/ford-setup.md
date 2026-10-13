@@ -101,8 +101,8 @@ so it is not read automatically yet. What your app is allowed to see can be narr
 than Ford's data dictionary; an endpoint that refuses shows as an error in the
 diagnostics and is recorded, but never stops the other data.
 
-## Be considerate
-Lowering the polling intervals may breach Ford's rate limits. If Ford answers
+## Ford limits how often you can ask
+Ford allows roughly one request per endpoint every 30 seconds. CarTrak enforces that itself: readings are never closer than 30 s, a recent answer is reused instead of asking again, and only one of the slower endpoints is added per reading, so a full first sync takes a few readings. If Ford answers
 "too many requests", CarTrak waits as long as Ford asks.
 
 ## Not affiliated

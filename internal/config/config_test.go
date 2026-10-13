@@ -59,3 +59,20 @@ func TestProxyAndSessionDefaults(t *testing.T) {
 		t.Fatalf("overrides: %+v", c)
 	}
 }
+
+func TestPollIntervalsCannotGoBelowFordsLimit(t *testing.T) {
+	t.Setenv("CARTRAK_CONFIG", t.TempDir())
+	t.Setenv("CARTRAK_POLL_DRIVING_SEC", "5")
+	t.Setenv("CARTRAK_POLL_LIVE_SEC", "2")
+	t.Setenv("CARTRAK_POLL_CHARGING_SEC", "10")
+	t.Setenv("CARTRAK_POLL_PARKED_SEC", "20")
+	c, _ := Load()
+	if c.PollDriving.Seconds() != 30 || c.PollLive.Seconds() != 30 || c.PollCharge.Seconds() != 30 || c.PollParked.Seconds() != 60 {
+		t.Fatalf("floors not applied: driving=%v live=%v charging=%v parked=%v", c.PollDriving, c.PollLive, c.PollCharge, c.PollParked)
+	}
+	t.Setenv("CARTRAK_POLL_LIVE_SEC", "")
+	c, _ = Load()
+	if c.PollLive.Seconds() != 30 {
+		t.Fatalf("live default should be 30 s, got %v", c.PollLive)
+	}
+}
