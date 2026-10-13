@@ -23,6 +23,9 @@ CarTrak 0.5 and newer use FordConnect 2.0; earlier versions used the older API a
 This came from CarTrak 0.8.0 and earlier, which started the sign-in at the wrong Ford address. Update to 0.8.1 or newer and press Connect Ford again. (Details are kept below in case it ever comes back from a different cause.)
 That is a problem inside Ford's own sign-in (its user-info step). Sign in with the FordPass account that owns the car or has had it shared to it, make sure that account has completed FordPass sign-up, and try again. If it repeats, send the exact message to support. If Ford documentation gives a specific sign-in link for FordConnect 2.0, paste it into Admin settings -> Ford sign-in address, using {client_id}, {redirect_uri}, {state} and {scope} where those values belong.
 
+**Status says "Ford's servers are having trouble" or the last update failed with HTTP 500 (or 502, 503, 504).**
+Ford's own servers answered with an error; nothing is wrong with your setup, your saved data is safe, and CarTrak tries again by itself (after a minute, then 2, 4 and 8 minutes, at most every 10). The message includes what Ford said. After a server or router restart Ford can answer this way for a while until the car's data is available again. If it lasts more than a few hours, check that the FordPass app shows your car, then open More, Settings, **Ford diagnostics**, press Test Ford connection and Copy responses to see each endpoint's answer. Open More, Ford connection and press Sync now to try again right away.
+
 **Ford diagnostics shows "Rate limited" (HTTP 429).**
 Ford limits how often an app may ask (about one request per endpoint every 30 seconds). CarTrak waits and retries by itself. Wait a minute, then press Test Ford connection again; it reuses recent answers so it does not make things worse. Pressing Sync now repeatedly does not help.
 

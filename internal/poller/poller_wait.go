@@ -83,3 +83,16 @@ func (p *Poller) PhoneActive() bool {
 	defer p.mu.Unlock()
 	return time.Now().Before(p.hintUntil)
 }
+
+// serverErrorWait is how long to wait after the n-th Ford server error (HTTP 5xx) in a row:
+// a minute, then 2, 4 and 8, never more than 10 minutes. Ford's own outages are usually short.
+func serverErrorWait(n int) time.Duration {
+	w := time.Minute
+	for i := 1; i < n && w < 10*time.Minute; i++ {
+		w *= 2
+	}
+	if w > 10*time.Minute {
+		w = 10 * time.Minute
+	}
+	return w
+}

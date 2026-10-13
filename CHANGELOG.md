@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.1
+
+### 🛠 When Ford's servers return an error
+- If Ford answers a request with a server error such as HTTP 500, CarTrak now shows what Ford said alongside it (with any vehicle ID removed) instead of only the number, so the cause can be seen on the Status page and in the log.
+- It is treated as Ford having trouble, not as a problem with your setup: Status says so in plain words, and CarTrak tries again after a minute, then 2, 4 and 8 minutes, never waiting more than 10. Before, it waited for the normal parked interval, which could be much longer.
+- When Ford answers normally again the message clears by itself.
+
 ## 0.9.0
 
 ### 🩺 A Status screen that says what to do next

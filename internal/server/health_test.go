@@ -134,3 +134,27 @@ func TestHealthIsReadableByViewersToo(t *testing.T) {
 		t.Fatalf("anonymous health = %d", code)
 	}
 }
+
+// downProv is linked but Ford answers HTTP 500.
+type downProv struct{ readyProv }
+
+func (downProv) Fetch(context.Context) (*ford.State, error) {
+	return nil, &ford.ServerError{Path: "/telemetry", Status: 500, Detail: "message: Internal error"}
+}
+
+func TestHealthSaysWhenFordItselfIsHavingTrouble(t *testing.T) {
+	ts, srv := healthServer(t, downProv{}, true, true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go srv.P.Run(ctx)
+	for i := 0; i < 100 && !srv.P.Status().FordTrouble; i++ {
+		time.Sleep(50 * time.Millisecond)
+	}
+	body, _ := getHealth(t, ts)
+	if !strings.Contains(body, "Ford's servers are having trouble") || !strings.Contains(body, "HTTP 500") || !strings.Contains(body, "not a problem with your setup") || !strings.Contains(body, `"overall":"warn"`) {
+		t.Fatalf("Ford outage not explained: %s", body)
+	}
+	if strings.Contains(body, "The last update failed") {
+		t.Fatalf("an outage is not a failure of the user's setup: %s", body)
+	}
+}
