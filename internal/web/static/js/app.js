@@ -98,6 +98,7 @@ async function render() {
       if (await firstRunTour()) return; // hashchange re-renders onto the tour
     }
     tabs.hidden = false;
+    for (const a of tabs.querySelectorAll('a[href="#/health"], a[href="#/data"]')) a.hidden = session.me.role !== 'admin'; // viewers get the simple set of tabs
     const mod = await (routes[name] || routes[''])();
     view.replaceChildren();
     const refresh = await mod.default(view, args, session);

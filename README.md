@@ -14,7 +14,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - A per-device **Data saver** mode for limited plans, and layouts for phone, tablet and desktop
 - Getting-started guide, the version shown in the app, update notices, and the changelog built in
 - Settings in an **Admin page** in the app, or in `config.yaml`, or environment variables
-- Built-in login with admin and read-only viewer roles
+- Built-in login with admin and read-only viewer roles (viewers get a simpler set of tabs and menu)
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
 
 > CarTrak is an independent open-source project and is not affiliated with or
