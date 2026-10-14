@@ -1,4 +1,4 @@
-import { h, chip, dist, isMetric } from '../ui.js';
+import { h, chip, dist, isMetric, temp } from '../ui.js';
 import { api } from '../api.js';
 import { getReserve, getTarget } from '../charge.js';
 import { planTrip } from '../tripplan.js';
@@ -15,7 +15,18 @@ export default async function plan(root) {
   const low = getReserve();
   const high = getTarget();
   const band = await api(`/api/range-band?low=${low}&high=${high}&days=60`).catch(() => null);
-  const kmPerPct = band && band.bandKm ? band.bandKm / (high - low) : null;
+  const avgKmPerPct = band && band.bandKm ? band.bandKm / (high - low) : null;
+  // Cold weather uses much more battery, so the plan can use what you really get at the temperature you choose.
+  const weather = h('select', { id: 'pw' },
+    ...(band && band.nowBand ? [h('option', { value: 'now' }, `Today's temperature (${temp(band.outsideC)})`)] : []),
+    h('option', { value: 'avg' }, 'Recent average'),
+    ...((band && band.byTemp) || []).map((b) => h('option', { value: b.name }, b.name)));
+  const kmPerPct = () => {
+    const v = weather.value;
+    if (v === 'now' && band.nowBand) return band.nowBand.kmPerPct;
+    const hit = ((band && band.byTemp) || []).find((b) => b.name === v);
+    return hit ? hit.kmPerPct : avgKmPerPct;
+  };
   const unit = isMetric() ? 'km' : 'mi';
   const distance = h('input', { id: 'pd', type: 'number', min: 1, inputmode: 'decimal', placeholder: unit === 'mi' ? '420' : '680' });
   const start = h('input', { id: 'ps', type: 'number', min: 1, max: 100, inputmode: 'numeric', value: latest && latest.socPct != null ? Math.round(latest.socPct) : 100 });
@@ -25,7 +36,7 @@ export default async function plan(root) {
 
   function show() {
     write(Number(kw.value) || 100);
-    const r = planTrip({ distanceKm: toKm(Number(distance.value)), startPct: Number(start.value), reservePct: low, targetPct: high, kmPerPct,
+    const r = planTrip({ distanceKm: toKm(Number(distance.value)), startPct: Number(start.value), reservePct: low, targetPct: high, kmPerPct: kmPerPct(),
       capacityKwh: latest && latest.capacityKwh, chargeKw: Number(kw.value) });
     if (!r.ok) return out.replaceChildren(h('p', { class: 'muted' }, r.reason));
     const where = (km) => dist(km, 0);
@@ -37,13 +48,14 @@ export default async function plan(root) {
       r.stops.length ? h('p', { class: 'muted' }, `You arrive with about ${Math.round(r.arrivePct)}%.`) : null,
       h('p', { class: 'muted' }, 'A guide, not a route. Hills, highway speed, wind and cold use more battery, and fast chargers slow down above 80%. Leave extra room, and pick real chargers near each mark.')));
   }
-  for (const i of [distance, start, kw]) i.addEventListener('input', show);
+  for (const i of [distance, start, kw, weather]) i.addEventListener('input', show);
 
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Road-trip planner')),
     h('section', { class: 'card' }, h('h2', {}, 'Your trip'),
-      kmPerPct ? h('p', { class: 'muted' }, `Your battery goes about ${dist(kmPerPct, 1)} per percent${band.source === 'trips' ? ', from your recent driving' : ", from the car's own range figure"}. The reserve (${low}%) and charge target (${high}%) are your settings.`)
+      avgKmPerPct ? h('p', { class: 'muted' }, `Your battery goes about ${dist(avgKmPerPct, 1)} per percent${band.source === 'trips' ? ', from your recent driving' : ", from the car's own range figure"}. The reserve (${low}%) and charge target (${high}%) are your settings.`)
         : h('p', { class: 'banner' }, 'CarTrak does not know how far your battery goes yet. It needs a reading with the range, or a few trips.'),
-      field('pd', `Trip distance (${unit})`, distance), field('ps', 'Starting charge (%)', start), field('pk', 'Average charging power (kW)', kw, 'The average over a stop, between the reserve and the target. Many cars average well below their peak.')),
+      field('pd', `Trip distance (${unit})`, distance), field('ps', 'Starting charge (%)', start),
+      band && ((band.byTemp && band.byTemp.length) || band.nowBand) ? field('pw', 'Weather', weather, 'Based on how far you really got on trips in that weather. Cold and hot weather both use more.') : null, field('pk', 'Average charging power (kW)', kw, 'The average over a stop, between the reserve and the target. Many cars average well below their peak.')),
     out);
   show();
 }

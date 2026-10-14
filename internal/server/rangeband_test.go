@@ -80,3 +80,56 @@ func TestTheRangeBetweenTwoLevelsComesFromRealDrivingAndFallsBackToTheCar(t *tes
 		t.Fatalf("anonymous: %d", code)
 	}
 }
+
+func TestTheRangeIsAlsoWorkedOutByWeatherAndForTodaysTemperature(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	mk := func(daysAgo int, temp, kmPerPct float64) {
+		start := time.Now().Add(-time.Duration(daysAgo) * 24 * time.Hour)
+		tc, odo := temp, 100.0
+		srv.S.SaveState("t", &ford.State{TS: start.Add(10 * time.Minute), OutsideC: &tc, OdometerKm: &odo, Raw: []byte(`{}`)})
+		from, to := 80.0, 60.0 // 20 percent used
+		tr := &store.Trip{StartTS: start.Unix(), StartSoC: &from, TZ: "UTC"}
+		if err := srv.S.CreateTrip(tr); err != nil {
+			t.Fatal(err)
+		}
+		end := start.Add(time.Hour).Unix()
+		tr.EndTS, tr.EndSoC, tr.DistanceKm, tr.Open = &end, &to, 20*kmPerPct, false
+		if err := srv.S.UpdateTrip(tr); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 3; i <= 5; i++ {
+		mk(i, -5, 3) // winter: 3 km for every percent
+		mk(i+10, 25, 5)
+	}
+	now := time.Now()
+	cold := -3.0
+	srv.S.SaveState("t", &ford.State{TS: now, OutsideC: &cold, Raw: []byte(`{}`)})
+
+	_, body := do(t, admin, "GET", ts.URL+"/api/range-band?low=20&high=80&days=60", "", nil)
+	var o struct {
+		ByTemp []struct {
+			Name   string
+			BandKm float64
+		}
+		OutsideC float64
+		NowBand  *struct {
+			Name   string
+			BandKm float64
+		}
+	}
+	if err := json.Unmarshal([]byte(body), &o); err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]float64{}
+	for _, b := range o.ByTemp {
+		got[b.Name] = b.BandKm
+	}
+	if len(got) != 2 || math.Abs(got["Below freezing"]-180) > 1e-6 || math.Abs(got["20 °C and above"]-300) > 1e-6 {
+		t.Fatalf("a stretch of battery goes 180 km in the cold and 300 km in the warm: %s", body)
+	}
+	if o.OutsideC != -3 || o.NowBand == nil || o.NowBand.Name != "Below freezing" || math.Abs(o.NowBand.BandKm-180) > 1e-6 {
+		t.Fatalf("for today's temperature: %s", body)
+	}
+}

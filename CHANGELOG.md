@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.21.0
+
+### 🏠 A clearer Home
+- Under the battery ring, small chips say at a glance whether the car is **Driving, Charging or Parked**, whether it is **plugged in**, and whether it is **locked**.
+- A **Needs attention** card (only when there is something) lists service reminders that are due or coming up and trips waiting for a Work or Personal label, each one tap away.
+- **Last 7 days** and **Last trip** (with its named places) now sit right under the battery instead of at the bottom.
+
+### 🧾 Mileage log shortcuts
+- **This week, Last week, This month** and **Last month** buttons build the log for that period in one tap.
+- When a period covers more than one calendar week, the log also lists the miles for **each calendar week**, to check against a weekly sheet.
+
+### ❄️ Range that knows about the weather
+- The 20 to 80% line on Home now adds **"At today's 28°F: about 96 mi"** when today's temperature makes a noticeable difference from your recent average. It uses how far you really got on trips in that kind of weather (below freezing, 0 to 10, 10 to 20, and 20 °C and above).
+- The **road-trip planner** has a **Weather** choice (today's temperature, your recent average, or any weather group), so you can plan a winter trip with winter range.
+- **Trips** shows the range for each weather group next to the monthly table.
+
 ## 0.20.0
 
 ### 📺 Live fits one screen and follows what the car is doing

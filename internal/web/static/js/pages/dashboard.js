@@ -70,9 +70,11 @@ export default async function dashboard(root, _args, session) {
       const [status, trips, ob, health] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
         session.me.role === 'admin' ? api('/api/onboarding') : null, api('/api/health').catch(() => null)]);
       const week = await api(`/api/summary?from=${Math.floor(Date.now() / 1000) - 7 * 86400}`).catch(() => null);
-      cache = { status, trips, ob, health, week };
+      const maint = await api('/api/maintenance').catch(() => null);
+      const recent = session.me.role === 'admin' ? await api('/api/trips?limit=200').catch(() => []) : [];
+      cache = { status, trips, ob, health, week, maint, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length };
     }
-    const { status, trips, ob, health, week } = cache;
+    const { status, trips, ob, health, week, maint, unlabelled } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
       // Only while the one essential step (linking Ford) is missing. The optional steps stay on the Getting started page.
@@ -90,14 +92,31 @@ export default async function dashboard(root, _args, session) {
     if (veh.battery) {
       const ring = batteryRing();
       ring.set(soc, latest.rangeKm != null ? `${dist(latest.rangeKm, 0)} range` : '');
-      out.push(card('Battery', ring.el,
+      const t0 = trips[0];
+      const driving = (t0 && t0.open) || latest.speedKph > 1;
+      const isCharging = /charg/i.test(latest.chargeState || '') && !/not|complete|stop/i.test(latest.chargeState || '');
+      const plugged = latest.plug ? /^connected$/i.test(latest.plug) : null;
+      const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:-4px 0 12px' },
+        chip(driving ? 'personal' : isCharging ? 'ok' : 'work', driving ? 'Driving' : isCharging ? 'Charging' : 'Parked'),
+        plugged == null ? null : chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in'),
+        latest.locked == null ? null : chip(latest.locked ? 'ok' : 'work', latest.locked ? 'Locked' : 'Unlocked'));
+      out.push(card('Battery', ring.el, chips,
         h('div', { class: 'grid' }, stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
         reserveRow(latest),
         bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
+    const due = ((maint && maint.items) || []).filter((m) => m.state !== 'ok');
+    if (due.length || unlabelled) {
+      out.push(card('Needs attention',
+        ...due.map((m) => h('a', { class: 'row', href: '#/maintenance', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, m.name), chip(m.state === 'overdue' ? 'bad' : 'work', m.state === 'overdue' ? 'service due' : 'due soon'))),
+        unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null));
+    }
     if (week && week.work.trips + week.personal.trips > 0) out.push(weekCard(week));
+    const lastTrip = trips[0];
+    if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),
+      h('p', { class: 'muted' }, `${lastTrip.startPlace || lastTrip.endPlace ? `${lastTrip.startPlace || '…'} → ${lastTrip.endPlace || '…'} · ` : ''}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`)));
     if (veh.engine && latest.fuelPct != null) {
       out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
         stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—')),
@@ -144,9 +163,6 @@ export default async function dashboard(root, _args, session) {
     const hc = healthCard(x);
     if (hc) out.push(hc);
 
-    const t = trips[0];
-    if (t) out.push(card(t.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${t.id}` }, `${dist(t.distanceKm)} · ${t.category}`),
-      h('p', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)}`)));
     if (!full) {
       out.push(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Data saver is on: showing the essentials. Tires, battery details and other fields are skipped.'),
         h('button', { class: 'sec', onclick: () => { full = true; load(); } }, 'Load full details once')));

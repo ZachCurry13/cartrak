@@ -9,6 +9,7 @@
 and a **Total Mileage Recorded** line underneath.
 
 ## How to use it
+0. For the usual periods, tap **This week**, **Last week**, **This month** or **Last month** under *Which period*; the log is built straight away. When the period covers more than one calendar week, a line under the table gives the miles for each calendar week.
 1. Open More, **Mileage log**.
 2. Type the **calendar weeks**, for example `26-28` (or one week, `26`), and the year. Or leave weeks empty and choose a from and to date.
 3. Check the **Description** (default "Customer Visits") and which trips: **work trips only** (default), all, or personal.

@@ -18,6 +18,13 @@ func intQuery(r *http.Request, name string, def, lo, hi int) int {
 	return min(hi, max(lo, n))
 }
 
+type tempBand struct {
+	Name     string  `json:"name"`
+	Trips    int     `json:"trips"`
+	KmPerPct float64 `json:"kmPerPct"`
+	BandKm   float64 `json:"bandKm"`
+}
+
 type bandMonth struct {
 	Month    string  `json:"month"`
 	Trips    int     `json:"trips"`
@@ -58,6 +65,27 @@ func (s *Server) rangeBand(w http.ResponseWriter, r *http.Request) {
 		out["carBandKm"] = car
 		if _, has := out["bandKm"]; !has {
 			out["source"], out["bandKm"] = "car", car
+		}
+	}
+	// The same figure by weather: what a stretch of battery goes in cold, mild and warm weather, and for the
+	// temperature outside right now.
+	byTemp := []tempBand{}
+	if temps, err := s.S.TripTemps(now.AddDate(0, 0, -370).Unix()); err == nil {
+		for _, b := range trips.MeasureByBand(year, temps) {
+			if per, ok := b.KmPerPct(); ok {
+				byTemp = append(byTemp, tempBand{Name: b.Band.Name, Trips: b.Trips, KmPerPct: per, BandKm: trips.KmBetween(per, lo, hi)})
+			}
+		}
+	}
+	out["byTemp"] = byTemp
+	if x, _ := s.S.LatestSample(); x != nil && x.OutsideC != nil {
+		out["outsideC"] = *x.OutsideC
+		if nb := trips.BandFor(*x.OutsideC); nb != nil {
+			for i := range byTemp {
+				if byTemp[i].Name == nb.Name {
+					out["nowBand"] = byTemp[i]
+				}
+			}
 		}
 	}
 	months := []bandMonth{}

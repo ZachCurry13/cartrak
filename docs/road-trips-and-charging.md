@@ -70,3 +70,6 @@ Tap any efficiency figure to cycle all of them: **mi/kWh** (kWh per 100 km on a 
 
 ## Open the car in a map app
 The Location map on Home is a link, and Home and each trip have buttons to open the spot or get directions in Google Maps (and Apple Maps on iPhone). Directions use your phone's own position as the start. Nothing is sent to Google until you tap one of them.
+
+## Range and the weather
+Cold weather can take a third or more off the range. CarTrak groups your finished trips by the average outside temperature during each (below freezing, 0 to 10 °C, 10 to 20 °C, 20 °C and above) and works out how far a percent of battery went in each group, using the last year of driving. A group needs a couple of trips and at least 8 percent of battery used before it shows. Home adds a line for today's temperature when it differs from your recent average by 5% or more, the Trips page lists every group, and the road-trip planner can use any of them.
