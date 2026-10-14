@@ -1,7 +1,7 @@
 # Handoff
 
 ## State
-Released through v0.19.0 (tag v0.19.0, image ghcr.io/zachcurry13/cartrak:0.19.0 and :latest, public; 2026-10-13). 0.15.0 added the Plug in tonight? reminder and per-trip round-up for the mileage log. 0.14.0 is the UI polish; 0.13.0 added the mileage check. 0.13.0 added the mileage check. 0.12.0 had: Car data tabs with plain-English help and a time machine, calmer 12 V warnings with a 'tested and fine' pause, and the range between two battery levels. feature/v0.19 holds the Cloudflare connector self-update (installed copies live in <data>/bin, kv connector_bin/prev/failed). 0.18.0 added parked drain, phone shortcuts, charging cost and history, backup and the Security page. Releases need the user's explicit OK each time.
+Released through v0.20.0 (tag v0.20.0, image ghcr.io/zachcurry13/cartrak:0.20.0 and :latest, public; 2026-10-13). 0.15.0 added the Plug in tonight? reminder and per-trip round-up for the mileage log. 0.14.0 is the UI polish; 0.13.0 added the mileage check. 0.13.0 added the mileage check. 0.12.0 had: Car data tabs with plain-English help and a time machine, calmer 12 V warnings with a 'tested and fine' pause, and the range between two battery levels. feature/v0.19 holds the Cloudflare connector self-update (installed copies live in <data>/bin, kv connector_bin/prev/failed). 0.18.0 added parked drain, phone shortcuts, charging cost and history, backup and the Security page. Releases need the user's explicit OK each time.
 Public repo: https://github.com/ZachCurry13/cartrak (MIT). Rules are in CLAUDE.md.
 
 ## Decisions
