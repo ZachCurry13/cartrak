@@ -40,11 +40,14 @@ type Engine struct {
 	Now   func() time.Time // for tests
 
 	// The evening plug-in reminder: the time of day ("" is off), the battery level, and the local time zone.
-	ReminderTime  func() string
-	ReminderBelow func() float64
-	DiskSpace     func() (free, total uint64, ok bool) // room on the data disk; nil skips the check
-	BumpLevel     func() float64                       // the motion level that counts as a bump while parked; 0 or nil is off
-	Loc           func() *time.Location
+	ReminderTime    func() string
+	ReminderBelow   func() float64
+	DiskSpace       func() (free, total uint64, ok bool) // room on the data disk; nil skips the check
+	LowBatteryLevel func() float64                       // percent to warn at; 0 or nil is off
+	ChargeBudget    func() float64                       // monthly charging budget; 0 or nil is none
+	MonthCost       func() (float64, bool)               // what this month's charging has cost, when it can be told
+	BumpLevel       func() float64                       // the motion level that counts as a bump while parked; 0 or nil is off
+	Loc             func() *time.Location
 
 	mu           sync.Mutex
 	prev         *ford.State
@@ -56,6 +59,7 @@ type Engine struct {
 	silentSent   bool
 	inside       map[int64]bool // which named places the car is inside
 	lastBump     time.Time
+	lowSent      bool
 }
 
 func (e *Engine) now() time.Time {
@@ -87,6 +91,7 @@ func (e *Engine) Handle(st *ford.State) {
 	e.maintenance(st.OdometerKm)
 	e.namedPlaces(st, first)
 	e.parkedWatch(st, first)
+	e.lowBattery(st, first)
 	e.unlocked(st)
 	e.trip(first)
 	e.prev = st
@@ -193,6 +198,7 @@ func (e *Engine) Tick() {
 	e.plugReminder()
 	e.weeklyDigest()
 	e.diskCheck()
+	e.budget()
 	if e.prev != nil {
 		e.maintenance(e.prev.OdometerKm)
 	}

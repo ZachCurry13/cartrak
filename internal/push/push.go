@@ -38,6 +38,8 @@ const (
 	LowDisk           = "low_disk"
 	LeavePlace        = "leave_place"
 	ChargeInterrupted = "charge_interrupted"
+	LowBattery        = "low_battery"
+	ChargeBudget      = "charge_budget"
 )
 
 type Kind struct {
@@ -51,6 +53,8 @@ var Kinds = []Kind{
 	{ChargeComplete, "Charging complete", "The battery reached its target or charging stopped."},
 	{PlugIn, "Plugged in", "The charging cable was connected."},
 	{PlugOut, "Unplugged", "The charging cable was removed."},
+	{LowBattery, "Low battery", "The battery fell to the level an admin chose under More, Settings, while the car was not charging. Off until a level is chosen."},
+	{ChargeBudget, "Charging budget", "This month's charging cost passed the budget an admin set under More, Settings. At most once a month."},
 	{LowTire, "Low tire pressure", "The car reports a tire as low."},
 	{Low12V, "Low 12 V battery", "The small battery is low enough to risk the car not waking. At most once a day."},
 	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},

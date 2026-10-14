@@ -62,3 +62,24 @@ func (s *Server) monthSoFar(months []monthOut, loc *time.Location, now time.Time
 	}
 	return out
 }
+
+// MonthChargingCost is what the charging sessions that started this month have cost so far, and whether any
+// of them has a price (false means there is nothing to compare with a budget).
+func (s *Server) MonthChargingCost() (float64, bool) {
+	ss, _, err := s.chargeSessionsEff(1000)
+	if err != nil {
+		return 0, false
+	}
+	loc := s.defaultLoc()
+	month := time.Now().In(loc).Format("2006-01")
+	var cost float64
+	priced := false
+	for _, c := range ss {
+		if c.Open || c.Cost == nil || time.Unix(c.StartTS, 0).In(loc).Format("2006-01") != month {
+			continue
+		}
+		cost += *c.Cost
+		priced = true
+	}
+	return cost, priced
+}

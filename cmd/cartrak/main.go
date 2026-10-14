@@ -95,7 +95,7 @@ func main() {
 		_ = st.LogAlert(store.AlertLogEntry{Kind: a.Kind, Title: a.Title, Body: a.Body, Devices: devices, Wanted: wanted, Quiet: quiet, Sent: sent})
 	}
 	srv.Push = pushSvc
-	alertEngine := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, BumpLevel: cfgs.BumpThreshold, DiskSpace: func() (uint64, uint64, bool) { return diskfree.Space(cfg.DataDir) }, Loc: cfgs.Location, Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}
+	alertEngine := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, BumpLevel: cfgs.BumpThreshold, LowBatteryLevel: cfgs.LowBatteryLevel, ChargeBudget: cfgs.ChargeBudget, MonthCost: srv.MonthChargingCost, DiskSpace: func() (uint64, uint64, bool) { return diskfree.Space(cfg.DataDir) }, Loc: cfgs.Location, Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}
 	p.OnReading = alertEngine.Handle
 	srv.ApplyTunnel()
 	defer tun.Stop()
