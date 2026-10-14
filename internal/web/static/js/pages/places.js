@@ -1,4 +1,4 @@
-import { h } from '../ui.js';
+import { h, emptyState } from '../ui.js';
 import { api } from '../api.js';
 
 // Places you have named, such as Home or the office. Trips show the names, and you can get an alert on
