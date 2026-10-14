@@ -1,5 +1,6 @@
 import { h, emptyState, chip, when, duration, pct, num, dist, isMetric } from '../ui.js';
 import { api } from '../api.js';
+import { forecastCard } from '../chargeforecast.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
@@ -29,6 +30,7 @@ function summaryCard(sum) {
     h('span', {}, m.priced ? h('b', {}, money(cur, m.cost)) : '—', m.costPerKm != null ? h('div', { class: 'muted' }, perDistance(cur, m.costPerKm)) : null)));
   return h('section', { class: 'card' }, h('h2', {}, 'Charging cost'),
     sum.priceSet ? null : h('p', { class: 'banner notice' }, 'Add your price per kWh in More, Settings (Price per kWh at home) to see what charging costs.'),
+    sum.thisMonth ? h('p', {}, 'This month so far ', h('b', {}, money(cur, sum.thisMonth.cost)), sum.thisMonth.projected != null ? h('span', { class: 'muted' }, ` · on pace for about ${money(cur, sum.thisMonth.projected)}`) : null) : null,
     first ? h('p', { class: 'muted' }, `By month, from the energy that went into the battery. On a slow charger the cost includes what is lost as heat: ${Math.round((1 - sum.efficiency.value) * 100)}% ${sum.efficiency.source === 'measured' ? `(measured from ${sum.efficiency.samples} sessions where you entered the charger's number)` : sum.efficiency.samples ? `(your setting; ${sum.efficiency.samples} of the 3 sessions needed to measure it have the charger's number)` : "(your setting; enter the charger's kWh on a few sessions below to measure it)"}.`) : null,
     ...rows);
 }
@@ -49,7 +51,7 @@ function sessionCard(c, cur, admin, reload) {
 export default async function charging(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
-  root.append(h('h2', {}, 'Charging'), box);
+  root.append(h('h2', {}, 'Charging'), forecastCard(), box);
   async function load() {
     const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));

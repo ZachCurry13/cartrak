@@ -73,3 +73,8 @@ The Location map on Home is a link, and Home and each trip have buttons to open 
 
 ## Range and the weather
 Cold weather can take a third or more off the range. CarTrak groups your finished trips by the average outside temperature during each (below freezing, 0 to 10 °C, 10 to 20 °C, 20 °C and above) and works out how far a percent of battery went in each group, using the last year of driving. A group needs a couple of trips and at least 8 percent of battery used before it shows. Home adds a line for today's temperature when it differs from your recent average by 5% or more, the Trips page lists every group, and the road-trip planner can use any of them.
+
+## What would a charge cost?
+At the top of **Charging**, pick a start and end battery level to see the energy and cost of that charge at your home and fast-charger prices. It starts at the car's level now and 80 percent, and the 80 and 100 buttons are shortcuts. Home counts the heat lost on slow charging (measured from your own sessions once you have typed in the charger's kWh on a few, otherwise the setting). It needs your price per kWh in More, Settings, and the battery size, which CarTrak learns from the car.
+
+The Charging cost card also shows this month's bill so far and, from the fourth day of the month, roughly what it is on pace for.

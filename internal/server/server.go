@@ -146,6 +146,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/charges", s.auth(false, s.listCharges))
 	m.HandleFunc("GET /api/export/charging.csv", s.auth(false, s.exportChargesCSV))
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
+	m.HandleFunc("GET /api/charge-forecast", s.auth(false, s.chargeForecast))
 	m.HandleFunc("PATCH /api/charges/{id}", s.auth(true, s.patchCharge))
 	m.HandleFunc("GET /api/summary", s.auth(false, s.summary))
 	m.HandleFunc("GET /api/export/trips.csv", s.auth(false, s.exportCSV))

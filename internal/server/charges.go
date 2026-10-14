@@ -122,7 +122,7 @@ func (s *Server) chargeSummary(w http.ResponseWriter, r *http.Request) {
 		out = append(out, mo)
 	}
 	p := s.prices()
-	ok(w, map[string]any{"months": out, "currency": s.currency(), "priceSet": p.Home != nil || p.Public != nil, "homeKnown": s.homePoint() != nil, "efficiency": eff})
+	ok(w, map[string]any{"months": out, "thisMonth": s.monthSoFar(out, loc, time.Now()), "currency": s.currency(), "priceSet": p.Home != nil || p.Public != nil, "homeKnown": s.homePoint() != nil, "efficiency": eff})
 }
 
 // patchCharge sets whether a session was at home or public. Marking one as home also tells CarTrak where
