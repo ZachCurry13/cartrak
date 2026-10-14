@@ -15,8 +15,8 @@ import (
 
 	"github.com/ZachCurry13/cartrak/internal/alerts"
 	"github.com/ZachCurry13/cartrak/internal/config"
-	"github.com/ZachCurry13/cartrak/internal/diskfree"
 	"github.com/ZachCurry13/cartrak/internal/connector"
+	"github.com/ZachCurry13/cartrak/internal/diskfree"
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/push"
