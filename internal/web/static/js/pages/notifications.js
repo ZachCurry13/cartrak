@@ -1,10 +1,10 @@
-import { h, chip, ago } from '../ui.js';
+import { h, chip, ago, when } from '../ui.js';
 import { api } from '../api.js';
 import { unsupported, current, enable, disable } from '../push.js';
 
 const guessLabel = () => (/android/i.test(navigator.userAgent) ? 'Android phone' : /iphone|ipad/i.test(navigator.userAgent) ? 'iPhone' : /windows/i.test(navigator.userAgent) ? 'Windows computer' : /mac/i.test(navigator.userAgent) ? 'Mac' : 'This device');
 
-export default async function notifications(root) {
+export default async function notifications(root, _a, session) {
   let cfg = await api('/api/push/config').catch(() => null);
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Notifications')));
   if (!cfg) return root.append(h('p', { class: 'muted' }, 'Notifications are not available on this server.'));
@@ -66,6 +66,21 @@ export default async function notifications(root) {
           d.lastErr ? h("span", { class: "hn muted" }, d.lastErr) : null))) : null].filter(Boolean));
   }
 
+  // Admins can see what CarTrak decided to send and who it reached, to find out why an alert did or did not arrive.
+  const log = h('div');
+  const logLine = (x) => {
+    const who = x.wanted ? `Sent to ${x.sent} of ${x.wanted} device${x.wanted === 1 ? '' : 's'}.` : x.devices ? 'No device has this alert turned on.' : 'No devices are registered.';
+    return h('div', { class: 'hrow' }, h('span', { class: 'hl' }, x.title), h('span', { class: 'hv muted' }, when(x.ts)),
+      h('span', { class: 'hn muted' }, `${x.body} ${who}${x.quiet ? ` ${x.quiet} in quiet hours.` : ''}`));
+  };
+  if (session && session.me.role === 'admin') {
+    api('/api/alerts/log').then((xs) => {
+      log.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'Recent alerts'),
+        h('p', { class: 'muted' }, 'Every alert CarTrak decided to send, and who it reached. If an alert you expected is missing here, CarTrak never decided to send it.'),
+        ...(xs.length ? xs.map(logLine) : [h('p', { class: 'muted' }, 'None yet.')])));
+    }).catch(() => { /* not available */ });
+  }
   root.append(h('p', { class: 'muted' }, 'Get a notification on this phone or computer when something happens. Alerts say things like "Charging complete" and never include a location. They are encrypted so only your device can read them, but the push service of the phone maker (Google or Apple) can see that one was sent.'), box);
+  root.append(log);
   draw();
 }

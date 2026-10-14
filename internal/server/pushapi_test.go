@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/ZachCurry13/cartrak/internal/push"
+	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 // pushServer is a server with Web Push on, delivering to a fake push service that counts messages.
@@ -135,5 +136,18 @@ func TestDevicesBelongToTheirOwner(t *testing.T) {
 	}
 	if code, _ := do(t, &http.Client{}, "GET", ts.URL+"/api/push/config", "", nil); code != 401 {
 		t.Fatalf("anonymous: %d", code)
+	}
+}
+
+func TestTheAlertLogIsAdminOnlyAndListsWhatWasDecided(t *testing.T) {
+	ts, srv, _, _ := pushServer(t)
+	admin := adminClient(t, ts.URL)
+	srv.S.LogAlert(store.AlertLogEntry{Kind: "plug_in", Title: "Plugged in", Body: "Cable on.", Devices: 2, Wanted: 1, Sent: 1})
+	code, b := do(t, admin, "GET", ts.URL+"/api/alerts/log", "", nil)
+	if code != 200 || !strings.Contains(b, "Plugged in") || !strings.Contains(b, `"sent":1`) {
+		t.Fatalf("%d %s", code, b)
+	}
+	if c, _ := do(t, &http.Client{}, "GET", ts.URL+"/api/alerts/log", "", nil); c != 401 {
+		t.Fatalf("anonymous: %d", c)
 	}
 }

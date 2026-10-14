@@ -206,3 +206,23 @@ func TestEveryKindIsKnown(t *testing.T) {
 		t.Fatalf("kinds: %d", len(Kinds))
 	}
 }
+
+func TestEveryAlertIsReportedWithWhoItReached(t *testing.T) {
+	srv, _ := fakeService(t, 201)
+	wants := device(t, 1, srv.URL, ChargeComplete)
+	other := device(t, 2, srv.URL, PlugOut)
+	asleep := device(t, 3, srv.URL, ChargeComplete)
+	now := time.Now()
+	asleep.Quiet = now.Add(-5*time.Minute).Format("15:04") + "-" + now.Add(5*time.Minute).Format("15:04")
+	svc, _, _ := service(wants, other, asleep)
+	var devices, wanted, quiet, sent int
+	svc.Log = func(a Alert, d, w, q, s int) { devices, wanted, quiet, sent = d, w, q, s }
+	svc.Notify(context.Background(), Alert{Kind: ChargeComplete, Title: "t", Body: "b"})
+	if devices != 3 || wanted != 1 || quiet != 1 || sent != 1 {
+		t.Fatalf("3 devices, 1 wanted it and is awake, 1 in quiet hours, 1 accepted: %d %d %d %d", devices, wanted, quiet, sent)
+	}
+	svc.Notify(context.Background(), Alert{Kind: LowTire, Title: "t"})
+	if wanted != 0 || sent != 0 {
+		t.Fatalf("nobody asked for this one: %d %d", wanted, sent)
+	}
+}

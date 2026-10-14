@@ -102,6 +102,8 @@ type Service struct {
 	HTTP     *http.Client
 	Location func() *time.Location // for quiet hours
 	AllowAny bool                  // tests only: accept any push address
+	// Log, when set, is told about every alert: how many devices wanted it, were in quiet hours, and accepted it.
+	Log func(a Alert, devices, wanted, quiet, sent int)
 }
 
 const (
@@ -158,11 +160,22 @@ func (s *Service) Notify(ctx context.Context, a Alert) {
 	if s.Location != nil {
 		now = now.In(s.Location())
 	}
+	wanted, quiet, sent := 0, 0, 0
 	for _, sub := range subs {
-		if !has(sub.Events, a.Kind) || InQuiet(sub.Quiet, now) {
+		if !has(sub.Events, a.Kind) {
 			continue
 		}
-		_ = s.SendTo(ctx, sub, a)
+		if InQuiet(sub.Quiet, now) {
+			quiet++
+			continue
+		}
+		wanted++
+		if s.SendTo(ctx, sub, a) == nil {
+			sent++
+		}
+	}
+	if s.Log != nil {
+		s.Log(a, len(subs), wanted, quiet, sent)
 	}
 }
 

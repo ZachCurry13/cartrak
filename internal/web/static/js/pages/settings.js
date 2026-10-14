@@ -40,6 +40,7 @@ export default async function settings(root, _a, session) {
           item('#/admin', 'Settings', 'Ford credentials, time zone, prices, diagnostics')) : null,
         group('Help',
           item('#/status', 'Status', 'Is everything working?', health ? chip(health.overall === 'ok' ? 'ok' : health.overall === 'bad' ? 'bad' : 'work', health.overall === 'ok' ? 'OK' : health.overall === 'bad' ? 'Fix' : 'Check') : null),
+          item('#/guide', 'What CarTrak can do', 'Everything, and where to find it'),
           item('#/start', 'Getting started', 'A short checklist'),
           item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
     h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },

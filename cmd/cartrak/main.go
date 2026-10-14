@@ -90,6 +90,9 @@ func main() {
 		Exit: func() { log.Printf("stopping so the restore can be applied"); st.Close(); os.Exit(1) }}
 	p.After = srv.Broadcast
 	pushSvc := &push.Service{KV: st, Subs: st, Location: cfgs.Location}
+	pushSvc.Log = func(a push.Alert, devices, wanted, quiet, sent int) {
+		_ = st.LogAlert(store.AlertLogEntry{Kind: a.Kind, Title: a.Title, Body: a.Body, Devices: devices, Wanted: wanted, Quiet: quiet, Sent: sent})
+	}
 	srv.Push = pushSvc
 	alertEngine := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, BumpLevel: cfgs.BumpThreshold, Loc: cfgs.Location, Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}
 	p.OnReading = alertEngine.Handle
