@@ -7,6 +7,9 @@
 
 Making a backup needs free space in the data folder about the size of the copy for a few moments, and the app is slow while it runs. Sign-in sessions are never included, so a backup cannot be used to get into a running CarTrak. It does contain your Ford sign-in, account password hashes and notification keys, so keep it private, like a password.
 
+## Disk space
+**Status** shows how much room is left on the disk CarTrak stores its data on (on the Docker image; it cannot tell on other systems). It turns amber under 5 GB or 8 percent free and red under 1 GB, because a full disk stops CarTrak saving anything. Turn on the **Low disk space** alert under More, Notifications to be told. If you are low, use **Free up space** below, or give the data dataset more room in TrueNAS.
+
 ## Free up space (optional)
 CarTrak keeps a full raw copy of every reading from Ford, about 85 KB each, roughly 10 GB a year at the default polling. **More, Backup, Free up space** can remove that detail for older readings. You choose how many recent days to keep (30, 90, 180 or 365) and type **TRIM** to confirm.
 

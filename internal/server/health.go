@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/diskfree"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/tunnel"
 )
@@ -69,11 +70,18 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 	case latest == nil:
 		add(healthItem{"readings", "Car readings", "Waiting for the first reading from Ford. This can take a few minutes after linking.", "warn", "", ""})
 	default:
-		age := now - latest.TS
-		if age > 3*3600 {
-			add(healthItem{"readings", "Car readings", "The last reading was " + ago(age) + ". The car may be asleep or out of coverage; readings resume when it reports.", "warn", "", ""})
-		} else {
-			add(healthItem{"readings", "Car readings", "Last reading " + ago(age) + ".", "ok", "", ""})
+		age := now - latest.TS // when CarTrak last got an answer from Ford
+		carAge := age
+		if c := s.S.CarLastReport(); c > 0 && now-c > age {
+			carAge = now - c // when the car itself last had something new to say
+		}
+		switch {
+		case age > 3*3600:
+			add(healthItem{"readings", "Car readings", "CarTrak last got an answer from Ford " + ago(age) + ". The car may be asleep or out of coverage; readings resume when it reports.", "warn", "", ""})
+		case carAge > 3*3600:
+			add(healthItem{"readings", "Car readings", "Ford is answering (last " + ago(age) + "), but the car itself last reported " + ago(carAge) + ". It is probably parked and asleep, which is normal.", "ok", "", ""})
+		default:
+			add(healthItem{"readings", "Car readings", "The car last reported " + ago(carAge) + ".", "ok", "", ""})
 		}
 	}
 
@@ -103,7 +111,20 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 5. Updates
+	// 5. Room on the disk: the database grows all the time, and a full disk stops everything.
+	if free, total, ok := diskfree.Space(s.DataDir); ok && s.DataDir != "" {
+		detail := fmt.Sprintf("%.1f GB free of %.0f GB.", float64(free)/(1<<30), float64(total)/(1<<30))
+		switch diskfree.Level(free, total) {
+		case "bad":
+			add(healthItem{"disk", "Disk space", detail + " CarTrak will stop saving readings when it is full. Free up space now.", "bad", "#/backup", "Free up space"})
+		case "warn":
+			add(healthItem{"disk", "Disk space", detail + " Getting low. CarTrak adds readings all the time.", "warn", "#/backup", "Free up space"})
+		default:
+			add(healthItem{"disk", "Disk space", detail, "ok", "", ""})
+		}
+	}
+
+	// 6. Updates
 	if s.Upd != nil {
 		if u := s.Upd.Info(); u.Available {
 			add(healthItem{"update", "CarTrak version", fmt.Sprintf("Version %s is available (you have %s).", u.Latest, s.Version), "info", "#/about", "See what's new"})

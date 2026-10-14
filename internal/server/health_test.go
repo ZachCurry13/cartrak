@@ -90,7 +90,7 @@ func TestHealthLinkedWaitingThenReading(t *testing.T) {
 		t.Fatal(err)
 	}
 	body, _ = getHealth(t, ts)
-	if !strings.Contains(body, "Last reading just now") || !strings.Contains(body, `"overall":"ok"`) {
+	if !strings.Contains(body, "The car last reported just now") || !strings.Contains(body, `"overall":"ok"`) {
 		t.Fatalf("fresh reading: %s", body)
 	}
 	// An old reading is called out, not hidden.
@@ -179,5 +179,18 @@ func TestTheStatusSaysWhenTheCarLastReportedNotJustWhenFordWasAsked(t *testing.T
 	srv.S.SaveState("t", older)
 	if srv.S.CarLastReport() != car.Unix() {
 		t.Fatal("it only moves forward")
+	}
+}
+
+func TestStatusSeparatesFordAnsweringFromTheCarItselfBeingAsleep(t *testing.T) {
+	ts, srv := healthServer(t, readyProv{}, true, true)
+	car := time.Now().Add(-6 * time.Hour).UTC().Format(time.RFC3339)
+	st := &ford.State{TS: time.Now(), Extra: map[string]any{"telemetry.metrics.x.updateTime": car}, Raw: []byte(`{}`)}
+	if _, err := srv.S.SaveState("test", st); err != nil {
+		t.Fatal(err)
+	}
+	body, _ := getHealth(t, ts)
+	if !strings.Contains(body, "Ford is answering") || !strings.Contains(body, "car itself last reported 6 h ago") || !strings.Contains(body, `"overall":"ok"`) {
+		t.Fatalf("%s", body)
 	}
 }

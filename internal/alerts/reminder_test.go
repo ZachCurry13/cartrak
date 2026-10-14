@@ -238,3 +238,33 @@ func TestAJoltOrAnAlarmOnAParkedCarIsAlertedAndLogged(t *testing.T) {
 		t.Fatalf("nothing while driving or switched off: %s", r.kinds())
 	}
 }
+
+func TestALowDiskIsAlertedOnceEveryThreeDaysAndOnlyWhenLow(t *testing.T) {
+	e, r, _ := setup(t)
+	now := t0
+	e.Now = func() time.Time { return now }
+	const g = 1 << 30
+	free, total := uint64(50*g), uint64(100*g)
+	e.DiskSpace = func() (uint64, uint64, bool) { return free, total, true }
+	e.Tick()
+	if len(r.got) != 0 {
+		t.Fatalf("plenty of room: %s", r.kinds())
+	}
+	free = 3 * g
+	e.Tick()
+	e.Tick()
+	if r.kinds() != "low_disk" {
+		t.Fatalf("low: once, not on every check: %s", r.kinds())
+	}
+	now = now.Add(80 * time.Hour)
+	e.Tick()
+	if r.kinds() != "low_disk,low_disk" {
+		t.Fatalf("again after three days: %s", r.kinds())
+	}
+	e.DiskSpace = func() (uint64, uint64, bool) { return 0, 0, false } // not known on this system
+	now = now.Add(100 * time.Hour)
+	e.Tick()
+	if len(r.got) != 2 {
+		t.Fatalf("unknown is quiet: %s", r.kinds())
+	}
+}

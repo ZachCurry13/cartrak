@@ -1,5 +1,5 @@
 // Bump CACHE whenever any file in SHELL changes.
-const CACHE = 'cartrak-v0.21.0-7';
+const CACHE = 'cartrak-v0.21.0-8';
 const SHELL = ['/', '/css/app.css', '/css/menu.css', '/css/responsive.css', '/css/look.css', '/manifest.webmanifest', '/icons/icon.svg',
   '/js/app.js', '/js/api.js', '/js/ui.js',
   '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/connect.js', '/js/offline.js', '/js/pages/remote.js', '/js/pages/ford.js', '/js/pages/display.js', '/js/pages/people.js', '/js/pages/about.js', '/js/pages/status.js', '/js/healthstrip.js', '/js/cards.js', '/js/pages/live.js', '/js/datarows.js', '/js/timeline.js',

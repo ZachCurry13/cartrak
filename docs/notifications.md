@@ -11,6 +11,7 @@ CarTrak can send a notification to your phone or computer when something happens
 | Charging stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
 | Bump while parked | A parked car's motion sensors read above the bump level (More, Settings). Experimental: see Parked watch. Off by default |
 | Car alarm | The car reports its alarm or panic alarm is going off. Off by default |
+| Low disk space | The disk CarTrak stores its data on is nearly full (under 5 GB or 8 percent free). At most once every three days. Off by default |
 | Weekly summary | On Sunday evening (6 pm, car time zone): distance, trips, charging and efficiency for the last seven days. Off by default |
 | Service due | A reminder from More, Maintenance came due by distance or time |
 | Arrived at / Left a named place | The car arrived at or left a place named under More, Places |

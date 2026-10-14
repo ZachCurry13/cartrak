@@ -42,7 +42,8 @@ type Engine struct {
 	// The evening plug-in reminder: the time of day ("" is off), the battery level, and the local time zone.
 	ReminderTime  func() string
 	ReminderBelow func() float64
-	BumpLevel     func() float64 // the motion level that counts as a bump while parked; 0 or nil is off
+	DiskSpace     func() (free, total uint64, ok bool) // room on the data disk; nil skips the check
+	BumpLevel     func() float64                       // the motion level that counts as a bump while parked; 0 or nil is off
 	Loc           func() *time.Location
 
 	mu           sync.Mutex
@@ -191,6 +192,7 @@ func (e *Engine) Tick() {
 	e.mu.Lock()
 	e.plugReminder()
 	e.weeklyDigest()
+	e.diskCheck()
 	if e.prev != nil {
 		e.maintenance(e.prev.OdometerKm)
 	}

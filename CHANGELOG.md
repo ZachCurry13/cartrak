@@ -7,6 +7,10 @@
 - A **Needs attention** card (only when there is something) lists service reminders that are due or coming up and trips waiting for a Work or Personal label, each one tap away.
 - **Last 7 days** and **Last trip** (with its named places) now sit right under the battery instead of at the bottom.
 
+### 💽 Disk space
+- **Status** now shows how much room is left on the disk CarTrak stores its data on (on the Docker image), warning when it is getting low and going red when it is nearly full, with a link to Free up space. A new optional alert, **Low disk space**, warns you at most once every three days. CarTrak adds readings all the time, so a full disk would stop everything.
+- The **Car readings** line on Status now tells apart Ford answering from the car itself being asleep ("Ford is answering, but the car itself last reported 6 h ago. It is probably parked and asleep, which is normal.").
+
 ### 🔔 See what alerts were sent, and a guide to everything
 - **More, Notifications** now ends with **Recent alerts** (admins): every alert CarTrak decided to send, and whether it reached a device, none had it turned on, or it was held back by quiet hours. If an alert you expected is not listed, CarTrak never decided to send it.
 - **More, What CarTrak can do** lists every feature in one place with a line about each and a link, so nothing gets forgotten.

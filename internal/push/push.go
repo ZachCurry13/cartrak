@@ -35,6 +35,7 @@ const (
 	WeeklySummary     = "weekly_summary"
 	BumpWhileParked   = "bump_parked"
 	AlarmSounding     = "alarm_sounding"
+	LowDisk           = "low_disk"
 	LeavePlace        = "leave_place"
 	ChargeInterrupted = "charge_interrupted"
 )
@@ -57,6 +58,7 @@ var Kinds = []Kind{
 	{TripEnd, "Trip ended", "A trip finished, with its distance."},
 	{ChargeInterrupted, "Charging stopped early", "Charging stopped while still plugged in at a lower level than your sessions usually end at, which can mean a loose cable or a charger fault."},
 	{BumpWhileParked, "Bump while parked", "A parked car's motion sensors read above the bump level (More, Settings). The car reports only now and then, so a short knock can be missed."},
+	{LowDisk, "Low disk space", "The disk CarTrak stores its data on is getting full. At most one alert every three days."},
 	{AlarmSounding, "Car alarm", "The car reports that its alarm or panic alarm is going off."},
 	{WeeklySummary, "Weekly summary", "A short summary of the week on Sunday evening: distance, trips, charging and efficiency."},
 	{ArrivePlace, "Arrived at a named place", "The car arrived at a place you named under More, Places, such as Home or the office."},
