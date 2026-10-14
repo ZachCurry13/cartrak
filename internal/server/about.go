@@ -79,16 +79,30 @@ func (s *Server) onboarding(w http.ResponseWriter, r *http.Request) {
 	st := s.P.Status()
 	latest, _ := s.S.LatestSample()
 	rules, _ := s.S.ListRules()
+	named, _ := s.S.ListNamedPlaces()
+	maintenance, _ := s.S.ListMaintenance()
+	alerts := 0
+	if s.Push != nil {
+		if subs, err := s.S.ListPushSubs(0); err == nil {
+			alerts = len(subs)
+		}
+	}
+	pr := s.prices()
 	ok(w, map[string]any{
-		"dismissed":  s.S.GetKV("onboarding_dismissed") == "1",
-		"linked":     st.Linked,
-		"canLink":    s.Link != nil,
-		"configured": s.Cfg == nil || s.Cfg.Configured(),
-		"remote":     s.Tunnel != nil && s.Tunnel.Status().State == tunnel.Connected,
-		"hasReading": latest != nil,
-		"rules":      len(rules),
-		"users":      s.S.CountUsers(),
-		"provider":   st.Provider,
+		"places":      len(named),
+		"maintenance": len(maintenance),
+		"alerts":      alerts,
+		"priceSet":    pr.Home != nil || pr.Public != nil,
+		"backedUp":    s.S.GetKV(kvBackupTaken) != "",
+		"dismissed":   s.S.GetKV("onboarding_dismissed") == "1",
+		"linked":      st.Linked,
+		"canLink":     s.Link != nil,
+		"configured":  s.Cfg == nil || s.Cfg.Configured(),
+		"remote":      s.Tunnel != nil && s.Tunnel.Status().State == tunnel.Connected,
+		"hasReading":  latest != nil,
+		"rules":       len(rules),
+		"users":       s.S.CountUsers(),
+		"provider":    st.Provider,
 	})
 }
 

@@ -6,10 +6,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
 // backupInfo is what the Backup page shows.
+// kvBackupTaken is when a backup was last downloaded, for the Getting started checklist.
+const kvBackupTaken = "backup_taken_at"
+
 func (s *Server) backupInfo(w http.ResponseWriter, r *http.Request) {
 	ok(w, map[string]any{"dbBytes": s.S.DBSize(), "firstReading": s.S.FirstSampleTS()})
 }
@@ -38,6 +42,7 @@ func (s *Server) backupDownload(w http.ResponseWriter, r *http.Request) {
 	if small {
 		name += "-small"
 	}
+	_ = s.S.SetKV(kvBackupTaken, strconv.FormatInt(time.Now().Unix(), 10))
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`.db"`)
 	w.Header().Set("Cache-Control", "no-store")

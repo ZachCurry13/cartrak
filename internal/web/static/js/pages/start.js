@@ -35,9 +35,20 @@ export default async function start(root, _a, session) {
     step(7, ob.users > 1, 'Add family (optional)',
       'Give family read-only accounts so they can see the dashboard without changing anything.',
       admin ? h('a', { class: 'btn', href: '#/people' }, 'Add people') : null),
+    // Optional, to get more from CarTrak.
+    step(8, ob.places > 0, 'Name your places (optional)', 'Name Home and the office. Trips then read "Home → Office", and you can get alerts when the car arrives or leaves.',
+      admin ? h('a', { class: 'btn', href: '#/places' }, 'Name a place') : null),
+    step(9, ob.priceSet, 'Set your electricity price (optional)', 'See what charging costs and your cost per mile. You can add your charger\'s own kWh to measure charging loss.',
+      admin ? h('a', { class: 'btn', href: '#/admin' }, 'Open Settings') : null),
+    step(10, ob.alerts > 0, 'Turn on alerts (optional)', 'Charging complete, plug in tonight, tires, service due and more, on this phone.',
+      h('a', { class: 'btn', href: '#/notifications' }, 'Choose alerts')),
+    step(11, ob.maintenance > 0, 'Add a service reminder (optional)', 'Tire rotation, cabin filter and so on, by distance or time.',
+      admin ? h('a', { class: 'btn', href: '#/maintenance' }, 'Add a reminder') : null),
+    step(12, ob.backedUp, 'Make a backup (optional)', 'Download a copy of your data so a failed disk or a mistake cannot lose it.',
+      admin ? h('a', { class: 'btn', href: '#/backup' }, 'Open Backup') : null),
   ];
 
   root.append(h('h2', {}, 'Getting started'),
-    h('p', { class: 'muted' }, 'Seven quick steps. You can come back to this any time from More.'), ...steps,
+    h('p', { class: 'muted' }, 'A few quick steps, then some optional ones to get more from CarTrak. You can come back to this any time from More.'), ...steps,
     admin ? h('p', { class: 'seg' }, h('button', { onclick: async () => { await api('/api/onboarding/dismiss', { method: 'POST' }); location.hash = '#/'; } }, 'Finish and go Home')) : h('p', {}, h('a', { class: 'btn', href: '#/' }, 'Go Home')));
 }

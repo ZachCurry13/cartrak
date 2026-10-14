@@ -7,6 +7,9 @@
 - A **Needs attention** card (only when there is something) lists service reminders that are due or coming up and trips waiting for a Work or Personal label, each one tap away.
 - **Last 7 days** and **Last trip** (with its named places) now sit right under the battery instead of at the bottom.
 
+### ✅ A fuller Getting started
+- **Getting started** now has five optional steps after the basics: name your places, set your electricity price, turn on alerts, add a service reminder and make a backup, each with a button and a tick when done.
+
 ### 📤 More in the CSV exports
 - **Charging** has an **Export CSV** button: every session with the energy added, the charger's own number and efficiency where entered, where it was, peak power and cost.
 - The trips CSV now also has energy used, whether it is an estimate, and the named start and end places.
