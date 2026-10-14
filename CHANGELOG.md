@@ -2,6 +2,12 @@
 
 ## 0.20.0
 
+### 📺 Live fits one screen and follows what the car is doing
+- The Live screen no longer needs scrolling. It shows the battery ring and six tiles that change with the car: **driving** (speed, this trip, trip time, miles to your reserve, range, driving today), **charging** (power, time to your target, energy added this session, range, energy left, outside temperature) or **parked** (range, energy left, doors, driving today, outside temperature, odometer). A small chip says which it is. The phone GPS tools moved into a collapsed section at the bottom.
+
+### 🕐 Know when the car last reported
+- The top of every page said "updated 6 minutes ago" even when that was just CarTrak asking Ford (for example after a server restart). It now says **car reported …**, using Ford's own update times, so it tells you when the car itself last sent something. A sleeping car simply shows an older time. Hover or press and hold it to see when CarTrak last checked Ford, and it says so if Ford is not answering. Live shows the same.
+
 ### 🧹 Free up space (optional)
 - **More, Backup, Free up space** can remove the full raw Ford detail of older readings (you choose how many recent days to keep, and type TRIM to confirm) while keeping trips, charging, charts and each reading's main numbers. It works in small background steps, and the freed space is reused so the database stops growing for a while. See docs/backup.md.
 

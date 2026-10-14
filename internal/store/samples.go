@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
+	"strconv"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
 )
@@ -35,6 +36,7 @@ func (s *Store) SaveState(provider string, st *ford.State) (int64, error) {
 		return 0, err
 	}
 	_ = s.saveTrend(id, st) // the charted numbers, kept apart from the big row
+	s.noteCarReport(ford.LastReported(st.Extra))
 	return id, nil
 }
 
@@ -133,4 +135,23 @@ func (s *Store) TrackBetween(from, to int64) ([]*Sample, error) {
 		out = append(out, x)
 	}
 	return out, rows.Err()
+}
+
+// KVCarReport is when the car last had something new to report, as Ford's own update times say (unix seconds).
+const KVCarReport = "car_last_report"
+
+func (s *Store) noteCarReport(ts int64) {
+	if ts <= 0 {
+		return
+	}
+	if cur, err := strconv.ParseInt(s.GetKV(KVCarReport), 10, 64); err == nil && cur >= ts {
+		return
+	}
+	_ = s.SetKV(KVCarReport, strconv.FormatInt(ts, 10))
+}
+
+// CarLastReport is when the car last had something new to report, or 0 when Ford's readings do not say.
+func (s *Store) CarLastReport() int64 {
+	n, _ := strconv.ParseInt(s.GetKV(KVCarReport), 10, 64)
+	return n
 }

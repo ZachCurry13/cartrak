@@ -60,3 +60,9 @@ than every 30 seconds on a road trip, the phone's own GPS (planned) is the way, 
 
 ## Trip time and driving today
 The Live screen's **Trip time** tile shows how long the current trip has been going and when it started, and **Driving today** adds up all the time spent driving since midnight (in the car's time zone), including the trip in progress. Both keep counting between readings.
+
+## One screen that follows the car
+Live fits the screen without scrolling, on a phone or a tablet on a car mount. The battery ring is always there, and six tiles change with what the car is doing: driving (speed, this trip, trip time, miles to your reserve, range, driving today), charging (power, time to your target, energy added this session, range, energy left, outside temperature) or parked (range, energy left, doors, driving today, outside temperature, odometer). Tap **Time to target** while charging to switch between 80%, 90% and 100%.
+
+## When did the car last report?
+"Car reported 6 min ago" at the top of the page, and on Live, is when the car itself last had something new to say, from Ford's update times for its values. It is not when CarTrak last asked Ford: CarTrak asks often, but a parked, sleeping car reports only when it wakes (for example for charging, unlocking or a trip). Press and hold the label (or hover on a computer) to see when CarTrak last checked Ford. If Ford has not answered for a quarter of an hour it adds "Ford not answering", which points to a connection problem rather than a sleeping car; the Status page has the details.

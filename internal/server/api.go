@@ -12,7 +12,9 @@ import (
 )
 
 func (s *Server) status(w http.ResponseWriter, r *http.Request) {
-	ok(w, map[string]any{"poller": s.P.Status(), "canLink": s.Link != nil, "configured": s.Cfg == nil || s.Cfg.Configured()})
+	// poller.lastOk is when CarTrak last got an answer from Ford; carLastReport is when the car itself last had
+	// something new (Ford's own update times). They differ when the car is asleep or out of signal.
+	ok(w, map[string]any{"poller": s.P.Status(), "canLink": s.Link != nil, "configured": s.Cfg == nil || s.Cfg.Configured(), "carLastReport": s.S.CarLastReport()})
 }
 
 func (s *Server) latest(w http.ResponseWriter, r *http.Request) {

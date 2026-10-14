@@ -49,6 +49,10 @@ type liveEvent struct {
 	Status poller.Status `json:"status"`
 	// DrivingToday is how long the car has been driven since local midnight, in seconds, including a trip still going.
 	DrivingToday int64 `json:"drivingToday"`
+	// CarTS is when the car itself last reported something new (0 if unknown), unlike Sample.TS, which is when CarTrak last asked.
+	CarTS int64 `json:"carTs"`
+	// Charge is the charging session in progress, if any.
+	Charge *store.Charge `json:"charge"`
 }
 
 // hub fans events out to connected browsers. A slow client just misses
@@ -93,7 +97,8 @@ func (h *hub) count() int {
 func (s *Server) currentEvent() liveEvent {
 	latest, _ := s.S.LatestSample()
 	trip, _ := s.S.OpenTrip()
-	return liveEvent{Sample: summarize(latest), Trip: trip, Status: s.P.Status(), DrivingToday: s.drivingToday()}
+	openCharge, _ := s.S.OpenCharge()
+	return liveEvent{Sample: summarize(latest), Trip: trip, Status: s.P.Status(), DrivingToday: s.drivingToday(), CarTS: s.S.CarLastReport(), Charge: openCharge}
 }
 
 // drivingToday adds up the time spent on trips since midnight in the car's time zone.

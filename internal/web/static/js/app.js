@@ -114,7 +114,13 @@ async function syncLabel() {
   if (!session.me) return;
   try {
     const st = await api('/api/status');
-    document.getElementById('sync').textContent = st.poller.linked ? `updated ${ago(st.poller.lastOk)}` : 'not linked';
+    // The time that matters is when the car last reported. When it is much older than CarTrak's last check with
+    // Ford, the car is asleep or out of signal, which is normal and not a fault.
+    const el = document.getElementById('sync');
+    const car = st.carLastReport || st.poller.lastOk;
+    const stale = Date.now() / 1000 - st.poller.lastOk > 900;
+    el.textContent = st.poller.linked ? `car reported ${ago(car)}${stale ? ' · Ford not answering' : ''}` : 'not linked';
+    el.title = st.poller.linked ? `CarTrak last checked Ford ${ago(st.poller.lastOk)}. The car sends data when it is awake, so an older time here usually means it is parked and asleep.` : '';
     loadVehicle();
   } catch (e) { /* offline */ }
 }

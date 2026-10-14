@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -156,5 +157,27 @@ func TestHealthSaysWhenFordItselfIsHavingTrouble(t *testing.T) {
 	}
 	if strings.Contains(body, "The last update failed") {
 		t.Fatalf("an outage is not a failure of the user's setup: %s", body)
+	}
+}
+
+func TestTheStatusSaysWhenTheCarLastReportedNotJustWhenFordWasAsked(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	car := time.Now().Add(-3 * time.Hour).Truncate(time.Second)
+	st := &ford.State{TS: time.Now(), Extra: map[string]any{"telemetry.metrics.x.updateTime": car.UTC().Format(time.RFC3339)}, Raw: []byte(`{}`)}
+	if _, err := srv.S.SaveState("t", st); err != nil {
+		t.Fatal(err)
+	}
+	_, b := do(t, admin, "GET", ts.URL+"/api/status", "", nil)
+	var out struct{ CarLastReport int64 }
+	json.Unmarshal([]byte(b), &out)
+	if out.CarLastReport != car.Unix() {
+		t.Fatalf("the car's own time, three hours ago: %s", b)
+	}
+	// An older reading never moves it backwards.
+	older := &ford.State{TS: time.Now(), Extra: map[string]any{"telemetry.metrics.x.updateTime": car.Add(-time.Hour).UTC().Format(time.RFC3339)}, Raw: []byte(`{}`)}
+	srv.S.SaveState("t", older)
+	if srv.S.CarLastReport() != car.Unix() {
+		t.Fatal("it only moves forward")
 	}
 }
