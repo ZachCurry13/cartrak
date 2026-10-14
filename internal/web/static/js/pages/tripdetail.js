@@ -68,16 +68,21 @@ export default async function tripDetail(root, [id], session) {
   const set = (category) => async () => {
     try { await api(`/api/trips/${t.id}`, { method: 'PATCH', body: { category, notes: notes.value } }); location.reload(); } catch (e) { msg.textContent = e.message; }
   };
-  const kwh = t.startSoc != null && t.endSoc != null ? null : null;
+  const hours = t.endTs && t.startTs ? (t.endTs - t.startTs) / 3600 : 0;
+  const avgKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
+  const hasStart = t.startLat != null && t.startLon != null;
+  const hasEnd = t.endLat != null && t.endLon != null && !t.open;
   root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')),
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
       t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
-      h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Top speed', speed(t.maxSpeedKph)),
+      h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''))),
-      kwh),
+      null),
     routeBox,
-    t.endLat != null && t.endLon != null && !t.open ? h('section', { class: 'card' }, h('h2', {}, 'Where it ended'), mapButtons(t.endLat, t.endLon, 'where it ended')) : null,
+    hasStart || hasEnd ? h('section', { class: 'card' }, h('h2', {}, 'Open in maps'),
+      hasStart ? h('div', {}, h('b', {}, t.startPlace || 'Where it started'), mapButtons(t.startLat, t.startLon, 'where it started')) : null,
+      hasEnd ? h('div', {}, h('b', {}, t.endPlace || 'Where it ended'), mapButtons(t.endLat, t.endLon, 'where it ended')) : null) : null,
     admin && !t.open ? placeCard(t) : null,
     admin && !t.open ? shareCard('trip', t.id) : null,
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),

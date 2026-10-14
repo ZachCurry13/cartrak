@@ -42,6 +42,7 @@ const routes = {
 };
 
 const view = document.getElementById('view');
+document.querySelector('.skip').addEventListener('click', (e) => { e.preventDefault(); view.focus(); });
 const tabs = document.getElementById('tabs');
 export const session = { me: null, about: null, vehicle: null, installPrompt: null };
 let stopRefresh = null;
@@ -97,6 +98,8 @@ async function render() {
     const mod = await (routes[name] || routes[''])();
     view.replaceChildren();
     const refresh = await mod.default(view, args, session);
+    const head = view.querySelector('h2');
+    document.title = head && head.textContent ? `${head.textContent} · CarTrak` : 'CarTrak';
     if (typeof refresh === 'function') stopRefresh = startRefresh(refresh); // schedule depends on this device's data mode
     else if (refresh && refresh.cleanup) stopRefresh = refresh.cleanup;
   } catch (e) {

@@ -1,4 +1,4 @@
-import { h, stat, catChip, chip, dist, when, duration, pct } from '../ui.js';
+import { h, emptyState, stat, catChip, chip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
@@ -44,7 +44,7 @@ export default async function trips(root, _a, session) {
   }
   function paintList() {
     sel.state.shown = lastTs;
-    list.replaceChildren(...(lastTs.length ? lastTs.map(row) : [h('p', { class: 'muted' }, 'No trips in this range yet.')]));
+    list.replaceChildren(...(lastTs.length ? lastTs.map(row) : [emptyState('No trips in this range', 'Try a wider range. Trips appear after the car drives and Ford reports the trip.')]));
     selectRow.replaceChildren(sel.button(admin && lastTs.length > 1) || '');
     sel.paintBar();
   }

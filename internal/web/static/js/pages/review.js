@@ -1,4 +1,4 @@
-import { h, dist, when, duration } from '../ui.js';
+import { h, emptyState, dist, when, duration } from '../ui.js';
 import { api } from '../api.js';
 
 // A quick pass over trips CarTrak could not label (no rule matched, and you have not chosen): tap Work or Personal.
@@ -10,7 +10,7 @@ export default async function review(root, _a, session) {
   async function load() {
     const all = await api('/api/trips?limit=200');
     const todo = all.filter((t) => !t.open && t.categorySource === 'default');
-    if (!todo.length) return box.replaceChildren(h('p', { class: 'muted' }, 'Nothing to review. Every trip is labelled.'));
+    if (!todo.length) return box.replaceChildren(emptyState('All caught up', 'Every trip is labelled Work or Personal.', '#/trips', 'See trips'));
     box.replaceChildren(h('p', { class: 'muted' }, `${todo.length} trip${todo.length === 1 ? '' : 's'} with no label yet. Trip rules (More, Trip rules) can label them for you in future.`),
       ...todo.map((t) => {
         const set = (category) => async () => { await api(`/api/trips/${t.id}`, { method: 'PATCH', body: { category, notes: t.notes || '' } }); load(); };

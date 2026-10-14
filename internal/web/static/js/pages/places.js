@@ -21,7 +21,7 @@ export default async function places(root, _a, session) {
       h('section', { class: 'card' }, h('h2', {}, 'Your places'),
         ...(ps.length ? ps.map((p) => h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, p.name), h('div', { class: 'muted' }, `within about ${p.radiusM} m`)),
           admin ? h('button', { class: 'sec', onclick: async () => { if (confirm(`Remove ${p.name}?`)) { await api(`/api/named-places/${p.id}`, { method: 'DELETE' }); load(); } } }, 'Remove') : null))
-          : [h('p', { class: 'muted' }, 'No places yet.')])),
+          : [emptyState('No places yet', 'Drive to Home or the office and use the form below while the car is there.')])),
       admin ? h('section', { class: 'card' }, h('h2', {}, 'Add where the car is now'),
         h('label', { for: 'pn' }, 'Name'), name, h('label', { for: 'pr' }, 'How close counts as there'), size,
         h('p', {}, h('button', { onclick: here }, 'Save this place')), msg,

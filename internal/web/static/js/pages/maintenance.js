@@ -1,4 +1,4 @@
-import { h, chip, dist, isMetric } from '../ui.js';
+import { h, emptyState, chip, dist, isMetric } from '../ui.js';
 import { api } from '../api.js';
 
 // Service reminders by distance, by time, or both. They count from when they are added or marked done.
@@ -47,7 +47,7 @@ export default async function maintenance(root, _a, session) {
           admin ? h('span', { class: 'seg', style: 'margin:0' },
             h('button', { onclick: async () => { await api(`/api/maintenance/${it.id}/done`, { method: 'POST' }); load(); } }, 'Done'),
             h('button', { class: 'sec', onclick: async () => { if (confirm(`Remove the ${it.name} reminder?`)) { await api(`/api/maintenance/${it.id}`, { method: 'DELETE' }); load(); } } }, 'Remove')) : null))
-          : [h('p', { class: 'muted' }, 'No reminders yet.')])),
+          : [emptyState('No reminders yet', 'Add things like a tire rotation or cabin filter, by distance or time, and CarTrak tells you when they are due.')])),
       admin ? h('section', { class: 'card' }, h('h2', {}, 'Add a reminder'),
         h('p', { class: 'seg' }, ...PRESETS.map(preset)),
         h('label', { for: 'mn' }, 'What'), name,

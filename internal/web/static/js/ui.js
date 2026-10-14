@@ -46,6 +46,8 @@ export function duration(a, b) {
 }
 
 export const stat = (label, value) => h('div', { class: 'stat' }, h('div', { class: 'v' }, value), h('div', { class: 'l' }, label));
+// emptyState is a friendly "nothing here yet" with what to do next (an optional button link).
+export const emptyState = (title, body, href, label) => h('div', { class: 'empty' }, h('b', {}, title), h('p', { class: 'muted' }, body), href ? h('a', { class: 'btn', href }, label) : null);
 export const chip = (cls, text) => h('span', { class: `chip ${cls}` }, text);
 export const catChip = (t) => chip(t.category, t.category + (t.categorySource === 'manual' ? ' ✎' : t.categorySource === 'rule' ? ' ⚙' : ''));
 

@@ -10,6 +10,12 @@
 ### ✅ A fuller Getting started
 - **Getting started** now has five optional steps after the basics: name your places, set your electricity price, turn on alerts, add a service reminder and make a backup, each with a button and a tick when done.
 
+### 🧭 Friendlier pages
+- Empty lists (Trips, Charging, Places, Maintenance, Review) now say what to do next instead of a blank line.
+- **More** has a search box that filters the pages and settings as you type.
+- A trip now shows its average speed and has map links for both where it started and where it ended.
+- Easier to use with a keyboard or screen reader: a Skip to content link, each page sets its title, bigger checkboxes, and animations are switched off if your device asks for less motion.
+
 ### 📤 More in the CSV exports
 - **Charging** has an **Export CSV** button: every session with the energy added, the charger's own number and efficiency where entered, where it was, peak power and cost.
 - The trips CSV now also has energy used, whether it is an estimate, and the named start and end places.

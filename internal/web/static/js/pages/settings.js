@@ -22,6 +22,7 @@ export default async function settings(root, _a, session) {
       h('span', { class: 'avatar', 'aria-hidden': 'true' }, (session.me.name || '?').slice(0, 1).toUpperCase()),
       h('div', {}, h('b', {}, session.me.name), h('span', { class: 'muted' }, `${session.me.role === 'admin' ? 'Admin' : 'Viewer'} · CarTrak v${a.version}`))),
     ...notices(session),
+    finder(),
     h('div', { class: 'menu-cols' },
       h('div', {},
         group('Connections',
@@ -45,4 +46,26 @@ export default async function settings(root, _a, session) {
           item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
     h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },
       `Sign out ${session.me.name}`)));
+}
+
+// finder is a search box that hides menu rows (and empty groups) that do not match what was typed.
+function finder() {
+  const none = h('p', { class: 'muted', hidden: true }, 'Nothing matches. Try a shorter word.');
+  const box = h('input', { type: 'search', id: 'mfind', placeholder: 'Search settings and pages', 'aria-label': 'Search settings and pages', autocomplete: 'off' });
+  box.addEventListener('input', () => {
+    const q = box.value.trim().toLowerCase();
+    let shown = 0;
+    for (const g of document.querySelectorAll('.menu-cols .group')) {
+      let any = 0;
+      for (const it of g.querySelectorAll('.item')) {
+        const hit = !q || it.textContent.toLowerCase().includes(q);
+        it.hidden = !hit;
+        if (hit) any++;
+      }
+      g.hidden = !any;
+      shown += any;
+    }
+    none.hidden = shown > 0;
+  });
+  return h('div', { class: 'finder' }, box, none);
 }
