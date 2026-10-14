@@ -32,6 +32,7 @@ const routes = {
   parkedwatch: () => import('./pages/parkedwatch.js'),
   guide: () => import('./pages/guide.js'),
   time: () => import('./pages/timeuse.js'),
+  datacheck: () => import('./pages/datacheck.js'),
   review: () => import('./pages/review.js'),
   security: () => import('./pages/security.js'),
   backup: () => import('./pages/backup.js'),

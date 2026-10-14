@@ -43,3 +43,6 @@ The built-in demo car can pretend to be each type. Set `CARTRAK_PROVIDER=demo` a
 
 ## Parked drain
 CarTrak looks at the stretches when the car sat for at least three hours, not driving and not charging, and divides the battery percent lost by the hours parked. Many electric cars lose about 1 percent a day or less. It marks **Check** at 2 percent a day or more and **Act** at 4 or more. Things that keep a car awake include Sentry or similar modes, scheduled preconditioning, a weak 12 V battery and frequent app wake-ups. Ford updates the battery level only when the car wakes, so the number is a guide, not a measurement.
+
+## Data check
+**More, Data check** looks through the last 90 days of what CarTrak recorded for things that seem wrong: a stretch with no odometer reading (usually the car sleeping, or CarTrak not running), an odometer that went backwards, trips that overlap, a trip that lasted over a day, a trip with an impossible average speed, and finished trips with almost no distance. It only reads; it never changes or deletes anything, and each trip finding links to that trip so you can judge it. For checking the odometer against your trips, see the check on the Mileage log.

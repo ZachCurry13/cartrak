@@ -17,6 +17,9 @@
 ### ⚖️ Compare two trips
 - On **Trips**, tap **Select trips**, tap exactly two and press **Compare 2** to see them side by side: route, distance, time, speeds, battery and energy used and efficiency, with a star on the better one and a line saying how much less energy one used.
 
+### 🩺 Data check
+- **More, Data check** looks through the last 90 days for things that seem wrong: a gap with no odometer readings, an odometer that went backwards, overlapping trips, trips that never closed, impossible speeds and trips with almost no distance. It only looks and never changes your data; each trip finding links to the trip.
+
 ### 🧭 Friendlier pages
 - Empty lists (Trips, Charging, Places, Maintenance, Review) now say what to do next instead of a blank line.
 - **More** has a search box that filters the pages and settings as you type.
