@@ -1,7 +1,7 @@
 import { h, stat, catChip, chip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
-import { efficiency, kwhText } from '../energy.js';
+import { effSpan, kwhText } from '../energy.js';
 import { monthsCard } from '../rangeband.js';
 import { tripSelect } from '../tripselect.js';
 
@@ -32,7 +32,7 @@ export default async function trips(root, _a, session) {
     const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=\w+&?/, '')}`)]);
     sum.replaceChildren(h('div', { class: 'grid' }, stat('Work', dist(s.work.distanceKm, 0)), stat('Personal', dist(s.personal.distanceKm, 0)),
       stat('Work trips', s.work.trips), stat('Personal trips', s.personal.trips),
-      ...(s.work.kwh + s.personal.kwh > 0 ? [stat('Energy used', kwhText(s.work.kwh + s.personal.kwh)), stat('Efficiency', efficiency(s.work.energyKm + s.personal.energyKm, s.work.kwh + s.personal.kwh) || '—')] : [])),
+      ...(s.work.kwh + s.personal.kwh > 0 ? [stat('Energy used', kwhText(s.work.kwh + s.personal.kwh)), stat('Efficiency', effSpan(s.work.energyKm + s.personal.energyKm, s.work.kwh + s.personal.kwh))] : [])),
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
     lastTs = ts;
     const unlabelled = ts.filter((x) => !x.open && x.categorySource === 'default').length;
@@ -62,10 +62,12 @@ export default async function trips(root, _a, session) {
     m.show({ routes: routes.map((r) => ({ points: r.points, color: COLOR[r.category] || COLOR.personal, width: 4, opacity: 0.85, onClick: () => { location.hash = `#/trip/${r.id}`; } })) });
     return h('div', {}, m.el, h('p', { class: 'muted' }, h('span', { class: 'chip work' }, 'work'), ' ', h('span', { class: 'chip personal' }, 'personal'), '  Tap a route to open the trip.'));
   }
+  // ' · 2.44 mi/kWh' as a tappable piece, or nothing when the trip has no usable energy figure.
+  const effPart = (t) => { const e = effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''); return e.nodeType === 3 ? [] : [' · ', e]; };
   const row = (t) => h('a', { class: 'card', href: sel.state.on ? '#' : `#/trip/${t.id}`, onclick: sel.state.on ? (e) => { e.preventDefault(); if (sel.eligible(t)) sel.toggle(t); } : null,
     style: `display:block;color:inherit;text-decoration:none${sel.picked.has(t.id) ? ';border-color:var(--accent)' : sel.state.on && !sel.eligible(t) ? ';opacity:.5' : ''}` },
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, sel.picked.has(t.id) ? '✓ ' : '', t.open ? 'In progress' : dist(t.distanceKm)), t.journeyId ? chip('work', 'journey') : null, ' ', catChip(t)),
-    h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}${efficiency(t.distanceKm, t.energyKwh) ? ' · ' + (t.energyEstimated ? '≈ ' : '') + efficiency(t.distanceKm, t.energyKwh) : ''}`),
+    h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}`, ...effPart(t)),
     t.startPlace || t.endPlace ? h('div', { class: 'muted' }, `${t.startPlace || '…'} → ${t.endPlace || '…'}`) : null,
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
   const selectRow = h('p');

@@ -2,6 +2,15 @@
 
 ## 0.20.0
 
+### ⏱️ Time: parked, driving and charging
+- **More, Time** shows what share of the time the car was parked, driving or charging over the last 7 days, 30 days or year, a bar for each day, and where it was parked (Home, the office and other places you have named, or Elsewhere). It uses the trips and charging sessions CarTrak already recorded.
+
+### 🗺️ Open the car in your map app
+- The map on Home is now a link: tap it to open the car's spot in Google Maps. There are also **Open in Google Maps** and **Directions to the car** buttons (and **Open in Apple Maps** on iPhone), and the trip page has the same for where it ended. Nothing is sent to Google until you tap.
+
+### 🔁 Tap an efficiency figure to change its unit
+- Tap any efficiency number (on Trips, a trip, a journey or Efficiency insights) to switch all of them between miles per kWh, watt-hours per mile and miles per percent of battery. Metric devices get kWh per 100 km, Wh per km and km per percent. CarTrak remembers your choice.
+
 ### 🔌 Measure your charging loss
 - On each charging session, admins can type in **kWh from the charger** (from your charger's app). CarTrak shows how much of it reached the battery, and after three sessions it uses your own measured average instead of a fixed 90% when it works out what charging cost.
 - A new setting, **Slow-charging efficiency**, sets the number used until it has been measured.

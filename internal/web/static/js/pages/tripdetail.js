@@ -2,9 +2,10 @@ import { h, stat, catChip, dist, speed, when, duration, pct, num } from '../ui.j
 import { api } from '../api.js';
 import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
-import { efficiency, kwhText } from '../energy.js';
+import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
 import { placeCard } from '../placecard.js';
+import { mapButtons } from '../maplinks.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -73,9 +74,10 @@ export default async function tripDetail(root, [id], session) {
       t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
-        stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', efficiency(t.distanceKm, t.energyKwh) || '—')),
+        stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''))),
       kwh),
     routeBox,
+    t.endLat != null && t.endLon != null && !t.open ? h('section', { class: 'card' }, h('h2', {}, 'Where it ended'), mapButtons(t.endLat, t.endLon, 'where it ended')) : null,
     admin && !t.open ? placeCard(t) : null,
     admin && !t.open ? shareCard('trip', t.id) : null,
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),

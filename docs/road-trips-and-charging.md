@@ -61,3 +61,12 @@ You can remove a trip from a journey, rename it, or **Ungroup trips**. The trips
 - **Most and least efficient trips** (needs at least six trips), each linking to the trip.
 
 Cold weather, heating, highway speed and wind use more energy. Trips from before CarTrak recorded the car's energy reading use the battery percent and are less exact.
+
+## Time: parked, driving, charging
+**More, Time** splits the last 7 days, 30 days or year into time driving (from trips), charging (from charging sessions) and parked (everything else), with a bar for each day and the parked time by place. Places come from More, Places: parked time is counted where the previous trip ended, so name your usual places to see Home and the office instead of Elsewhere. Time before CarTrak's first reading is not counted.
+
+## Efficiency units
+Tap any efficiency figure to cycle all of them: **mi/kWh** (kWh per 100 km on a metric device), **Wh/mi** (Wh/km) and **mi/%** (km/%), which is how far a percent of battery takes you. The per-percent view uses your battery's size as the car reports it. The choice is kept on this device.
+
+## Open the car in a map app
+The Location map on Home is a link, and Home and each trip have buttons to open the spot or get directions in Google Maps (and Apple Maps on iPhone). Directions use your phone's own position as the start. Nothing is sent to Google until you tap one of them.

@@ -10,8 +10,10 @@ import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
 import { bandRow } from '../rangeband.js';
 import { batteryRing } from '../ring.js';
+import { googleMapsUrl, mapButtons } from '../maplinks.js';
 
 let homeMap = null; // kept between refreshes
+let homeLink = null; // the map is a link: tap it to open the spot in Google Maps
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
 export function pick(extra, ...names) {
@@ -25,7 +27,6 @@ export function pick(extra, ...names) {
   return null;
 }
 
-const mapLink = (lat, lon) => `https://www.google.com/maps?q=${lat},${lon}`;
 
 // How far the car can go before the battery falls to this device's reserve percent.
 function reserveRow(latest) {
@@ -111,9 +112,11 @@ export default async function dashboard(root, _args, session) {
         homeMap = homeMap || createMap(mc, { height: 170, interactive: false });
         const d = 0.004; // about half a kilometre around the car
         homeMap.show({ markers: [{ lat: latest.lat, lon: latest.lon }], fit: [[latest.lat - d, latest.lon - d * 1.5], [latest.lat + d, latest.lon + d * 1.5]] });
-        here = homeMap.el;
+        homeLink = homeLink || h('a', { target: '_blank', rel: 'noopener', 'aria-label': "Open the car's location in Google Maps", style: 'display:block;color:inherit' }, homeMap.el);
+        homeLink.href = googleMapsUrl(latest.lat, latest.lon);
+        here = homeLink;
       }
-      out.push(card('Location', here, h('a', { href: mapLink(latest.lat, latest.lon), target: '_blank', rel: 'noopener' }, `${latest.lat.toFixed(5)}, ${latest.lon.toFixed(5)}`),
+      out.push(card('Location', here, h('a', { href: googleMapsUrl(latest.lat, latest.lon), target: '_blank', rel: 'noopener' }, `${latest.lat.toFixed(5)}, ${latest.lon.toFixed(5)}`), mapButtons(latest.lat, latest.lon, 'the car'),
         h('p', { class: 'muted' }, `Heading ${pick(x, 'HEADING', 'direction', 'COMPASS_DIRECTION') ?? '—'} · seen ${ago(latest.ts)}`)));
     }
 

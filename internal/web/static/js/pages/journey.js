@@ -1,7 +1,7 @@
 import { h, stat, chip, catChip, dist, when, duration, num } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
-import { efficiency, kwhText } from '../energy.js';
+import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
 
 const hm = (sec) => { const m = Math.round(sec / 60); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`; };
@@ -27,7 +27,7 @@ export default async function journey(root, args, session) {
       h('p', { class: 'muted' }, `${when(s.startTs)} to ${when(s.endTs)}`),
       h('section', { class: 'card' }, h('div', { class: 'grid' },
         stat('Distance', dist(s.distanceKm, 1)), stat('Driving time', hm(s.movingSec)), stat('Elapsed', hm(s.elapsedSec)),
-        ...(s.kwhUsed != null ? [stat('Energy used', `${s.kwhEstimated ? '≈ ' : ''}${kwhText(s.kwhUsed)}`), stat('Efficiency', efficiency(s.distanceKm, s.kwhUsed) || '—')] : []),
+        ...(s.kwhUsed != null ? [stat('Energy used', `${s.kwhEstimated ? '≈ ' : ''}${kwhText(s.kwhUsed)}`), stat('Efficiency', effSpan(s.distanceKm, s.kwhUsed))] : []),
         ...(s.chargedKwh > 0 ? [stat('Charged on the way', kwhText(s.chargedKwh))] : []),
         ...(s.cost != null ? [stat(s.costEstimate ? 'Cost (estimate)' : 'Charging cost', money(cur, s.cost))] : []))),
       s.cost == null ? h('p', { class: 'muted' }, 'Add your price per kWh in More, Settings to see what this journey cost.') : s.costEstimate ? h('p', { class: 'muted' }, 'No priced charging sessions were recorded, so the cost is the energy used (plus charging losses) at your price per kWh.') : null,
