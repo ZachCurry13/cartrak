@@ -20,6 +20,9 @@
 ### 🩺 Data check
 - **More, Data check** looks through the last 90 days for things that seem wrong: a gap with no odometer readings, an odometer that went backwards, overlapping trips, trips that never closed, impossible speeds and trips with almost no distance. It only looks and never changes your data; each trip finding links to the trip.
 
+### 📅 Year in review
+- **More, Year in review** adds up a year: distance driven (from the odometer), trips, work and personal miles, energy used and efficiency, a bar for each month, your busiest month and longest trip, and charging (sessions, energy added, cost, share at home, and how much was lost as heat). Pick any year CarTrak has trips for, and **Copy summary** gives a few lines to paste.
+
 ### 🧭 Friendlier pages
 - Empty lists (Trips, Charging, Places, Maintenance, Review) now say what to do next instead of a blank line.
 - **More** has a search box that filters the pages and settings as you type.

@@ -31,6 +31,7 @@ const GROUPS = [
     ['#/security', 'Security', 'Who is signed in, the sign-in log, and your shared links (admins).'],
   ]],
   ['Looking after CarTrak', [
+    ['#/year', 'Year in review', 'A summary of the year: miles, work and personal, energy, charging and cost.'],
     ['#/datacheck', 'Data check', 'Looks for gaps in the readings, an odometer that went back, and overlapping or impossible trips.'],
     ['#/backup', 'Backup', 'Download or restore a backup, and free up space (admins).'],
     ['#/remote', 'Remote access', 'Use CarTrak away from home, and update the Cloudflare connector (admins).'],

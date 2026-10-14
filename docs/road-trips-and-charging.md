@@ -81,3 +81,6 @@ The Charging cost card also shows this month's bill so far and, from the fourth 
 
 ## Compare two trips
 On **Trips**, admins can tap **Select trips**, tap exactly two finished trips and press **Compare 2**. You get both side by side: route, distance, time, average and top speed, battery and energy used, and efficiency, with a star on the better one, and a line saying how much less energy one used per mile. Tap a date to open that trip.
+
+## Year in review
+**More, Year in review** adds up a calendar year. Driving: distance from the odometer, trips, work and personal distance, energy used and efficiency (trips under a mile are left out of efficiency), bars for each month, the busiest month and the longest trip. Charging: sessions, energy added, cost where your price is set, the share at home and, where known, the share lost as heat. The current year shows totals so far. **Copy summary** puts a few lines on the clipboard.
