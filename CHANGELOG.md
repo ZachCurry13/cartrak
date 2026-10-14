@@ -2,6 +2,12 @@
 
 ## 0.20.0
 
+### 🧹 Free up space (optional)
+- **More, Backup, Free up space** can remove the full raw Ford detail of older readings (you choose how many recent days to keep, and type TRIM to confirm) while keeping trips, charging, charts and each reading's main numbers. It works in small background steps, and the freed space is reused so the database stops growing for a while. See docs/backup.md.
+
+### 🏠 Home: the last 7 days
+- Home has a **Last 7 days** card: distance, trips, energy used and efficiency (tap it to change the unit).
+
 ### ♻️ Restore a backup from the app
 - **More, Backup, Restore a backup:** upload a backup (or pick one you copied into the data folder's restore folder), see what is in it, type RESTORE, and CarTrak restarts with it. Your current data is kept beside it as `cartrak.db.before-restore-<time>`, so nothing is lost. See docs/backup.md.
 

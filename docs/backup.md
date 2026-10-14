@@ -7,6 +7,13 @@
 
 Making a backup needs free space in the data folder about the size of the copy for a few moments, and the app is slow while it runs. Sign-in sessions are never included, so a backup cannot be used to get into a running CarTrak. It does contain your Ford sign-in, account password hashes and notification keys, so keep it private, like a password.
 
+## Free up space (optional)
+CarTrak keeps a full raw copy of every reading from Ford, about 85 KB each, roughly 10 GB a year at the default polling. **More, Backup, Free up space** can remove that detail for older readings. You choose how many recent days to keep (30, 90, 180 or 365) and type **TRIM** to confirm.
+
+What is kept: trips, charging, places, journeys, maintenance, the charts and trends, GPS points, and each reading's main numbers (battery, range, odometer, position and so on). What goes: the full raw detail, so the **Car data** page shows a note instead of the long list for those older readings.
+
+It runs in the background in small steps, so CarTrak stays usable, and you can leave the page. It cannot be undone except by restoring a backup, so make a full backup first if you might want the old detail. The database file does not get smaller by itself; the freed space is reused for new readings, so it stops growing for a long while. To make the file itself compact, make a **full backup** (which is compact) and restore it.
+
 ## Restore
 **More, Backup, Restore a backup** (admins) does it from the app:
 1. Choose the backup file you downloaded and press **Upload and check**. CarTrak checks that it is a healthy CarTrak database and shows what is in it: how many trips, charging sessions and readings, the dates, and the accounts. Nothing has changed yet.

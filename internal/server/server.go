@@ -51,6 +51,7 @@ type Server struct {
 	GeoGap      time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo         geoState
 	tiles       tileFlight
+	trim        trimState
 }
 
 func (s *Server) Handler() http.Handler {
@@ -89,6 +90,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/security", s.auth(true, s.securityInfo))
 	m.HandleFunc("DELETE /api/security/sessions/{id}", s.auth(true, s.revokeSession))
 	m.HandleFunc("GET /api/backup", s.auth(true, s.backupDownload))
+	m.HandleFunc("GET /api/storage", s.auth(true, s.storageInfo))
+	m.HandleFunc("POST /api/storage/trim", s.auth(true, s.storageTrim))
 	m.HandleFunc("GET /api/restore", s.auth(true, s.restoreInfo))
 	m.HandleFunc("POST /api/restore/upload", s.auth(true, s.restoreUpload))
 	m.HandleFunc("POST /api/restore/use", s.auth(true, s.restoreUseFile))

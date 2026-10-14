@@ -11,6 +11,7 @@ import { chargeEtaBox } from '../chargecard.js';
 import { bandRow } from '../rangeband.js';
 import { batteryRing } from '../ring.js';
 import { googleMapsUrl, mapButtons } from '../maplinks.js';
+import { effSpan, kwhText } from '../energy.js';
 
 let homeMap = null; // kept between refreshes
 let homeLink = null; // the map is a link: tap it to open the spot in Google Maps
@@ -32,6 +33,16 @@ export function pick(extra, ...names) {
 function reserveRow(latest) {
   const km = reserveKm(latest);
   return km == null ? null : h('p', { style: 'margin:10px 0 0' }, h('span', { class: 'muted' }, `Until ${getReserve()}%: `), h('b', {}, km > 0 ? dist(km, 0) : 'already below'));
+}
+
+// The last seven days at a glance. Tap the efficiency to change its unit.
+function weekCard(w) {
+  const km = w.work.distanceKm + w.personal.distanceKm;
+  const trips = w.work.trips + w.personal.trips;
+  const kwh = w.work.kwh + w.personal.kwh;
+  return card('Last 7 days', h('div', { class: 'grid' }, stat('Distance', dist(km, 0)), stat('Trips', trips),
+    ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(w.work.energyKm + w.personal.energyKm, kwh))] : [])),
+    h('p', { style: 'margin:10px 0 0' }, h('a', { href: '#/trips' }, 'See all trips')));
 }
 
 function card(title, ...kids) { return h('section', { class: 'card' }, h('h2', {}, title), ...kids); }
@@ -58,9 +69,10 @@ export default async function dashboard(root, _args, session) {
     else if (!cache || effective() === 'normal') {
       const [status, trips, ob, health] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
         session.me.role === 'admin' ? api('/api/onboarding') : null, api('/api/health').catch(() => null)]);
-      cache = { status, trips, ob, health };
+      const week = await api(`/api/summary?from=${Math.floor(Date.now() / 1000) - 7 * 86400}`).catch(() => null);
+      cache = { status, trips, ob, health, week };
     }
-    const { status, trips, ob, health } = cache;
+    const { status, trips, ob, health, week } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
       // Only while the one essential step (linking Ford) is missing. The optional steps stay on the Getting started page.
@@ -85,6 +97,7 @@ export default async function dashboard(root, _args, session) {
         bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
+    if (week && week.work.trips + week.personal.trips > 0) out.push(weekCard(week));
     if (veh.engine && latest.fuelPct != null) {
       out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
         stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—')),

@@ -58,6 +58,7 @@ export default async function data(root) {
     const names = [...d.report.tabs.map((t) => [t.id, t.title]), ['raw', 'All fields']];
     if (!names.some(([id]) => id === tab)) tab = names[0][0];
     tabs.replaceChildren(...names.map(([id, title]) => h('button', { class: id === tab ? 'on' : '', onclick: () => { tab = id; keep.set(id); drawBody(); } }, title)));
+    if (d.trimmed) return body.replaceChildren(h('div', { class: 'banner' }, 'The full detail of this older reading was removed to save space. CarTrak keeps the main numbers, trips, charging and charts.'));
     if (tab === 'raw') return raw();
     const t = d.report.tabs.find((x) => x.id === tab);
     body.replaceChildren(t.intro ? h('p', { class: 'muted' }, t.intro) : null,
