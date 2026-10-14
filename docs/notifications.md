@@ -9,6 +9,8 @@ CarTrak can send a notification to your phone or computer when something happens
 | Plugged in / Unplugged | The charging cable was connected or removed |
 | Low tire pressure | The car reports a tire as low (sent once, until the tire is fixed) |
 | Charging stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
+| Bump while parked | A parked car's motion sensors read above the bump level (More, Settings). Experimental: see Parked watch. Off by default |
+| Car alarm | The car reports its alarm or panic alarm is going off. Off by default |
 | Weekly summary | On Sunday evening (6 pm, car time zone): distance, trips, charging and efficiency for the last seven days. Off by default |
 | Service due | A reminder from More, Maintenance came due by distance or time |
 | Arrived at / Left a named place | The car arrived at or left a place named under More, Places |

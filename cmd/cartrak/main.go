@@ -91,7 +91,7 @@ func main() {
 	p.After = srv.Broadcast
 	pushSvc := &push.Service{KV: st, Subs: st, Location: cfgs.Location}
 	srv.Push = pushSvc
-	alertEngine := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, Loc: cfgs.Location, Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}
+	alertEngine := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, BumpLevel: cfgs.BumpThreshold, Loc: cfgs.Location, Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}
 	p.OnReading = alertEngine.Handle
 	srv.ApplyTunnel()
 	defer tun.Stop()

@@ -42,6 +42,7 @@ type Engine struct {
 	// The evening plug-in reminder: the time of day ("" is off), the battery level, and the local time zone.
 	ReminderTime  func() string
 	ReminderBelow func() float64
+	BumpLevel     func() float64 // the motion level that counts as a bump while parked; 0 or nil is off
 	Loc           func() *time.Location
 
 	mu           sync.Mutex
@@ -53,6 +54,7 @@ type Engine struct {
 	unlockedSent bool
 	silentSent   bool
 	inside       map[int64]bool // which named places the car is inside
+	lastBump     time.Time
 }
 
 func (e *Engine) now() time.Time {
@@ -83,6 +85,7 @@ func (e *Engine) Handle(st *ford.State) {
 	e.battery12V(st)
 	e.maintenance(st.OdometerKm)
 	e.namedPlaces(st, first)
+	e.parkedWatch(st, first)
 	e.unlocked(st)
 	e.trip(first)
 	e.prev = st

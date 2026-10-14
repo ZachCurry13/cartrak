@@ -18,3 +18,8 @@ Each reminder counts from when you add it, using the car's odometer then. It sho
 
 ## Charging stopped early
 *Charging stopped early* is an alert for a charge that stops while still plugged in at a lower level than your recent sessions ended at (below 70% and not within 3 points of where earlier sessions stopped). That can mean a loose cable or a charger fault. If you always charge to the same limit, that level is learned and never flagged. It replaces *Charging complete* for that session.
+
+## Parked watch (experimental)
+Ford no longer gives the Mach-E an alarm that reports to apps, but the car's motion sensors are in the data CarTrak receives. **More, Parked watch** is a trial of using them. A parked car reads close to zero; CarTrak checks every reading of a parked car and, for devices that turned on **Bump while parked**, alerts when the motion rises above the level set under More, Settings (Normal 1.0, Sensitive 0.6, Hard knocks only 2.0, or Off). **Car alarm** alerts when the car reports its alarm or panic alarm going off.
+
+The honest limit: CarTrak only sees what the car reports, and a parked car reports now and then, not continuously. A knock lasts a fraction of a second, so it is only caught if a reading happens to land during or just after it. The Parked watch page shows how many parked readings were checked, the strongest motion seen, and every reading above a light touch, so after a week or two you can see whether it catches anything useful. **Start a fresh trial** clears the list. It does not replace a dash cam with parking mode, which records what happened; if you use one, the time of an alert tells you which clip to look at. If someone drives or tows the car away, the existing *Trip started* alert covers it.

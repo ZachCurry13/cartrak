@@ -118,6 +118,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/trips/routes", s.auth(false, s.tripRoutes))
 	m.HandleFunc("GET /api/trips/{id}", s.auth(false, s.tripDetail))
 	m.HandleFunc("GET /api/insights", s.auth(false, s.efficiencyInsights))
+	m.HandleFunc("GET /api/parked-watch", s.auth(false, s.parkedWatchInfo))
+	m.HandleFunc("POST /api/parked-watch/reset", s.auth(true, s.parkedWatchReset))
 	m.HandleFunc("GET /api/time-use", s.auth(false, s.timeUse))
 	m.HandleFunc("GET /api/named-places", s.auth(false, s.listNamedPlaces))
 	m.HandleFunc("POST /api/named-places", s.auth(true, s.addNamedPlace))

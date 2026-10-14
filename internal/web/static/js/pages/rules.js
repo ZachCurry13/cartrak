@@ -38,12 +38,20 @@ export default async function rules(root, _a, session) {
     const lon = h('input', { type: 'number', step: 'any', value: v.geoLon ?? '', placeholder: 'Longitude' });
     const rad = h('input', { type: 'number', value: v.geoRadius ?? '', placeholder: 'Radius (metres)' });
     const msg = h('p', { class: 'muted', role: 'alert' });
+    // Fill the place from one you named under More, Places, instead of typing coordinates.
+    const named = [];
+    const pick = h('select', { id: 'rp', 'aria-label': 'Use a named place' }, h('option', { value: '' }, 'Choose a place you named…'));
+    api('/api/named-places').then((ps) => { named.push(...ps); for (const x of ps) pick.append(h('option', { value: String(x.id) }, x.name)); }).catch(() => { /* none */ });
+    pick.addEventListener('change', () => {
+      const x = named.find((n) => String(n.id) === pick.value);
+      if (x) { lat.value = x.lat; lon.value = x.lon; rad.value = x.radiusM; }
+    });
     box.replaceChildren(h('section', { class: 'card' }, h('h2', {}, r ? 'Edit rule' : 'New rule'),
       h('label', {}, 'Name'), name, h('label', {}, 'Label trips as'), cat,
       h('label', {}, 'Days'), h('div', { class: 'days' }, days.map((d) => d[1])),
       h('label', {}, 'Trips starting from'), st, h('label', {}, 'until'), en,
       h('label', {}, 'Priority (higher wins)'), pri,
-      h('label', {}, 'Optional: only when the trip starts near a place'), lat, lon, rad,
+      h('label', {}, 'Optional: only when the trip starts near a place'), pick, lat, lon, rad,
       h('label', {}, h('span', {}, on, ' Enabled')),
       h('p', { class: 'seg' }, h('button', { onclick: async () => {
         try {

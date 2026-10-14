@@ -189,3 +189,52 @@ func TestTheWeeklySummaryComesOnceOnSundayEveningWithTheWeeksNumbers(t *testing.
 		t.Fatalf("once a week, and only on Sunday: %s", r.kinds())
 	}
 }
+
+func TestAJoltOrAnAlarmOnAParkedCarIsAlertedAndLogged(t *testing.T) {
+	e, r, s := setup(t)
+	e.BumpLevel = func() float64 { return 1.0 }
+	at := func(min int, x, y, z float64, alarm string, mod func(*ford.State)) {
+		e.Handle(reading(min, func(st *ford.State) {
+			st.Extra["telemetry.metrics.acceleration.value.x"] = x
+			st.Extra["telemetry.metrics.acceleration.value.y"] = y
+			st.Extra["telemetry.metrics.acceleration.value.z"] = z
+			if alarm != "" {
+				st.Extra["telemetry.metrics.alarmStatus.value"] = alarm
+			}
+			if mod != nil {
+				mod(st)
+			}
+		}))
+	}
+	at(0, 0.1, 0.1, 0, "ARMED", nil)     // baseline
+	at(2, -0.19, -0.08, 0, "ARMED", nil) // ordinary parked noise
+	if len(r.got) != 0 {
+		t.Fatalf("noise is not a bump: %s", r.kinds())
+	}
+	at(4, 0.7, 0.4, 0.1, "ARMED", nil) // 0.8: logged as a candidate but under the level
+	at(6, 1.5, 0.9, 0.3, "ARMED", nil) // 1.8: a bump
+	at(8, 2.0, 1.0, 0.0, "ARMED", nil) // more shaking right after: one alert only
+	if r.kinds() != "bump_parked" {
+		t.Fatalf("one bump alert: %s", r.kinds())
+	}
+	at(30, 0.1, 0, 0, "TRIGGERED", nil)
+	if r.kinds() != "bump_parked,alarm_sounding" {
+		t.Fatalf("an alarm: %s", r.kinds())
+	}
+	ev, _ := s.RecentParkedEvents(10)
+	if len(ev) != 4 { // 0.8 candidate, 1.8, 2.2 (logged, not alerted again), alarm
+		t.Fatalf("the log keeps what was seen: %+v", ev)
+	}
+	st := s.ParkedWatchStats()
+	if st.Checked < 6 || st.MaxSeen < 2.2 {
+		t.Fatalf("totals: %+v", st)
+	}
+	// Driving jolts are normal and ignored, and level 0 switches it off.
+	n := len(r.got)
+	at(50, 5, 5, 5, "", func(s *ford.State) { sp := 60.0; s.SpeedKph = &sp; s.Ignition = "ON" })
+	e.BumpLevel = func() float64 { return 0 }
+	at(70, 5, 5, 5, "", nil)
+	if len(r.got) != n {
+		t.Fatalf("nothing while driving or switched off: %s", r.kinds())
+	}
+}

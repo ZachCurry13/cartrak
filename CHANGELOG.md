@@ -7,6 +7,12 @@
 - A **Needs attention** card (only when there is something) lists service reminders that are due or coming up and trips waiting for a Work or Personal label, each one tap away.
 - **Last 7 days** and **Last trip** (with its named places) now sit right under the battery instead of at the bottom.
 
+### 🚨 Parked watch (experimental)
+- **More, Parked watch** uses the car's motion sensors to notice a bump on a parked car (another car's door, for example), and can alert you with **Bump while parked** and **Car alarm** (both off until you turn them on under More, Notifications). The bump level is a setting. Because the car only reports now and then, a short knock can be missed, so the page shows how many parked readings were checked, the strongest motion seen and what it noticed, to help you judge how well it works. See docs/places-and-maintenance.md.
+
+### 📍 Trip rules can use your named places
+- When you make a trip rule that applies only near a place, you can now pick one of the places you named under More, Places instead of typing coordinates.
+
 ### 🧾 Mileage log shortcuts
 - **This week, Last week, This month** and **Last month** buttons build the log for that period in one tap.
 - When a period covers more than one calendar week, the log also lists the miles for **each calendar week**, to check against a weekly sheet.
