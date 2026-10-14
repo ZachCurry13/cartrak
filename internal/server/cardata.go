@@ -41,7 +41,7 @@ func (s *Server) carData(w http.ResponseWriter, r *http.Request) {
 		"ready": true, "ts": ts, "requested": at, "latest": at == 0 || next == 0,
 		"prev": prev, "next": next, "first": first, "model": modelName(f), "vehicle": info,
 		"trimmed": len(f) == 0, // the full detail of old readings can be removed to save space (More, Backup)
-		"report": cardata.Build(f, time.Unix(ts, 0), ford.Powertrain(info.Powertrain)),
+		"report":  cardata.Build(f, time.Unix(ts, 0), ford.Powertrain(info.Powertrain)),
 	})
 }
 
