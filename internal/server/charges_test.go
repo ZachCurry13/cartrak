@@ -75,3 +75,60 @@ func TestChargingSessionsShowEnergyAndTheOwnerCanMarkHome(t *testing.T) {
 		t.Fatalf("anonymous: %d", c)
 	}
 }
+
+func TestTheChargersOwnNumberIsCheckedStoredAndLearnedFromAfterThree(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	lon := -75.0
+	var ids []int64
+	for i := 0; i < 3; i++ {
+		la, from := 40.0, 40.0
+		c := &store.Charge{StartTS: time.Now().Add(-time.Duration(i+1) * 24 * time.Hour).Unix(), Lat: &la, Lon: &lon, StartKwh: &from, PeakKw: 7}
+		srv.S.CreateCharge(c)
+		end, to := c.StartTS+3600, 58.0 // 18 kWh added
+		c.EndTS, c.EndKwh, c.Open = &end, &to, false
+		srv.S.UpdateCharge(c)
+		ids = append(ids, c.ID)
+	}
+	patch := func(id int64, body string) int {
+		c, _ := do(t, admin, "PATCH", fmt.Sprintf("%s/api/charges/%d", ts.URL, id), body, xh)
+		return c
+	}
+	if patch(ids[0], `{"chargerKwh":10}`) != 400 || patch(ids[0], `{"chargerKwh":0}`) != 400 {
+		t.Fatal("less than the battery got, or zero, is refused")
+	}
+	eff := func() (float64, string, int) {
+		_, b := do(t, admin, "GET", ts.URL+"/api/charges/summary", "", nil)
+		var out struct {
+			Efficiency struct {
+				Value   float64
+				Source  string
+				Samples int
+			}
+		}
+		json.Unmarshal([]byte(b), &out)
+		return out.Efficiency.Value, out.Efficiency.Source, out.Efficiency.Samples
+	}
+	if v, src, n := eff(); v != 0.9 || src != "setting" || n != 0 {
+		t.Fatalf("before any entry: %v %s %d", v, src, n)
+	}
+	for i, id := range ids {
+		if patch(id, `{"chargerKwh":21.2}`) != 200 {
+			t.Fatalf("entry %d", i)
+		}
+		if i == 1 {
+			if _, src, n := eff(); src != "setting" || n != 2 {
+				t.Fatalf("two entries are not enough to trust: %s %d", src, n)
+			}
+		}
+	}
+	if v, src, n := eff(); src != "measured" || n != 3 || v < 0.84 || v > 0.86 {
+		t.Fatalf("three entries: %v %s %d", v, src, n)
+	}
+	if patch(ids[0], `{"clearCharger":true}`) != 200 {
+		t.Fatal("clear")
+	}
+	if _, src, _ := eff(); src != "setting" {
+		t.Fatalf("back to the setting: %s", src)
+	}
+}

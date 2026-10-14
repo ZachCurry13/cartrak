@@ -34,17 +34,47 @@ func (s *Server) currency() string {
 	return s.Cfg.Currency()
 }
 
+// effInfo is the slow-charging efficiency in use: measured from sessions where the charger's own number was
+// entered (once there are at least three), otherwise the setting.
+type effInfo struct {
+	Value   float64 `json:"value"`
+	Source  string  `json:"source"`  // measured or setting
+	Samples int     `json:"samples"` // sessions with the charger's number entered
+}
+
 func (s *Server) chargeSessions(limit int) ([]charging.Session, error) {
+	out, _, err := s.chargeSessionsEff(limit)
+	return out, err
+}
+
+func (s *Server) chargeSessionsEff(limit int) ([]charging.Session, effInfo, error) {
 	cs, err := s.S.ListCharges(limit)
 	if err != nil {
-		return nil, err
+		return nil, effInfo{}, err
 	}
 	capacity, home, prices := s.capacityKwh(), s.homePoint(), s.prices()
-	out := make([]charging.Session, 0, len(cs))
-	for _, c := range cs {
-		out = append(out, charging.Enrich(c, capacity, home, prices))
+	prices.AcEfficiency = 0.9
+	if s.Cfg != nil {
+		prices.AcEfficiency = s.Cfg.ChargeEfficiency()
 	}
-	return out, nil
+	enrich := func() []charging.Session {
+		out := make([]charging.Session, 0, len(cs))
+		for _, c := range cs {
+			out = append(out, charging.Enrich(c, capacity, home, prices))
+		}
+		return out
+	}
+	out := enrich()
+	info := effInfo{Value: prices.AcEfficiency, Source: "setting"}
+	if eff, n := charging.Learned(out); n > 0 {
+		info.Samples = n
+		if n >= 3 {
+			prices.AcEfficiency = eff
+			info.Value, info.Source = eff, "measured"
+			out = enrich()
+		}
+	}
+	return out, info, nil
 }
 
 // listCharges is every recent charging session with the energy it added and what it cost.
@@ -65,7 +95,7 @@ type monthOut struct {
 
 // chargeSummary totals the last twelve months: sessions, energy, cost, and cost per distance driven.
 func (s *Server) chargeSummary(w http.ResponseWriter, r *http.Request) {
-	ss, err := s.chargeSessions(1000)
+	ss, eff, err := s.chargeSessionsEff(1000)
 	if err != nil {
 		fail(w, 500, "db error")
 		return
@@ -90,7 +120,7 @@ func (s *Server) chargeSummary(w http.ResponseWriter, r *http.Request) {
 		out = append(out, mo)
 	}
 	p := s.prices()
-	ok(w, map[string]any{"months": out, "currency": s.currency(), "priceSet": p.Home != nil || p.Public != nil, "homeKnown": s.homePoint() != nil})
+	ok(w, map[string]any{"months": out, "currency": s.currency(), "priceSet": p.Home != nil || p.Public != nil, "homeKnown": s.homePoint() != nil, "efficiency": eff})
 }
 
 // patchCharge sets whether a session was at home or public. Marking one as home also tells CarTrak where
@@ -98,9 +128,11 @@ func (s *Server) chargeSummary(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchCharge(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	var in struct {
-		Kind string `json:"kind"`
+		Kind         *string  `json:"kind"`
+		ChargerKwh   *float64 `json:"chargerKwh"`
+		ClearCharger bool     `json:"clearCharger"`
 	}
-	if err := decode(r, &in); err != nil || (in.Kind != "" && in.Kind != "home" && in.Kind != "public") {
+	if err := decode(r, &in); err != nil || (in.Kind != nil && *in.Kind != "" && *in.Kind != "home" && *in.Kind != "public") {
 		fail(w, 400, "choose home, public or automatic")
 		return
 	}
@@ -109,13 +141,32 @@ func (s *Server) patchCharge(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "no such charging session")
 		return
 	}
-	if err := s.S.SetChargeKind(id, in.Kind); err != nil {
-		fail(w, 500, "db error")
-		return
+	if in.Kind != nil {
+		if err := s.S.SetChargeKind(id, *in.Kind); err != nil {
+			fail(w, 500, "db error")
+			return
+		}
+		if *in.Kind == "home" && c.Lat != nil && c.Lon != nil {
+			_ = s.S.SetKV(kvHomeLat, strconv.FormatFloat(*c.Lat, 'f', 5, 64))
+			_ = s.S.SetKV(kvHomeLon, strconv.FormatFloat(*c.Lon, 'f', 5, 64))
+		}
 	}
-	if in.Kind == "home" && c.Lat != nil && c.Lon != nil {
-		_ = s.S.SetKV(kvHomeLat, strconv.FormatFloat(*c.Lat, 'f', 5, 64))
-		_ = s.S.SetKV(kvHomeLon, strconv.FormatFloat(*c.Lon, 'f', 5, 64))
+	if in.ClearCharger {
+		_ = s.S.SetChargerKwh(id, nil)
+	} else if in.ChargerKwh != nil {
+		added := charging.Enrich(c, s.capacityKwh(), nil, charging.Prices{}).AddedKwh
+		switch {
+		case *in.ChargerKwh <= 0 || *in.ChargerKwh > 300:
+			fail(w, 400, "enter the kWh the charger reported, for example 31.4")
+			return
+		case added != nil && *in.ChargerKwh < *added*0.95:
+			fail(w, 400, "that is less than the energy the battery received, so check the number")
+			return
+		}
+		if err := s.S.SetChargerKwh(id, in.ChargerKwh); err != nil {
+			fail(w, 500, "db error")
+			return
+		}
 	}
-	ok(w, map[string]any{"kind": in.Kind})
+	ok(w, "saved")
 }

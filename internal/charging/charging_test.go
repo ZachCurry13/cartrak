@@ -63,3 +63,30 @@ func TestMonthsAddUpSessionsEnergyAndCost(t *testing.T) {
 		t.Fatalf("%+v", got)
 	}
 }
+
+func TestAnEnteredChargerNumberGivesTheRealEfficiencyAndIsLearned(t *testing.T) {
+	mk := func(added, charger float64) Session {
+		c := &store.Charge{StartKwh: f(10), EndKwh: f(10 + added), PeakKw: 7}
+		if charger > 0 {
+			c.ChargerKwh = f(charger)
+		}
+		return Enrich(c, nil, nil, Prices{Home: f(0.2), AcEfficiency: 0.9})
+	}
+	s := mk(18, 20.5)
+	if !s.Measured || s.Efficiency == nil || math.Abs(*s.Efficiency-18/20.5) > 1e-9 || !close(s.WallKwh, 20.5) || !close(s.Cost, 4.1) {
+		t.Fatalf("%+v", s)
+	}
+	if un := mk(18, 0); un.Measured || !close(un.WallKwh, 20) { // the 90% setting
+		t.Fatalf("unmeasured uses the setting: %+v", un)
+	}
+	if low := mk(18, 10); low.Measured { // less than the battery got: a typing mistake, ignored
+		t.Fatalf("an impossible number is not used: %+v", low)
+	}
+	eff, n := Learned([]Session{mk(18, 20.5), mk(30, 34), mk(10, 0)})
+	if n != 2 || math.Abs(eff-48.0/54.5) > 1e-9 {
+		t.Fatalf("energy-weighted average of the measured ones: %v %d", eff, n)
+	}
+	if _, n := Learned([]Session{mk(10, 0)}); n != 0 {
+		t.Fatal("nothing measured")
+	}
+}

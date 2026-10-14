@@ -15,13 +15,15 @@ type Charge struct {
 	StartKwh *float64 `json:"startKwh"` // energy left in the battery at the start and end, kWh
 	EndKwh   *float64 `json:"endKwh"`
 	Kind     string   `json:"kind"` // "home", "public", or "" when CarTrak decides from the place
+	// ChargerKwh is what the charger reported delivering, typed in by the owner, so the real loss can be measured.
+	ChargerKwh *float64 `json:"chargerKwh"`
 }
 
-const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind`
+const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh`
 
 func scanCharge(r interface{ Scan(...any) error }) (*Charge, error) {
 	var c Charge
-	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind)
+	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh)
 	return &c, err
 }
 
@@ -81,5 +83,11 @@ func (s *Store) GetCharge(id int64) (*Charge, error) {
 // SetChargeKind records the owner's choice: "home", "public", or "" to let CarTrak decide from the place.
 func (s *Store) SetChargeKind(id int64, kind string) error {
 	_, err := s.DB.Exec(`UPDATE charges SET kind=? WHERE id=?`, kind, id)
+	return err
+}
+
+// SetChargerKwh records what the charger said it delivered, or clears it with nil.
+func (s *Store) SetChargerKwh(id int64, kwh *float64) error {
+	_, err := s.DB.Exec(`UPDATE charges SET charger_kwh=? WHERE id=?`, kwh, id)
 	return err
 }

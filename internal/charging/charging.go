@@ -18,16 +18,21 @@ const (
 type Point struct{ Lat, Lon float64 }
 
 // Prices are per kWh; nil means not set.
-type Prices struct{ Home, Public *float64 }
+type Prices struct {
+	Home, Public *float64
+	AcEfficiency float64 // share of the wall energy that reaches the battery on slow charging; 0 uses the default
+}
 
 // Session is a charging session with what it added and cost.
 type Session struct {
 	*store.Charge
-	AddedKwh  *float64 `json:"addedKwh"`  // energy that went into the battery
-	Estimated bool     `json:"estimated"` // worked out from the battery percent, not the car's energy reading
-	WallKwh   *float64 `json:"wallKwh"`   // what the charger delivered, allowing for AC losses
-	Where     string   `json:"where"`     // home, public, or "" when it cannot be told
-	Cost      *float64 `json:"cost"`
+	AddedKwh   *float64 `json:"addedKwh"`  // energy that went into the battery
+	Estimated  bool     `json:"estimated"` // worked out from the battery percent, not the car's energy reading
+	WallKwh    *float64 `json:"wallKwh"`   // what the charger delivered, allowing for AC losses
+	Where      string   `json:"where"`     // home, public, or "" when it cannot be told
+	Cost       *float64 `json:"cost"`
+	Efficiency *float64 `json:"efficiency"` // added / delivered, only when the charger's number was entered
+	Measured   bool     `json:"measured"`
 }
 
 func distanceM(a, b Point) float64 {
@@ -61,8 +66,17 @@ func Enrich(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Sessio
 		return s
 	}
 	wall := *s.AddedKwh
-	if c.PeakKw < acKwLimit {
-		wall /= acEfficiency
+	switch {
+	case c.ChargerKwh != nil && *c.ChargerKwh >= wall*0.95:
+		wall = *c.ChargerKwh
+		eff := *s.AddedKwh / wall
+		s.Efficiency, s.Measured = &eff, true
+	case c.PeakKw < acKwLimit:
+		eff := p.AcEfficiency
+		if eff < 0.5 || eff > 1 {
+			eff = acEfficiency
+		}
+		wall /= eff
 	}
 	s.WallKwh = &wall
 	price := p.Home // unknown place: the home price, the usual single-price case
@@ -119,4 +133,22 @@ func ByMonth(ss []Session, monthOf func(int64) string) []Month {
 		}
 	}
 	return out
+}
+
+// Learned is the overall efficiency of the slow-charging sessions where the charger's number was entered,
+// weighted by energy, and how many sessions it rests on. Implausible entries are ignored.
+func Learned(ss []Session) (eff float64, n int) {
+	var added, wall float64
+	for _, s := range ss {
+		if !s.Measured || s.Efficiency == nil || s.PeakKw >= acKwLimit || *s.Efficiency < 0.6 || *s.Efficiency > 1 {
+			continue
+		}
+		added += *s.AddedKwh
+		wall += *s.WallKwh
+		n++
+	}
+	if n == 0 || wall <= 0 {
+		return 0, 0
+	}
+	return added / wall, n
 }

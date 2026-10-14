@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0
+
+### 🔌 Measure your charging loss
+- On each charging session, admins can type in **kWh from the charger** (from your charger's app). CarTrak shows how much of it reached the battery, and after three sessions it uses your own measured average instead of a fixed 90% when it works out what charging cost.
+- A new setting, **Slow-charging efficiency**, sets the number used until it has been measured.
+
 ## 0.19.0
 
 ### 🧳 Journeys

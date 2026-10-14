@@ -25,6 +25,7 @@ var migrations = []struct{ table, column, ddl string }{
 	{"trips", "journey_id", `ALTER TABLE trips ADD COLUMN journey_id INTEGER`},
 	{"charges", "start_kwh", `ALTER TABLE charges ADD COLUMN start_kwh REAL`},
 	{"charges", "end_kwh", `ALTER TABLE charges ADD COLUMN end_kwh REAL`},
+	{"charges", "charger_kwh", `ALTER TABLE charges ADD COLUMN charger_kwh REAL`},
 	{"charges", "kind", `ALTER TABLE charges ADD COLUMN kind TEXT NOT NULL DEFAULT ''`},
 }
 

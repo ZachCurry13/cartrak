@@ -11,6 +11,7 @@ const (
 	PriceHomeKey   = "CARTRAK_PRICE_HOME"
 	PricePublicKey = "CARTRAK_PRICE_PUBLIC"
 	CurrencyKey    = "CARTRAK_CURRENCY"
+	ChargeEffKey   = "CARTRAK_CHARGE_EFFICIENCY"
 )
 
 func init() {
@@ -21,6 +22,16 @@ func init() {
 			Help: "An average for public chargers, for example 0.45. Leave empty to use the home price for everything."},
 		Def{Key: CurrencyKey, Label: "Currency symbol", Options: []Option{{"", "$"}, {"€", "€"}, {"£", "£"}, {"kr", "kr"}, {"A$", "A$"}, {"C$", "C$"}},
 			Help: "Shown in front of the cost figures."})
+	Defs = append(Defs, Def{Key: ChargeEffKey, Label: "Slow-charging efficiency", Options: effOptions,
+		Help: "How much of the energy from a home charger reaches the battery. Used for cost estimates until at least three sessions have the charger's own number entered, then your measured average is used instead."})
+	validators[ChargeEffKey] = func(v string) error {
+		for _, o := range effOptions {
+			if o.Value == v {
+				return nil
+			}
+		}
+		return fmt.Errorf("choose one of the values")
+	}
 	price := func(v string) error {
 		if v == "" {
 			return nil
@@ -38,6 +49,16 @@ func init() {
 		}
 		return nil
 	}
+}
+
+var effOptions = []Option{{"", "90% (default)"}, {"80", "80%"}, {"84", "84%"}, {"86", "86%"}, {"88", "88%"}, {"92", "92%"}, {"95", "95%"}}
+
+// ChargeEfficiency is the share (0.8 to 0.95) of wall energy assumed to reach the battery.
+func (s *Settings) ChargeEfficiency() float64 {
+	if n, err := strconv.Atoi(s.Value(ChargeEffKey)); err == nil && n >= 50 && n <= 100 {
+		return float64(n) / 100
+	}
+	return 0.9
 }
 
 func (s *Settings) price(key string) *float64 {
