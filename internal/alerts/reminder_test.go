@@ -1,6 +1,7 @@
 package alerts
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -164,6 +165,7 @@ func TestTheWeeklySummaryComesOnceOnSundayEveningWithTheWeeksNumbers(t *testing.
 	now := sunday.Add(-time.Hour)                            // 18:00? no: 18:00 is the hour, this is 18:00
 	e.Now = func() time.Time { return now }
 	e.Loc = func() *time.Location { return time.UTC }
+	_ = s.SetKV(kvBackupTaken, strconv.FormatInt(sunday.Unix(), 10)) // a recent backup, so only the summary is under test
 	mk := func(daysAgo int, km, from, to float64) {
 		start := sunday.AddDate(0, 0, -daysAgo)
 		tr := &store.Trip{StartTS: start.Unix(), StartKwh: &from}

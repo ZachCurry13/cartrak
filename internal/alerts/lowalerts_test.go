@@ -1,10 +1,12 @@
 package alerts
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 func TestLowBatteryWarnsOnceThenRearmsAfterRecovery(t *testing.T) {
@@ -86,5 +88,41 @@ func TestChargingBudgetWarnsOncePerMonth(t *testing.T) {
 	e.Tick()
 	if len(r.got) != 2 {
 		t.Fatalf("next month it can warn again: %s", r.kinds())
+	}
+}
+
+func TestBackupReminderWaitsForRealUseAndComesOnceAMonth(t *testing.T) {
+	e, r, _ := setup(t)
+	now := t0
+	e.Now = func() time.Time { return now }
+	e.Tick()
+	if len(r.got) != 0 {
+		t.Fatalf("no data yet: %s", r.kinds())
+	}
+	end := t0.Add(-time.Hour).Unix()
+	tr := &store.Trip{StartTS: t0.Add(-2 * time.Hour).Unix(), EndTS: &end, Category: "personal", CategorySource: "default"}
+	if err := e.S.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	e.Tick()
+	if len(r.got) != 0 {
+		t.Fatalf("a brand-new install: %s", r.kinds())
+	}
+	now = t0.Add(15 * 24 * time.Hour)
+	e.Tick()
+	e.Tick()
+	if r.kinds() != "backup_reminder" {
+		t.Fatalf("once: %s", r.kinds())
+	}
+	now = now.Add(31 * 24 * time.Hour)
+	_ = e.S.SetKV(kvBackupTaken, strconv.FormatInt(now.Add(-24*time.Hour).Unix(), 10))
+	e.Tick()
+	if len(r.got) != 1 {
+		t.Fatalf("a recent backup: %s", r.kinds())
+	}
+	now = now.Add(31 * 24 * time.Hour)
+	e.Tick()
+	if len(r.got) != 2 {
+		t.Fatalf("a month later with no new backup: %s", r.kinds())
 	}
 }

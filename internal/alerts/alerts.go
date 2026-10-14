@@ -199,6 +199,7 @@ func (e *Engine) Tick() {
 	e.weeklyDigest()
 	e.diskCheck()
 	e.budget()
+	e.backupCheck()
 	if e.prev != nil {
 		e.maintenance(e.prev.OdometerKm)
 	}

@@ -9,6 +9,9 @@
 ### 🚗 Is this trip good?
 - A trip now says how its efficiency compares with your average over the last year ("12% more efficient than your average"), once CarTrak has at least five trips with energy to compare against. Skipped on data saver.
 
+### 💾 A gentle backup reminder
+- A new optional alert, **Backup reminder**, tells you at most once a month when you have not downloaded a backup in the last month (and only once CarTrak has been recording for two weeks). It opens More, Backup.
+
 ### 👪 A simpler view for family
 - Viewer accounts now see five tabs (Home, Trips, Live, Charging, More) and a short More page: the road-trip planner, efficiency insights, Year in review, Time, display settings, notifications and help. Admin tools such as Health, Data, maintenance, rules and connections stay out of the way. Viewers can still open any page by its address, and still cannot change anything.
 

@@ -12,7 +12,7 @@ import (
 
 // backupInfo is what the Backup page shows.
 // kvBackupTaken is when a backup was last downloaded, for the Getting started checklist.
-const kvBackupTaken = "backup_taken_at"
+const kvBackupTaken = "backup_taken_at" // the alerts package reads the same key for the backup reminder
 
 func (s *Server) backupInfo(w http.ResponseWriter, r *http.Request) {
 	ok(w, map[string]any{"dbBytes": s.S.DBSize(), "firstReading": s.S.FirstSampleTS()})

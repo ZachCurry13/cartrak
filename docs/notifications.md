@@ -11,6 +11,7 @@ CarTrak can send a notification to your phone or computer when something happens
 | Charging stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
 | Bump while parked | A parked car's motion sensors read above the bump level (More, Settings). Experimental: see Parked watch. Off by default |
 | Car alarm | The car reports its alarm or panic alarm is going off. Off by default |
+| Backup reminder | No backup has been downloaded in the last month. At most once a month, and only after CarTrak has been recording for two weeks |
 | Low battery | The battery fell to the level an admin chose under More, Settings, while the car was not charging. Once, then again after it has recovered five points. Off until a level is chosen |
 | Charging budget | This month's charging cost passed the budget an admin set under More, Settings. Once a month. Needs your price per kWh |
 | Low disk space | The disk CarTrak stores its data on is nearly full (under 5 GB or 8 percent free). At most once every three days. Off by default |
