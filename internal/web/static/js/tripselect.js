@@ -26,16 +26,17 @@ export function tripSelect(onChange, onCombined) {
   function paintBar() {
     bar.hidden = !state.on;
     if (!state.on) return;
-    bar.replaceChildren(h('p', { class: 'muted' }, 'Tap the trips that belong together, for example a road trip or a day with several stops.'),
+    bar.replaceChildren(h('p', { class: 'muted' }, 'Tap trips to combine ones that belong together (a road trip, or a day with several stops), or tap exactly two and choose Compare.'),
       name,
       h('p', { class: 'seg' },
         h('button', { onclick: combine, disabled: picked.size < 2 }, `Combine ${picked.size} trip${picked.size === 1 ? '' : 's'}`),
+        h('button', { class: 'sec', disabled: picked.size !== 2, onclick: () => { location.hash = `#/compare/${[...picked].join(',')}`; } }, 'Compare 2'),
         h('button', { class: 'sec', onclick: () => { state.shown.filter(eligible).forEach((t) => picked.add(t.id)); onChange(); } }, 'Select all shown'),
         h('button', { class: 'sec', onclick: () => { picked.clear(); state.on = false; onChange(); } }, 'Cancel')), msg);
   }
 
   return {
     state, picked, bar, paintBar, eligible, toggle,
-    button: (admin) => (admin ? h('button', { class: 'sec', onclick: () => { state.on = !state.on; picked.clear(); onChange(); } }, state.on ? 'Done selecting' : 'Select trips to combine') : null),
+    button: (admin) => (admin ? h('button', { class: 'sec', onclick: () => { state.on = !state.on; picked.clear(); onChange(); } }, state.on ? 'Done selecting' : 'Select trips') : null),
   };
 }

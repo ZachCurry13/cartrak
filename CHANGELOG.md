@@ -14,6 +14,9 @@
 - **Charging** starts with **What would a charge cost?**: choose a start and end battery level (it begins at where the car is now, to 80 percent, with 80 and 100 buttons) and see the energy and the cost at home and at a fast charger, using your prices. Home includes the heat lost on slow charging.
 - The Charging cost card shows **this month so far** and, after the third day, what the month is on pace for.
 
+### ⚖️ Compare two trips
+- On **Trips**, tap **Select trips**, tap exactly two and press **Compare 2** to see them side by side: route, distance, time, speeds, battery and energy used and efficiency, with a star on the better one and a line saying how much less energy one used.
+
 ### 🧭 Friendlier pages
 - Empty lists (Trips, Charging, Places, Maintenance, Review) now say what to do next instead of a blank line.
 - **More** has a search box that filters the pages and settings as you type.

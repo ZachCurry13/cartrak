@@ -9,6 +9,7 @@ const routes = {
   '': () => import('./pages/dashboard.js'),
   trips: () => import('./pages/trips.js'),
   trip: () => import('./pages/tripdetail.js'),
+  compare: () => import('./pages/compare.js'),
   journey: () => import('./pages/journey.js'),
   charging: () => import('./pages/charging.js'),
   health: () => import('./pages/vehiclehealth.js'),
