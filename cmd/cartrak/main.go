@@ -35,6 +35,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
+	// A backup the owner confirmed in the app is swapped in now, before the database is opened.
+	if done, err := store.ApplyPendingRestore(cfg.DataDir); err != nil {
+		log.Printf("restore: %v", err)
+	} else if done {
+		log.Printf("restore: the backup was put in place; the previous data is kept next to it as cartrak.db.before-restore-*")
+	}
 	st, err := store.Open(cfg.DataDir)
 	if err != nil {
 		log.Fatalf("database: %v", err)
@@ -80,7 +86,8 @@ func main() {
 	port := cfg.Addr[strings.LastIndex(cfg.Addr, ":")+1:]
 	srv := &server.Server{S: st, P: p, D: det, Link: link, Version: version, Upd: upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
 		Tunnel: tun, Conn: conn, Port: port, TrustProxy: cfg.TrustProxy, SessionDays: cfg.SessionDays,
-		TileDir: filepath.Join(cfg.DataDir, "tiles"), DataDir: cfg.DataDir}
+		TileDir: filepath.Join(cfg.DataDir, "tiles"), DataDir: cfg.DataDir,
+		Exit: func() { log.Printf("stopping so the restore can be applied"); st.Close(); os.Exit(1) }}
 	p.After = srv.Broadcast
 	pushSvc := &push.Service{KV: st, Subs: st, Location: cfgs.Location}
 	srv.Push = pushSvc

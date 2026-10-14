@@ -28,7 +28,7 @@ export default async function live(root, _a, session) {
     h('div', { class: 'tiles' },
       h('div', { class: 'tile big' }, h('div', { class: 'tl muted' }, 'Charge'), ring.el, el.soc.s),
       tile('range', 'Range'), tile('energy', 'Energy left'), tile('reserve', 'To reserve'), tile('speed', 'Speed'), tile('power', 'Charging power'), tile('eta', 'Time to target'),
-      tile('trip', 'This trip'), tile('outside', 'Outside'), tile('odo', 'Odometer')),
+      tile('trip', 'This trip'), tile('tripTime', 'Trip time'), tile('today', 'Driving today'), tile('outside', 'Outside'), tile('odo', 'Odometer')),
     h('div', {}, admin ? h('p', {}, toggle) : null, road));
 
   let lastTs = 0;
@@ -65,8 +65,22 @@ export default async function live(root, _a, session) {
     const used = t && t.startKwh != null && x && x.energyKwh != null ? t.startKwh - x.energyKwh : null;
     const eff = t ? efficiency(t.distanceKm, used) : null;
     set('trip', t ? dist(t.distanceKm) : '—', t ? `${duration(t.startTs, Math.floor(Date.now() / 1000))} · top ${speed(t.maxSpeedKph)}${eff ? ` · ${eff}` : ''}` : 'No trip in progress');
+    lastTrip = { trip: t, today: ev.drivingToday || 0, at: Math.floor(Date.now() / 1000) };
+    showTimes();
     showRoad(ev.status);
     tickAge();
+  }
+
+  // Time on this trip and time driving today. Both keep counting between readings while a trip is going.
+  let lastTrip = null;
+  function showTimes() {
+    if (!lastTrip) return;
+    const now = Math.floor(Date.now() / 1000);
+    const { trip } = lastTrip;
+    set('tripTime', trip ? duration(trip.startTs, now) : '—', trip ? `since ${new Date(trip.startTs * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'No trip in progress');
+    const today = lastTrip.today + (trip ? now - lastTrip.at : 0);
+    const m = Math.round(today / 60);
+    set('today', m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`, 'since midnight');
   }
 
 
@@ -97,7 +111,7 @@ export default async function live(root, _a, session) {
     if (st.rateLimited) road.textContent += ' Ford asked CarTrak to slow down; it is waiting.';
   }
 
-  function tickAge() { age.textContent = lastTs ? `reading ${ago(lastTs)}` : ''; }
+  function tickAge() { age.textContent = lastTs ? `reading ${ago(lastTs)}` : ''; showTimes(); }
 
   async function keepAwake() {
     try { if ('wakeLock' in navigator && !document.hidden) wake = await navigator.wakeLock.request('screen'); } catch (e) { /* not allowed */ }

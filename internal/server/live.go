@@ -47,6 +47,8 @@ type liveEvent struct {
 	Sample *summary      `json:"sample"`
 	Trip   *store.Trip   `json:"trip"`
 	Status poller.Status `json:"status"`
+	// DrivingToday is how long the car has been driven since local midnight, in seconds, including a trip still going.
+	DrivingToday int64 `json:"drivingToday"`
 }
 
 // hub fans events out to connected browsers. A slow client just misses
@@ -91,7 +93,32 @@ func (h *hub) count() int {
 func (s *Server) currentEvent() liveEvent {
 	latest, _ := s.S.LatestSample()
 	trip, _ := s.S.OpenTrip()
-	return liveEvent{Sample: summarize(latest), Trip: trip, Status: s.P.Status()}
+	return liveEvent{Sample: summarize(latest), Trip: trip, Status: s.P.Status(), DrivingToday: s.drivingToday()}
+}
+
+// drivingToday adds up the time spent on trips since midnight in the car's time zone.
+func (s *Server) drivingToday() int64 {
+	now := time.Now()
+	y, m, d := now.In(s.defaultLoc()).Date()
+	midnight := time.Date(y, m, d, 0, 0, 0, 0, s.defaultLoc()).Unix()
+	ts, err := s.S.SpanTrips(midnight)
+	if err != nil {
+		return 0
+	}
+	var total int64
+	for _, t := range ts {
+		from, to := t.StartTS, now.Unix()
+		if t.EndTS != nil {
+			to = *t.EndTS
+		}
+		if from < midnight {
+			from = midnight
+		}
+		if to > from {
+			total += to - from
+		}
+	}
+	return total
 }
 
 // Broadcast pushes the newest reading to everyone watching live.

@@ -57,3 +57,6 @@ Ford only allows an app roughly **one request per endpoint every 30 seconds**; a
 memory instead of asking again too soon, adds at most one of the slower endpoints per reading, and after a 429 stops
 sending anything and waits (30 s, then 1 min, 2 min... up to 10 min, or longer if Ford says so). For finer detail
 than every 30 seconds on a road trip, the phone's own GPS (planned) is the way, not faster polling of Ford.
+
+## Trip time and driving today
+The Live screen's **Trip time** tile shows how long the current trip has been going and when it started, and **Driving today** adds up all the time spent driving since midnight (in the car's time zone), including the trip in progress. Both keep counting between readings.

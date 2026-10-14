@@ -2,6 +2,12 @@
 
 ## 0.20.0
 
+### ♻️ Restore a backup from the app
+- **More, Backup, Restore a backup:** upload a backup (or pick one you copied into the data folder's restore folder), see what is in it, type RESTORE, and CarTrak restarts with it. Your current data is kept beside it as `cartrak.db.before-restore-<time>`, so nothing is lost. See docs/backup.md.
+
+### 🕒 Trip time and time driving today
+- **Live** has two new tiles: **Trip time** (how long the current trip has been going, and when it started) and **Driving today** (all the time spent driving since midnight, including the trip in progress). Both keep counting between readings.
+
 ### ⏱️ Time: parked, driving and charging
 - **More, Time** shows what share of the time the car was parked, driving or charging over the last 7 days, 30 days or year, a bar for each day, and where it was parked (Home, the office and other places you have named, or Elsewhere). It uses the trips and charging sessions CarTrak already recorded.
 

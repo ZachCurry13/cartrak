@@ -90,3 +90,53 @@ func download(t *testing.T, c *http.Client, url string) []byte {
 	}
 	return b
 }
+
+func TestARestoreIsUploadedCheckedConfirmedAndOnlyThenStopsTheApp(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.DataDir = t.TempDir()
+	stopped := make(chan bool, 1)
+	srv.Exit = func() { stopped <- true }
+	admin := adminClient(t, ts.URL)
+
+	// A real backup of this server's own database, so it has the account the test signs in with.
+	backup := download(t, admin, ts.URL+"/api/backup")
+	post := func(path string, body []byte) (int, string) {
+		req, _ := http.NewRequest("POST", ts.URL+path, strings.NewReader(string(body)))
+		req.Header.Set("X-Requested-With", "cartrak")
+		resp, err := admin.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return resp.StatusCode, string(b)
+	}
+	if code, b := post("/api/restore/upload", []byte("not a database")); code != 400 || !strings.Contains(b, "not a CarTrak backup") {
+		t.Fatalf("junk: %d %s", code, b)
+	}
+	if code, b := post("/api/restore/upload", backup); code != 200 || !strings.Contains(b, `"users"`) {
+		t.Fatalf("upload: %d %s", code, b)
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/restore/apply", `{"confirm":"yes"}`, xh); code != 400 {
+		t.Fatalf("the word RESTORE is required: %d", code)
+	}
+	select {
+	case <-stopped:
+		t.Fatal("it must not stop without confirmation")
+	default:
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/restore/apply", `{"confirm":"RESTORE"}`, xh); code != 200 {
+		t.Fatalf("apply: %d", code)
+	}
+	select {
+	case <-stopped:
+	case <-time.After(3 * time.Second):
+		t.Fatal("after confirming, the app stops so the restore is applied at the next start")
+	}
+	if _, err := os.Stat(filepath.Join(srv.DataDir, "restore", "APPLY")); err != nil {
+		t.Fatal("the confirmation is recorded for the next start")
+	}
+	if code, _ := do(t, &http.Client{}, "POST", ts.URL+"/api/restore/apply", `{"confirm":"RESTORE"}`, xh); code != 401 {
+		t.Fatalf("anonymous: %d", code)
+	}
+}

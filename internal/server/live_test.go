@@ -172,3 +172,29 @@ func TestCSVHasLocalStartAndZone(t *testing.T) {
 		t.Fatalf("csv: %d\n%s", code, body)
 	}
 }
+
+func TestLiveEventsCarryTheTimeDrivenToday(t *testing.T) {
+	_, srv := healthServer(t, fakeProv{}, false, false)
+	now := time.Now()
+	y, m, d := now.In(srv.defaultLoc()).Date()
+	midnight := time.Date(y, m, d, 0, 0, 0, 0, srv.defaultLoc())
+	mk := func(start time.Time, mins int, open bool) {
+		a := store.Trip{StartTS: start.Unix()}
+		tr := &a
+		if err := srv.S.CreateTrip(tr); err != nil {
+			t.Fatal(err)
+		}
+		if open {
+			return
+		}
+		end := start.Add(time.Duration(mins) * time.Minute).Unix()
+		tr.EndTS, tr.Open = &end, false
+		srv.S.UpdateTrip(tr)
+	}
+	mk(midnight.Add(-30*time.Minute), 60, false) // started yesterday, 30 min of it today
+	mk(midnight.Add(2*time.Hour), 20, false)
+	got := srv.currentEvent().DrivingToday
+	if got != (30+20)*60 {
+		t.Fatalf("30 minutes carried over past midnight plus a 20 minute trip: %d s", got)
+	}
+}
