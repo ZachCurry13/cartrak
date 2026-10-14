@@ -73,10 +73,14 @@ func (s *Server) mileageReport(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
 	defer cancel()
 	rep := mileage.Build(ctx, trips, s.places(), mileage.Options{Description: q.Get("description"), Default: loc, RoundUp: q.Get("rounding") != "nearest"})
+	var rate *float64 // a deduction only makes sense for work trips
+	if cat == "work" {
+		rate = s.mileageRate()
+	}
 	ok(w, map[string]any{
 		"from": start.Format("2006-01-02"), "to": end.AddDate(0, 0, -1).Format("2006-01-02"),
 		"report": rep, "tsv": rep.TSV(false), "tsvFull": rep.TSV(true),
-		"lookupOn": s.Cfg == nil || s.Cfg.GeocodeEnabled(),
+		"lookupOn": s.Cfg == nil || s.Cfg.GeocodeEnabled(), "rate": rate, "currency": s.currency(),
 	})
 }
 
@@ -106,4 +110,12 @@ func reportPeriod(weeks, year, from, to string, loc *time.Location) (start, end 
 		return start, end, fmt.Errorf("the to date must be on or after the from date")
 	}
 	return start, last.AddDate(0, 0, 1), nil
+}
+
+// mileageRate is the deduction per mile the owner set, or nil.
+func (s *Server) mileageRate() *float64 {
+	if s.Cfg == nil {
+		return nil
+	}
+	return s.Cfg.MileageRate()
 }

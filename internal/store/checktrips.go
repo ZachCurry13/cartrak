@@ -17,3 +17,22 @@ func (s *Store) CheckTrips(from int64) ([]*Trip, error) {
 	}
 	return out, rows.Err()
 }
+
+// CloseTrip marks a trip that never ended as finished, keeping the last position and time it recorded.
+// It reports false when the trip is not open.
+func (s *Store) CloseTrip(id int64) (bool, error) {
+	r, err := s.DB.Exec(`UPDATE trips SET open=0 WHERE id=? AND open=1`, id)
+	if err != nil {
+		return false, err
+	}
+	n, _ := r.RowsAffected()
+	return n > 0, nil
+}
+
+// DeleteTripAndShares removes a trip and any public link made from it, so no link points at nothing.
+func (s *Store) DeleteTripAndShares(id int64) error {
+	if _, err := s.DB.Exec(`DELETE FROM shares WHERE kind='trip' AND target_id=?`, id); err != nil {
+		return err
+	}
+	return s.DeleteTrip(id)
+}

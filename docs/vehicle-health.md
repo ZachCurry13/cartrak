@@ -46,3 +46,9 @@ CarTrak looks at the stretches when the car sat for at least three hours, not dr
 
 ## Data check
 **More, Data check** looks through the last 90 days of what CarTrak recorded for things that seem wrong: a stretch with no odometer reading (usually the car sleeping, or CarTrak not running), an odometer that went backwards, trips that overlap, a trip that lasted over a day, a trip with an impossible average speed, and finished trips with almost no distance. It only reads; it never changes or deletes anything, and each trip finding links to that trip so you can judge it. For checking the odometer against your trips, see the check on the Mileage log.
+
+## Battery health
+**Health** has a Battery health card: the battery size as the car itself estimates it, month by month, and a plain verdict once there are at least two months of readings: steady (within about 3 percent), a gentle decline (up to about 8 percent), or worth watching. The estimate moves with temperature and how full the battery is, so a small winter dip is normal, and this is not a lab test.
+
+## Fixing a bad trip
+Admins see **Fix this trip** on a trip's page. **Delete this trip** removes a duplicate or junk trip (and any public link made from it); odometer and battery history are not touched. **Close this trip** finishes a trip that never ended, which needs 30 minutes without readings. A trip that is still in progress cannot be changed this way. The Data check page lists the trips worth a look.

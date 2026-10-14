@@ -2,9 +2,28 @@
 
 ## 0.22.0
 
+### 🐞 Fixes
+- **More, Security** failed to open for admins ("Cannot access 'shares' before initialization") since 0.19.0. It opens again, with the sign-in log, signed-in devices and your shared links.
+- A stray word "null" appeared on the **Backup** page (under Free up space and Restore a backup) and on a trip's **Route** card. Gone.
+
 ### 🔔 Two new alerts you can set a number for
 - **Low battery**: pick a level under More, Settings (10 to 30 percent) and devices that turned the alert on are told once when the battery falls to it while the car is not charging. It resets once the battery is five points higher or the car charges, and stays quiet right after CarTrak restarts.
 - **Charging budget**: enter a monthly amount under More, Settings and devices that turned the alert on are told once a month when that month's charging cost passes it. Needs your price per kWh.
+
+### 🛠️ Fix a bad trip
+- On a trip, admins now get **Fix this trip**: **Delete this trip** for a duplicate or junk one (any public link made from it stops working; odometer and battery history are unchanged), or **Close this trip** when it never ended (no readings for 30 minutes). A trip that is still in progress cannot be touched. Data check points you to these trips.
+
+### 🔋 Battery health
+- **Health** shows the car's own estimate of its battery size over the months, with a plain verdict (steady, a gentle decline, or worth watching) once there are at least two months of readings. The estimate moves with temperature, so only a lasting drop is flagged.
+
+### 🧾 Mileage deduction estimate
+- Set **Mileage deduction per mile** in More, Settings and the Mileage log shows an estimated deduction for the work miles, and Year in review shows it for the year. It is an estimate for planning, not tax advice.
+
+### 🌙 Cheaper night rates
+- If your plan has cheaper hours, set **Cheaper home price** and **Cheaper hours** (for example 22:00-06:00) in More, Settings. Home charging is then priced by how much of the session fell in those hours, and **What would a charge cost?** shows what charging in the cheaper hours would save.
+
+### 📦 Export everything
+- **More, Backup, Export to spreadsheets** downloads one zip with every trip, every charging session, your named places and your service reminders as CSV files. It is for reading elsewhere, not a backup.
 
 ### 🚗 Is this trip good?
 - A trip now says how its efficiency compares with your average over the last year ("12% more efficient than your average"), once CarTrak has at least five trips with energy to compare against. Skipped on data saver.

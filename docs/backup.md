@@ -34,3 +34,6 @@ Your current data is not deleted. It is kept in the data folder as `cartrak.db.b
 - **Sign-in log:** the last 100 sign-in attempts, newest first, with the name that was tried, whether it worked, and the device and address. Many failures in a row, or a name you do not know, is worth a look. Passwords are never stored.
 
 The address comes from the connection (or from Cloudflare when CarTrak is reached through a tunnel).
+
+## Export to spreadsheets
+**More, Backup, Export to spreadsheets** downloads one zip with every trip, every charging session, your named places and your service reminders as CSV files, with a short README. Open them in Excel or Sheets. It is for reading your data elsewhere, not a backup, and it cannot be restored. It shows where the car has been, so keep it private. Admins only.

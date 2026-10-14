@@ -2,11 +2,12 @@ package charging
 
 // Forecast is what adding energy to the battery would cost.
 type Forecast struct {
-	BatteryKwh float64  `json:"batteryKwh"` // goes into the battery
-	HomeKwh    float64  `json:"homeKwh"`    // taken from the wall on a slow charger, including heat loss
-	HomeCost   *float64 `json:"homeCost"`
-	PublicKwh  float64  `json:"publicKwh"` // fast chargers: no loss counted
-	PublicCost *float64 `json:"publicCost"`
+	BatteryKwh  float64  `json:"batteryKwh"` // goes into the battery
+	HomeKwh     float64  `json:"homeKwh"`    // taken from the wall on a slow charger, including heat loss
+	HomeCost    *float64 `json:"homeCost"`
+	PublicKwh   float64  `json:"publicKwh"` // fast chargers: no loss counted
+	PublicCost  *float64 `json:"publicCost"`
+	OffPeakCost *float64 `json:"offPeakCost"` // at home inside the cheaper hours, when the plan has them
 }
 
 // ForecastCharge prices going from one battery percentage to another. acEff is the share of wall energy that
@@ -24,6 +25,10 @@ func ForecastCharge(capacityKwh, fromPct, toPct float64, p Prices, acEff float64
 	if p.Home != nil {
 		c := f.HomeKwh * *p.Home
 		f.HomeCost = &c
+	}
+	if p.OffPeak != nil {
+		c := f.HomeKwh * *p.OffPeak
+		f.OffPeakCost = &c
 	}
 	if p.Public != nil {
 		c := f.PublicKwh * *p.Public

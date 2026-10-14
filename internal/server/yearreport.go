@@ -82,5 +82,5 @@ func (s *Server) yearSummary(w http.ResponseWriter, r *http.Request) {
 		years = []int{now.Year()}
 	}
 	ok(w, map[string]any{"year": year, "years": years, "driving": drive, "odometerKm": odoKm, "charging": ch,
-		"currency": s.currency(), "partial": year == now.Year()})
+		"currency": s.currency(), "mileageRate": s.mileageRate(), "partial": year == now.Year()})
 }

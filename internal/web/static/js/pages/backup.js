@@ -17,5 +17,8 @@ export default async function backup(root, _a, session) {
       h('p', { class: 'seg' }, link('/api/backup?small=1', 'Download small backup'), link('/api/backup', 'Download full backup', true)),
       h('p', { class: 'muted' }, 'The small backup keeps everything except the raw Ford readings (Car data history for old readings will be empty). Making a backup can take a while on a large database, and the app is slow while it runs. Sign-in sessions are never included.'),
       h('p', { class: 'banner' }, 'A backup contains your Ford sign-in, account password hashes and notification keys. Keep it private, like a password.')),
+    h('section', { class: 'card' }, h('h2', {}, 'Export to spreadsheets'),
+      h('p', { class: 'muted' }, 'One zip with every trip, every charging session, your named places and your service reminders as spreadsheets (CSV), to open in Excel or Sheets. It is for reading your data elsewhere; it is not a backup and cannot be restored. It shows where the car has been, so keep it private.'),
+      h('p', { class: 'seg' }, link('/api/export/all.zip', 'Download everything as a zip'))),
     storageCard(), restoreCard());
 }

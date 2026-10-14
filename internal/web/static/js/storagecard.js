@@ -24,12 +24,12 @@ export function storageCard() {
       go.disabled = true;
       try { await api('/api/storage/trim', { method: 'POST', body: { days, confirm: 'TRIM' } }); load(); } catch (e) { msg.textContent = e.message; go.disabled = false; }
     }
-    box.replaceChildren(h('h2', {}, 'Free up space (optional)'),
+    box.replaceChildren(...[h('h2', {}, 'Free up space (optional)'),
       h('p', { class: 'muted' }, `The database is ${size(d.dbBytes)}. Most of it is the full raw copy of every reading from Ford. You can remove that detail for older readings and keep everything CarTrak uses: trips, charging, places, charts, and each reading's main numbers. Car data for those older readings will show less.`),
       sel,
       h('p', {}, d.samples ? `${d.samples} readings and ${d.snapshots} raw copies are older than that.` : 'Nothing is older than that yet.'),
       d.samples ? h('div', {}, h('p', { class: 'banner' }, 'This cannot be undone, except by restoring a backup. Make a full backup first if you may want the old detail. The file does not get smaller by itself; the freed space is reused for new readings, so it stops growing for a while.'),
-        h('label', { for: 'tw' }, 'To confirm, type TRIM'), word, h('p', {}, go)) : null, msg, d.trim.message ? h('p', { class: 'muted' }, d.trim.message) : null);
+        h('label', { for: 'tw' }, 'To confirm, type TRIM'), word, h('p', {}, go)) : null, msg, d.trim.message ? h('p', { class: 'muted' }, d.trim.message) : null].filter(Boolean));
   }
 
   function progress(d) {

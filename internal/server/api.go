@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -141,8 +142,15 @@ func (s *Server) exportCSV(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", `attachment; filename="cartrak-trips.csv"`)
+	s.writeTripsCSV(w, ts, true)
+}
+
+// writeTripsCSV writes trips as a spreadsheet; header says whether to start with the heading row.
+func (s *Server) writeTripsCSV(w io.Writer, ts []*store.Trip, header bool) {
 	c := csv.NewWriter(w)
-	_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes", "energy_kwh", "energy_estimated", "start_place", "end_place"})
+	if header {
+		_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes", "energy_kwh", "energy_estimated", "start_place", "end_place"})
+	}
 	for _, o := range s.tripsWithEnergy(ts) {
 		t := o.Trip
 		end := ""

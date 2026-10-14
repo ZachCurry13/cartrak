@@ -34,7 +34,7 @@ export default async function year(root, [y]) {
     !v.trips && !c.sessions ? h('p', { class: 'muted' }, 'Nothing was recorded this year.')
       : h('div', {},
         h('section', { class: 'card' }, h('h2', {}, 'Driving'),
-          h('div', { class: 'grid' }, stat('Distance', dist(d.odometerKm || v.km, 0)), stat('Trips', String(v.trips)), stat('Work', dist(v.workKm, 0)), stat('Personal', dist(v.personalKm, 0)),
+          h('div', { class: 'grid' }, stat('Distance', dist(d.odometerKm || v.km, 0)), stat('Trips', String(v.trips)), stat('Work', dist(v.workKm, 0)), stat('Personal', dist(v.personalKm, 0)), d.mileageRate && v.workKm > 0 ? stat('Work deduction (est.)', `${cur}${(v.workKm * 0.621371 * d.mileageRate).toFixed(0)}`) : null,
             v.energyTrips ? stat('Energy used', num(v.energyKwh, 0, ' kWh')) : null, v.energyTrips ? stat(v.estimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(v.energyKm, v.energyKwh, v.estimated ? '≈ ' : '')) : null),
           v.months.length ? bars(v.months) : null,
           v.busiest ? h('p', { class: 'muted' }, `Busiest month: ${new Date(+v.busiest.slice(0, 4), +v.busiest.slice(5) - 1, 1).toLocaleDateString([], { month: 'long' })}.`) : null,

@@ -6,6 +6,7 @@ import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
 import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
+import { tripFixCard } from '../tripfix.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -70,10 +71,10 @@ export default async function tripDetail(root, [id], session) {
       h('button', { class: 'sec', onclick: async (e) => {
         e.target.disabled = true;
         const full = await api(`/api/trips/${encodeURIComponent(id)}`);
-        routeBox.replaceChildren(h('h2', {}, 'Route'), ...routeFor(full, mc));
+        routeBox.replaceChildren(h('h2', {}, 'Route'), ...routeFor(full, mc).filter(Boolean));
       } }, 'Load route'));
   } else {
-    routeBox.append(...routeFor(data, mc));
+    routeBox.append(...routeFor(data, mc).filter(Boolean));
   }
   const notes = h('input', { value: t.notes || '', placeholder: 'Notes (client, purpose…)', maxlength: 200 });
   const msg = h('p', { class: 'muted', role: 'status' });
@@ -86,7 +87,7 @@ export default async function tripDetail(root, [id], session) {
   const avgKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
   const hasStart = t.startLat != null && t.startLon != null;
   const hasEnd = t.endLat != null && t.endLon != null && !t.open;
-  root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')),
+  root.append(...[h('p', {}, h('a', { href: '#/trips' }, '← Trips')),
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
       t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
@@ -102,5 +103,6 @@ export default async function tripDetail(root, [id], session) {
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),
       h('p', { class: 'seg' }, h('button', { onclick: set('work') }, 'Work'), h('button', { onclick: set('personal') }, 'Personal')),
-      h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null);
+      h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null,
+    admin ? tripFixCard(t) : null].filter(Boolean));
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,7 +27,11 @@ func (s *Server) prices() charging.Prices {
 	if s.Cfg == nil {
 		return charging.Prices{}
 	}
-	return charging.Prices{Home: s.Cfg.PriceHome(), Public: s.Cfg.PricePublic()}
+	p := charging.Prices{Home: s.Cfg.PriceHome(), Public: s.Cfg.PricePublic()}
+	if price, from, to := s.Cfg.OffPeak(); price != nil {
+		p.OffPeak, p.Window, p.Loc = price, &charging.Window{From: from, To: to}, s.Cfg.Location()
+	}
+	return p
 }
 
 func (s *Server) currency() string {
@@ -183,6 +188,10 @@ func (s *Server) exportChargesCSV(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", `attachment; filename="cartrak-charging.csv"`)
+	s.writeChargesCSV(w, ss)
+}
+
+func (s *Server) writeChargesCSV(w io.Writer, ss []charging.Session) {
 	c := csv.NewWriter(w)
 	_ = c.Write([]string{"id", "start", "end", "start_local", "start_percent", "end_percent", "added_kwh", "added_estimated", "charger_kwh", "efficiency_percent", "where", "peak_kw", "cost"})
 	loc := s.defaultLoc()

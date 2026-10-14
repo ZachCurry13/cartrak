@@ -6,8 +6,8 @@ import { sharesList } from '../sharecard.js';
 export default async function security(root, _a, session) {
   if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   const box = h('div');
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Security')), box, shares);
   const shares = h('div');
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Security')), box, shares);
   sharesList().then((c) => shares.replaceChildren(c)).catch(() => {});
   async function load() {
     const d = await api('/api/security');

@@ -82,6 +82,7 @@ export default async function mileage(root, _a, session) {
       r.rows.length ? table : h('p', { class: 'muted' }, 'No finished trips of that kind in this period. CarTrak only has trips from after it was linked to your car.'),
       weekly,
       ...r.notes.map((n) => h('p', { class: 'banner' }, n)),
+      r.rows.length && d.rate ? h('p', {}, 'Estimated deduction at ', `${d.currency}${d.rate.toFixed(2)} a mile: `, h('b', {}, `${d.currency}${(r.totalMiles * d.rate).toFixed(2)}`), h('span', { class: 'muted' }, ' (an estimate for your own planning, not tax advice)')) : null,
       r.rows.length ? h('p', { class: 'seg' }, copyButton(d.tsv, 'Copy rows to paste into your sheet'), copyButton(d.tsvFull, 'Copy with headings and total')) : null,
       r.pending ? h('p', {}, chip('work', `${r.pending} place${r.pending === 1 ? '' : 's'} left`), ' ', h('button', { class: 'sec', onclick: build }, 'Run again to finish')) : null,
       d.lookupOn ? null : h('p', { class: 'muted' }, 'City lookup is switched off in Settings, so only places already remembered are named.')));

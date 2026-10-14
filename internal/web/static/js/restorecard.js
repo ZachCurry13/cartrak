@@ -33,14 +33,14 @@ export function restoreCard() {
       msg.textContent = 'Checking…';
       try { msg.textContent = ''; confirmView(await api('/api/restore/use', { method: 'POST', body: { name } })); } catch (e) { msg.textContent = e.message; }
     };
-    box.replaceChildren(h('h2', {}, 'Restore a backup'),
+    box.replaceChildren(...[h('h2', {}, 'Restore a backup'),
       h('p', { class: 'muted' }, 'Choose a backup you downloaded here. CarTrak checks it first and shows what is in it before anything changes.'),
       h('label', { for: 'rf' }, 'Backup file'), input,
       h('p', {}, h('button', { onclick: upload }, 'Upload and check')),
       files.length ? h('div', {}, h('p', { class: 'muted' }, 'Or use a file you copied into the restore folder in CarTrak\'s data folder (best for very large backups):'),
         ...files.map((n) => h('p', {}, h('button', { class: 'sec', onclick: use(n) }, `Check ${n}`)))) : null,
       msg,
-      h('p', { class: 'muted' }, 'Uploads through a Cloudflare tunnel are limited to 100 MB on the free plan. For a larger backup, restore from your home network, or copy the file into the restore folder.'));
+      h('p', { class: 'muted' }, 'Uploads through a Cloudflare tunnel are limited to 100 MB on the free plan. For a larger backup, restore from your home network, or copy the file into the restore folder.')].filter(Boolean));
   }
 
   function confirmView(b) {
@@ -60,12 +60,12 @@ export function restoreCard() {
         } catch (e) { down = true; }
       }, 2000);
     }
-    box.replaceChildren(h('h2', {}, 'Ready to restore'),
+    box.replaceChildren(...[h('h2', {}, 'Ready to restore'),
       h('p', {}, `This backup is ${size(b.bytes)} with ${b.trips} trips, ${b.charges} charging sessions and ${b.readings} readings${b.firstReading ? `, from ${when(b.firstReading)} to ${when(b.lastReading)}` : ''}.`),
       h('p', {}, `Accounts in it: ${b.users.join(', ')}. After restoring, everyone signs in with these accounts and their passwords from that time.`),
       h('p', { class: 'banner' }, 'Restoring replaces everything now in CarTrak and signs everyone out. Your current data is not deleted: it is kept in the data folder as cartrak.db.before-restore-<time>, and you can delete it later.'),
       h('label', { for: 'rw' }, 'To confirm, type RESTORE'), word,
-      h('p', { class: 'seg' }, go, h('button', { class: 'sec', onclick: async () => { await api('/api/restore', { method: 'DELETE' }); load(); } }, 'Cancel')), msg);
+      h('p', { class: 'seg' }, go, h('button', { class: 'sec', onclick: async () => { await api('/api/restore', { method: 'DELETE' }); load(); } }, 'Cancel')), msg].filter(Boolean));
   }
 
   box.append(h('h2', {}, 'Restore a backup'), msg);

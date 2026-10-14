@@ -2,6 +2,7 @@ import { h, chip, ago } from '../ui.js';
 import { api, AuthError } from '../api.js';
 import { rowEl, value, format } from '../healthrows.js';
 import { spark } from '../spark.js';
+import { batteryCard } from '../batterycard.js';
 
 const SOURCE = {
   setting: 'chosen in Admin settings',
@@ -59,6 +60,8 @@ export default async function vehicleHealth(root, _a, session) {
     root.append(h('section', { class: 'card' }, h('h2', {}, s.title), s.intro ? h('p', { class: 'muted' }, s.intro) : null,
       ...s.rows.map(rowEl), s.id === '12v' ? testedBox(d.tested12vUntil, session.me.role === 'admin') : null, ...(s.series || []).map((x) => spark(x, format))));
   }
+  const bat = await batteryCard();
+  if (bat) root.append(bat);
   root.append(h('p', { class: 'muted' }, `Vehicle type: ${v.label} (${SOURCE[v.source] || ''}). `,
     session.me.role === 'admin' ? h('a', { href: '#/admin' }, 'Wrong? Change it in Settings.') : ''));
 }

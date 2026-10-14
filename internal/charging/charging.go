@@ -3,6 +3,7 @@ package charging
 
 import (
 	"math"
+	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -20,7 +21,10 @@ type Point struct{ Lat, Lon float64 }
 // Prices are per kWh; nil means not set.
 type Prices struct {
 	Home, Public *float64
-	AcEfficiency float64 // share of the wall energy that reaches the battery on slow charging; 0 uses the default
+	OffPeak      *float64       // cheaper home price inside Window, when the plan has one
+	Window       *Window        // when OffPeak applies
+	Loc          *time.Location // the zone Window is read in
+	AcEfficiency float64        // share of the wall energy that reaches the battery on slow charging; 0 uses the default
 }
 
 // Session is a charging session with what it added and cost.
@@ -82,6 +86,14 @@ func Enrich(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Sessio
 	price := p.Home // unknown place: the home price, the usual single-price case
 	if s.Where == "public" {
 		price = p.Public
+	} else if price != nil && p.OffPeak != nil && p.Window != nil && p.Loc != nil {
+		end := c.StartTS
+		if c.EndTS != nil {
+			end = *c.EndTS
+		}
+		share := p.Window.Share(c.StartTS, end, p.Loc) // the part of the session in the cheap hours
+		blended := share**p.OffPeak + (1-share)**price
+		price = &blended
 	}
 	if price != nil {
 		cost := wall * *price

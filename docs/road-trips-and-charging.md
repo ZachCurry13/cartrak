@@ -84,3 +84,9 @@ On **Trips**, admins can tap **Select trips**, tap exactly two finished trips an
 
 ## Year in review
 **More, Year in review** adds up a calendar year. Driving: distance from the odometer, trips, work and personal distance, energy used and efficiency (trips under a mile are left out of efficiency), bars for each month, the busiest month and the longest trip. Charging: sessions, energy added, cost where your price is set, the share at home and, where known, the share lost as heat. The current year shows totals so far. **Copy summary** puts a few lines on the clipboard.
+
+## Cheaper night rates
+If your electricity plan has cheaper hours, set **Cheaper home price** and **Cheaper hours** (for example `22:00-06:00`, which may cross midnight) in More, Settings. Home charging is priced by the share of each session that fell inside those hours (a session from 8 pm to midnight at 0.20 and 0.10 is priced at the average, 0.15). The **What would a charge cost?** card gains a row for the cheaper hours and what waiting for them would save. Away-from-home charging is not affected.
+
+## Mileage deduction estimate
+Set **Mileage deduction per mile** in More, Settings. The Mileage log then shows an estimated deduction under the work-trip total, and Year in review shows it for the year. It is an estimate for your own planning, not tax advice.

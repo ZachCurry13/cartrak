@@ -26,6 +26,8 @@ export function forecastCard() {
       h('p', {}, h('b', {}, num(f.batteryKwh, 1, ' kWh')), ' into the battery'),
       h('div', { class: 'row' }, h('span', { class: 'grow' }, 'At home', h('div', { class: 'muted' }, `${num(f.homeKwh, 1, ' kWh')} from the wall, with ${Math.round((1 - d.efficiency) * 100)}% lost as heat`)),
         h('b', {}, f.homeCost != null ? money(cur, f.homeCost) : '—')),
+      f.offPeakCost != null ? h('div', { class: 'row' }, h('span', { class: 'grow' }, 'At home in the cheaper hours', f.homeCost != null && f.offPeakCost < f.homeCost ? h('div', { class: 'muted' }, `Saves ${money(cur, f.homeCost - f.offPeakCost)}`) : null),
+        h('b', {}, money(cur, f.offPeakCost))) : null,
       h('div', { class: 'row' }, h('span', { class: 'grow' }, 'Fast charger', h('div', { class: 'muted' }, 'No heat loss counted')),
         h('b', {}, f.publicCost != null ? money(cur, f.publicCost) : '—')),
       f.homeCost == null && f.publicCost == null ? h('p', { class: 'muted' }, 'Add your price per kWh in More, Settings to see the cost.') : null].filter(Boolean));
