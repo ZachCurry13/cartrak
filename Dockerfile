@@ -12,7 +12,7 @@ COPY . .
 ARG VERSION=dev
 RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/cartrak ./cmd/cartrak
 
-FROM alpine:3.20
+FROM alpine:3.24
 RUN apk add --no-cache ca-certificates tzdata && adduser -D -u 568 cartrak && mkdir /data /config && chown cartrak /data /config
 COPY --from=build /out/cartrak /usr/local/bin/cartrak
 COPY --from=cloudflared /usr/local/bin/cloudflared /usr/local/bin/cloudflared
