@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -130,5 +131,25 @@ func TestTheChargersOwnNumberIsCheckedStoredAndLearnedFromAfterThree(t *testing.
 	}
 	if _, src, _ := eff(); src != "setting" {
 		t.Fatalf("back to the setting: %s", src)
+	}
+}
+
+func TestTheChargingCSVHasOneRowPerSessionAndNeverBreaksOnFormulas(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	from, to := 40.0, 58.0
+	c := &store.Charge{StartTS: time.Now().Add(-5 * time.Hour).Unix(), StartKwh: &from, PeakKw: 7}
+	srv.S.CreateCharge(c)
+	end := c.StartTS + 3600
+	c.EndTS, c.EndKwh, c.Open = &end, &to, false
+	srv.S.UpdateCharge(c)
+	srv.S.SetChargerKwh(c.ID, func() *float64 { v := 20.5; return &v }())
+	code, body := do(t, admin, "GET", ts.URL+"/api/export/charging.csv", "", nil)
+	lines := strings.Split(strings.TrimSpace(body), "\n")
+	if code != 200 || len(lines) != 2 || !strings.HasPrefix(lines[0], "id,start,end,") || !strings.Contains(lines[1], "18.00") || !strings.Contains(lines[1], "20.50") || !strings.Contains(lines[1], "87.8") {
+		t.Fatalf("%d %q", code, body)
+	}
+	if c, _ := do(t, &http.Client{}, "GET", ts.URL+"/api/export/charging.csv", "", nil); c != 401 {
+		t.Fatalf("anonymous: %d", c)
 	}
 }

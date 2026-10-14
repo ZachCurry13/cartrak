@@ -7,6 +7,13 @@
 - A **Needs attention** card (only when there is something) lists service reminders that are due or coming up and trips waiting for a Work or Personal label, each one tap away.
 - **Last 7 days** and **Last trip** (with its named places) now sit right under the battery instead of at the bottom.
 
+### 📤 More in the CSV exports
+- **Charging** has an **Export CSV** button: every session with the energy added, the charger's own number and efficiency where entered, where it was, peak power and cost.
+- The trips CSV now also has energy used, whether it is an estimate, and the named start and end places.
+
+### 👁️ Easier to read in light mode
+- A contrast check of every text and button colour found that a few in light mode (links, green buttons and chips, amber and red labels) were slightly under the recommended contrast. They are a little deeper now. Dark mode already passed.
+
 ### 💽 Disk space
 - **Status** now shows how much room is left on the disk CarTrak stores its data on (on the Docker image), warning when it is getting low and going red when it is nearly full, with a link to Free up space. A new optional alert, **Low disk space**, warns you at most once every three days. CarTrak adds readings all the time, so a full disk would stop everything.
 - The **Car readings** line on Status now tells apart Ford answering from the car itself being asleep ("Ford is answering, but the car itself last reported 6 h ago. It is probably parked and asleep, which is normal.").

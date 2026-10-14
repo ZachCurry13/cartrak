@@ -53,7 +53,7 @@ export default async function charging(root, _a, session) {
   async function load() {
     const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
     if (!cs.length) return box.replaceChildren(h('p', { class: 'muted' }, 'No charging sessions recorded yet.'));
-    box.replaceChildren(summaryCard(sum), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load))));
+    box.replaceChildren(summaryCard(sum), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load))));
   }
   await load();
 }

@@ -1,8 +1,8 @@
 /* The look: dark first, one green accent. Light mode keeps the same structure with deeper colours.
    Loaded after the other stylesheets, so it has the last word. Colours only live in this block. */
 :root{--bg:#0d1117;--card:#161d27;--card2:#1c2531;--line:#232d3a;--text:#e6edf3;--muted:#8b98a5;--accent:#2fd4a0;--accent-text:#04261c;--work:#f5b84a;--personal:#58a6ff;--bad:#ff7b72;--ok:#2fd4a0;--warn:#f5b84a;color-scheme:dark}
-@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#0b8a66;--accent-text:#fff;--work:#b45309;--personal:#1b5fc4;--bad:#c62828;--ok:#0b7a5c;--warn:#b45309;color-scheme:light}}
-:root[data-theme=light]{--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#0b8a66;--accent-text:#fff;--work:#b45309;--personal:#1b5fc4;--bad:#c62828;--ok:#0b7a5c;--warn:#b45309;color-scheme:light}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#08795a;--accent-text:#fff;--work:#9a4308;--personal:#1b5fc4;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}}
+:root[data-theme=light]{--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#08795a;--accent-text:#fff;--work:#9a4308;--personal:#1b5fc4;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}
 
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--accent)}

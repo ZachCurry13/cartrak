@@ -142,17 +142,26 @@ func (s *Server) exportCSV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", `attachment; filename="cartrak-trips.csv"`)
 	c := csv.NewWriter(w)
-	_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes"})
-	for _, t := range ts {
+	_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes", "energy_kwh", "energy_estimated", "start_place", "end_place"})
+	for _, o := range s.tripsWithEnergy(ts) {
+		t := o.Trip
 		end := ""
 		if t.EndTS != nil {
 			end = time.Unix(*t.EndTS, 0).UTC().Format(time.RFC3339)
 		}
 		_ = c.Write([]string{strconv.FormatInt(t.ID, 10), time.Unix(t.StartTS, 0).UTC().Format(time.RFC3339), end,
 			localStart(t), t.TZ, t.Category, t.CategorySource, fmt.Sprintf("%.2f", t.DistanceKm), fl(t.StartSoC), fl(t.EndSoC),
-			fmt.Sprintf("%.0f", t.MaxSpeedKph), csvSafe(t.Notes)})
+			fmt.Sprintf("%.0f", t.MaxSpeedKph), csvSafe(t.Notes), fl2(o.EnergyKwh), strconv.FormatBool(o.EnergyEstimated), csvSafe(o.StartPlace), csvSafe(o.EndPlace)})
 	}
 	c.Flush()
+}
+
+// fl2 is a number with two decimals, or empty when not known.
+func fl2(p *float64) string {
+	if p == nil {
+		return ""
+	}
+	return fmt.Sprintf("%.2f", *p)
 }
 
 func fl(p *float64) string {

@@ -144,6 +144,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /api/journeys/{id}", s.auth(true, s.deleteJourney))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
 	m.HandleFunc("GET /api/charges", s.auth(false, s.listCharges))
+	m.HandleFunc("GET /api/export/charging.csv", s.auth(false, s.exportChargesCSV))
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
 	m.HandleFunc("PATCH /api/charges/{id}", s.auth(true, s.patchCharge))
 	m.HandleFunc("GET /api/summary", s.auth(false, s.summary))
