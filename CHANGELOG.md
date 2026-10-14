@@ -6,6 +6,9 @@
 - **Low battery**: pick a level under More, Settings (10 to 30 percent) and devices that turned the alert on are told once when the battery falls to it while the car is not charging. It resets once the battery is five points higher or the car charges, and stays quiet right after CarTrak restarts.
 - **Charging budget**: enter a monthly amount under More, Settings and devices that turned the alert on are told once a month when that month's charging cost passes it. Needs your price per kWh.
 
+### 🚗 Is this trip good?
+- A trip now says how its efficiency compares with your average over the last year ("12% more efficient than your average"), once CarTrak has at least five trips with energy to compare against. Skipped on data saver.
+
 ### 👪 A simpler view for family
 - Viewer accounts now see five tabs (Home, Trips, Live, Charging, More) and a short More page: the road-trip planner, efficiency insights, Year in review, Time, display settings, notifications and help. Admin tools such as Health, Data, maintenance, rules and connections stay out of the way. Viewers can still open any page by its address, and still cannot change anything.
 

@@ -48,6 +48,19 @@ function routeFor(d, mc) {
   return [m.el, note];
 }
 
+// How this trip's efficiency compares with the last year's average, as one plain sentence (or null).
+async function versusAverage(t) {
+  if (t.open || !(t.energyKwh >= 0.3) || !(t.distanceKm >= 1.6)) return null;
+  const d = await api('/api/insights').catch(() => null);
+  if (!d || !d.months || d.trips < 5) return null;
+  const km = d.months.reduce((a, m) => a + m.km, 0), kwh = d.months.reduce((a, m) => a + m.kwh, 0);
+  if (!(kwh > 0)) return null;
+  const avg = km / kwh, mine = t.distanceKm / t.energyKwh;
+  const diff = Math.round(((mine - avg) / avg) * 100);
+  if (Math.abs(diff) < 3) return h('p', { class: 'muted' }, 'About the same efficiency as your average over the last year.');
+  return h('p', { class: 'muted' }, `${Math.abs(diff)}% ${diff > 0 ? 'more' : 'less'} efficient than your average over the last year.`);
+}
+
 export default async function tripDetail(root, [id], session) {
   const saver = isSaver();
   const [{ trip: t, ...data }, mc] = await Promise.all([api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`), mapConfig()]);
@@ -68,6 +81,7 @@ export default async function tripDetail(root, [id], session) {
   const set = (category) => async () => {
     try { await api(`/api/trips/${t.id}`, { method: 'PATCH', body: { category, notes: notes.value } }); location.reload(); } catch (e) { msg.textContent = e.message; }
   };
+  const avg = saver ? null : await versusAverage(t); // one extra request, skipped on data saver
   const hours = t.endTs && t.startTs ? (t.endTs - t.startTs) / 3600 : 0;
   const avgKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
   const hasStart = t.startLat != null && t.startLon != null;
@@ -78,7 +92,7 @@ export default async function tripDetail(root, [id], session) {
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''))),
-      null),
+      avg),
     routeBox,
     hasStart || hasEnd ? h('section', { class: 'card' }, h('h2', {}, 'Open in maps'),
       hasStart ? h('div', {}, h('b', {}, t.startPlace || 'Where it started'), mapButtons(t.startLat, t.startLon, 'where it started')) : null,
