@@ -126,7 +126,10 @@ func TestNotifyOnlyReachesDevicesThatWantItAndAreNotInQuietHours(t *testing.T) {
 	wants := device(t, 1, srv.URL, ChargeComplete, PlugIn)
 	other := device(t, 2, srv.URL, PlugOut) // did not ask for this alert
 	asleep := device(t, 3, srv.URL, ChargeComplete)
-	asleep.Quiet = "00:00-23:59"
+	// Quiet hours around right now (wrapping midnight is fine). A fixed all-day window fails for the one
+	// minute at its end, which is how this test once failed at 23:59 in CI.
+	now := time.Now()
+	asleep.Quiet = now.Add(-5*time.Minute).Format("15:04") + "-" + now.Add(5*time.Minute).Format("15:04")
 	svc, _, _ := service(wants, other, asleep)
 	svc.Notify(context.Background(), Alert{Kind: ChargeComplete, Title: "t", Body: "b"})
 	if got.hits != 1 {
