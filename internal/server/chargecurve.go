@@ -111,3 +111,54 @@ func (s *Server) fastAverage(w http.ResponseWriter, r *http.Request) {
 	}
 	ok(w, out)
 }
+
+// fastWindow is how long your fast-charging sessions took to go from one battery level to another, for planning a stop
+// that charges between the reserve and the target. It uses only sessions that cover the whole window.
+// GET /api/charging/window?from=20&to=80
+func (s *Server) fastWindow(w http.ResponseWriter, r *http.Request) {
+	from, _ := strconv.ParseFloat(r.URL.Query().Get("from"), 64)
+	to, _ := strconv.ParseFloat(r.URL.Query().Get("to"), 64)
+	if from < 1 || to > 100 || to-from < 10 {
+		fail(w, 400, "from and to must be battery levels at least 10 apart")
+		return
+	}
+	ss, err := s.chargeSessions(300)
+	if err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	var minutes float64
+	n := 0
+	for _, x := range ss {
+		if x.Open || x.PeakKw < 40 || x.EndTS == nil {
+			continue
+		}
+		rows, err := s.S.SamplesBetween(x.StartTS, *x.EndTS)
+		if err != nil {
+			continue
+		}
+		var ta, tb int64
+		for _, p := range rows {
+			if p.SoCPct == nil {
+				continue
+			}
+			if ta == 0 && *p.SoCPct >= from {
+				ta = p.TS
+			}
+			if tb == 0 && *p.SoCPct >= to {
+				tb = p.TS
+				break
+			}
+		}
+		if ta == 0 || tb <= ta || tb-ta < 120 {
+			continue
+		}
+		minutes += float64(tb-ta) / 60
+		n++
+	}
+	out := map[string]any{"sessions": n, "minutesPerPct": nil}
+	if n > 0 {
+		out["minutesPerPct"] = minutes / float64(n) / (to - from)
+	}
+	ok(w, out)
+}

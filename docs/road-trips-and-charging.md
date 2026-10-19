@@ -97,6 +97,8 @@ Under a charging session, **Charging curve** shows power against battery level. 
 ## Best speed for a trip
 Under the plan, **Best speed for this trip** gives the total time at each cruising speed: driving, charging for the extra energy a faster speed needs, and a few minutes lost at each stop (you can change that, five minutes by default). The speed with the shortest total is named, and the next faster speed is compared with it, so you can see when five more miles an hour stops paying for itself. The energy use at each speed is fitted to your own drives (it needs a few speed ranges with some distance in each), and the weather you picked in the plan carries over. Speeds you have not driven are estimates.
 
+The **Compare** pickers put any two speeds side by side (70 and 75 mph to begin with). The charging speed the planner starts from is measured from your own fast-charging sessions between the reserve and the charge target, so a trip that charges from 20% to 80% is judged on how quickly your car really climbs between those levels, not on its peak power.
+
 ## Wind on a trip (optional)
 Switch on **Wind lookup for trips** in More, Settings. CarTrak then asks Open-Meteo (free, no account) for the hourly wind for the places a trip passed through, using the direction you drove to split it into **headwind or tailwind** and **crosswind**, and estimating what the wind did to the energy used. It sends only a map cell half a degree wide (about 50 km) and the date, never your exact position, and keeps every answer, so a place and day is asked once. A trip with a lot of ground to cover fills in over a few visits. The estimate treats about 30 to 70 percent of the energy at speed as air resistance, so it is a guide. The motion sensors cannot measure wind.
 

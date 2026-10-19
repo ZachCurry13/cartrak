@@ -20,6 +20,8 @@ export default async function plan(root) {
   const speedModel = spd ? fitSpeedModel(spd.bands) : null;
   const fast = await api('/api/charging/fast-average').catch(() => null); // what the car really averages at fast chargers
   const histKw = fast && fast.avgKw ? Math.round(fast.avgKw) : 0;
+  const win = high - low >= 10 ? await api(`/api/charging/window?from=${low}&to=${high}`).catch(() => null) : null; // how long your own fast charges took between the reserve and the target
+  const winKw = win && win.minutesPerPct && latest && latest.capacityKwh ? Math.round((latest.capacityKwh / 100) * 60 / win.minutesPerPct) : 0;
   const band = await api(`/api/range-band?low=${low}&high=${high}&days=60`).catch(() => null);
   const avgKmPerPct = band && band.bandKm ? band.bandKm / (high - low) : null;
   // Cold weather uses much more battery, so the plan can use what you really get at the temperature you choose.
@@ -36,12 +38,11 @@ export default async function plan(root) {
   const unit = isMetric() ? 'km' : 'mi';
   const distance = h('input', { id: 'pd', type: 'number', min: 1, inputmode: 'decimal', placeholder: unit === 'mi' ? '420' : '680' });
   const start = h('input', { id: 'ps', type: 'number', min: 1, max: 100, inputmode: 'numeric', value: latest && latest.socPct != null ? Math.round(latest.socPct) : 100 });
-  const kw = h('input', { id: 'pk', type: 'number', min: 10, max: 350, inputmode: 'numeric', value: saved() || histKw || 100 });
+  const kw = h('input', { id: 'pk', type: 'number', min: 10, max: 350, inputmode: 'numeric', value: saved() || winKw || histKw || 100 });
   const out = h('div');
   const field = (id, label, input, help) => h('div', {}, h('label', { for: id }, label), input, help ? h('p', { class: 'muted' }, help) : null);
 
   function show() {
-    write(Number(kw.value) || 100);
     const r = planTrip({ distanceKm: toKm(Number(distance.value)), startPct: Number(start.value), reservePct: low, targetPct: high, kmPerPct: kmPerPct(),
       capacityKwh: latest && latest.capacityKwh, chargeKw: Number(kw.value) });
     if (!r.ok) return out.replaceChildren(h('p', { class: 'muted' }, r.reason));
@@ -57,13 +58,14 @@ export default async function plan(root) {
         chargeKw: Number(kw.value), capacityKwh: latest.capacityKwh, cChosen: latest.capacityKwh / 100 / kmPerPct() }, show) : null].filter(Boolean));
   }
   for (const i of [distance, start, kw, weather]) i.addEventListener('input', show);
+  kw.addEventListener('input', () => write(Number(kw.value) || 100)); // remembered only when you set it yourself
 
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Road-trip planner')),
     h('section', { class: 'card' }, h('h2', {}, 'Your trip'),
       avgKmPerPct ? h('p', { class: 'muted' }, `Your battery goes about ${dist(avgKmPerPct, 1)} per percent${band.source === 'trips' ? ', from your recent driving' : ", from the car's own range figure"}. The reserve (${low}%) and charge target (${high}%) are your settings.`)
         : h('p', { class: 'banner' }, 'CarTrak does not know how far your battery goes yet. It needs a reading with the range, or a few trips.'),
       field('pd', `Trip distance (${unit})`, distance), field('ps', 'Starting charge (%)', start),
-      band && ((band.byTemp && band.byTemp.length) || band.nowBand) ? field('pw', 'Weather', weather, 'Based on how far you really got on trips in that weather. Cold and hot weather both use more.') : null, field('pk', 'Average charging power (kW)', kw, (saved() || !histKw ? '' : `Started from your own fast charges (${fast.sessions} session${fast.sessions === 1 ? '' : 's'} averaged ${histKw} kW). `) + 'The average over a stop, between the reserve and the target. Many cars average well below their peak.')),
+      band && ((band.byTemp && band.byTemp.length) || band.nowBand) ? field('pw', 'Weather', weather, 'Based on how far you really got on trips in that weather. Cold and hot weather both use more.') : null, field('pk', 'Average charging power (kW)', kw, (saved() ? '' : winKw ? `Started from your own fast charges: ${win.sessions} session${win.sessions === 1 ? '' : 's'} averaged ${winKw} kW between ${low}% and ${high}%. ` : histKw ? `Started from your own fast charges (${fast.sessions} session${fast.sessions === 1 ? '' : 's'} averaged ${histKw} kW). ` : '') + 'The average over a stop, between the reserve and the target. Many cars average well below their peak.')),
     out);
   show();
 }

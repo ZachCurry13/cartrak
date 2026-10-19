@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.0
+
+### ⚡ 70 or 75 on a long drive, answered with your own charging
+- The **Road-trip planner** now starts its charging speed from how long your own fast-charging sessions took to climb from your **reserve to your charge target** (for example 20% to 80%), instead of a whole-session average that includes the slow top end. The planner says how many sessions that came from, and you can still type your own number.
+- **Best speed for this trip** has a **Compare** pair of pickers (70 and 75 mph to begin with, remembered on this device). It says what the faster speed saves in driving, what it adds in charging and stops, how much quicker or slower the whole trip ends up, and how much more energy it uses. On a 600-mile drive that is the answer to "is 75 really worth it?".
+
 ## 0.27.0
 
 ### ⏱️ The best speed for a trip
