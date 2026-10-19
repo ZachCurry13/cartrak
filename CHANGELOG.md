@@ -10,6 +10,9 @@
 ### ♻️ Regenerative braking on each trip
 - **Why this efficiency?** shows **Range from regen** and **Energy from regen** as tiles. The energy is the range the car says braking gave back, valued at what that trip used per mile.
 
+### ⚖️ Compare two speeds on Efficiency insights
+- The **By speed** card on Efficiency insights now has **Compare two speeds** (70 and 75 mph to begin with). Choose a trip length (600 miles to begin with) and it shows the driving time saved, the charging and stops added, whether the whole trip ends up quicker or slower, and how much more energy it uses, in kWh and as a percent per mile.
+
 ### 🧭 Easier to find
 - **Plan a trip · 70 vs 75** buttons on the Trips and Charging pages open the planner, and searching for "70 vs 75" finds it.
 ## 0.28.0

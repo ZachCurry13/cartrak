@@ -2,6 +2,7 @@ import { h, isMetric } from './ui.js';
 import { api } from './api.js';
 import { effSpan } from './energy.js';
 import { lineChart } from './chart.js';
+import { speedCompare } from './speedcompare.js';
 
 const MI = 0.621371;
 const disp = (kph) => (isMetric() ? kph : kph * MI);
@@ -34,7 +35,8 @@ export async function speedCard() {
     summary: `Best near ${Math.round(disp(mid(best)))} ${unit()}`,
   }) : null;
   const rows = d.bands.map((b) => h('div', { class: 'row' }, h('span', { class: 'grow' }, label(b), ' ', h('span', { class: 'muted' }, `${Math.round(isMetric() ? b.km : b.km * MI)} ${isMetric() ? 'km' : 'mi'}`)), h('b', {}, effSpan(b.km, b.kwh))));
+  const compare = await speedCompare(d.bands).catch(() => null);
   return h('section', { class: 'card' }, h('h2', {}, 'By speed'),
     h('p', { class: 'muted' }, `From your drives in the last ${d.days} days. Wind, hills and temperature mix in, so treat it as a guide.`),
-    sweet, chart, h('details', {}, h('summary', { class: 'muted' }, 'Every speed range'), ...rows));
+    sweet, chart, compare, h('details', {}, h('summary', { class: 'muted' }, 'Every speed range'), ...rows));
 }

@@ -97,6 +97,8 @@ Under a charging session, **Charging curve** shows power against battery level. 
 ## Best speed for a trip
 Under the plan, **Best speed for this trip** gives the total time at each cruising speed: driving, charging for the extra energy a faster speed needs, and a few minutes lost at each stop (you can change that, five minutes by default). The speed with the shortest total is named, and the next faster speed is compared with it, so you can see when five more miles an hour stops paying for itself. The energy use at each speed is fitted to your own drives (it needs a few speed ranges with some distance in each), and the weather you picked in the plan carries over. Speeds you have not driven are estimates.
 
+The same comparison is on Efficiency insights, under By speed, with a trip length you can change.
+
 The **Compare** pickers put any two speeds side by side (70 and 75 mph to begin with). The charging speed the planner starts from is measured from your own fast-charging sessions between the reserve and the charge target, so a trip that charges from 20% to 80% is judged on how quickly your car really climbs between those levels, not on its peak power.
 
 ## Wind on a trip (optional)

@@ -27,7 +27,7 @@ export function bestSpeedCard(args, rerun) {
   const cmp = ra && rb && ra !== rb ? (() => {
     const [slow, fast] = ra.kph < rb.kph ? [ra, rb] : [rb, ra];
     const drive = slow.drive - fast.drive, charge = fast.charge - slow.charge, stops = fast.stops - slow.stops, net = fast.total - slow.total;
-    return h('p', {}, h('b', {}, `${label(fast)} against ${label(slow)}: `), `${hm(drive)} less driving, ${hm(Math.abs(charge))} ${charge < 0 ? 'less' : 'more'} charging${stops ? ` (${stops > 0 ? stops + ' more stop' + (stops === 1 ? '' : 's') : -stops + ' fewer stop' + (stops === -1 ? '' : 's')})` : ''} and ${hm(Math.abs(net))} ${net < 0 ? 'quicker' : 'slower'} overall. It uses ${num(fast.kwh - slow.kwh, 0, ' kWh')} more energy.`);
+    return h('p', {}, h('b', {}, `${label(fast)} against ${label(slow)}: `), `${hm(drive)} less driving, ${hm(Math.abs(charge))} ${charge < 0 ? 'less' : 'more'} charging${stops ? ` (${stops > 0 ? stops + ' more stop' + (stops === 1 ? '' : 's') : -stops + ' fewer stop' + (stops === -1 ? '' : 's')})` : ''} and ${hm(Math.abs(net))} ${net < 0 ? 'quicker' : 'slower'} overall. It uses ${num(fast.kwh - slow.kwh, 0, ' kWh')} more energy (${Math.round((fast.kwh / slow.kwh - 1) * 100)}% more per ${metric ? 'km' : 'mile'}).`);
   })() : null;
   const faster = t.rows.find((r) => r.kph > best.kph);
   const slower = [...t.rows].reverse().find((r) => r.kph < best.kph);
@@ -43,6 +43,7 @@ export function bestSpeedCard(args, rerun) {
     h('span', { class: 'grow' }, label(r), r === best ? ' · fastest overall' : '', r.estimated ? h('span', { class: 'muted' }, ' · estimate') : null,
       h('div', { class: 'muted', style: 'font-weight:400' }, `drive ${hm(r.drive)} · charge ${hm(r.charge)}${r.stops ? ` · ${r.stops} stop${r.stops === 1 ? '' : 's'}` : ' · no stop'}`)),
     h('b', {}, hm(r.total))));
+  if (args.compareOnly) return h('div', {}, h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0' }, 'Compare', a, 'with', b), cmp, h('p', { class: 'muted' }, 'Driving, charging and stops for a trip this long, starting at 90% and charging between your reserve and target. Estimates from your own driving and charging.'));
   return h('section', { class: 'card' }, h('h2', {}, 'Best speed for this trip'),
     h('p', {}, h('b', {}, `${label(best)} gets you there soonest`), `: about ${hm(best.total)} in total.`),
     line ? h('p', {}, line) : null,
