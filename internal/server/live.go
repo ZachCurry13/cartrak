@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -31,13 +33,23 @@ type summary struct {
 	OilLifePct  *float64 `json:"oilLifePct"`
 	EnergyKwh   *float64 `json:"energyKwh"`   // energy left in the traction battery
 	CapacityKwh *float64 `json:"capacityKwh"` // its estimated capacity
+	// The battery and drive motor, as the car reports them. Each is nil when this car does not send it.
+	BatteryTempC *float64 `json:"batteryTempC"`
+	PackVolts    *float64 `json:"packVolts"`
+	Battery12V   *float64 `json:"battery12v"`
+	MotorVolts   *float64 `json:"motorVolts"`
+	MotorAmps    *float64 `json:"motorAmps"`
+	MotorTempC   *float64 `json:"motorTempC"` // only if the car reports a motor or inverter temperature
 }
 
 func summarize(x *store.Sample) *summary {
 	if x == nil {
 		return nil
 	}
-	return &summary{TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
+	extra := map[string]any{}
+	_ = json.Unmarshal(x.Extra, &extra)
+	return &summary{BatteryTempC: ford.Number(extra, "xevBatteryTemperature"), PackVolts: x.HVVolts, Battery12V: x.Battery12V,
+		MotorVolts: ford.Number(extra, "xevTractionMotorVoltage"), MotorAmps: ford.Number(extra, "xevTractionMotorCurrent"), MotorTempC: motorTemp(extra), TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
 		ChargeState: x.ChargeState, Plug: x.Plug, ChargeKw: x.ChargeKw, OutsideC: x.OutsideC,
 		OdometerKm: x.OdometerKm, Lat: x.Lat, Lon: x.Lon, Locked: x.Locked, FuelPct: x.FuelPct, OilLifePct: x.OilLifePct, EnergyKwh: x.EnergyKwh, CapacityKwh: x.CapacityKwh}
 }
@@ -188,4 +200,28 @@ func (s *Server) setLiveMode(w http.ResponseWriter, r *http.Request) {
 	}
 	s.P.SetLive(b.Enabled)
 	ok(w, s.P.Status())
+}
+
+// motorTemp finds a drive motor or inverter temperature among the car's fields, if it reports one. Ford's
+// documented list has none for most cars, so this is nil unless the car sends something with motor or inverter and
+// temperature in its name.
+func motorTemp(extra map[string]any) *float64 {
+	best := ""
+	for k := range extra {
+		lk := strings.ToLower(k)
+		if strings.HasSuffix(lk, "updatetime") || !strings.Contains(lk, "temp") || !(strings.Contains(lk, "motor") || strings.Contains(lk, "inverter")) {
+			continue
+		}
+		if best == "" || k < best {
+			best = k
+		}
+	}
+	if best == "" {
+		return nil
+	}
+	switch v := extra[best].(type) {
+	case float64:
+		return &v
+	}
+	return nil
 }

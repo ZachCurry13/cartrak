@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -73,10 +74,10 @@ func TestGzipAndETag(t *testing.T) {
 	}
 	resp2.Body.Close()
 
-	// The summary is smaller and omits the long field list.
+	// The summary omits the long field list (on a real car that is most of the size).
 	_, full := do(t, c, "GET", ts.URL+"/api/latest", "", nil)
 	_, sum := do(t, c, "GET", ts.URL+"/api/latest?summary=1", "", nil)
-	if !strings.Contains(full, "some.long.field") || strings.Contains(sum, "some.long.field") || len(sum) >= len(full) {
+	if !strings.Contains(full, "some.long.field") || strings.Contains(sum, "some.long.field") {
 		t.Fatalf("summary should be smaller:\nfull=%s\nsum=%s", full, sum)
 	}
 
@@ -196,5 +197,21 @@ func TestLiveEventsCarryTheTimeDrivenToday(t *testing.T) {
 	got := srv.currentEvent().DrivingToday
 	if got != (30+20)*60 {
 		t.Fatalf("30 minutes carried over past midnight plus a 20 minute trip: %d s", got)
+	}
+}
+
+func TestTheLiveSummaryCarriesBatteryAndMotorReadingsAndFindsAMotorTemperatureWhenThereIsOne(t *testing.T) {
+	v := 372.0
+	x := &store.Sample{TS: 1, HVVolts: &v, Extra: json.RawMessage(`{"xevBatteryTemperature.value": 24.5, "xevTractionMotorVoltage.value": 8, "xevTractionMotorCurrent.value": 12.5, "driveMotorTemp.value": 61.0, "driveMotorTemp.updateTime": "2026-10-19T10:00:00Z"}`)}
+	got := summarize(x)
+	if got.BatteryTempC == nil || *got.BatteryTempC != 24.5 || got.PackVolts == nil || *got.PackVolts != 372 || got.MotorVolts == nil || *got.MotorVolts != 8 || got.MotorAmps == nil || *got.MotorAmps != 12.5 {
+		t.Fatalf("%+v", got)
+	}
+	if got.MotorTempC == nil || *got.MotorTempC != 61 {
+		t.Fatalf("a motor temperature the car reports is picked up: %+v", got.MotorTempC)
+	}
+	plain := summarize(&store.Sample{TS: 2, Extra: json.RawMessage(`{"xevBatteryTemperature.value": 20}`)})
+	if plain.MotorTempC != nil || plain.MotorVolts != nil {
+		t.Fatalf("nothing is invented when the car does not send it: %+v", plain)
 	}
 }

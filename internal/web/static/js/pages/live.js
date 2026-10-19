@@ -5,6 +5,7 @@ import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, cl
 import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
 import { batteryRing } from '../ring.js';
+import { powerTile, fitText } from '../livepower.js';
 
 // Which six tiles to show, in order, for what the car is doing right now. The battery ring is always there.
 const MODES = {
@@ -35,6 +36,7 @@ export default async function live(root, _a, session) {
   const heroSub = h('div', { class: 'ts muted' });
   const hero = h('div', { class: 'tile big' }, h('div', { class: 'tl muted' }, 'Charge'), ring.el, heroSub);
   const gps = admin ? gpsCard() : null;
+  const power = powerTile();
   const dock = h('div', { class: 'dock' },
     h('div', { class: 'dock-top' }, conn, modeChip, age, h('span', { class: 'grow' }),
       admin ? toggle : null,
@@ -42,7 +44,7 @@ export default async function live(root, _a, session) {
     h('div', { class: 'tiles' }, hero,
       tile('speed', 'Speed'), tile('trip', 'This trip'), tile('tripTime', 'Trip time'), tile('reserve', 'To reserve'), tile('range', 'Range'), tile('today', 'Driving today'),
       tile('power', 'Charging power'), tile('eta', 'Time to target'), tile('added', 'Added this session'), tile('energy', 'Energy left'), tile('outside', 'Outside'),
-      tile('lock', 'Doors'), tile('odo', 'Odometer')),
+      tile('lock', 'Doors'), tile('odo', 'Odometer'), power.el),
     road);
 
   let lastTs = 0;
@@ -54,7 +56,7 @@ export default async function live(root, _a, session) {
   let wake = null;
   let es = null;
   let timer = null;
-  const set = (k, v, s) => { el[k].v.textContent = v; el[k].s.textContent = s || ''; };
+  const set = (k, v, s) => { el[k].v.textContent = v; el[k].s.textContent = s || ''; if (!el[k].box.hidden) { fitText(el[k].v, 14); fitText(el[k].s, 10); } };
 
   const etaBox = el.eta.box;
   etaBox.style.cursor = 'pointer';
@@ -85,6 +87,7 @@ export default async function live(root, _a, session) {
       const i = shown.indexOf(key);
       e.box.hidden = i < 0;
       e.box.style.order = String(i);
+      if (i >= 0) { fitText(e.v, 14); fitText(e.s, 10); } // a tile just shown may not have been measured yet
     }
   }
 
@@ -95,6 +98,7 @@ export default async function live(root, _a, session) {
     if (x) {
       lastTs = x.ts;
       lastX = x;
+      power.set(x);
       ring.set(x.socPct, x.rangeKm != null ? `${dist(x.rangeKm, 0)} range` : '');
       heroSub.textContent = mode === 'charging' && x.chargeKw > 0.2 ? `Charging at ${num(x.chargeKw, 1, ' kW')}` : nice(x.chargeState) || '';
       set('range', dist(x.rangeKm, 0));

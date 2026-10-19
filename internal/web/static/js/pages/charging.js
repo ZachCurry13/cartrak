@@ -1,6 +1,7 @@
 import { h, emptyState, chip, when, duration, pct, num, dist, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
+import { chargeNow } from '../chargenow.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
@@ -51,11 +52,13 @@ function sessionCard(c, cur, admin, reload) {
 export default async function charging(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
-  root.append(h('h2', {}, 'Charging'), forecastCard(), box);
+  const now = chargeNow();
+  root.append(h('h2', {}, 'Charging'), now.el, forecastCard(), box);
   async function load() {
     const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
     box.replaceChildren(summaryCard(sum), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load))));
   }
   await load();
+  return { cleanup: now.stop };
 }

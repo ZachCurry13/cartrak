@@ -1,4 +1,4 @@
-import { h, chip, dist, isMetric, temp } from '../ui.js';
+import { h, chip, dist, isMetric, temp, tempBandLabel } from '../ui.js';
 import { api } from '../api.js';
 import { getReserve, getTarget } from '../charge.js';
 import { planTrip } from '../tripplan.js';
@@ -20,7 +20,7 @@ export default async function plan(root) {
   const weather = h('select', { id: 'pw' },
     ...(band && band.nowBand ? [h('option', { value: 'now' }, `Today's temperature (${temp(band.outsideC)})`)] : []),
     h('option', { value: 'avg' }, 'Recent average'),
-    ...((band && band.byTemp) || []).map((b) => h('option', { value: b.name }, b.name)));
+    ...((band && band.byTemp) || []).map((b) => h('option', { value: b.name }, tempBandLabel(b.name))));
   const kmPerPct = () => {
     const v = weather.value;
     if (v === 'now' && band.nowBand) return band.nowBand.kmPerPct;

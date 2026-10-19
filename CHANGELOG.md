@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.24.0
+
+### 🔌 Charging shows what is happening now
+- **Charging** now starts with a **Right now** card: whether the car is plugged in, whether it is taking charge, the battery level, the power, and the time to 80, 90, 100 percent or your own target while it charges. It refreshes by itself every 30 seconds.
+
+### 🌡️ Temperatures in your units
+- The weather groups on **Efficiency insights**, the road-trip planner and the range line on Home were always written in Celsius ("0 to 10 °C") even when the rest of the app showed Fahrenheit. They now follow your units setting ("32 to 50 °F").
+
+### ⚡ Battery and motor on Live
+- **Live** has a **Battery and motor** panel with the battery temperature, pack voltage, drive motor voltage and current, and the 12 V battery, updating with each reading. It shows only what the car reports, so a motor temperature appears if your car sends one and is left out if it does not (Ford's list has none for most cars; the Debug report lists every field your car sends).
+- Values on Live are never cut short with "…" any more: text shrinks to fit its tile.
+
 ## 0.23.0
 
 ### 🩹 Fix a day

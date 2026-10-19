@@ -27,6 +27,16 @@ const n = (v) => v == null || Number.isNaN(Number(v));
 export const dist = (km, d = 1) => n(km) ? dash : metric ? `${(+km).toFixed(d)} km` : `${(km * 0.621371).toFixed(d)} mi`;
 export const speed = (kph) => n(kph) ? dash : metric ? `${Math.round(kph)} km/h` : `${Math.round(kph * 0.621371)} mph`;
 export const temp = (c) => n(c) ? dash : metric ? `${Math.round(c)}°C` : `${Math.round(c * 9 / 5 + 32)}°F`;
+// The server names weather groups in Celsius ("0 to 10 °C"). Say them in this device's units.
+export function tempBandLabel(name) {
+  if (metric || !name) return name;
+  const f = (c) => Math.round(c * 9 / 5 + 32);
+  let m = /^(-?\d+) to (-?\d+) °C$/.exec(name);
+  if (m) return `${f(+m[1])} to ${f(+m[2])} °F`;
+  m = /^(-?\d+) °C and above$/.exec(name);
+  if (m) return `${f(+m[1])} °F and above`;
+  return name;
+}
 export const pressure = (kpa) => n(kpa) ? dash : metric ? `${Math.round(kpa)} kPa` : `${(kpa * 0.145038).toFixed(0)} psi`;
 export const pct = (v) => n(v) ? dash : `${Math.round(v)}%`;
 export const num = (v, d = 1, u = '') => n(v) ? dash : `${(+v).toFixed(d)}${u}`;

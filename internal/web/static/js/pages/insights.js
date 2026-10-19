@@ -1,4 +1,4 @@
-import { h, dist, temp, when } from '../ui.js';
+import { h, dist, temp, when, tempBandLabel } from '../ui.js';
 import { api } from '../api.js';
 import { effSpan } from '../energy.js';
 
@@ -18,7 +18,7 @@ export default async function insights(root) {
     h('p', { class: 'muted' }, `Based on ${d.trips} trips from the last year. Cold weather, highway speed and heating use more energy; gentle city driving and mild weather use less.`),
     d.bands.length ? h('section', { class: 'card' }, h('h2', {}, 'By temperature'),
       ...d.bands.map((b) => h('div', { style: 'padding:6px 0' },
-        h('div', { class: 'row', style: 'border:0;padding:0' }, h('span', { class: 'grow' }, b.name, ' ', h('span', { class: 'muted' }, `${b.trips} trips`)), h('b', {}, effSpan(b.km, b.km / b.kmPerKwh))),
+        h('div', { class: 'row', style: 'border:0;padding:0' }, h('span', { class: 'grow' }, tempBandLabel(b.name), ' ', h('span', { class: 'muted' }, `${b.trips} trips`)), h('b', {}, effSpan(b.km, b.km / b.kmPerKwh))),
         h('div', { class: 'bar', style: 'margin-top:4px' }, h('i', { style: `width:${Math.round((b.kmPerKwh / best) * 100)}%` }))))) : null,
     h('section', { class: 'card' }, h('h2', {}, 'By month'),
       ...d.months.map((m) => h('div', { class: 'row' }, h('span', { class: 'grow' }, monthName(m.month), ' ', h('span', { class: 'muted' }, `${m.trips} trips${m.avgTempC != null ? ` · ${temp(m.avgTempC)}` : ''}`)), h('b', {}, effSpan(m.km, m.kwh))))),
