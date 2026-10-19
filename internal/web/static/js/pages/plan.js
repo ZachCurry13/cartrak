@@ -1,5 +1,7 @@
 import { h, chip, dist, isMetric, temp, tempBandLabel } from '../ui.js';
 import { api } from '../api.js';
+import { fitSpeedModel } from '../bestspeed.js';
+import { bestSpeedCard } from '../bestspeedcard.js';
 import { getReserve, getTarget } from '../charge.js';
 import { planTrip } from '../tripplan.js';
 
@@ -14,6 +16,8 @@ export default async function plan(root) {
   const latest = await api('/api/latest?summary=1').catch(() => null);
   const low = getReserve();
   const high = getTarget();
+  const spd = await api('/api/speed-efficiency').catch(() => null); // your energy use at each speed, for the best-speed card
+  const speedModel = spd ? fitSpeedModel(spd.bands) : null;
   const fast = await api('/api/charging/fast-average').catch(() => null); // what the car really averages at fast chargers
   const histKw = fast && fast.avgKw ? Math.round(fast.avgKw) : 0;
   const band = await api(`/api/range-band?low=${low}&high=${high}&days=60`).catch(() => null);
@@ -42,13 +46,15 @@ export default async function plan(root) {
       capacityKwh: latest && latest.capacityKwh, chargeKw: Number(kw.value) });
     if (!r.ok) return out.replaceChildren(h('p', { class: 'muted' }, r.reason));
     const where = (km) => dist(km, 0);
-    out.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'The plan'),
+    out.replaceChildren(...[h('section', { class: 'card' }, h('h2', {}, 'The plan'),
       h('p', {}, r.stops.length ? chip('work', `${r.stops.length} charging stop${r.stops.length === 1 ? '' : 's'}`) : chip('ok', 'No charging stop needed'), ' ',
         h('span', { class: 'muted' }, r.stops.length ? `About ${hm(r.extraMinutes)} charging in total.` : `You arrive with about ${Math.round(r.arrivePct)}%.`)),
       ...r.stops.map((s, i) => h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, `Stop ${i + 1}, about ${where(s.atKm)} in`),
         h('div', { class: 'muted' }, `Arrive at ${Math.round(s.arrivePct)}%, charge to ${Math.round(s.chargeToPct)}%`)), h('b', {}, hm(s.minutes)))),
       r.stops.length ? h('p', { class: 'muted' }, `You arrive with about ${Math.round(r.arrivePct)}%.`) : null,
-      h('p', { class: 'muted' }, 'A guide, not a route. Hills, highway speed, wind and cold use more battery, and fast chargers slow down above 80%. Leave extra room, and pick real chargers near each mark.')));
+      h('p', { class: 'muted' }, 'A guide, not a route. Hills, highway speed, wind and cold use more battery, and fast chargers slow down above 80%. Leave extra room, and pick real chargers near each mark.')),
+      speedModel && latest && latest.capacityKwh && kmPerPct() ? bestSpeedCard({ model: speedModel, distanceKm: toKm(Number(distance.value)), startPct: Number(start.value), reservePct: low, targetPct: high,
+        chargeKw: Number(kw.value), capacityKwh: latest.capacityKwh, cChosen: latest.capacityKwh / 100 / kmPerPct() }, show) : null].filter(Boolean));
   }
   for (const i of [distance, start, kw, weather]) i.addEventListener('input', show);
 

@@ -2,6 +2,9 @@
 
 ## 0.27.0
 
+### ⏱️ The best speed for a trip
+- The **Road-trip planner** has a **Best speed for this trip** card. Going faster saves driving time but uses more energy, and energy means charging time, so the fastest speed is not always the quickest trip. For your distance, starting charge, weather and charging speed it works out the total time (driving, charging and a few minutes lost at each stop) at each speed from 55 to 85 mph and names the one that gets you there soonest, for example "Going from 70 to 75 mph saves 6 min of driving but adds 9 min of charging, so it is 3 min slower overall and uses 11 kWh more." The energy at each speed comes from your own drives; speeds you have not driven are marked as estimates.
+
 ### 💨 Wind on your trips (optional, off by default)
 - Switch on **Wind lookup for trips** in More, Settings and CarTrak asks a free weather service (Open-Meteo, no account) for the wind along each trip. A trip then says whether it had a **headwind**, a **tailwind** or a strong **crosswind** (with gusts), splits wind out of "Everything else" with a rough estimate of what it did to the energy used, and shows chips such as "Headwind +9%" and "Tailwind −7%". Wind also appears in **What costs you the most**.
 - Privacy: it is off until you switch it on. It sends only a map cell half a degree wide (about 50 km), never your exact position, plus the date, and it remembers every answer so each place and day is asked once. The motion sensors cannot measure wind (they report the car's own movement in snapshots 30 seconds apart), which is why a weather service is used.
