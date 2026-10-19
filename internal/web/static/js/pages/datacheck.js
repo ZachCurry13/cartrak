@@ -22,5 +22,5 @@ export default async function datacheck(root, _a, session) {
       h('div', { class: 'grow' }, h('b', {}, NAMES[f.kind] || f.kind), ' ', chip(f.level === 'warn' ? 'work' : 'ok', f.level === 'warn' ? 'look at this' : 'fyi'),
         h('div', { class: 'muted' }, f.text), f.tripId ? h('a', { href: `#/trip/${f.tripId}` }, 'Open the trip') : null),
       h('span', { class: 'muted' }, when(f.ts)))))]
-      : [emptyState('Nothing looks wrong', 'No gaps, odometer jumps, overlapping or impossible trips in this period.')]].filter(Boolean));
+      : [emptyState('Nothing looks wrong', 'No gaps, odometer jumps, overlapping or impossible trips in this period.')])].filter(Boolean));
 }
