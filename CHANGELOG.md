@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.30.2
+
+### 🐛 Fixes
+- **Charging was cut off at the newest 100 sessions** in three places: the charging file in **Export everything**, the **History** feed for older months, and **Statistics** for a year. All three now include every session.
+- **Statistics and History pick the right month** whatever time zone the phone is in (the month and year are now named by the server, not worked out from the phone's clock).
 ## 0.30.1
 
 ### 🚗 Remote start is never a trip

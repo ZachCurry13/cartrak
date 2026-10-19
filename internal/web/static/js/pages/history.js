@@ -55,7 +55,8 @@ export default async function history(root) {
     const [y, m] = month.split('-').map(Number);
     const title = new Date(y, m - 1, 1).toLocaleDateString([], { month: 'long', year: 'numeric' });
     const shift = (n) => { const t = new Date(y, m - 1 + n, 1); month = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`; load(); };
-    const nowMonth = new Date().toISOString().slice(0, 7);
+    const nd = new Date();
+    const nowMonth = `${nd.getFullYear()}-${String(nd.getMonth() + 1).padStart(2, '0')}`; // this device's month, not UTC's
     seg.replaceChildren(...KINDS.map(([k, t]) => h('button', { class: kind === k ? 'on' : '', onclick: () => { kind = k; load(); } }, t)));
     const t = d.totals;
     const evs = d.events.filter((e) => kind === 'all' || e.kind === kind);

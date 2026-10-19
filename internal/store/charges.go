@@ -55,8 +55,11 @@ func (s *Store) UpdateCharge(c *Charge) error {
 }
 
 func (s *Store) ListCharges(limit int) ([]*Charge, error) {
-	if limit <= 0 || limit > 1000 {
+	if limit <= 0 {
 		limit = 100
+	}
+	if limit > 100000 { // not a hidden cap: asking for a lot must not quietly return a few
+		limit = 100000
 	}
 	rows, err := s.DB.Query(`SELECT `+chargeCols+` FROM charges ORDER BY start_ts DESC LIMIT ?`, limit)
 	if err != nil {

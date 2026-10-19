@@ -29,10 +29,11 @@ export default async function stats(root) {
     const s = d.stats;
     const ms = metrics(d.currency);
     const cur = ms.find((m) => m.key === metric);
-    const start = new Date(s.from * 1000);
-    const title = period === 'day' ? start.toLocaleDateString([], { month: 'long', year: 'numeric' }) : period === 'month' ? String(start.getFullYear()) : 'All years';
+    // The server says which month or year this is, so a device in another time zone cannot land in the wrong one.
+    const [ay, am] = d.at.split('-').map(Number);
+    const title = period === 'day' ? new Date(ay, am - 1, 1).toLocaleDateString([], { month: 'long', year: 'numeric' }) : period === 'month' ? String(ay) : 'All years';
     const shift = (n) => {
-      const t = new Date(start.getFullYear(), start.getMonth() + (period === 'day' ? n : 12 * n), 1);
+      const t = new Date(ay, am - 1 + (period === 'day' ? n : 12 * n), 1);
       at = period === 'day' ? `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}` : String(t.getFullYear());
       load();
     };

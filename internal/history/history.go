@@ -75,11 +75,9 @@ func Build(trips []*store.Trip, charges []Charge, named []*store.NamedPlace, fro
 			out = append(out, parked(prev, cursor, cur.e.Start, cur.e.StartSoC, named))
 		}
 		out = append(out, cur.e)
-		end := cur.e.Start
+		end := now // still going: nothing can be parked after it
 		if cur.e.End != nil {
 			end = *cur.e.End
-		} else {
-			end = now // still going: nothing can be parked after it
 		}
 		if end > cursor {
 			cursor = end
