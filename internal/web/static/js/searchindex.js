@@ -28,6 +28,8 @@ const EXTRA = [
   ['12 V battery', 'Health', '#/health', 'The small battery that wakes the car.', '12v 12 volt battery small battery dead jump'],
   ['Battery health', 'Health', '#/health', 'Battery size over time and the true battery level.', 'battery health degradation capacity usable true level soc'],
   ['Charging curve', 'Charging → a session → Charging curve', '#/charging', 'Power against battery level for a session.', 'charging curve speed kw power peak fast charger supercharger taper'],
+  ['History', 'Trips → History feed', '#/history', 'Driving, charging and parked time as one feed, by month.', 'history timeline feed log parked driving charging month'],
+  ['Statistics', 'Charging → Statistics', '#/stats', 'Distance, cost, energy and time by day, month and year; charging at home, work and public.', 'statistics stats chart bar month year cost kwh distance home work public donut'],
 ];
 
 const TABS = new Set(['#/', '#/trips', '#/live', '#/charging', '#/health', '#/data']); // pages with a tab along the bottom
