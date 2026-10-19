@@ -11,7 +11,19 @@ const MI = 0.621371;
 // "Best speed for this trip": total time at each cruising speed, counting the charging the extra energy forces.
 export function bestSpeedCard(args, rerun) {
   const stop = h('input', { type: 'number', min: 0, max: 30, inputmode: 'numeric', value: savedStop(), 'aria-label': 'Minutes lost per charging stop', style: 'max-width:5em' });
-  stop.addEventListener('change', () => { try { localStorage.setItem(KEY, String(Number(stop.value) || 0)); } catch (e) { /* storage blocked */ } rerun(); });
+  // Boxes update the card as you type. The card is rebuilt each time, so put the cursor back in the box you were typing in.
+  let timer;
+  const live = (el, save) => el.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      save();
+      const name = el.getAttribute('aria-label');
+      rerun();
+      const again = [...document.querySelectorAll('input')].find((i) => i.getAttribute('aria-label') === name);
+      if (again) again.focus();
+    }, 350);
+  });
+  live(stop, () => { try { localStorage.setItem(KEY, String(Number(stop.value) || 0)); } catch (e) { /* storage blocked */ } });
   const metric = isMetric();
   const speeds = metric ? [90, 100, 110, 120, 130, 140] : [55, 60, 65, 70, 75, 80, 85].map((m) => m / MI);
   const t = speedTable({ ...args, stopMinutes: Number(stop.value) || 0, speeds });
@@ -24,7 +36,7 @@ export function bestSpeedCard(args, rerun) {
   const pick = (i) => {
     const v = pair && Number(pair[i]) >= 20 && Number(pair[i]) <= 200 ? Number(pair[i]) : dflt[i];
     const s = h('input', { type: 'number', min: 20, max: 200, step: 1, inputmode: 'numeric', value: v, 'aria-label': i ? 'Compare with (speed)' : 'Compare (speed)', style: 'max-width:5em' });
-    s.addEventListener('change', () => { try { localStorage.setItem(PKEY, JSON.stringify([a.value, b.value])); } catch (e) { /* storage blocked */ } rerun(); });
+    live(s, () => { try { localStorage.setItem(PKEY, JSON.stringify([a.value, b.value])); } catch (e) { /* storage blocked */ } });
     return s;
   };
   const a = pick(0), b = pick(1);
@@ -44,6 +56,15 @@ export function bestSpeedCard(args, rerun) {
     const drive = slow.drive - fast.drive, charge = fast.charge - slow.charge, stops = fast.stops - slow.stops, net = fast.total - slow.total;
     return h('p', {}, h('b', {}, `${label(fast)} against ${label(slow)}: `), `${hm(drive)} less driving, ${hm(Math.abs(charge))} ${charge < 0 ? 'less' : 'more'} charging${stops ? ` (${stops > 0 ? stops + ' more stop' + (stops === 1 ? '' : 's') : -stops + ' fewer stop' + (stops === -1 ? '' : 's')})` : ''} and ${hm(Math.abs(net))} ${net < 0 ? 'quicker' : 'slower'} overall. It uses ${num(fast.kwh - slow.kwh, 0, ' kWh')} more energy (${Math.round((fast.kwh / slow.kwh - 1) * 100)}% more per ${metric ? 'km' : 'mile'}).`);
   })() : null;
+  // The answer in one sentence, for the two speeds chosen.
+  const verdict = ra && rb && ra !== rb ? (() => {
+    const [slow, fast] = ra.kph < rb.kph ? [ra, rb] : [rb, ra];
+    const net = fast.total - slow.total, more = fast.kwh - slow.kwh, pct = Math.round((fast.kwh / slow.kwh - 1) * 100);
+    const text = net < -2 ? `Driving faster saves time: ${label(fast)} gets you there ${hm(-net)} sooner than ${label(slow)}, for ${num(more, 0, ' kWh')} more energy (${pct}% more per ${metric ? 'km' : 'mile'}).`
+      : net <= 2 ? `About the same time either way. ${label(slow)} is the better choice: it gets there within a couple of minutes of ${label(fast)} and uses ${num(more, 0, ' kWh')} less energy.`
+        : `Slower is quicker here: the extra charging at ${label(fast)} costs more time than the faster driving saves, so ${label(slow)} gets you there ${hm(net)} sooner and uses ${num(more, 0, ' kWh')} less energy.`;
+    return h('p', { class: 'banner notice', style: 'display:block' }, h('b', {}, 'Recommendation: '), text);
+  })() : null;
   const both = h('div', {}, hour, cmp);
   const faster = t.rows.find((r) => r.kph > best.kph);
   const slower = [...t.rows].reverse().find((r) => r.kph < best.kph);
@@ -59,11 +80,11 @@ export function bestSpeedCard(args, rerun) {
     h('span', { class: 'grow' }, label(r), r === best ? ' · fastest overall' : '', r.estimated ? h('span', { class: 'muted' }, ' · estimate') : null,
       h('div', { class: 'muted', style: 'font-weight:400' }, `drive ${hm(r.drive)} · charge ${hm(r.charge)}${r.stops ? ` · ${r.stops} stop${r.stops === 1 ? '' : 's'}` : ' · no stop'}`)),
     h('b', {}, hm(r.total))));
-  if (args.compareOnly) return h('div', {}, h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0' }, 'Compare', a, h('span', { class: 'muted' }, metric ? 'km/h with' : 'mph with'), b, h('span', { class: 'muted' }, metric ? 'km/h' : 'mph')), both, h('p', { class: 'muted' }, 'Driving, charging and stops for a trip this long, starting at 90% and charging between your reserve and target. Estimates from your own driving and charging.'));
+  if (args.compareOnly) return h('div', {}, h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0' }, 'Compare', a, h('span', { class: 'muted' }, metric ? 'km/h with' : 'mph with'), b, h('span', { class: 'muted' }, metric ? 'km/h' : 'mph')), both, h('p', { class: 'muted' }, 'Driving, charging and stops for a trip this long, starting at 90% and charging between your reserve and target. Estimates from your own driving and charging.'), verdict);
   return h('section', { class: 'card' }, h('h2', {}, 'Best speed for this trip'),
     h('p', {}, h('b', {}, `${label(best)} gets you there soonest`), `: about ${hm(best.total)} in total.`),
     line ? h('p', {}, line) : null,
     h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0' }, 'Compare', a, h('span', { class: 'muted' }, metric ? 'km/h with' : 'mph with'), b, h('span', { class: 'muted' }, metric ? 'km/h' : 'mph')), both, ...rows,
     h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px' }, h('label', { for: 'sm', style: 'margin:0' }, 'Time lost at each stop (plug in, parking)'), (stop.id = 'sm', stop), h('span', { class: 'muted' }, 'min')),
-    h('p', { class: 'muted' }, 'Worked out from how much energy your own driving used at each speed, your charging speed above, and the weather you chose. Charging is taken at one average speed, so a stop that fills past 80% is a little slower in real life. Speeds outside what you have driven are estimates.'));
+    h('p', { class: 'muted' }, 'Worked out from how much energy your own driving used at each speed, your charging speed above, and the weather you chose. Charging is taken at one average speed, so a stop that fills past 80% is a little slower in real life. Speeds outside what you have driven are estimates.'), verdict);
 }

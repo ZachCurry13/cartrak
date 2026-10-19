@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
@@ -72,7 +73,8 @@ func (e *Engine) stoppedEarly(st *ford.State) bool {
 	}
 	var ends []float64
 	for _, c := range recent {
-		if !c.Open && c.EndSoC != nil {
+		// The session that has just ended is not history: it ended where it ended because of what is being judged.
+		if !c.Open && c.EndSoC != nil && (c.EndTS == nil || *c.EndTS < st.TS.Unix()-900) {
 			ends = append(ends, *c.EndSoC)
 		}
 	}
@@ -146,4 +148,15 @@ func (e *Engine) namedPlaces(st *ford.State, first bool) {
 			delete(e.inside, id)
 		}
 	}
+}
+
+// chargeFault says in words why the car reports the charge ended badly, or "" when its charge state is not a fault.
+func chargeFault(st *ford.State) string {
+	switch strings.ToUpper(st.ChargeState) {
+	case "FAULT":
+		return "The charger reported a fault. "
+	case "STATION_NOT_DETECTED":
+		return "The car lost contact with the charger. "
+	}
+	return ""
 }

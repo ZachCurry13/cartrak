@@ -110,7 +110,9 @@ func (e *Engine) plugAndCharge(prev, st *ford.State) {
 		e.send(push.Alert{Kind: push.PlugOut, Title: "Unplugged", Body: "Charging cable removed." + charge(st), URL: "#/charging"})
 	}
 	if charging(prev) && !charging(st) && nowKnown && now { // stopped while still plugged in
-		if e.stoppedEarly(st) {
+		if why := chargeFault(st); why != "" {
+			e.send(push.Alert{Kind: push.ChargeInterrupted, Title: "Charging interrupted", Body: why + strings.TrimRight(charge(st), " "), URL: "#/charging"})
+		} else if e.stoppedEarly(st) {
 			e.send(push.Alert{Kind: push.ChargeInterrupted, Title: "Charging stopped early", Body: fmt.Sprintf("Charging stopped at %.0f%% while still plugged in, lower than it usually stops. Check the cable and the charger.", *st.SoCPct), URL: "#/charging"})
 		} else {
 			e.send(push.Alert{Kind: push.ChargeComplete, Title: "Charging complete", Body: strings.TrimSpace(charge(st)), URL: "#/charging"})

@@ -28,7 +28,8 @@ export async function speedCompare(bands) {
       cChosen: model.c(model.vTypical), compareOnly: true }, show);
     box.replaceChildren(...(card ? [card] : [h('p', { class: 'muted' }, 'Enter a longer trip to compare speeds.')]));
   };
-  dist.addEventListener('change', show);
+  let timer;
+  dist.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(show, 350); });
   show();
   return h('div', {}, h('h3', {}, 'Compare two speeds'),
     h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, h('label', { for: 'cd', style: 'margin:0' }, 'Trip length'), (dist.id = 'cd', dist), h('span', { class: 'muted' }, metric ? 'km' : 'mi')),

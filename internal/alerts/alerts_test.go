@@ -229,3 +229,41 @@ func TestATestedBatteryPausesTheTwelveVoltAlert(t *testing.T) {
 		t.Fatalf("a real low battery alerts again once the pause is over: %s", r.kinds())
 	}
 }
+
+func TestAFaultOrAPauseBelowTheUsualStopIsNotCalledComplete(t *testing.T) {
+	e, r, s := setup(t)
+	at := func(min int, soc float64, state string) *ford.State {
+		return reading(min, func(st *ford.State) { v := soc; st.SoCPct = &v; st.Plug, st.ChargeState = "CONNECTED", state })
+	}
+	// An earlier session that ended near 80%.
+	end := t0.Add(-24 * time.Hour).Unix()
+	f := func(v float64) *float64 { return &v }
+	c := &store.Charge{StartTS: end - 3600, StartSoC: f(40), PeakKw: 10}
+	if err := s.CreateCharge(c); err != nil {
+		t.Fatal(err)
+	}
+	c.EndTS, c.EndSoC, c.Open = &end, f(80), false
+	if err := s.UpdateCharge(c); err != nil {
+		t.Fatal(err)
+	}
+	e.Handle(at(0, 40, "NOT_READY"))
+	e.Handle(at(5, 40, "IN_PROGRESS"))
+	cur := &store.Charge{StartTS: t0.Add(5 * time.Minute).Unix(), StartSoC: f(40), PeakKw: 10}
+	if err := s.CreateCharge(cur); err != nil {
+		t.Fatal(err)
+	}
+	stop := t0.Add(40 * time.Minute).Unix()
+	cur.EndTS, cur.EndSoC, cur.Open = &stop, f(46), false // the session is closed at the same moment as the reading
+	if err := s.UpdateCharge(cur); err != nil {
+		t.Fatal(err)
+	}
+	e.Handle(at(40, 46, "NOT_READY"))
+	if r.kinds() != "charge_interrupted" {
+		t.Fatalf("a pause at 46%% is not complete: %s", r.kinds())
+	}
+	e.Handle(at(50, 48, "IN_PROGRESS"))
+	e.Handle(at(52, 48, "FAULT"))
+	if r.kinds() != "charge_interrupted,charge_interrupted" || !strings.Contains(r.got[1].Body, "fault") {
+		t.Fatalf("a fault says so: %s %+v", r.kinds(), r.got)
+	}
+}
