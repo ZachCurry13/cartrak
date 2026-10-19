@@ -21,10 +21,10 @@ func TestFasterBandsUseMoreEnergyPerKilometre(t *testing.T) {
 	if len(got) != 2 {
 		t.Fatalf("two bands: %+v", got)
 	}
-	if got[0].LoKph != 50 || math.Abs(got[0].KmPerKwh-1/0.14) > 0.1 {
+	if got[0].LoKph != 70 || math.Abs(got[0].KmPerKwh-1/0.14) > 0.1 {
 		t.Fatalf("70 km/h: %+v", got[0])
 	}
-	if got[1].LoKph != 100 || math.Abs(got[1].KmPerKwh-1/0.22) > 0.1 {
+	if got[1].LoKph != 110 || math.Abs(got[1].KmPerKwh-1/0.22) > 0.1 {
 		t.Fatalf("112 km/h: %+v", got[1])
 	}
 	if got[1].KmPerKwh >= got[0].KmPerKwh {

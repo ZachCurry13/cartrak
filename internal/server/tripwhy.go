@@ -10,6 +10,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/insights"
 	"github.com/ZachCurry13/cartrak/internal/speedeff"
+	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
 	"github.com/ZachCurry13/cartrak/internal/tripwhy"
 )
@@ -63,20 +64,12 @@ func (s *Server) whyBaseline() tripwhy.Baseline {
 	return b
 }
 
-// tripWhy explains one trip's efficiency: speed, temperature, stopping and what is left over.
-// GET /api/trips/{id}/why
-func (s *Server) tripWhy(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	t, err := s.S.GetTrip(id)
-	if err != nil || t == nil || t.Open || t.EndTS == nil {
-		fail(w, 404, "no such finished trip")
-		return
-	}
+// whyFor explains one finished trip from its stored readings.
+func (s *Server) whyFor(t *store.Trip) (tripwhy.Report, error) {
 	e, has := trips.EnergyUsed(t, s.capacityKwh())
 	rows, err := s.S.TripReadings(t.StartTS, *t.EndTS)
 	if err != nil {
-		fail(w, 500, "db error")
-		return
+		return tripwhy.Report{}, err
 	}
 	rs := make([]tripwhy.Reading, 0, len(rows))
 	var tsum float64
@@ -108,5 +101,78 @@ func (s *Server) tripWhy(w http.ResponseWriter, r *http.Request) {
 			regen = ford.Number(f, "tripXevBatteryRangeRegenerated")
 		}
 	}
-	ok(w, tripwhy.Build(rs, kwh, s.whyBaseline(), group, regen))
+	return tripwhy.Build(rs, kwh, s.whyBaseline(), group, regen), nil
+}
+
+// tripWhy explains one trip's efficiency: speed, temperature, stopping and what is left over.
+// GET /api/trips/{id}/why
+func (s *Server) tripWhy(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	t, err := s.S.GetTrip(id)
+	if err != nil || t == nil || t.Open || t.EndTS == nil {
+		fail(w, 404, "no such finished trip")
+		return
+	}
+	rep, err := s.whyFor(t)
+	if err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	ok(w, rep)
+}
+
+var (
+	reasonsMu   sync.Mutex
+	reasonsAt   time.Time
+	reasonsDays int
+	reasonsOut  map[string]any
+)
+
+// efficiencyReasons adds up, across recent trips, how much energy each reason cost or saved compared with your usual:
+// the speeds you drove, the weather, and everything else. GET /api/efficiency-reasons?days=60
+func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
+	days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+	if days < 7 || days > 365 {
+		days = 60
+	}
+	reasonsMu.Lock()
+	defer reasonsMu.Unlock()
+	if reasonsOut != nil && reasonsDays == days && time.Since(reasonsAt) < 30*time.Minute {
+		ok(w, reasonsOut)
+		return
+	}
+	ts, err := s.S.ListTrips(store.TripFilter{From: time.Now().AddDate(0, 0, -days).Unix(), Limit: 400})
+	if err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	extra := map[string]float64{}
+	var used, usual float64
+	n := 0
+	for _, t := range ts {
+		if t.Open || t.EndTS == nil || t.DistanceKm < 3 {
+			continue
+		}
+		rep, err := s.whyFor(t)
+		if err != nil || !rep.Ready {
+			continue
+		}
+		n++
+		km := rep.Facts.Km
+		base := rep.UsualKwhPerKm * km // what an average trip of this length would use
+		used += rep.KwhPerKm * km
+		usual += base
+		for _, f := range rep.Factors {
+			extra[f.Key] += f.Pct / 100 * base
+		}
+	}
+	items := []map[string]any{}
+	for _, k := range []string{"speed", "temperature", "other"} {
+		if usual > 0 {
+			items = append(items, map[string]any{"key": k, "kwh": extra[k], "pctOfUse": extra[k] / usual * 100})
+		}
+	}
+	reasonsOut = map[string]any{"days": days, "trips": n, "usedKwh": used, "usualKwh": usual, "items": items}
+	reasonsDays, reasonsAt = days, time.Now()
+	ok(w, reasonsOut)
 }

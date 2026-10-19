@@ -30,7 +30,7 @@ func TestSpeedEfficiencyComparesBandsFromStoredDrives(t *testing.T) {
 	if code != 200 || json.Unmarshal([]byte(b), &out) != nil || len(out.Bands) != 1 {
 		t.Fatalf("%d %s", code, b)
 	}
-	if out.Bands[0].LoKph != 100 || out.Bands[0].KmPerKwh < 4.4 || out.Bands[0].KmPerKwh > 4.7 {
+	if out.Bands[0].LoKph != 110 || out.Bands[0].KmPerKwh < 4.4 || out.Bands[0].KmPerKwh > 4.7 {
 		t.Fatalf("112 km/h at 0.22 kWh per km is about 4.5 km per kWh: %+v", out.Bands[0])
 	}
 }

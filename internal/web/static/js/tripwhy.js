@@ -40,7 +40,7 @@ export async function whyCard(id) {
 
 // Short reason chips for a trip ("Cold weather", "Hard braking", …): red for what cost energy, green for what helped.
 export function tagChips(tags) {
-  return (tags || []).map((t) => h('span', { class: `chip ${t.bad ? 'bad' : 'ok'}` }, t.label));
+  return (tags || []).map((t) => h('span', { class: `chip ${({ bad: 'bad', good: 'ok' })[t.level] || 'info'}` }, t.label));
 }
 
 // Fills a container with a trip's reason chips once they arrive; leaves it empty if there is nothing to say.

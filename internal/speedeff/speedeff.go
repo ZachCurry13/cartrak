@@ -27,11 +27,11 @@ type Out struct {
 	KmPerKwh float64 `json:"kmPerKwh"`
 }
 
-var edges = []float64{3, 50, 80, 100, 115, 130, 400}
+var edges = []float64{3, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 400} // about 6 mph apart, so a sweet spot shows
 
 const (
 	maxGap = 120 // seconds between two readings that still count as one stretch of driving
-	minKm  = 5.0 // a band needs this much driving before it means anything
+	minKm  = 4.0 // a band needs this much driving before it means anything
 )
 
 // Build pairs each reading with the one before it and adds the stretch to the band of its average speed. Pairs

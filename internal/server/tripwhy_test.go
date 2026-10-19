@@ -60,4 +60,19 @@ func TestTheWhyOfATripComparesItWithTheDriversOwnHistory(t *testing.T) {
 	if code, _ := do(t, admin, "GET", ts.URL+"/api/trips/9999/why", "", nil); code != 404 {
 		t.Fatalf("no such trip: %d", code)
 	}
+	// Across the recent trips: how much energy each reason cost or saved against the usual.
+	reasonsMu.Lock()
+	reasonsOut = nil
+	reasonsMu.Unlock()
+	code, b = do(t, admin, "GET", ts.URL+"/api/efficiency-reasons?days=30", "", nil)
+	var rr struct {
+		Trips int
+		Items []struct {
+			Key string
+			Kwh float64
+		}
+	}
+	if code != 200 || json.Unmarshal([]byte(b), &rr) != nil || rr.Trips != 1 || len(rr.Items) != 3 {
+		t.Fatalf("one trip, three reasons: %d %s", code, b)
+	}
 }

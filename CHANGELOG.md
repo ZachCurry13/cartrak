@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.27.0
+
+### 🎯 Your most efficient speed
+- **Efficiency insights, By speed** now has a chart you can touch and drag along, with finer steps (about 6 mph apart), and says plainly **"Most efficient: 56–62 mph"** with how much more energy cruising faster used. Every speed range is under "Every speed range".
+
+### 🧭 What costs you the most
+- A new card adds up, across your last 60 days of trips, how much energy **speed**, **weather** and **everything else** (wind, hills, climate control, braking) cost or saved against your usual driving, in kWh.
+
+### 🎨 Reason chips that tell the truth
+- A reason chip is now red only when it really cost that trip energy. A short city trip full of stops and braking can be one of your most efficient (low speeds suit an EV), so there those chips are grey descriptions, not culprits. Speed and weather chips show how much they moved the result ("Highway speed +12%", "Low speeds −18%", "Mild weather −6%"), and a better-than-usual trip with no clear reason says by how much.
+
 ## 0.26.0
 
 ### 🧼 Old screens can no longer stick

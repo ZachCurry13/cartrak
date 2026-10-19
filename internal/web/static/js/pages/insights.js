@@ -2,6 +2,7 @@ import { h, dist, temp, when, tempBandLabel } from '../ui.js';
 import { api } from '../api.js';
 import { effSpan } from '../energy.js';
 import { speedCard } from '../speedcard.js';
+import { reasonsCard } from '../reasonscard.js';
 import { fillTags } from '../tripwhy.js';
 
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
@@ -31,5 +32,7 @@ export default async function insights(root) {
     d.best.length ? h('section', { class: 'card' }, h('h2', {}, 'Most efficient trips'), ...d.best.map(tripRow)) : null,
     d.worst.length ? h('section', { class: 'card' }, h('h2', {}, 'Least efficient trips'), ...d.worst.map(tripRow)) : null].filter(Boolean));
   const sp = await speedCard();
-  if (sp) { const first = root.querySelector('section.card'); if (first) first.after(sp); else root.append(sp); }
+  const rc = await reasonsCard();
+  const first = root.querySelector('section.card');
+  for (const c of [rc, sp].filter(Boolean)) { if (first) first.after(c); else root.append(c); } // speed first, then what costs you most, then the rest
 }
