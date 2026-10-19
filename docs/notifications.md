@@ -8,7 +8,7 @@ CarTrak can send a notification to your phone or computer when something happens
 | Charging complete | Charging stopped while the car is still plugged in (the battery reached its target or is full) |
 | Plugged in / Unplugged | The charging cable was connected or removed |
 | Low tire pressure | The car reports a tire as low (sent once, until the tire is fixed) |
-| Charging stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
+| Charging interrupted / stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
 | Bump while parked | A parked car's motion sensors read above the bump level (More, Settings). Experimental: see Parked watch. Off by default |
 | Car alarm | The car reports its alarm or panic alarm is going off. Off by default |
 | Left open | The parked car has a door, the tailgate, the hood or a window open for ten minutes. Off by default |

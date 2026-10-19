@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.30.0
+
+### 🔌 Charging alerts that tell the truth
+- A charge that **stopped because of a fault**, or because the car **lost contact with the charger**, now sends **Charging interrupted** with the reason, instead of "Charging complete". The car's own charge state (FAULT, STATION_NOT_DETECTED) is used.
+- A pause at a low level (46%, say) is no longer called complete. The session that has just ended was being counted as "where your sessions usually stop", which hid exactly this case.
+- New alert **Slow fast charge**: when a fast charge that started below 60% averaged under 70% of your usual fast charges (needs three earlier ones), you hear it, so you can try a different charger next time. Off by default like the other alerts you pick.
+- New alert **Car-reported problem**: the car does its own checks on the main battery, the tire pressure system and the 12 V load. Anything other than normal sends one alert a day for that check.
+
+### ⚡ Level 2 or fast, from the car
+- Each charging session now keeps what the car says the charger is (AC or DC). **Fastest and average for Level 2 and Level 3** use it, and fall back to the old peak-power guess for sessions recorded before this version.
+
+### ♻️ The car's own regen energy
+- The car keeps a count of the energy braking gave back. CarTrak now checks it against its own estimate on your recent trips, and when they agree on most trips it shows the car's number (marked "car") instead of the estimate (marked "estimate").
+
+### 🔋 Range on a full charge
+- **True battery level** now shows the range the car expects at 100%, with how it has moved over the history CarTrak has. It moves with the weather and how you drive, so it is a slow trend, a second battery-health signal next to the usable size.
+
+### 🎛️ How firmly you drove
+- **Why this efficiency?** says whether a trip was driven firmer or smoother than your usual, from the car's torque readings, with a short chip ("Firm driving", "Smooth driving"). There is no absolute scale in the readings, so firm means above what your own recent trips reached nine times out of ten.
+
+### ⚖️ Speed comparison
+- The two speed boxes and the trip length update as you type, and the comparison ends with a plain recommendation ("Driving faster saves time: 75 mph gets you there 20 min sooner…").
 ## 0.29.0
 
 ### 📜 History and statistics

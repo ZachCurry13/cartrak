@@ -106,6 +106,7 @@ func (s *Server) whyFor(t *store.Trip) (tripwhy.Report, error) {
 		k := *counter * regenUnitKwh // the car's own count of the energy braking gave back
 		rep.Facts.RegenKwh, rep.Facts.RegenFromCar = &k, true
 	}
+	s.withSmoothness(&rep, t)
 	return rep, nil
 }
 

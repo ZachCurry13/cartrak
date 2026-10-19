@@ -5,6 +5,8 @@ package tripwhy
 import (
 	"fmt"
 	"sort"
+
+	"github.com/ZachCurry13/cartrak/internal/smooth"
 )
 
 // Reading is one stored reading during the trip.
@@ -74,13 +76,14 @@ type Tag struct {
 
 // Report is the explanation.
 type Report struct {
-	Ready         bool     `json:"ready"`
-	KwhPerKm      float64  `json:"kwhPerKm"`
-	UsualKwhPerKm float64  `json:"usualKwhPerKm"`
-	VsUsualPct    float64  `json:"vsUsualPct"`
-	Factors       []Factor `json:"factors"`
-	Tags          []Tag    `json:"tags"`
-	Facts         Facts    `json:"facts"`
+	Ready         bool           `json:"ready"`
+	KwhPerKm      float64        `json:"kwhPerKm"`
+	UsualKwhPerKm float64        `json:"usualKwhPerKm"`
+	VsUsualPct    float64        `json:"vsUsualPct"`
+	Factors       []Factor       `json:"factors"`
+	Tags          []Tag          `json:"tags"`
+	Facts         Facts          `json:"facts"`
+	Smooth        *smooth.Result `json:"smooth"` // how firmly the trip was driven, when the car's torque readings allow
 }
 
 const significant = 3.0 // percent: smaller effects are not worth a line

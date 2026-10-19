@@ -106,3 +106,6 @@ Switch on **Wind lookup for trips** in More, Settings. CarTrak then asks Open-Me
 
 ## Vacation
 **More, Trip rules, Vacation**: pick the days and every trip on them is Personal, over your rules; trips you set by hand keep your choice, and removing the vacation puts the rules back.
+
+## How firmly you drove, and regen
+On a trip, **Why this efficiency?** also says whether it was driven firmer or smoother than your usual, using the car's torque readings. The readings have no stated unit, so firm means above what your own last dozen trips reached nine times out of ten. The regen tiles show the range braking gave back and its energy: the car's own count when it agrees with CarTrak's estimate on most recent trips, otherwise the estimate (marked as one).
