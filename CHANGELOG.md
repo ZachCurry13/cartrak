@@ -2,6 +2,9 @@
 
 ## 0.23.0
 
+### 🩹 Fix a day
+- **More, Fix a day** (admins) redoes the trips and charging of a stretch of time (Yesterday, Today so far, Last 3 days, or your own dates) from the readings CarTrak stored, using the current rules, which now split a road trip at the fast charger. It shows a **Now** and **After rebuilding** side by side first and changes nothing until you type REBUILD. Notes, categories you chose by hand and charger kWh you typed in are kept; public links to the old trips stop working. It will not touch a trip in progress, a stretch ending in the last 30 minutes, or trips that are part of a journey, and the swap happens in one step or not at all.
+
 ### 🧰 Debug report
 - **More, Debug report** (admins) makes a plain-text report of the last 6 hours to 3 days: every reading (ignition, speed, plug, charge state, power, battery, odometer, lock), the raw lock and door fields the car sent each time the lock state changed, every field the car reports in its latest reading (so you can see everything the car offers), the trips and charging sessions CarTrak made, and the alerts it sent. Copy it or download it and send it when something looks wrong. It leaves out where the car was, sign-ins, keys and the VIN.
 

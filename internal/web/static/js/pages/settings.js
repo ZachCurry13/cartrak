@@ -37,6 +37,7 @@ export default async function settings(root, _a, session) {
         admin ? group('Admin',
           item('#/people', 'People', `${users.length} ${users.length === 1 ? 'account' : 'accounts'}`),
           item('#/security', 'Security', 'Sign-in log and signed-in devices'),
+          item('#/repair', 'Fix a day', 'Redo the trips and charging of a day that was recorded wrongly'),
           item('#/debug', 'Debug report', 'Copy what the car reported, to send when something looks wrong'),
           item('#/backup', 'Backup', 'Download a copy of your data'),
           item('#/admin', 'Settings', 'Ford credentials, time zone, prices, diagnostics')) : null,

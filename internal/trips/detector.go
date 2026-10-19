@@ -185,3 +185,8 @@ func (d *Detector) loc() *time.Location {
 	}
 	return time.UTC
 }
+
+// ClassifyTrip sets a trip's category from the rules, as it would be when the trip is first recorded.
+func (d *Detector) ClassifyTrip(t *store.Trip) {
+	t.Category, t.RuleID, t.CategorySource = d.classify(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t))
+}

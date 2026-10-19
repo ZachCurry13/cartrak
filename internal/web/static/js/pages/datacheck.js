@@ -7,6 +7,7 @@ const NAMES = { gap: 'Gap in readings', 'odo-back': 'Odometer went back', overla
 export default async function datacheck(root) {
   const d = await api('/api/datacheck');
   root.append(h('h2', {}, 'Data check'),
+    h('p', {}, h('a', { href: '#/repair' }, 'Something wrong with a whole day? Fix a day')),
     h('p', { class: 'muted' }, `CarTrak looked through the last ${d.days} days (${d.readings} odometer readings and ${d.trips} trips) for things that seem wrong. It only looks; it never changes your data. Gaps are usually just the car sleeping.`),
     ...(d.findings.length ? [h('section', { class: 'card' }, ...d.findings.map((f) => h('div', { class: 'row' },
       h('div', { class: 'grow' }, h('b', {}, NAMES[f.kind] || f.kind), ' ', chip(f.level === 'warn' ? 'work' : 'ok', f.level === 'warn' ? 'look at this' : 'fyi'),

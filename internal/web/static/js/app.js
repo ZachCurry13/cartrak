@@ -33,6 +33,7 @@ const routes = {
   guide: () => import('./pages/guide.js'),
   time: () => import('./pages/timeuse.js'),
   year: () => import('./pages/year.js'),
+  repair: () => import('./pages/repair.js'),
   debug: () => import('./pages/debug.js'),
   datacheck: () => import('./pages/datacheck.js'),
   review: () => import('./pages/review.js'),
