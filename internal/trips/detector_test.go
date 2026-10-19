@@ -143,7 +143,11 @@ func TestACarLeftOnAtAFastChargerSplitsTheRoadTripIntoTwoTrips(t *testing.T) {
 	d := &Detector{S: s, TZ: time.UTC}
 	t0 := time.Date(2026, 10, 18, 9, 0, 0, 0, time.UTC)
 	speed := func(st *ford.State, kph float64) *ford.State { st.SpeedKph = &kph; return st }
-	charge := func(st *ford.State) *ford.State { kw := 120.0; st.ChargeKw, st.ChargeState = &kw, "CHARGING"; return speed(st, 0) }
+	charge := func(st *ford.State) *ford.State {
+		kw := 120.0
+		st.ChargeKw, st.ChargeState = &kw, "CHARGING"
+		return speed(st, 0)
+	}
 	steps := []*ford.State{
 		speed(reading(t0, "ON", 1000, 90), 100),
 		speed(reading(t0.Add(60*time.Minute), "ON", 1150, 40), 100),
