@@ -47,6 +47,7 @@ type Facts struct {
 	IdleKwh     float64  `json:"idleKwh"`     // energy used while stopped (climate control, systems)
 	HardBrakes  int      `json:"hardBrakes"`  // big drops in speed between two readings
 	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
+	RegenKm     *float64 `json:"regenKm"`     // range the car says braking gave back during the trip (its own counter)
 }
 
 // Tag is one short reason shown next to a trip. Bad means it cost energy.
@@ -79,7 +80,8 @@ func bandIndex(b []Band, kph float64) int {
 }
 
 // Build explains a trip. tempGroup is the name of the temperature group of the trip's average temperature.
-func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string) (r Report) {
+func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64) (r Report) {
+	r.Facts.RegenKm = regenKm
 	sort.Slice(rs, func(i, j int) bool { return rs[i].TS < rs[j].TS })
 	var km, movingKm, movingSec, stoppedSec, totalSec, over100, expectedKwh float64
 	var tempSum float64
@@ -222,6 +224,9 @@ func tagsFor(r Report, km, tripKwh float64) []Tag {
 	}
 	if km > 0 && float64(f.QuickStarts) >= maxf(3, km/8) {
 		tags = append(tags, Tag{"launch", "Quick starts", true})
+	}
+	if f.RegenKm != nil && km > 0 && *f.RegenKm/km >= 0.04 {
+		tags = append(tags, Tag{"regen", "Regenerative braking helped", false})
 	}
 	if len(tags) == 0 && r.Ready && r.VsUsualPct <= -3 {
 		tags = append(tags, Tag{"gentle", "Gentle driving", false})

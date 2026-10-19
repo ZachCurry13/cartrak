@@ -1,4 +1,4 @@
-import { h, speed, temp, isMetric } from './ui.js';
+import { h, speed, temp, dist, isMetric } from './ui.js';
 import { api } from './api.js';
 
 const sign = (p) => `${p > 0 ? '+' : '−'}${Math.abs(Math.round(p))}%`;
@@ -35,7 +35,7 @@ export async function whyCard(id) {
     d.tags && d.tags.length ? h('p', { class: 'tags' }, ...tagChips(d.tags)) : null,
     ...(d.factors.length ? d.factors.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, say(x, f)), h('b', { class: x.pct > 0 ? 'bad' : '', style: 'white-space:nowrap' }, sign(x.pct))))
       : [h('p', { class: 'muted' }, 'Nothing stands out: speed and weather were typical for you.')]),
-    h('p', { class: 'muted' }, [f.stops ? `${f.stops} stop${f.stops === 1 ? '' : 's'}${f.stoppedPct >= 1 ? `, ${Math.round(f.stoppedPct)}% of the time stopped` : ''}` : null, `top speed ${speed(f.maxKph)}`].filter(Boolean).join(' · ') + '. Percentages are against your own driving over the last few months.'));
+    h('p', { class: 'muted' }, [f.regenKm != null ? `braking gave back ${dist(f.regenKm, 1)} of range` : null, f.stops ? `${f.stops} stop${f.stops === 1 ? '' : 's'}${f.stoppedPct >= 1 ? `, ${Math.round(f.stoppedPct)}% of the time stopped` : ''}` : null, `top speed ${speed(f.maxKph)}`].filter(Boolean).join(' · ') + '. Percentages are against your own driving over the last few months.'));
 }
 
 // Short reason chips for a trip ("Cold weather", "Hard braking", …): red for what cost energy, green for what helped.

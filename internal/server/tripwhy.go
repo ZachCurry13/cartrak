@@ -1,11 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/insights"
 	"github.com/ZachCurry13/cartrak/internal/speedeff"
 	"github.com/ZachCurry13/cartrak/internal/trips"
@@ -97,5 +99,14 @@ func (s *Server) tripWhy(w http.ResponseWriter, r *http.Request) {
 	if has {
 		kwh = e.Kwh
 	}
-	ok(w, tripwhy.Build(rs, kwh, s.whyBaseline(), group))
+	// The car keeps its own count of the range braking gave back since the ignition came on; its last value in the trip
+	// is the trip's total. (Its other regen counter is documented as a percentage but reads like a different unit.)
+	var regen *float64
+	if x, _ := s.S.SampleAt(*t.EndTS); x != nil && x.TS >= t.StartTS {
+		f := map[string]any{}
+		if json.Unmarshal(x.Extra, &f) == nil {
+			regen = ford.Number(f, "tripXevBatteryRangeRegenerated")
+		}
+	}
+	ok(w, tripwhy.Build(rs, kwh, s.whyBaseline(), group, regen))
 }

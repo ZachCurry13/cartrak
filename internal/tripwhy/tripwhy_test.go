@@ -23,7 +23,7 @@ var base = Baseline{
 func TestAFastColdTripNamesSpeedAndTemperatureAsTheReasons(t *testing.T) {
 	rs := drive(1000, 80, 120, 0.30, 120, -3) // 120 km/h in the cold at 0.30 kWh per km
 	km := 120.0 / 3600 * 30 * 120
-	r := Build(rs, 0.30*km, base, "Below freezing")
+	r := Build(rs, 0.30*km, base, "Below freezing", nil)
 	if !r.Ready || r.VsUsualPct < 20 {
 		t.Fatalf("it used much more than usual: %+v", r)
 	}
@@ -43,7 +43,7 @@ func TestAGentleMildTripIsBetterThanUsualAndStopsAreCounted(t *testing.T) {
 	rs := drive(2000, 80, 60, 0.15, 60, 15)
 	rs = append(rs, Reading{TS: 2000, Odo: rs[len(rs)-1].Odo, Kwh: 70, Speed: 0}) // a stop (far later: skipped as a gap)
 	km := 60.0 / 3600 * 30 * 60
-	r := Build(rs, 0.15*km, base, "10 to 20 °C")
+	r := Build(rs, 0.15*km, base, "10 to 20 °C", nil)
 	if !r.Ready || r.VsUsualPct >= 0 {
 		t.Fatalf("%+v", r)
 	}
@@ -53,7 +53,7 @@ func TestAGentleMildTripIsBetterThanUsualAndStopsAreCounted(t *testing.T) {
 }
 
 func TestTooLittleDrivingGivesNoExplanation(t *testing.T) {
-	r := Build(drive(0, 80, 50, 0.2, 4, 10), 0.4, base, "")
+	r := Build(drive(0, 80, 50, 0.2, 4, 10), 0.4, base, "", nil)
 	if r.Ready {
 		t.Fatalf("%+v", r)
 	}
@@ -83,7 +83,7 @@ func TestTagsNameTheKeyReasons(t *testing.T) {
 		ts += 30
 		rs = append(rs, Reading{TS: ts, Odo: odo, Kwh: kwh, Speed: 0, OutsideC: fp(-4)})
 	}
-	r := Build(rs, 80-kwh, base, "Below freezing")
+	r := Build(rs, 80-kwh, base, "Below freezing", nil)
 	got := map[string]bool{}
 	for _, tg := range r.Tags {
 		got[tg.Key] = tg.Bad
@@ -96,8 +96,27 @@ func TestTagsNameTheKeyReasons(t *testing.T) {
 	// A gentle, mild, efficient trip gets good words instead.
 	good := drive(0, 80, 60, 0.12, 60, 15)
 	km := 60.0 / 3600 * 30 * 60
-	g := Build(good, 0.12*km, base, "10 to 20 °C")
+	g := Build(good, 0.12*km, base, "10 to 20 °C", nil)
 	if len(g.Tags) == 0 || g.Tags[0].Bad {
 		t.Fatalf("%+v", g.Tags)
+	}
+}
+
+func TestRegenerativeBrakingIsAGoodTagWhenTheCarReportsEnoughRangeGivenBack(t *testing.T) {
+	km := 60.0 / 3600 * 30 * 60
+	regen := km * 0.1 // a tenth of the distance given back
+	r := Build(drive(0, 80, 60, 0.12, 60, 15), 0.12*km, base, "10 to 20 °C", &regen)
+	found := false
+	for _, tg := range r.Tags {
+		if tg.Key == "regen" && !tg.Bad {
+			found = true
+		}
+	}
+	if !found || r.Facts.RegenKm == nil {
+		t.Fatalf("%+v", r.Tags)
+	}
+	small := 0.1
+	if r := Build(drive(0, 80, 60, 0.12, 60, 15), 0.12*km, base, "10 to 20 °C", &small); len(r.Tags) > 0 && r.Tags[0].Key == "regen" {
+		t.Fatal("a little regen is not worth a tag")
 	}
 }
