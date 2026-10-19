@@ -278,3 +278,27 @@ func TestASessionKeepsTheChargerTypeTheCarReportedWhileCharging(t *testing.T) {
 		t.Fatal("stale station type is ignored when not charging")
 	}
 }
+
+func TestARemoteStartIsNotATripEvenWhenTheCarSendsNoSpeed(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now()
+	a := reading(t0, "ON", 100, 80)
+	a.SpeedKph = nil
+	a.Extra = map[string]any{"remoteStartCountdownTimer.value": 540.0}
+	b := reading(t0.Add(5*time.Minute), "ON", 100, 80)
+	b.SpeedKph = nil
+	b.Extra = map[string]any{"remoteStartCountdownTimer.value": 240.0}
+	d.Process(a)
+	d.Process(b)
+	if ts, _ := s.ListTrips(store.TripFilter{}); len(ts) != 0 {
+		t.Fatalf("a remote start made a trip: %+v", ts)
+	}
+	c := reading(t0.Add(8*time.Minute), "ON", 100, 80)
+	c.SpeedKph = nil
+	d.Process(c) // no countdown: someone is driving and the car sends no speed
+	if ts, _ := s.ListTrips(store.TripFilter{}); len(ts) != 1 {
+		t.Fatalf("driving without a speed field still counts: %+v", ts)
+	}
+}

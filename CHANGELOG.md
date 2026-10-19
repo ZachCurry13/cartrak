@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.30.1
+
+### 🚗 Remote start is never a trip
+- A trip only starts when the car is actually moving, so a remote start (ignition on, speed zero) was already ignored. One gap is now closed: if the car sends no speed at all during a remote start, the countdown until it shuts off tells CarTrak nobody is driving, so it still does not start a trip.
+
 ## 0.30.0
 
 ### 🔌 Charging alerts that tell the truth

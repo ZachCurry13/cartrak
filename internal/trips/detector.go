@@ -110,6 +110,10 @@ func (d *Detector) trip(st *ford.State) error {
 // accessories on (speed zero) is not a trip. When a feed gives no speed at all, ignition on has to be enough.
 func moving(st *ford.State) bool {
 	if st.SpeedKph == nil {
+		// A remote start turns the ignition on with nobody driving; the car says so with a countdown until it shuts off.
+		if t := ford.Number(st.Extra, "remoteStartCountdownTimer"); t != nil && *t > 0 {
+			return false
+		}
 		return true
 	}
 	return *st.SpeedKph > 3
