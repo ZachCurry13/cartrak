@@ -18,13 +18,13 @@ export function bestSpeedCard(args, rerun) {
   const best = t.best;
   const faster = t.rows.find((r) => r.kph > best.kph);
   const slower = [...t.rows].reverse().find((r) => r.kph < best.kph);
-  let line;
+  let line = null;
   if (faster) {
     const saves = best.drive - faster.drive, costs = faster.charge + faster.stopTime - best.charge - best.stopTime;
     line = `Going from ${label(best)} to ${label(faster)} saves ${hm(saves)} of driving but adds ${hm(Math.max(0, costs))} of charging and stops, so it is ${hm(Math.abs(saves - costs))} ${saves - costs < 0 ? 'slower' : 'faster'} overall and uses ${num(faster.kwh - best.kwh, 0, ' kWh')} more energy.`;
-  } else if (slower) {
-    const saves = slower.charge + slower.stopTime - best.charge - best.stopTime, costs = slower.drive - best.drive;
-    line = `Going slower to ${label(slower)} would save ${hm(Math.max(0, saves))} of charging and stops but cost ${hm(costs)} of driving.`;
+  }
+  if (!faster && slower) {
+    line = `Even at the top speed shown, going faster still gets you there sooner on this trip: the charging it adds takes less time than the driving it saves. Slowing to ${label(slower)} would add ${hm(slower.total - best.total)} to the trip and use ${num(best.kwh - slower.kwh, 0, ' kWh')} less energy.`;
   }
   const rows = t.rows.map((r) => h('div', { class: `row${r === best ? ' on' : ''}`, style: r === best ? 'font-weight:700' : '' },
     h('span', { class: 'grow' }, label(r), r === best ? ' · fastest overall' : '', r.estimated ? h('span', { class: 'muted' }, ' · estimate') : null,
