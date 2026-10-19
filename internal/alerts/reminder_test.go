@@ -213,22 +213,23 @@ func TestAJoltOrAnAlarmOnAParkedCarIsAlertedAndLogged(t *testing.T) {
 	if len(r.got) != 0 {
 		t.Fatalf("noise is not a bump: %s", r.kinds())
 	}
-	at(4, 0.7, 0.4, 0.1, "ARMED", nil) // 0.8: logged as a candidate but under the level
-	at(6, 1.5, 0.9, 0.3, "ARMED", nil) // 1.8: a bump
-	at(8, 2.0, 1.0, 0.0, "ARMED", nil) // more shaking right after: one alert only
+	// A bump is a change from the reading before it, so what is below is the size of each jump.
+	at(4, 0.4, 0.3, 0.0, "ARMED", nil) // jump of 0.7: logged as a candidate but under the level
+	at(6, 1.4, 0.9, 0.3, "ARMED", nil) // jump of 1.2: a bump
+	at(8, 2.4, 1.4, 0.3, "ARMED", nil) // another 1.1 right after: logged, one alert only
 	if r.kinds() != "bump_parked" {
 		t.Fatalf("one bump alert: %s", r.kinds())
 	}
-	at(30, 0.1, 0, 0, "TRIGGERED", nil)
+	at(30, 2.4, 1.4, 0.3, "TRIGGERED", nil) // no movement, but the alarm
 	if r.kinds() != "bump_parked,alarm_sounding" {
 		t.Fatalf("an alarm: %s", r.kinds())
 	}
 	ev, _ := s.RecentParkedEvents(10)
-	if len(ev) != 4 { // 0.8 candidate, 1.8, 2.2 (logged, not alerted again), alarm
+	if len(ev) != 4 { // 0.7 candidate, 1.2, 1.1 (logged, not alerted again), alarm
 		t.Fatalf("the log keeps what was seen: %+v", ev)
 	}
 	st := s.ParkedWatchStats()
-	if st.Checked < 6 || st.MaxSeen < 2.2 {
+	if st.Checked < 5 || st.MaxSeen < 1.1 {
 		t.Fatalf("totals: %+v", st)
 	}
 	// Driving jolts are normal and ignored, and level 0 switches it off.
@@ -268,5 +269,87 @@ func TestALowDiskIsAlertedOnceEveryThreeDaysAndOnlyWhenLow(t *testing.T) {
 	e.Tick()
 	if len(r.got) != 2 {
 		t.Fatalf("unknown is quiet: %s", r.kinds())
+	}
+}
+
+func TestASteadyOffsetOnAParkedCarIsNeverABump(t *testing.T) {
+	e, r, _ := setup(t)
+	e.BumpLevel = func() float64 { return 1.0 }
+	for i := 0; i < 30; i++ { // parked on a slope: a constant reading well above the level, hour after hour
+		e.Handle(reading(i*10, func(st *ford.State) {
+			st.Extra["telemetry.metrics.acceleration.value.x"] = 1.4
+			st.Extra["telemetry.metrics.acceleration.value.y"] = -0.9
+			st.Extra["telemetry.metrics.acceleration.value.z"] = 0.0
+		}))
+	}
+	if len(r.got) != 0 {
+		t.Fatalf("a steady offset is not a bump: %s", r.kinds())
+	}
+}
+
+func TestLeavingTheCarUnlockedAlertsButSittingInItChargingDoesNot(t *testing.T) {
+	e, r, _ := setup(t)
+	unlocked := false
+	sit := func(s *ford.State) {
+		s.Locked = &unlocked
+		s.Ignition = "ON"
+		s.Plug = "CONNECTED"
+		s.ChargeState = "IN_PROGRESS"
+	}
+	for i := 0; i < 8; i++ {
+		e.Handle(reading(i*5, sit)) // 35 minutes in the car on a fast charger
+	}
+	if len(r.got) != 0 {
+		t.Fatalf("ignition on means someone is in the car: %s", r.kinds())
+	}
+	left := func(s *ford.State) { s.Locked = &unlocked; s.Ignition = "OFF" }
+	for i := 8; i < 13; i++ {
+		e.Handle(reading(i*5, left))
+	}
+	if r.kinds() != "plug_out,unlocked" { // the unplug is its own alert
+		t.Fatalf("left unlocked with the ignition off: %s", r.kinds())
+	}
+}
+
+func TestABumpDoesNotAlertWhenTheOwnerIsWithTheCar(t *testing.T) {
+	jolt := func(i int) func(*ford.State) {
+		return func(st *ford.State) {
+			x := float64(i) * 2 // every reading jumps by 2 m/s² from the one before
+			st.Extra["telemetry.metrics.acceleration.value.x"] = x
+			st.Extra["telemetry.metrics.acceleration.value.y"] = 0.0
+			st.Extra["telemetry.metrics.acceleration.value.z"] = 0.0
+			lat, lon := 44.0, -93.0
+			st.Lat, st.Lon = &lat, &lon
+		}
+	}
+	run := func(t *testing.T, prep func(e *Engine, s *store.Store), mod func(*ford.State)) string {
+		e, r, s := setup(t)
+		e.BumpLevel = func() float64 { return 1.0 }
+		prep(e, s)
+		e.Handle(reading(0, jolt(0)))
+		e.Handle(reading(20, func(st *ford.State) { jolt(1)(st); mod(st) }))
+		return r.kinds()
+	}
+	none := func(e *Engine, s *store.Store) {}
+	locked := func(st *ford.State) { v := true; st.Locked = &v }
+	if got := run(t, none, locked); got != "bump_parked" {
+		t.Fatalf("a bump on a locked car with no phone nearby alerts: %q", got)
+	}
+	if got := run(t, none, func(st *ford.State) { v := false; st.Locked = &v }); got != "" {
+		t.Fatalf("an unlocked car is being used: %q", got)
+	}
+	if got := run(t, none, func(st *ford.State) { locked(st); st.Ignition = "ON" }); got != "" {
+		t.Fatalf("ignition on means someone is in it: %q", got)
+	}
+	near := func(lat, lon float64) func(e *Engine, s *store.Store) {
+		return func(e *Engine, s *store.Store) {
+			s.DB.Exec(`INSERT INTO track_points(device_id,ts,lat,lon) VALUES(1,?,?,?)`, e.now().Add(-5*time.Minute).Unix(), lat, lon)
+		}
+	}
+	if got := run(t, near(44.0005, -93.0), locked); got != "" {
+		t.Fatalf("the owner's phone is 55 m away: %q", got)
+	}
+	if got := run(t, near(44.05, -93.0), locked); got != "bump_parked" {
+		t.Fatalf("a phone 5 km away is not with the car: %q", got)
 	}
 }

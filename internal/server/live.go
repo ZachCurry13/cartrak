@@ -40,6 +40,8 @@ type summary struct {
 	MotorVolts   *float64 `json:"motorVolts"`
 	MotorAmps    *float64 `json:"motorAmps"`
 	MotorTempC   *float64 `json:"motorTempC"` // only if the car reports a motor or inverter temperature
+	PackAmps     *float64 `json:"packAmps"`   // current into (negative) or out of (positive) the battery
+	CoolantC     *float64 `json:"coolantC"`   // the coolant temperature the car reports
 }
 
 func summarize(x *store.Sample) *summary {
@@ -49,7 +51,7 @@ func summarize(x *store.Sample) *summary {
 	extra := map[string]any{}
 	_ = json.Unmarshal(x.Extra, &extra)
 	return &summary{BatteryTempC: ford.Number(extra, "xevBatteryTemperature"), PackVolts: x.HVVolts, Battery12V: x.Battery12V,
-		MotorVolts: ford.Number(extra, "xevTractionMotorVoltage"), MotorAmps: ford.Number(extra, "xevTractionMotorCurrent"), MotorTempC: motorTemp(extra), TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
+		MotorVolts: ford.Number(extra, "xevTractionMotorVoltage"), MotorAmps: ford.Number(extra, "xevTractionMotorCurrent"), MotorTempC: motorTemp(extra), PackAmps: ford.Number(extra, "xevBatteryIoCurrent"), CoolantC: ford.Number(extra, "engineCoolantTemp"), TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
 		ChargeState: x.ChargeState, Plug: x.Plug, ChargeKw: x.ChargeKw, OutsideC: x.OutsideC,
 		OdometerKm: x.OdometerKm, Lat: x.Lat, Lon: x.Lon, Locked: x.Locked, FuelPct: x.FuelPct, OilLifePct: x.OilLifePct, EnergyKwh: x.EnergyKwh, CapacityKwh: x.CapacityKwh}
 }

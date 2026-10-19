@@ -93,3 +93,22 @@ func (s *Store) BrowserDevice(userID int64, who string) (*Device, error) {
 
 // KV12VTested is when the owner's "tested and fine" pause for the 12 V battery warnings ends (unix seconds).
 const KV12VTested = "battery12v_ok_until"
+
+// PhonePointsSince returns the positions any paired phone reported since `since` (unix seconds), newest first, as
+// latitude and longitude pairs. A small query: only recent rows.
+func (s *Store) PhonePointsSince(since int64) ([][2]float64, error) {
+	rows, err := s.DB.Query(`SELECT lat,lon FROM track_points WHERE ts>=? ORDER BY ts DESC LIMIT 50`, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out [][2]float64
+	for rows.Next() {
+		var p [2]float64
+		if err := rows.Scan(&p[0], &p[1]); err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
+}

@@ -1,6 +1,7 @@
 import { h, chip, nice, num, pct, ago } from './ui.js';
 import { api } from './api.js';
 import { chargeEtaBox } from './chargecard.js';
+import { isCharging } from './chargestate.js';
 
 // "Right now" at the top of the Charging page: whether the car is plugged in, whether it is taking charge, and how
 // fast, with the time to a target when it is. It refreshes on its own while the page is open.
@@ -12,7 +13,7 @@ export function chargeNow() {
     try { x = await api('/api/latest?summary=1'); } catch (e) { return; }
     if (!x) return;
     const plugged = /^connected$/i.test(x.plug || '') || (/connect/i.test(x.plug || '') && !/dis|not/i.test(x.plug || ''));
-    const taking = (x.chargeKw || 0) > 0.2 || (/charging/i.test(x.chargeState || '') && !/not|complete|stop/i.test(x.chargeState || ''));
+    const taking = isCharging(x);
     el.replaceChildren(...[
       h('h2', {}, 'Right now'),
       h('p', {}, chip(taking ? 'ok' : 'work', taking ? 'Charging' : (nice(x.chargeState) || 'Not charging')), ' ',

@@ -133,6 +133,15 @@ func ParseFlat(f map[string]any, at time.Time) *State {
 			s.ChargeKw = ptr(*v * *a / 1000)
 		}
 	}
+	// Fast (DC) charging reports no onboard-charger power. The battery's own current and voltage always do: a negative
+	// current is charge going in. Only trusted while the plug is connected, since braking also pushes current in.
+	if (s.ChargeKw == nil || *s.ChargeKw < 0.2) && plugConnected(s.Plug) {
+		if i := numAt(f, "xevBatteryIoCurrent"); i != nil && *i <= -1 {
+			if v := numAt(f, "xevBatteryVoltage"); v != nil {
+				s.ChargeKw = ptr(-*i * *v / 1000)
+			}
+		}
+	}
 	if st := strAt(f, "lockStatus.value", "DOOR_LOCK_STATUS"); st != "" {
 		s.Locked = ptr(strings.EqualFold(st, "LOCKED") || strings.EqualFold(st, "DOUBLE_LOCKED"))
 	}

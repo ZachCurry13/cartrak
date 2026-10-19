@@ -8,6 +8,7 @@ import { doorsCard, healthCard } from '../cards.js';
 import { createMap, mapConfig } from '../map.js';
 import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
+import { isCharging } from '../chargestate.js';
 import { bandRow } from '../rangeband.js';
 import { batteryRing } from '../ring.js';
 import { googleMapsUrl, mapButtons } from '../maplinks.js';
@@ -94,7 +95,7 @@ export default async function dashboard(root, _args, session) {
       ring.set(soc, latest.rangeKm != null ? `${dist(latest.rangeKm, 0)} range` : '');
       const t0 = trips[0];
       const driving = (t0 && t0.open) || latest.speedKph > 1;
-      const isCharging = /charg/i.test(latest.chargeState || '') && !/not|complete|stop/i.test(latest.chargeState || '');
+      const isChargingNow = isCharging(latest);
       const plugged = latest.plug ? /^connected$/i.test(latest.plug) : null;
       const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:-4px 0 12px' },
         chip(driving ? 'personal' : isCharging ? 'ok' : 'work', driving ? 'Driving' : isCharging ? 'Charging' : 'Parked'),
@@ -123,7 +124,7 @@ export default async function dashboard(root, _args, session) {
         h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, latest.fuelPct))}%` }))));
     }
 
-    const charging = /charg/i.test(latest.chargeState || '') && !/not|complete|stop/i.test(latest.chargeState || '');
+    const charging = isCharging(latest);
     if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', nice(latest.chargeState) || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', nice(latest.plug) || 'Unknown')),
       kv([['Power', latest.chargeKw != null ? num(latest.chargeKw, 1, ' kW') : null],
         ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null],

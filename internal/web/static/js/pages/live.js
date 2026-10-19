@@ -6,6 +6,7 @@ import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
 import { batteryRing } from '../ring.js';
 import { powerTile, fitText } from '../livepower.js';
+import { isCharging } from '../chargestate.js';
 
 // Which six tiles to show, in order, for what the car is doing right now. The battery ring is always there.
 const MODES = {
@@ -66,7 +67,7 @@ export default async function live(root, _a, session) {
   etaBox.onclick = cycleEta;
   etaBox.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleEta(); } };
 
-  const charging = (x) => x.chargeKw > 0.2 || (/charging/i.test(x.chargeState || '') && !/not|complete|stop/i.test(x.chargeState || ''));
+  const charging = isCharging;
 
   function pickMode(ev) {
     const x = ev.sample;

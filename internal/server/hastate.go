@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 	"strings"
+
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
@@ -26,7 +28,7 @@ func (s *Server) haState(w http.ResponseWriter, r *http.Request, _ *store.Device
 		v := strings.Contains(plug, "connect") && !strings.Contains(plug, "disconnect") && !strings.Contains(plug, "not")
 		plugged = &v
 	}
-	charging := strings.Contains(strings.ToLower(x.ChargeState), "charging") && !strings.Contains(strings.ToLower(x.ChargeState), "not")
+	charging := ford.ChargeStateCharging(x.ChargeState) || (x.ChargeKw != nil && *x.ChargeKw > 0.2)
 	if x.ChargeKw != nil && *x.ChargeKw > 0.2 {
 		charging = true
 	}

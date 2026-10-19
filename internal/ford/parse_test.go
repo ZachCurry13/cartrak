@@ -70,3 +70,33 @@ func TestParseTiresAndLocksFromLists(t *testing.T) {
 		t.Fatalf("absent metrics must stay unknown: %v %v", none.Locked, none.Tires[0])
 	}
 }
+
+// What a fast charger looks like in real telemetry: the charge status says IN_PROGRESS, there is no onboard charger
+// power, and only the battery's own current and voltage show that energy is flowing in.
+func TestFastChargingIsRecognisedFromTheStatusWordAndThePackCurrent(t *testing.T) {
+	raw := []byte(`{"telemetry":{"metrics":{
+	  "xevBatteryChargeDisplayStatus":{"value":"IN_PROGRESS"},
+	  "xevPlugChargerStatus":{"value":"CONNECTED"},
+	  "xevBatteryIoCurrent":{"value":-110.2},
+	  "xevBatteryVoltage":{"value":372.0},
+	  "ignitionStatus":{"value":"ON"},
+	  "speed":{"value":0}
+	}}}`)
+	s := ParseState(raw, time.Now())
+	if !s.Charging() {
+		t.Fatalf("IN_PROGRESS is charging: %+v", s)
+	}
+	if s.ChargeKw == nil || *s.ChargeKw < 40.9 || *s.ChargeKw > 41.1 {
+		t.Fatalf("110.2 A at 372 V is about 41 kW: %v", s.ChargeKw)
+	}
+	for _, not := range []string{"NOT_READY", "PAUSED", "FAULT", "STATION_NOT_DETECTED", "COMPLETE", ""} {
+		if ChargeStateCharging(not) {
+			t.Errorf("%q is not charging", not)
+		}
+	}
+	// Braking pushes current into the pack too, but with no plug it is not charging.
+	driving := ParseState([]byte(`{"telemetry":{"metrics":{"xevPlugChargerStatus":{"value":"DISCONNECTED"},"xevBatteryIoCurrent":{"value":-60},"xevBatteryVoltage":{"value":370}}}}`), time.Now())
+	if driving.ChargeKw != nil || driving.Charging() {
+		t.Fatalf("regen is not charging: %+v", driving.ChargeKw)
+	}
+}

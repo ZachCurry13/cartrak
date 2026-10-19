@@ -175,3 +175,45 @@ func TestACarLeftOnAtAFastChargerSplitsTheRoadTripIntoTwoTrips(t *testing.T) {
 		}
 	}
 }
+
+// The road trip of 2026-10-18 as the car reported it: at each fast charger the charge status was IN_PROGRESS with
+// 0.0 kW and the ignition left on, which used to leave the whole day as one long trip with no charging sessions.
+func TestFastChargerStopsWithZeroPowerSplitTheTripAndMakeChargingSessions(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Date(2026, 10, 18, 9, 0, 0, 0, time.UTC)
+	step := func(min int, odo, soc, kph float64, charge string) {
+		st := reading(t0.Add(time.Duration(min)*time.Minute), "ON", odo, soc)
+		st.SpeedKph = &kph
+		st.ChargeState = charge
+		st.Plug = "CONNECTED"
+		if charge == "" {
+			st.Plug = "DISCONNECTED"
+		}
+		kw := 0.0
+		st.ChargeKw = &kw
+		if err := d.Process(st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	step(0, 1000, 90, 100, "")
+	step(60, 1150, 40, 100, "")
+	step(70, 1150, 40, 0, "IN_PROGRESS")
+	step(100, 1150, 80, 0, "IN_PROGRESS")
+	step(101, 1150, 80, 0, "NOT_READY")
+	step(110, 1151, 80, 90, "")
+	step(170, 1300, 35, 100, "")
+	step(180, 1300, 35, 0, "")
+	ts, _ := s.ListTrips(store.TripFilter{})
+	cs, _ := s.ListCharges(10)
+	if len(ts) != 2 || len(cs) != 1 {
+		t.Fatalf("two drives and one charging session, got %d trips and %d sessions", len(ts), len(cs))
+	}
+	if cs[0].Open || cs[0].EndSoC == nil || *cs[0].EndSoC != 80 {
+		t.Fatalf("the session ended at 80%%: %+v", cs[0])
+	}
+}

@@ -22,10 +22,7 @@ func plugged(st *ford.State) (bool, bool) {
 	return false, false
 }
 
-func charging(st *ford.State) bool {
-	return (strings.Contains(strings.ToLower(st.ChargeState), "charging") && !strings.Contains(strings.ToLower(st.ChargeState), "not")) ||
-		(st.ChargeKw != nil && *st.ChargeKw > 0.2)
-}
+func charging(st *ford.State) bool { return st.Charging() }
 
 // charge is " Battery at 82%." or "" when the car did not report a level.
 func charge(st *ford.State) string {

@@ -13,7 +13,6 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/push"
 	"github.com/ZachCurry13/cartrak/internal/store"
-	"github.com/ZachCurry13/cartrak/internal/trips"
 )
 
 // Notifier delivers an alert to the devices that want it.
@@ -59,6 +58,7 @@ type Engine struct {
 	silentSent   bool
 	inside       map[int64]bool // which named places the car is inside
 	lastBump     time.Time
+	restVec      *[3]float64 // the previous parked reading of the motion sensors
 	lowSent      bool
 }
 
@@ -156,7 +156,7 @@ func (e *Engine) battery12V(st *ford.State) {
 }
 
 func (e *Engine) unlocked(st *ford.State) {
-	if st.Locked == nil || *st.Locked || trips.Driving(st) {
+	if st.Locked == nil || *st.Locked || st.Driving() { // ignition on means someone is in the car, even while it charges
 		e.unlockedFrom, e.unlockedSent = time.Time{}, false
 		return
 	}
