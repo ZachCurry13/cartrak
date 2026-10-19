@@ -22,8 +22,27 @@ function reserveInput() {
   return i;
 }
 
+// The version these screens were loaded as: the address of this file carries it (/v0.26.0/js/...). Screens from before
+// versioned addresses have none.
+const loadedVersion = (import.meta.url.match(/\/v([^/]+)\/js\//) || [])[1] || 'older than 0.26';
+
+// Throw away everything the app has saved on this device and load it again from the server.
+async function refreshApp(btn, msg) {
+  btn.disabled = true;
+  msg.textContent = 'Clearing saved app files…';
+  try {
+    if ('serviceWorker' in navigator) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+    if (window.caches) for (const k of await caches.keys()) await caches.delete(k);
+  } catch (e) { /* carry on: the reload below still fetches fresh files */ }
+  location.replace(`/?fresh=${Date.now()}#/display`);
+}
+
 // These choices apply to this device only.
-export default async function display(root) {
+export default async function display(root, _a, session) {
+  const msg = h('p', { class: 'muted', role: 'status' });
+  const btn = h('button', { onclick: () => refreshApp(btn, msg) }, 'Refresh the app');
+  const server = session && session.about ? session.about.version : '';
+  const stale = server && loadedVersion !== server;
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Display and data')),
     h('p', { class: 'muted' }, 'These choices apply to this device only.'),
     h('section', { class: 'group' }, h('div', { class: 'menu' },
@@ -33,5 +52,10 @@ export default async function display(root) {
       setting('s-tm', 'Trip times', choice([['trip', 'Where the trip happened'], ['device', 'This device']], getTimeMode(), setTimeMode),
         'Trips show the local time where they started, with the zone name.'),
       setting('s-dm', 'Data use', choice(Object.entries(MODES), getPref(), (v) => { setPref(v); location.reload(); }),
-        'Normal refreshes every 30 s. Live pushes each new reading. Data saver shows the essentials, refreshes every 5 min, and loads big things only when you tap.'))));
+        'Normal refreshes every 30 s. Live pushes each new reading. Data saver shows the essentials, refreshes every 5 min, and loads big things only when you tap.'))),
+    h('section', { class: 'card' }, h('h2', {}, 'If something looks old'),
+      h('p', {}, `These screens are version ${loadedVersion}. The server is version ${server || 'unknown'}.`),
+      stale ? h('p', { class: 'banner' }, 'They do not match, so this phone is showing old screens. Tap Refresh the app.') : h('p', { class: 'muted' }, 'They match.'),
+      h('p', { class: 'muted' }, 'Refresh the app clears the files saved on this device and loads them again from the server. Your sign-in and your choices here are kept.'),
+      h('p', {}, btn), msg));
 }

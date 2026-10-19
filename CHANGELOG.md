@@ -2,6 +2,14 @@
 
 ## 0.26.0
 
+### 🧼 Old screens can no longer stick
+- The app's files are now served from addresses that carry the version (such as /v0.26.0/js/app.js), and the page that points at them is never cached. A phone, a browser or a service such as Cloudflare in front of CarTrak can keep the files as long as it likes: a new version has new addresses, so an old copy can never be served for it. This was why some phones kept showing old screens even after clearing the app's data.
+- **More, Display and data, If something looks old** shows the version of the screens on this phone next to the server's version, warns when they differ, and has a **Refresh the app** button that clears the saved app files and loads everything again.
+- Nothing needs bumping by hand any more: the cache name follows the version.
+
+### 📏 Feet in imperial
+- The size of a place in **Trip rules** and **Places** was always in metres. It now follows your units (feet in imperial).
+
 ### 🔄 No more old screens after an update
 - The **A new version is ready** bar now also appears when you come back to the app after it has been in the background and the server has been updated, not only while it is open. This is what was leaving a phone on old screens (Celsius in the road-trip planner) next to a new version number.
 
