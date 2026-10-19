@@ -2,6 +2,9 @@
 
 ## 0.26.0
 
+### 🔄 No more old screens after an update
+- The **A new version is ready** bar now also appears when you come back to the app after it has been in the background and the server has been updated, not only while it is open. This is what was leaving a phone on old screens (Celsius in the road-trip planner) next to a new version number.
+
 ### 👆 Charts you can actually use on a phone
 - Every chart now answers questions. **Touch and drag along a line** (the charging curve and the Health trends) and a readout shows the exact value at that spot, such as "48% · 105 kW" or "Oct 18 · 12.34 V". Labels are bigger, the axes say what they show (battery level, power in kW) and the highest point is marked. **Tap a bar** (Year in review months, battery size by month) and it tells you its value in words, such as "Oct: 700 mi in 40 trips".
 

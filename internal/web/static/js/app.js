@@ -60,8 +60,10 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
 };
 
+let loadedVersion = ''; // the version this page started with: a phone app can stay open for days
 async function loadAbout() {
   session.about = await cached('about', () => api('/api/about'));
+  if (!loadedVersion) loadedVersion = session.about.version;
   const ver = document.getElementById('ver');
   ver.textContent = `v${session.about.version}`;
   ver.classList.toggle('update', !!session.about.update.available);
@@ -144,14 +146,26 @@ const fordReturn = /[?&](code|error)=/.test(location.search) || /[#&](code|error
 if (fordReturn) location.replace('/ford/callback' + location.search + location.hash);
 else render().then(syncLabel);
 
+function showUpdateBar() {
+  if (document.getElementById('upd')) return;
+  document.body.append(h('div', { id: 'upd', class: 'updbar', role: 'status' }, 'A new version of CarTrak is ready. ',
+    h('button', { onclick: () => location.reload() }, 'Reload')));
+}
+
 if ('serviceWorker' in navigator) {
   // The app files are cached on the device. After an update the new files arrive in the background while the page
   // still runs the old ones, which is how an old screen can sit next to a new server version. Say so, with a button.
   const hadWorker = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadWorker || document.getElementById('upd')) return;
-    document.body.append(h('div', { id: 'upd', class: 'updbar', role: 'status' }, 'A new version of CarTrak is ready. ',
-      h('button', { onclick: () => location.reload() }, 'Reload')));
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadWorker) showUpdateBar(); });
+  // A phone keeps the app open in the background for days. When it comes back, check for a new version at once, both
+  // the cached files and the version the server reports.
+  document.addEventListener('visibilitychange', async () => {
+    if (document.hidden) return;
+    navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {});
+    try {
+      const a = await api('/api/about');
+      if (loadedVersion && a.version && a.version !== loadedVersion) showUpdateBar();
+    } catch (e) { /* offline or signed out: nothing to compare */ }
   });
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
