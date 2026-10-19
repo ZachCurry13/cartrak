@@ -52,3 +52,25 @@ func TestTheDebugReportListsReadingsAndLockFieldsButNeverPositionsOrTheVIN(t *te
 		t.Fatalf("viewer: %d", code)
 	}
 }
+
+func TestTheDebugReportListsEveryFieldOfTheLatestReadingMinusPositionsAndIdentifiers(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	soc := 70.0
+	st := &ford.State{TS: time.Now(), SoCPct: &soc, Raw: []byte(`{}`),
+		Extra: map[string]any{"xevBatteryRange.value": 301, "tirePressure[0].value": 245, "vin": "SECRETVIN123", "vehicleLocation.latitude": 44.1, "vehicleLocation.longitude": -93.6}}
+	if _, err := srv.S.SaveState("t", st); err != nil {
+		t.Fatal(err)
+	}
+	_, b := do(t, admin, "GET", ts.URL+"/api/debug-report?hours=1", "", nil)
+	for _, want := range []string{"EVERY FIELD IN THE LATEST READING (2)", "xevBatteryRange.value = 301", "tirePressure[0].value = 245"} {
+		if !strings.Contains(b, want) {
+			t.Errorf("missing %q in %s", want, b)
+		}
+	}
+	for _, never := range []string{"SECRETVIN123", "vehicleLocation", "44.1", "-93.6"} {
+		if strings.Contains(b, never) {
+			t.Errorf("must not contain %q", never)
+		}
+	}
+}

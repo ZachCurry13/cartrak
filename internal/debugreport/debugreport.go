@@ -24,6 +24,7 @@ type Input struct {
 	LastErr  string
 	Rows     []store.DebugRow
 	Locks    map[int64][]string // raw lock and door fields, by reading time
+	Fields   []string           // every field of the latest reading as "name = value", positions and identifiers already removed
 	Trips    []*store.Trip
 	Charges  []*store.Charge
 	Alerts   []store.AlertLogEntry
@@ -121,6 +122,11 @@ func Build(in Input) string {
 	}
 	if len(tss) == 0 {
 		b.WriteString("(none in this window)\n")
+	}
+
+	fmt.Fprintf(&b, "\nEVERY FIELD IN THE LATEST READING (%d)\n", len(in.Fields))
+	for _, f := range in.Fields {
+		b.WriteString("    " + f + "\n")
 	}
 
 	b.WriteString("\nTRIPS (id | start | end | km | battery start>end | energy kWh start>end | open | category)\n")

@@ -3,7 +3,7 @@
 ## 0.23.0
 
 ### 🧰 Debug report
-- **More, Debug report** (admins) makes a plain-text report of the last 6 hours to 3 days: every reading (ignition, speed, plug, charge state, power, battery, odometer, lock), the raw lock and door fields the car sent each time the lock state changed, the trips and charging sessions CarTrak made, and the alerts it sent. Copy it or download it and send it when something looks wrong. It leaves out where the car was, sign-ins, keys and the VIN.
+- **More, Debug report** (admins) makes a plain-text report of the last 6 hours to 3 days: every reading (ignition, speed, plug, charge state, power, battery, odometer, lock), the raw lock and door fields the car sent each time the lock state changed, every field the car reports in its latest reading (so you can see everything the car offers), the trips and charging sessions CarTrak made, and the alerts it sent. Copy it or download it and send it when something looks wrong. It leaves out where the car was, sign-ins, keys and the VIN.
 
 ### 🔌 A road trip with the car left on
 - A car that is taking charge and not moving now counts as parked even if the ignition was left on. Before, a road trip with the car left on at a fast charger was recorded as one long trip, and because the battery filled up during it the trip's energy use came out near zero (an absurd miles per kWh). It is now one trip before the charge and one after.

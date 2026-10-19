@@ -15,6 +15,31 @@ import (
 var lockWords = []string{"lock", "door", "hood", "trunk", "tailgate", "liftgate", "alarm"}
 var neverWords = []string{"vin", "token", "email", "password", "latitude", "longitude", "position", "location", "gps"}
 
+// allFields lists every field of one raw reading as sorted "name = value" lines, leaving out positions and anything
+// that identifies the car or its owner. It lets the owner (and whoever helps) see everything the car reports.
+func allFields(extra json.RawMessage) []string {
+	f := map[string]any{}
+	if json.Unmarshal(extra, &f) != nil {
+		return nil
+	}
+	var out []string
+	for k, v := range f {
+		if containsAny(strings.ToLower(k), neverWords) {
+			continue
+		}
+		val := strings.ReplaceAll(strings.TrimSpace(toString(v)), "\n", " ")
+		if len(val) > 60 {
+			val = val[:60]
+		}
+		out = append(out, k+" = "+val)
+	}
+	sort.Strings(out)
+	if len(out) > 800 {
+		out = out[:800]
+	}
+	return out
+}
+
 // lockFields picks the lock and door fields out of one raw reading, as sorted "name = value" lines.
 func lockFields(extra json.RawMessage) []string {
 	f := map[string]any{}
@@ -81,6 +106,10 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 			locks[row.TS] = lockFields(x.Extra)
 		}
 	}
+	var fields []string
+	if x, err := s.S.LatestSample(); err == nil && x != nil {
+		fields = allFields(x.Extra)
+	}
 	trips, _ := s.S.ListTrips(store.TripFilter{From: from.Unix(), Limit: 200})
 	charges, _ := s.S.ListCharges(200)
 	var recent []*store.Charge
@@ -96,6 +125,6 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		lastOK = time.Unix(st.LastOK, 0)
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
-		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Trips: trips, Charges: recent, Alerts: alerts})
+		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Charges: recent, Alerts: alerts})
 	ok(w, map[string]any{"text": text, "hours": hours, "readings": len(rows)})
 }
