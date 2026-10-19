@@ -1,7 +1,7 @@
 import { h } from '../ui.js';
 
 // A map of everything CarTrak does and where to find it, so features are easy to rediscover.
-const GROUPS = [
+export const GROUPS = [
   ['Right now', [
     ['#/', 'Home', 'Battery ring, range, what needs attention, the last 7 days, last trip, charging, location, tires.'],
     ['#/live', 'Live', 'One screen that follows the car: driving, charging or parked. Time to your charge target, trip time, driving today.'],

@@ -1,0 +1,85 @@
+import { api } from './api.js';
+import { GROUPS } from './pages/guide.js';
+
+// Things people look for by a word that is not the name of the page they live on. Each says where it is:
+// [title, where, href, what it is, extra words people might type].
+const EXTRA = [
+  ['Vacation', 'More → Trip rules', '#/rules', 'Pick the days you are away and every trip is Personal, so you do not change them one by one.', 'vacation holiday time off away trip personal work'],
+  ['Work or personal', 'More → Trip rules', '#/rules', 'Rules that label trips by day, time and place.', 'work personal business label category rule hours'],
+  ['Electricity price', 'More → Settings', '#/admin', 'Price per kWh at home and away, and the currency, for charging costs.', 'electricity price cost kwh rate currency money bill utility'],
+  ['Cheaper night rates', 'More → Settings', '#/admin', 'A cheaper home price for certain hours, such as 22:00-06:00.', 'night off peak offpeak time of use tou cheaper rate'],
+  ['Mileage deduction rate', 'More → Settings', '#/admin', 'What a business mile is worth, for the estimate in the Mileage log and Year in review.', 'mileage deduction tax irs rate per mile business'],
+  ['Time zone', 'More → Settings', '#/admin', 'The time zone the app uses for rules, reports and the weekly summary.', 'time zone timezone clock hour local'],
+  ['Ford sign-in and credentials', 'More → Ford connection', '#/ford', 'Link or relink your Ford account.', 'ford account link login connect credentials client id secret relink'],
+  ['Miles or kilometres, °F or °C', 'More → Display and data', '#/display', 'Units, theme, trip times and data use for this device.', 'units miles kilometres km metric imperial fahrenheit celsius temperature psi kpa'],
+  ['Dark or light theme', 'More → Display and data', '#/display', 'Choose the look for this device.', 'theme dark light mode appearance colour color'],
+  ['Data saver', 'More → Display and data', '#/display', 'Use less mobile data on this device.', 'data saver mobile data cellular bandwidth live updates'],
+  ['Efficiency unit (mi/kWh, Wh/mi)', 'Tap any efficiency number', '#/insights', 'Tap an efficiency figure anywhere to switch between mi/kWh, Wh/mi and mi per percent.', 'efficiency unit mi/kwh wh/mi miles per percent consumption'],
+  ['Quiet hours for alerts', 'More → Notifications', '#/notifications', 'Pick hours when this device gets no alerts.', 'quiet hours do not disturb night mute silence'],
+  ['Phone tracking and GPS', 'More → Phone tracking', '#/phone', 'Trip start from your phone and a finer route.', 'phone tracking gps owntracks shortcut automation bluetooth location'],
+  ['Share a trip', 'Trips → open a trip → Share', '#/trips', 'Make a public link to a trip or journey that you can turn off.', 'share link public journey send show friend'],
+  ['Home Assistant', 'More → Settings', '#/admin', 'A read-only feed of the car state for Home Assistant.', 'home assistant ha feed integration smart home sensor'],
+  ['Cloudflare tunnel', 'More → Remote access', '#/remote', 'Reach CarTrak away from home.', 'cloudflare tunnel remote access away outside domain https'],
+  ['Add family or a viewer', 'More → People', '#/people', 'Give family read-only accounts.', 'family viewer account user people password admin invite'],
+  ['Restore or download a backup', 'More → Backup', '#/backup', 'Save a copy of your data or put one back.', 'backup restore export download zip csv spreadsheet save copy'],
+  ['Delete a bad trip', 'Trips → open the trip → Fix this trip', '#/trips', 'Delete a duplicate or close a trip that never ended.', 'delete remove bad trip duplicate close stuck'],
+  ['Fix a day of trips', 'More → Fix a day', '#/repair', 'Redo a day of trips and charging from the stored readings.', 'fix rebuild repair day trips charging split road trip wrong'],
+  ['Tire pressure', 'Health', '#/health', 'Each tire against the placard and a slow-leak check.', 'tire tyre pressure psi leak flat placard'],
+  ['12 V battery', 'Health', '#/health', 'The small battery that wakes the car.', '12v 12 volt battery small battery dead jump'],
+  ['Battery health', 'Health', '#/health', 'Battery size over time and the true battery level.', 'battery health degradation capacity usable true level soc'],
+  ['Charging curve', 'Charging → a session → Charging curve', '#/charging', 'Power against battery level for a session.', 'charging curve speed kw power peak fast charger supercharger taper'],
+];
+
+const TABS = new Set(['#/', '#/trips', '#/live', '#/charging', '#/health', '#/data']); // pages with a tab along the bottom
+const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9+/ ]+/g, ' ');
+const stem = (w) => (w.length > 3 ? w.replace(/(ing|es|s)$/, '') : w);
+
+let cached = null;
+
+// Everything searchable: the page map, the extras above, the real setting names and the real alert names.
+export async function buildIndex(admin) {
+  if (cached) return cached;
+  const out = [];
+  for (const [group, items] of GROUPS) {
+    for (const [href, name, text] of items) out.push({ title: name, where: TABS.has(href) ? `The ${name} tab` : `More → ${name}`, href, text, keys: group });
+  }
+  for (const [title, where, href, text, keys] of EXTRA) out.push({ title, where, href, text, keys });
+  const settings = admin ? await api('/api/admin/settings').catch(() => null) : null;
+  for (const s of (settings && settings.settings) || []) {
+    if (s.secret) continue;
+    out.push({ title: s.label, where: 'More → Settings', href: '#/admin', text: s.help || '', keys: String(s.key).replace(/_/g, ' ') });
+  }
+  const push = await api('/api/push/config').catch(() => null);
+  for (const k of (push && push.kinds) || []) out.push({ title: `${k.label} (alert)`, where: 'More → Notifications', href: '#/notifications', text: k.help || '', keys: 'alert notification notify push' });
+  cached = out;
+  return out;
+}
+
+// The best matches for what was typed: every word must appear, titles count most.
+export function search(index, query, limit = 6) {
+  const words = norm(query).split(/\s+/).filter(Boolean).map(stem);
+  if (!words.length) return [];
+  const scored = [];
+  for (const e of index) {
+    const t = norm(e.title), k = norm(e.keys), x = norm(e.text);
+    let score = 0;
+    let all = true;
+    for (const w of words) {
+      const inT = t.includes(w), inK = k.includes(w), inX = x.includes(w);
+      if (!inT && !inK && !inX) { all = false; break; }
+      score += (inT ? 6 : 0) + (inK ? 3 : 0) + (inX ? 1 : 0) + (t.startsWith(w) ? 2 : 0);
+    }
+    if (all) scored.push([score, e]);
+  }
+  scored.sort((a, b) => b[0] - a[0]);
+  const seen = new Set();
+  const res = [];
+  for (const [, e] of scored) {
+    const id = `${e.title}|${e.href}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    res.push(e);
+    if (res.length >= limit) break;
+  }
+  return res;
+}

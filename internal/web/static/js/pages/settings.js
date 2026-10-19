@@ -1,6 +1,7 @@
 import { h, chip, ago, item, group } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
+import { buildIndex, search } from '../searchindex.js';
 
 // The More page: a short, grouped menu. Each row opens its own page.
 export default async function settings(root, _a, session) {
@@ -22,7 +23,7 @@ export default async function settings(root, _a, session) {
       h('span', { class: 'avatar', 'aria-hidden': 'true' }, (session.me.name || '?').slice(0, 1).toUpperCase()),
       h('div', {}, h('b', {}, session.me.name), h('span', { class: 'muted' }, `${session.me.role === 'admin' ? 'Admin' : 'Viewer'} · CarTrak v${a.version}`))),
     ...notices(session),
-    finder(),
+    finder(admin),
     h('div', { class: 'menu-cols' },
       h('div', {},
         admin ? group('Connections',
@@ -51,24 +52,34 @@ export default async function settings(root, _a, session) {
       `Sign out ${session.me.name}`)));
 }
 
-// finder is a search box that hides menu rows (and empty groups) that do not match what was typed.
-function finder() {
-  const none = h('p', { class: 'muted', hidden: true }, 'Nothing matches. Try a shorter word.');
+// finder is a search box. It suggests where a thing is, by name or by what it does ("vacation" finds Trip rules), and
+// also hides menu rows that do not match what was typed.
+function finder(admin) {
+  const none = h('p', { class: 'muted', hidden: true }, 'Nothing matches. Try a different word.');
   const box = h('input', { type: 'search', id: 'mfind', placeholder: 'Search settings and pages', 'aria-label': 'Search settings and pages', autocomplete: 'off' });
-  box.addEventListener('input', () => {
-    const q = box.value.trim().toLowerCase();
+  const sugg = h('div', { class: 'sugg', role: 'listbox', hidden: true });
+  let index = null;
+  const run = async () => {
+    const q = box.value.trim();
+    if (!index) index = await buildIndex(admin);
+    const hits = q ? search(index, q) : [];
+    sugg.hidden = !hits.length;
+    sugg.replaceChildren(...hits.map((e) => h('a', { class: 'sg', href: e.href, role: 'option' },
+      h('b', {}, e.title), h('span', { class: 'muted' }, e.where), e.text ? h('span', { class: 'muted sgtext' }, e.text) : null)));
     let shown = 0;
+    const low = q.toLowerCase();
     for (const g of document.querySelectorAll('.menu-cols .group')) {
       let any = 0;
       for (const it of g.querySelectorAll('.item')) {
-        const hit = !q || it.textContent.toLowerCase().includes(q);
+        const hit = !low || it.textContent.toLowerCase().includes(low);
         it.hidden = !hit;
         if (hit) any++;
       }
       g.hidden = !any;
       shown += any;
     }
-    none.hidden = shown > 0;
-  });
-  return h('div', { class: 'finder' }, box, none);
+    none.hidden = shown > 0 || hits.length > 0;
+  };
+  box.addEventListener('input', run);
+  return h('div', { class: 'finder' }, box, sugg, none);
 }

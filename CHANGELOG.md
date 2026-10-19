@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.26.0
+
+### 🔎 Smarter search on More
+- The search box on **More** now suggests **where a thing is**, by name or by what it does. Type **vacation** and it points to Trip rules; **electricity price**, **quiet hours**, **tire**, **backup**, **dark**, **phone** or the name of any setting or alert and it says which page it is on, with a short description and a tap to open it. It knows the real names of your settings and alerts, and the menu below still narrows as you type.
+
 ## 0.25.0
 
 ### 📈 Charging curves
