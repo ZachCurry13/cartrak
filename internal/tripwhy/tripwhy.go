@@ -47,20 +47,21 @@ type Wind struct {
 }
 
 type Facts struct {
-	Km          float64  `json:"km"`
-	AvgKph      float64  `json:"avgKph"` // while moving
-	MaxKph      float64  `json:"maxKph"`
-	Share100    float64  `json:"share100"` // share of the distance above 100 km/h
-	Stops       int      `json:"stops"`
-	StoppedPct  float64  `json:"stoppedPct"` // share of the trip's time spent stopped
-	TempC       *float64 `json:"tempC"`
-	TempGroup   string   `json:"tempGroup"`
-	IdleKwh     float64  `json:"idleKwh"`     // energy used while stopped (climate control, systems)
-	HardBrakes  int      `json:"hardBrakes"`  // big drops in speed between two readings
-	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
-	Wind        *Wind    `json:"wind"`
-	RegenKm     *float64 `json:"regenKm"`  // range the car says braking gave back during the trip (its own counter)
-	RegenKwh    *float64 `json:"regenKwh"` // the energy that range is worth, at this trip's own use per kilometre
+	Km           float64  `json:"km"`
+	AvgKph       float64  `json:"avgKph"` // while moving
+	MaxKph       float64  `json:"maxKph"`
+	Share100     float64  `json:"share100"` // share of the distance above 100 km/h
+	Stops        int      `json:"stops"`
+	StoppedPct   float64  `json:"stoppedPct"` // share of the trip's time spent stopped
+	TempC        *float64 `json:"tempC"`
+	TempGroup    string   `json:"tempGroup"`
+	IdleKwh      float64  `json:"idleKwh"`     // energy used while stopped (climate control, systems)
+	HardBrakes   int      `json:"hardBrakes"`  // big drops in speed between two readings
+	QuickStarts  int      `json:"quickStarts"` // big gains in speed between two readings
+	Wind         *Wind    `json:"wind"`
+	RegenKm      *float64 `json:"regenKm"`      // range the car says braking gave back during the trip (its own counter)
+	RegenFromCar bool     `json:"regenFromCar"` // the energy is the car's own count, not worked out from the range
+	RegenKwh     *float64 `json:"regenKwh"`     // the energy that range is worth, at this trip's own use per kilometre
 }
 
 // Tag is one short reason shown next to a trip. Bad means it cost energy.

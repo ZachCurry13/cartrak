@@ -40,7 +40,7 @@ export async function whyCard(id) {
   const f = d.facts;
   return h('section', { class: 'card' }, h('h2', {}, 'Why this efficiency?'),
     h('p', {}, h('b', {}, head)),
-    f.regenKm != null && f.regenKm > 0 ? h('div', { class: 'grid' }, stat('Range from regen', dist(f.regenKm, 1)), stat('Energy from regen', f.regenKwh != null ? `≈ ${num(f.regenKwh, 1, ' kWh')}` : '—')) : null,
+    f.regenKm != null && f.regenKm > 0 ? h('div', { class: 'grid' }, stat('Range from regen', dist(f.regenKm, 1)), stat(f.regenFromCar ? 'Energy from regen (car)' : 'Energy from regen (estimate)', f.regenKwh != null ? `${f.regenFromCar ? '' : '≈ '}${num(f.regenKwh, f.regenFromCar ? 2 : 1, ' kWh')}` : '—')) : null,
     d.tags && d.tags.length ? h('p', { class: 'tags' }, ...tagChips(d.tags)) : null,
     ...(d.factors.length ? d.factors.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, say(x, f)), h('b', { class: x.pct > 0 ? 'bad' : '', style: 'white-space:nowrap' }, sign(x.pct))))
       : [h('p', { class: 'muted' }, 'Nothing stands out: speed and weather were typical for you.')]),

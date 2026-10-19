@@ -34,17 +34,18 @@ var (
 	truthMu    sync.Mutex
 	truthAt    time.Time
 	truthCache []store.Day
+	rangeCache []store.Day // the range the car expects on a full charge, the same days
 )
 
 // truthSeries is the usable size, one reading a day for the last half year, kept for six hours (it reads the raw
 // field list of about a hundred readings).
-func (s *Server) truthSeries() []store.Day {
+func (s *Server) truthSeries() (usableDays, rangeDays []store.Day) {
 	truthMu.Lock()
 	defer truthMu.Unlock()
 	if time.Since(truthAt) < 6*time.Hour && truthCache != nil {
-		return truthCache
+		return truthCache, rangeCache
 	}
-	var out []store.Day
+	var out, rng []store.Day
 	seen := map[int64]bool{}
 	now := time.Now()
 	for d := 180; d >= 0; d-- {
@@ -58,16 +59,22 @@ func (s *Server) truthSeries() []store.Day {
 		if json.Unmarshal(x.Extra, &f) != nil {
 			continue
 		}
+		day := noon.Truncate(24*time.Hour).Unix() / 86400 * 86400
 		if u, ok := usable(f); ok {
-			day := noon.Truncate(24*time.Hour).Unix() / 86400 * 86400
 			out = append(out, store.Day{TS: day, Avg: u, Min: u, Max: u, N: 1})
 		}
+		if m := ford.Number(f, "xevBatteryMaximumRange"); m != nil && *m > 50 {
+			rng = append(rng, store.Day{TS: day, Avg: *m, Min: *m, Max: *m, N: 1})
+		}
 	}
-	truthCache, truthAt = out, time.Now()
+	truthCache, rangeCache, truthAt = out, rng, time.Now()
 	if truthCache == nil {
 		truthCache = []store.Day{}
 	}
-	return truthCache
+	if rangeCache == nil {
+		rangeCache = []store.Day{}
+	}
+	return truthCache, rangeCache
 }
 
 // batteryTruth compares what the car shows with the battery's own figures, and tracks the usable size over time.
@@ -85,5 +92,6 @@ func (s *Server) batteryTruth(w http.ResponseWriter, r *http.Request) {
 			now.UsableKwh = &u
 		}
 	}
-	ok(w, map[string]any{"now": now, "usable": batteryhealth.Build(s.truthSeries())})
+	u, rg := s.truthSeries()
+	ok(w, map[string]any{"now": now, "usable": batteryhealth.Build(u), "fullRange": batteryhealth.Build(rg)})
 }

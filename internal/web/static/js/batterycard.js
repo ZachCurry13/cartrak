@@ -1,4 +1,4 @@
-import { h, num } from './ui.js';
+import { h, num, dist } from './ui.js';
 import { api } from './api.js';
 import { tapBars } from './chart.js';
 
@@ -34,5 +34,6 @@ export async function truthCard() {
     row('The car shows', n.displayedSoc != null ? `${num(n.displayedSoc, 1)}%` : '—'),
     row('The battery\'s own level', `${num(n.actualSoc, 1)}%`),
     n.usableKwh != null ? row('Usable size now', num(n.usableKwh, 1, ' kWh'), `Energy left ${n.energyKwh != null ? num(n.energyKwh, 1, ' kWh') : '—'} divided by the true level${n.fordKwh != null ? `. Ford's own estimate is ${num(n.fordKwh, 1, ' kWh')}` : ''}.`) : null,
+    n.maxRangeKm != null ? row('Range on a full charge', dist(n.maxRangeKm, 0), `The car's own estimate for 100%${d.fullRange && d.fullRange.ready ? `. ${dist(d.fullRange.startKwh, 0)} → ${dist(d.fullRange.nowKwh, 0)} over the history CarTrak has (${d.fullRange.changePct > 0 ? '+' : ''}${d.fullRange.changePct.toFixed(1)}%). It moves with the weather and how you have been driving, so read it as a slow trend.` : '. A trend appears after a couple of months.'}`) : null,
     u && u.ready ? h('p', {}, `${num(u.startKwh, 1)} → ${num(u.nowKwh, 1, ' kWh')} over the history CarTrak has (${u.changePct > 0 ? '+' : ''}${u.changePct.toFixed(1)}%). ${({ steady: 'Steady.', gentle: 'A gentle decline, which is normal.', watch: 'A bigger drop than usual; worth watching.' })[u.verdict] || ''}`) : h('p', { class: 'muted' }, 'A trend appears after a couple of months of readings between 20 and 95 percent.'));
 }
