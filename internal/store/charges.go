@@ -17,13 +17,15 @@ type Charge struct {
 	Kind     string   `json:"kind"` // "home", "public", or "" when CarTrak decides from the place
 	// ChargerKwh is what the charger reported delivering, typed in by the owner, so the real loss can be measured.
 	ChargerKwh *float64 `json:"chargerKwh"`
+	// Station is what the car said the charger was: AC_BASIC for a home or level 2 charger, DC for a fast charger. Empty when it did not say.
+	Station string `json:"station"`
 }
 
-const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh`
+const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station`
 
 func scanCharge(r interface{ Scan(...any) error }) (*Charge, error) {
 	var c Charge
-	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh)
+	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh, &c.Station)
 	return &c, err
 }
 
@@ -36,8 +38,8 @@ func (s *Store) OpenCharge() (*Charge, error) {
 }
 
 func (s *Store) CreateCharge(c *Charge) error {
-	r, err := s.DB.Exec(`INSERT INTO charges(start_ts,lat,lon,start_soc,end_soc,peak_kw,start_kwh,end_kwh,open) VALUES(?,?,?,?,?,?,?,?,1)`,
-		c.StartTS, c.Lat, c.Lon, c.StartSoC, c.StartSoC, c.PeakKw, c.StartKwh, c.StartKwh)
+	r, err := s.DB.Exec(`INSERT INTO charges(start_ts,lat,lon,start_soc,end_soc,peak_kw,start_kwh,end_kwh,open,station) VALUES(?,?,?,?,?,?,?,?,1,?)`,
+		c.StartTS, c.Lat, c.Lon, c.StartSoC, c.StartSoC, c.PeakKw, c.StartKwh, c.StartKwh, c.Station)
 	if err != nil {
 		return err
 	}
@@ -47,8 +49,8 @@ func (s *Store) CreateCharge(c *Charge) error {
 }
 
 func (s *Store) UpdateCharge(c *Charge) error {
-	_, err := s.DB.Exec(`UPDATE charges SET end_ts=?,end_soc=?,end_kwh=?,peak_kw=?,open=? WHERE id=?`,
-		c.EndTS, c.EndSoC, c.EndKwh, c.PeakKw, c.Open, c.ID)
+	_, err := s.DB.Exec(`UPDATE charges SET end_ts=?,end_soc=?,end_kwh=?,peak_kw=?,open=?,station=? WHERE id=?`,
+		c.EndTS, c.EndSoC, c.EndKwh, c.PeakKw, c.Open, c.Station, c.ID)
 	return err
 }
 

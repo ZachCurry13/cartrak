@@ -256,3 +256,25 @@ func TestSittingInTheCarWithTheIgnitionOnIsNotATrip(t *testing.T) {
 		t.Fatalf("one real trip of about 20 km: %+v", ts)
 	}
 }
+
+func TestASessionKeepsTheChargerTypeTheCarReportedWhileCharging(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now()
+	kw := 45.0
+	a := reading(t0, "OFF", 10, 40)
+	a.ChargeState, a.ChargeKw, a.StationType = "IN_PROGRESS", &kw, "DC"
+	b := reading(t0.Add(30*time.Minute), "OFF", 10, 70)
+	b.ChargeState, b.StationType = "NOT_READY", "DC" // the field keeps its last value after the stop
+	d.Process(a)
+	d.Process(b)
+	cs, _ := s.ListCharges(10)
+	if len(cs) != 1 || cs[0].Station != "DC" {
+		t.Fatalf("station: %+v", cs)
+	}
+	// A parked reading with a stale station type must not start or colour anything.
+	if stationOf(b) != "" {
+		t.Fatal("stale station type is ignored when not charging")
+	}
+}

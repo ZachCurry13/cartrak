@@ -42,6 +42,8 @@ const (
 	ChargeBudget      = "charge_budget"
 	BackupReminder    = "backup_reminder"
 	LeftOpen          = "left_open"
+	CarFault          = "car_fault"
+	ChargeSlow        = "charge_slow"
 )
 
 type Kind struct {
@@ -60,6 +62,8 @@ var Kinds = []Kind{
 	{LeftOpen, "Left open", "The parked car has a door, the tailgate, the hood or a window open for ten minutes."},
 	{BackupReminder, "Backup reminder", "No backup has been downloaded in the last month. At most once a month, and only after CarTrak has been recording for two weeks."},
 	{LowTire, "Low tire pressure", "The car reports a tire as low."},
+	{CarFault, "Car-reported problem", "The car's own checks report something other than normal: the main battery, the tire pressure system or the 12 V load. At most once a day for each."},
+	{ChargeSlow, "Slow fast charge", "A fast charge that has just ended averaged much less than your fast charges usually do, so a different charger or stall may be better. Needs a few earlier fast sessions."},
 	{Low12V, "Low 12 V battery", "The small battery is low enough to risk the car not waking. At most once a day."},
 	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},
 	{TripStart, "Trip started", "A trip began."},

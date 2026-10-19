@@ -267,3 +267,51 @@ func TestAFaultOrAPauseBelowTheUsualStopIsNotCalledComplete(t *testing.T) {
 		t.Fatalf("a fault says so: %s %+v", r.kinds(), r.got)
 	}
 }
+
+func TestCarReportedProblemsAlertOncePerDayAndNormalIsSilent(t *testing.T) {
+	e, r, _ := setup(t)
+	e.Handle(reading(0, func(s *ford.State) {
+		s.Extra = map[string]any{"xevBatteryPerformanceStatus.value": "NORMAL", "tirePressureSystemStatus[0].value": "NORMAL_OPERATION"}
+	}))
+	if len(r.got) != 0 {
+		t.Fatalf("normal says nothing: %s", r.kinds())
+	}
+	bad := func(s *ford.State) { s.Extra = map[string]any{"xevBatteryPerformanceStatus.value": "DEGRADED"} }
+	e.Handle(reading(10, bad))
+	e.Handle(reading(11, bad))
+	if r.kinds() != "car_fault" || !strings.Contains(r.got[0].Body, "degraded") {
+		t.Fatalf("one alert for the problem: %s %+v", r.kinds(), r.got)
+	}
+}
+
+func TestASlowFastChargeIsFlaggedAgainstYourUsual(t *testing.T) {
+	e, r, s := setup(t)
+	f := func(v float64) *float64 { return &v }
+	add := func(startTS int64, kwh float64) {
+		c := &store.Charge{StartTS: startTS, StartSoC: f(20), StartKwh: f(20), PeakKw: 120}
+		if err := s.CreateCharge(c); err != nil {
+			t.Fatal(err)
+		}
+		end := startTS + 30*60
+		c.EndTS, c.EndSoC, c.EndKwh, c.Open = &end, f(60), f(20+kwh), false
+		if err := s.UpdateCharge(c); err != nil {
+			t.Fatal(err)
+		}
+	}
+	base := t0.Unix()
+	e.chargeSpeed()
+	for i := 0; i < 3; i++ {
+		add(base+int64(i)*86400, 30) // 60 kW each
+	}
+	add(base+3*86400, 30)
+	e.chargeSpeed()
+	if len(r.got) != 0 {
+		t.Fatalf("a normal session is not flagged: %s", r.kinds())
+	}
+	add(base+4*86400, 12) // 24 kW
+	e.chargeSpeed()
+	e.chargeSpeed()
+	if r.kinds() != "charge_slow" || !strings.Contains(r.got[0].Body, "24 kW") {
+		t.Fatalf("one alert for the slow session: %s %+v", r.kinds(), r.got)
+	}
+}

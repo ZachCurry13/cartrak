@@ -90,6 +90,7 @@ func (e *Engine) Handle(st *ford.State) {
 	}
 	e.tires(st, first)
 	e.battery12V(st)
+	e.carFaults(st)
 	e.maintenance(st.OdometerKm)
 	e.namedPlaces(st, first)
 	e.parkedWatch(st, first)
@@ -108,6 +109,9 @@ func (e *Engine) plugAndCharge(prev, st *ford.State) {
 		e.send(push.Alert{Kind: push.PlugIn, Title: "Plugged in", Body: "Charging cable connected." + charge(st), URL: "#/charging"})
 	case wasKnown && nowKnown && was && !now:
 		e.send(push.Alert{Kind: push.PlugOut, Title: "Unplugged", Body: "Charging cable removed." + charge(st), URL: "#/charging"})
+	}
+	if charging(prev) && !charging(st) {
+		e.chargeSpeed()
 	}
 	if charging(prev) && !charging(st) && nowKnown && now { // stopped while still plugged in
 		if why := chargeFault(st); why != "" {

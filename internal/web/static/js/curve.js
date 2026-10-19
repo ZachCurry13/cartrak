@@ -65,7 +65,9 @@ export function recordsCard(sessions) {
   const classes = { l2: { name: 'Level 2 (home or public, slow)', n: 0, best: null, sum: 0, k: 0 }, l3: { name: 'Level 3 (fast chargers)', n: 0, best: null, sum: 0, k: 0 } };
   for (const c of sessions) {
     if (c.open || !c.endTs || !(c.peakKw > 0.5)) continue;
-    const g = c.peakKw >= 30 ? classes.l3 : classes.l2;
+    // The car says what the charger is (DC or AC); when it did not, a session that peaked at 30 kW or more counts as fast.
+    const dc = c.station ? c.station.startsWith('DC') : c.peakKw >= 30;
+    const g = dc ? classes.l3 : classes.l2;
     g.n++;
     if (!g.best || c.peakKw > g.best.peakKw) g.best = c;
     const hours = (c.endTs - c.startTs) / 3600;

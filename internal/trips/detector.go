@@ -1,6 +1,7 @@
 package trips
 
 import (
+	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
@@ -158,6 +159,7 @@ func (d *Detector) charge(st *ford.State) error {
 		if st.ChargeKw != nil {
 			c.PeakKw = *st.ChargeKw
 		}
+		c.Station = stationOf(st)
 		return d.S.CreateCharge(c)
 	}
 	if open == nil {
@@ -168,6 +170,9 @@ func (d *Detector) charge(st *ford.State) error {
 		open.PeakKw = *st.ChargeKw
 	}
 	open.Open = charging(st)
+	if s := stationOf(st); s != "" {
+		open.Station = s
+	}
 	return d.S.UpdateCharge(open)
 }
 
@@ -203,4 +208,17 @@ func (d *Detector) loc() *time.Location {
 // ClassifyTrip sets a trip's category from the rules, as it would be when the trip is first recorded.
 func (d *Detector) ClassifyTrip(t *store.Trip) {
 	t.Category, t.RuleID, t.CategorySource = d.classify(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t))
+}
+
+// stationOf is the kind of charger the car reports, but only while it is actually charging: the field keeps its last
+// value after the cable is pulled, so it would otherwise name the charger from the last session.
+func stationOf(st *ford.State) string {
+	if !charging(st) {
+		return ""
+	}
+	v := strings.ToUpper(strings.TrimSpace(st.StationType))
+	if v == "" || v == "NOT_DETECTED" || v == "UNKNOWN" || v == "INVALID" {
+		return ""
+	}
+	return v
 }

@@ -20,6 +20,7 @@ type State struct {
 	SpeedKph    *float64
 	Ignition    string // Off, Accessory, On, Run, Start...
 	ChargeState string // e.g. NotReady, Charging, Complete
+	StationType string // what the car says the charger is: AC_BASIC, DC and so on; kept from the last time it said
 	Plug        string // Disconnected / Connected
 	ChargeKw    *float64
 	OutsideC    *float64

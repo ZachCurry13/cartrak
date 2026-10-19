@@ -126,6 +126,7 @@ func ParseFlat(f map[string]any, at time.Time) *State {
 	s.Ignition = strAt(f, "ignitionStatus.value", "IGNITION_STATUS")
 	s.ChargeState = strAt(f, "chargingStatus.value", "XEV_BATTERY_CHARGE_DISPLAY_STATUS")
 	s.Plug = plug(f)
+	s.StationType = strAt(f, "xevChargeStationPowerType.value", "XEV_CHARGE_STATION_POWER_TYPE")
 	s.OutsideC = numAt(f, "outsideTemperature", "AMBIENT_TEMP") // ambientTemp reads 0 on some cars; outsideTemperature is the real one
 	s.Battery12V = numAt(f, "BATTERY_VOLTAGE", "battery.batteryStatusActual.value")
 	if v := numAt(f, "XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT"); v != nil {
