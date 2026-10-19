@@ -16,6 +16,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/trips"
 	"github.com/ZachCurry13/cartrak/internal/tunnel"
 	"github.com/ZachCurry13/cartrak/internal/updater"
+	"github.com/ZachCurry13/cartrak/internal/weather"
 	"github.com/ZachCurry13/cartrak/internal/web"
 )
 
@@ -41,6 +42,7 @@ type Server struct {
 	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
 	SessionDays int              // "keep me signed in" length; 0 = 30
 	Upd         *updater.Checker // nil disables update checks
+	Weather     *weather.Client  // the optional wind lookup (nil uses the real service)
 	lim         limiter
 	devRate     rateWindow    // per-device call limit for the phone ingest API
 	TileDir     string        // where downloaded map tiles are kept; empty switches maps off

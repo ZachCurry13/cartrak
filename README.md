@@ -127,6 +127,7 @@ More detail in [docs/configuration.md](docs/configuration.md).
 - Update checks only read GitHub's public release list; turn them off in More -> About.
 - Notifications: alerts are encrypted for each device and sent through the push service of its browser maker (Google, Mozilla or Apple), which can see that one was sent but not its content; they never carry a location, and only real push-service addresses are contacted.
 - Mileage log: to name cities, the server asks OpenStreetMap Nominatim only when an admin builds a log, with locations rounded to about 100 m, and remembers answers. Switch it off in Settings to send nothing.
+- Wind lookup (optional, off by default): when switched on, the server asks Open-Meteo for the wind along a trip, sending only a half-degree map cell (about 50 km) and the date, never an exact position, and remembers the answers.
 - Maps: tiles are fetched by the CarTrak server and cached on disk, so browsers never contact the map provider; only signed-in people can load tiles. Switch maps off in Settings for no map requests at all.
 - Phone tracking tokens are stored only as a hash and can be removed at any time (More -> Phone tracking); phones can only send data, never read it.
 

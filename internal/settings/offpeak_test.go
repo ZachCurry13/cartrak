@@ -12,3 +12,15 @@ func TestParseWindow(t *testing.T) {
 		}
 	}
 }
+
+func TestTheWindLookupIsOffUnlessSwitchedOn(t *testing.T) {
+	if err := validators[WeatherKey]("on"); err != nil {
+		t.Fatal(err)
+	}
+	if err := validators[WeatherKey](""); err != nil {
+		t.Fatal(err)
+	}
+	if validators[WeatherKey]("maybe") == nil {
+		t.Fatal("only off or on")
+	}
+}

@@ -94,5 +94,8 @@ Set **Mileage deduction per mile** in More, Settings. The Mileage log then shows
 ## Charging curves, speed and the reasons behind a trip
 Under a charging session, **Charging curve** shows power against battery level. **Fast chargers compared** (Charging page) groups sessions that reached 40 kW by named place; name a place under More, Places to see it by name. The road-trip planner starts its charging power from your own fast-charge average. **Efficiency insights, By speed** shows your efficiency at each speed. A trip's page has **Why this efficiency?** and the best and worst trips show reason chips (cold weather, highway speed, stop and go, idling and climate, hard braking, quick starts, or gentle driving). The reasons compare the trip with your own driving; braking and starts are inferred from speed changes between readings and are a guide only.
 
+## Wind on a trip (optional)
+Switch on **Wind lookup for trips** in More, Settings. CarTrak then asks Open-Meteo (free, no account) for the hourly wind for the places a trip passed through, using the direction you drove to split it into **headwind or tailwind** and **crosswind**, and estimating what the wind did to the energy used. It sends only a map cell half a degree wide (about 50 km) and the date, never your exact position, and keeps every answer, so a place and day is asked once. A trip with a lot of ground to cover fills in over a few visits. The estimate treats about 30 to 70 percent of the energy at speed as air resistance, so it is a guide. The motion sensors cannot measure wind.
+
 ## Vacation
 **More, Trip rules, Vacation**: pick the days and every trip on them is Personal, over your rules; trips you set by hand keep your choice, and removing the vacation puts the rules back.

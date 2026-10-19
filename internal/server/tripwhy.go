@@ -72,9 +72,13 @@ func (s *Server) whyFor(t *store.Trip) (tripwhy.Report, error) {
 		return tripwhy.Report{}, err
 	}
 	rs := make([]tripwhy.Reading, 0, len(rows))
+	var wpts []windPoint
 	var tsum float64
 	tn := 0
 	for _, x := range rows {
+		if x.Lat != nil && x.Lon != nil && x.Speed != nil {
+			wpts = append(wpts, windPoint{ts: x.TS, lat: *x.Lat, lon: *x.Lon, speed: *x.Speed})
+		}
 		if x.Odo == nil || x.Kwh == nil || x.Speed == nil {
 			continue
 		}
@@ -101,7 +105,11 @@ func (s *Server) whyFor(t *store.Trip) (tripwhy.Report, error) {
 			regen = ford.Number(f, "tripXevBatteryRangeRegenerated")
 		}
 	}
-	return tripwhy.Build(rs, kwh, s.whyBaseline(), group, regen), nil
+	var wind *tripwhy.Wind
+	if ws, ok := s.windFor(wpts); ok {
+		wind = &tripwhy.Wind{HeadKph: ws.HeadKph, CrossKph: ws.CrossKph, GustKph: ws.GustKph, EffectPct: ws.EffectPct}
+	}
+	return tripwhy.BuildWithWind(rs, kwh, s.whyBaseline(), group, regen, wind), nil
 }
 
 // tripWhy explains one trip's efficiency: speed, temperature, stopping and what is left over.
@@ -147,6 +155,7 @@ func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	extra := map[string]float64{}
+	haveWind := false
 	var used, usual float64
 	n := 0
 	for _, t := range ts {
@@ -164,10 +173,16 @@ func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
 		usual += base
 		for _, f := range rep.Factors {
 			extra[f.Key] += f.Pct / 100 * base
+			if f.Key == "wind" {
+				haveWind = true
+			}
 		}
 	}
 	items := []map[string]any{}
-	for _, k := range []string{"speed", "temperature", "other"} {
+	for _, k := range []string{"speed", "temperature", "wind", "other"} {
+		if k == "wind" && !haveWind {
+			continue // the wind lookup is off or had no data
+		}
 		if usual > 0 {
 			items = append(items, map[string]any{"key": k, "kwh": extra[k], "pctOfUse": extra[k] / usual * 100})
 		}

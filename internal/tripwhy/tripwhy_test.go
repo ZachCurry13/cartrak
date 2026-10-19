@@ -120,3 +120,57 @@ func TestRegenerativeBrakingIsAGoodTagWhenTheCarReportsEnoughRangeGivenBack(t *t
 		t.Fatal("a little regen is not worth a tag")
 	}
 }
+
+func TestAHeadwindIsNamedAndTakenOutOfTheLeftOver(t *testing.T) {
+	km := 120.0 / 3600 * 30 * 120
+	rs := drive(1000, 80, 120, 0.30, 120, 15)
+	wind := &Wind{HeadKph: 28, CrossKph: 5, GustKph: 45, EffectPct: 22}
+	r := BuildWithWind(rs, 0.30*km, base, "10 to 20 °C", nil, wind)
+	got := map[string]float64{}
+	for _, f := range r.Factors {
+		got[f.Key] = f.Pct
+	}
+	if got["wind"] != 22 {
+		t.Fatalf("the wind is its own reason: %+v", r.Factors)
+	}
+	tag := ""
+	for _, tg := range r.Tags {
+		if tg.Key == "headwind" {
+			tag = tg.Level
+		}
+	}
+	if tag != "bad" {
+		t.Fatalf("a headwind chip that cost energy: %+v", r.Tags)
+	}
+	noWind := BuildWithWind(rs, 0.30*km, base, "10 to 20 °C", nil, nil)
+	if _, has := func() (float64, bool) {
+		for _, f := range noWind.Factors {
+			if f.Key == "wind" {
+				return f.Pct, true
+			}
+		}
+		return 0, false
+	}(); has {
+		t.Fatal("no wind data, no wind reason")
+	}
+	tail := BuildWithWind(rs, 0.20*km, base, "10 to 20 °C", nil, &Wind{HeadKph: -25, EffectPct: -15})
+	found := false
+	for _, tg := range tail.Tags {
+		if tg.Key == "tailwind" && tg.Level == "good" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("a tailwind helped: %+v", tail.Tags)
+	}
+	cross := BuildWithWind(rs, 0.30*km, base, "10 to 20 °C", nil, &Wind{CrossKph: 32, GustKph: 60})
+	foundC := false
+	for _, tg := range cross.Tags {
+		if tg.Key == "crosswind" {
+			foundC = true
+		}
+	}
+	if !foundC {
+		t.Fatalf("strong crosswind: %+v", cross.Tags)
+	}
+}

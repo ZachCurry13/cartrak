@@ -197,24 +197,24 @@ func (s *Store) TirePoints(from int64) ([]struct {
 
 // TripReadings returns every reading from `from` to `to` with only what explaining a trip needs.
 func (s *Store) TripReadings(from, to int64) ([]struct {
-	TS                    int64
-	Odo, Kwh, Speed, Temp *float64
+	TS                              int64
+	Odo, Kwh, Speed, Temp, Lat, Lon *float64
 }, error) {
-	rows, err := s.DB.Query(`SELECT ts,odometer_km,energy_kwh,speed_kph,outside_c FROM samples WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
+	rows, err := s.DB.Query(`SELECT ts,odometer_km,energy_kwh,speed_kph,outside_c,lat,lon FROM samples WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	var out []struct {
-		TS                    int64
-		Odo, Kwh, Speed, Temp *float64
+		TS                              int64
+		Odo, Kwh, Speed, Temp, Lat, Lon *float64
 	}
 	for rows.Next() {
 		var x struct {
-			TS                    int64
-			Odo, Kwh, Speed, Temp *float64
+			TS                              int64
+			Odo, Kwh, Speed, Temp, Lat, Lon *float64
 		}
-		if err := rows.Scan(&x.TS, &x.Odo, &x.Kwh, &x.Speed, &x.Temp); err != nil {
+		if err := rows.Scan(&x.TS, &x.Odo, &x.Kwh, &x.Speed, &x.Temp, &x.Lat, &x.Lon); err != nil {
 			return nil, err
 		}
 		out = append(out, x)

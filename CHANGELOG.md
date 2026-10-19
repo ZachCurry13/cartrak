@@ -2,6 +2,10 @@
 
 ## 0.27.0
 
+### 💨 Wind on your trips (optional, off by default)
+- Switch on **Wind lookup for trips** in More, Settings and CarTrak asks a free weather service (Open-Meteo, no account) for the wind along each trip. A trip then says whether it had a **headwind**, a **tailwind** or a strong **crosswind** (with gusts), splits wind out of "Everything else" with a rough estimate of what it did to the energy used, and shows chips such as "Headwind +9%" and "Tailwind −7%". Wind also appears in **What costs you the most**.
+- Privacy: it is off until you switch it on. It sends only a map cell half a degree wide (about 50 km), never your exact position, plus the date, and it remembers every answer so each place and day is asked once. The motion sensors cannot measure wind (they report the car's own movement in snapshots 30 seconds apart), which is why a weather service is used.
+
 ### 🎯 Your most efficient speed
 - **Efficiency insights, By speed** now has a chart you can touch and drag along, with finer steps (about 6 mph apart), and says plainly **"Most efficient: 56–62 mph"** with how much more energy cruising faster used. Every speed range is under "Every speed range".
 

@@ -1,7 +1,7 @@
 import { h, num } from './ui.js';
 import { api } from './api.js';
 
-const NAMES = { speed: 'Speed', temperature: 'Weather', other: 'Everything else (wind, hills, climate control, braking)' };
+const NAMES = { speed: 'Speed', temperature: 'Temperature', wind: 'Wind', other: 'Everything else (hills, climate control, braking; wind too if the wind lookup is off)' };
 
 // Across your recent trips, how much energy each reason cost or saved compared with your usual driving.
 export async function reasonsCard() {

@@ -16,6 +16,14 @@ function say(f, facts) {
       return f.pct > 0
         ? `Colder or hotter than your best weather${facts.tempC != null ? ` (${temp(facts.tempC)})` : ''}. Heating, cooling and a cold battery all use energy.`
         : `Mild weather${facts.tempC != null ? ` (${temp(facts.tempC)})` : ''} helps the battery and needs little heating or cooling.`;
+    case 'wind': {
+      const w = facts.wind;
+      const gust = w && w.gustKph >= 40 ? `, gusts to ${speed(w.gustKph)}` : '';
+      const cross = w && w.crossKph >= 15 ? ` and ${speed(w.crossKph)} of crosswind` : '';
+      return f.pct > 0
+        ? `A headwind of about ${speed(Math.abs(w.headKph))} on average${cross}${gust}. Pushing against the wind costs more the faster you go.`
+        : `A tailwind of about ${speed(Math.abs(w.headKph))} on average${cross}${gust}. It helped push the car along.`;
+    }
     default:
       return f.pct > 0
         ? 'Something else cost energy: wind, hills, heating or cooling the cabin, hard braking and quick starts. CarTrak cannot tell these apart.'
@@ -35,6 +43,7 @@ export async function whyCard(id) {
     d.tags && d.tags.length ? h('p', { class: 'tags' }, ...tagChips(d.tags)) : null,
     ...(d.factors.length ? d.factors.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, say(x, f)), h('b', { class: x.pct > 0 ? 'bad' : '', style: 'white-space:nowrap' }, sign(x.pct))))
       : [h('p', { class: 'muted' }, 'Nothing stands out: speed and weather were typical for you.')]),
+    f.wind == null ? h('p', { class: 'muted' }, 'Wind is not included. You can switch on the optional wind lookup in More, Settings.') : (!d.factors.some((x) => x.key === 'wind') && (f.wind.crossKph >= 15 || f.wind.gustKph >= 40) ? h('p', { class: 'muted' }, `Wind: ${speed(Math.abs(f.wind.headKph))} ${f.wind.headKph >= 0 ? 'head' : 'tail'}wind on average, ${speed(f.wind.crossKph)} of crosswind, gusts to ${speed(f.wind.gustKph)}. It made little difference to the energy used.`) : null),
     h('p', { class: 'muted' }, [f.regenKm != null ? `braking gave back ${dist(f.regenKm, 1)} of range` : null, f.stops ? `${f.stops} stop${f.stops === 1 ? '' : 's'}${f.stoppedPct >= 1 ? `, ${Math.round(f.stoppedPct)}% of the time stopped` : ''}` : null, `top speed ${speed(f.maxKph)}`].filter(Boolean).join(' · ') + '. Percentages are against your own driving over the last few months.'));
 }
 

@@ -38,6 +38,14 @@ type Factor struct {
 }
 
 // Facts are plain numbers about the trip, for the screen to word in the reader's units.
+// Wind is the wind met on the trip (from the optional weather lookup).
+type Wind struct {
+	HeadKph   float64 `json:"headKph"` // positive is a headwind, negative a tailwind
+	CrossKph  float64 `json:"crossKph"`
+	GustKph   float64 `json:"gustKph"`
+	EffectPct float64 `json:"effectPct"` // rough change in energy used because of it
+}
+
 type Facts struct {
 	Km          float64  `json:"km"`
 	AvgKph      float64  `json:"avgKph"` // while moving
@@ -50,7 +58,8 @@ type Facts struct {
 	IdleKwh     float64  `json:"idleKwh"`     // energy used while stopped (climate control, systems)
 	HardBrakes  int      `json:"hardBrakes"`  // big drops in speed between two readings
 	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
-	RegenKm     *float64 `json:"regenKm"`     // range the car says braking gave back during the trip (its own counter)
+	Wind        *Wind    `json:"wind"`
+	RegenKm     *float64 `json:"regenKm"` // range the car says braking gave back during the trip (its own counter)
 }
 
 // Tag is one short reason shown next to a trip. Bad means it cost energy.
@@ -84,8 +93,14 @@ func bandIndex(b []Band, kph float64) int {
 }
 
 // Build explains a trip. tempGroup is the name of the temperature group of the trip's average temperature.
-func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64) (r Report) {
+func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64) Report {
+	return BuildWithWind(rs, tripKwh, base, tempGroup, regenKm, nil)
+}
+
+// BuildWithWind is Build with the wind met on the trip, when it is known.
+func BuildWithWind(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64, wind *Wind) (r Report) {
 	r.Facts.RegenKm = regenKm
+	r.Facts.Wind = wind
 	sort.Slice(rs, func(i, j int) bool { return rs[i].TS < rs[j].TS })
 	var km, movingKm, movingSec, stoppedSec, totalSec, over100, expectedKwh float64
 	var tempSum float64
@@ -177,7 +192,11 @@ func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regen
 	if e, ok := base.TempKmPKwh[tempGroup]; ok && e > 0 && base.TempOverall > 0 {
 		tempPct = (base.TempOverall/e - 1) * 100
 	}
-	expected := r.UsualKwhPerKm * (1 + speedPct/100) * (1 + tempPct/100)
+	windPct := 0.0
+	if wind != nil {
+		windPct = wind.EffectPct
+	}
+	expected := r.UsualKwhPerKm * (1 + speedPct/100) * (1 + tempPct/100) * (1 + windPct/100)
 	otherPct := (r.KwhPerKm/expected - 1) * 100
 	add := func(key string, pct float64, note string) {
 		if pct >= significant || pct <= -significant {
@@ -186,7 +205,14 @@ func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regen
 	}
 	add("speed", speedPct, "The speeds driven, compared with your usual mix")
 	add("temperature", tempPct, "The outside temperature")
-	add("other", otherPct, "Everything else: wind, hills, heating or cooling the cabin, braking and how you accelerate")
+	if wind != nil {
+		add("wind", windPct, "The wind along the way")
+	}
+	if wind != nil {
+		add("other", otherPct, "Everything else: hills, heating or cooling the cabin, braking and how you accelerate")
+	} else {
+		add("other", otherPct, "Everything else: wind, hills, heating or cooling the cabin, braking and how you accelerate")
+	}
 	sort.Slice(r.Factors, func(i, j int) bool { return abs(r.Factors[i].Pct) > abs(r.Factors[j].Pct) })
 	return r
 }
@@ -249,6 +275,17 @@ func tagsFor(r Report, km, tripKwh float64) []Tag {
 		case p <= -5:
 			tags = append(tags, mk("mild", "Mild weather "+sgn(p), "good"))
 		}
+	}
+	if p, ok := pct("wind"); ok && f.Wind != nil {
+		switch {
+		case p >= 4:
+			tags = append(tags, mk("headwind", "Headwind "+sgn(p), "bad"))
+		case p <= -4:
+			tags = append(tags, mk("tailwind", "Tailwind "+sgn(p), "good"))
+		}
+	}
+	if f.Wind != nil && (f.Wind.CrossKph >= 25 || f.Wind.GustKph >= 55) {
+		tags = append(tags, mk("crosswind", "Strong crosswind", "info"))
 	}
 	level := "info"
 	if worse {
