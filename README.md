@@ -10,8 +10,9 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Trips and charging sessions are detected automatically; routes are drawn without any map service
 - Work/personal rules (days, time window, optional "near this place"), judged in the local time where each trip starts; a manual choice always wins
 - A business **mileage log** with an odometer check, a **vacation mode** that makes trips personal, and a year-in-review summary
+- A **History** feed (driving, charging and parked time by month) and **Statistics** by day, month and year with charging split into home, work and public
 - **Charging** history with cost (including cheaper night rates), your measured charging loss, a **charging curve** per session and fast chargers compared
-- **Efficiency insights**: by temperature and speed, and short reasons why a trip used more or less (cold, highway speed, stop and go, climate, braking)
+- **Efficiency insights**: by temperature and speed, and short reasons why a trip used more or less (cold, highway speed, stop and go, climate, braking); a **compare two speeds** tool (one hour at 70 vs 75: distance, energy, fast-charge time); regen range and energy on each trip
 - **Vehicle health**: 12 V and main battery, the true battery level, tire trends and a slow-leak check, parked drain, a data-quality check and a repair tool for a day of trips
 - A **road-trip planner**, named places, service reminders, public share links for a trip, and a read-only Home Assistant feed
 - **Alerts** on the phone (charging, plug-in reminder, low battery, tires, service due, bumps while parked, left open or unlocked), each device choosing its own
