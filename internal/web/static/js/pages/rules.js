@@ -1,5 +1,6 @@
 import { h, chip } from '../ui.js';
 import { api } from '../api.js';
+import { vacationCard } from '../vacation.js';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const toTime = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
@@ -11,6 +12,7 @@ export default async function rules(root, _a, session) {
   const box = h('div');
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, 'Trip rules'),
     h('p', { class: 'muted' }, 'A trip is labelled by the highest-priority rule that matches when it starts. Anything you set by hand on a trip always wins.'), box);
+  vacationCard(admin).then((c) => box.before(c)).catch(() => {});
 
   async function draw() {
     const rs = await api('/api/rules');

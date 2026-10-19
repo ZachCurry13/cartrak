@@ -91,7 +91,7 @@ func (s *Server) listCharges(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, ss)
+	ok(w, s.withPlaces(ss))
 }
 
 type monthOut struct {

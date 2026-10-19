@@ -217,3 +217,42 @@ func TestFastChargerStopsWithZeroPowerSplitTheTripAndMakeChargingSessions(t *tes
 		t.Fatalf("the session ended at 80%%: %+v", cs[0])
 	}
 }
+
+func TestSittingInTheCarWithTheIgnitionOnIsNotATrip(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Date(2026, 10, 19, 9, 0, 0, 0, time.UTC)
+	still := func(min int) *ford.State {
+		st := reading(t0.Add(time.Duration(min)*time.Minute), "ON", 5000, 70)
+		kph := 0.0
+		st.SpeedKph = &kph
+		return st
+	}
+	for _, min := range []int{0, 5, 10, 20, 30, 40} { // 40 minutes with the radio on
+		if err := d.Process(still(min)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	d.Process(reading(t0.Add(41*time.Minute), "OFF", 5000, 70))
+	if ts, _ := s.ListTrips(store.TripFilter{}); len(ts) != 0 {
+		t.Fatalf("no movement, no trip: %d", len(ts))
+	}
+	// Then a real drive starts when the car moves.
+	drive := reading(t0.Add(50*time.Minute), "ON", 5000.1, 70)
+	kph := 40.0
+	drive.SpeedKph = &kph
+	d.Process(still(49))
+	d.Process(drive)
+	far := reading(t0.Add(70*time.Minute), "ON", 5020, 66)
+	far.SpeedKph = &kph
+	d.Process(far)
+	d.Process(reading(t0.Add(71*time.Minute), "OFF", 5020, 66))
+	ts, _ := s.ListTrips(store.TripFilter{})
+	if len(ts) != 1 || ts[0].DistanceKm < 19 {
+		t.Fatalf("one real trip of about 20 km: %+v", ts)
+	}
+}

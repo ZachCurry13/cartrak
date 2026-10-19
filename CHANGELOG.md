@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.25.0
+
+### 🏖️ Vacation mode
+- **More, Trip rules** has a **Vacation** card. Choose the first and last day (and where, if you like) and every trip on those days counts as **Personal**, over your work rules, so you do not have to change a week of trips by hand. Trips already recorded in the stretch are relabelled at once, trips you set by hand keep your choice, and removing the vacation puts the rules back. Home shows "On vacation until …" while it is on, and the mileage log and exports follow the new labels.
+
+### 🪑 Sitting in the car is not a trip
+- Sitting in the car with the ignition or accessories on while it does not move no longer records a trip. A trip now starts when the car moves, and a finished trip with almost no distance and no real speed is dropped.
+
 ## 0.24.0
 
 ### ⚡ Fast-charger stops are now recognised

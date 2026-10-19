@@ -8,6 +8,7 @@ import { doorsCard, healthCard } from '../cards.js';
 import { createMap, mapConfig } from '../map.js';
 import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
+import { vacationNote } from '../vacation.js';
 import { isCharging } from '../chargestate.js';
 import { bandRow } from '../rangeband.js';
 import { batteryRing } from '../ring.js';
@@ -83,6 +84,8 @@ export default async function dashboard(root, _args, session) {
     }
     const strip = healthStrip(health, session.me.role === 'admin');
     if (strip) out.push(strip);
+    const vac = await vacationNote();
+    if (vac) out.push(vac);
     if (!latest) {
       out.push(h('p', { class: 'muted' }, 'No readings yet. Data appears after the first successful sync.'));
       return box.replaceChildren(...out);

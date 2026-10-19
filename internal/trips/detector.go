@@ -55,6 +55,11 @@ func (d *Detector) tripZone(t *store.Trip) *time.Location {
 }
 
 func (d *Detector) classify(startTS int64, lat, lon *float64, loc *time.Location) (string, *int64, string) {
+	// Vacation wins over the rules: no manual relabelling of every trip for a week away. A trip the owner set by hand
+	// is never classified at all, so it still wins over this.
+	if d.S.OnTimeOff(time.Unix(startTS, 0).In(loc).Format("2006-01-02")) {
+		return Personal, nil, "vacation"
+	}
 	rules, err := d.S.ListRules()
 	if err == nil {
 		at := time.Unix(startTS, 0).In(loc)
@@ -71,7 +76,7 @@ func (d *Detector) trip(st *ford.State) error {
 		return err
 	}
 	now := st.TS.Unix()
-	if Driving(st) && open == nil {
+	if Driving(st) && open == nil && moving(st) {
 		t := &store.Trip{StartTS: now, StartLat: st.Lat, StartLon: st.Lon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		var rid *int64
 		loc := d.zone(st.Lat, st.Lon)
@@ -93,11 +98,20 @@ func (d *Detector) trip(st *ford.State) error {
 	open.DistanceKm = d.distance(open)
 	if !Driving(st) {
 		open.Open = false
-		if open.DistanceKm < 0.3 && now-open.StartTS < 120 {
-			return d.S.DeleteTrip(open.ID) // ignition blip, not a trip
+		if (open.DistanceKm < 0.3 && now-open.StartTS < 120) || (open.DistanceKm < 0.2 && open.MaxSpeedKph < 8) {
+			return d.S.DeleteTrip(open.ID) // an ignition blip, or sitting in the car with it on: not a trip
 		}
 	}
 	return d.S.UpdateTrip(open)
+}
+
+// moving says a trip should begin: the car is actually going somewhere. Sitting in the car with the ignition or
+// accessories on (speed zero) is not a trip. When a feed gives no speed at all, ignition on has to be enough.
+func moving(st *ford.State) bool {
+	if st.SpeedKph == nil {
+		return true
+	}
+	return *st.SpeedKph > 3
 }
 
 func pick(n, old *float64) *float64 {
