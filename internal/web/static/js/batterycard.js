@@ -24,3 +24,17 @@ export async function batteryCard() {
     bars,
     h('p', { class: 'muted' }, 'This is the size of the battery as the car itself estimates it. The estimate moves with temperature and how full the battery is, so a small dip in winter is normal. It is not a lab test of the battery.'));
 }
+
+// The battery's own figures next to what the car shows, and the usable size worked out from them over time.
+export async function truthCard() {
+  const d = await api('/api/battery-truth').catch(() => null);
+  if (!d || !d.now || d.now.actualSoc == null) return null;
+  const n = d.now, u = d.usable;
+  const row = (l, v, note) => h('div', { class: 'row' }, h('span', { class: 'grow' }, l, note ? h('div', { class: 'muted' }, note) : null), h('b', {}, v));
+  return h('section', { class: 'card' }, h('h2', {}, 'True battery level'),
+    h('p', { class: 'muted' }, 'The percentage on the car\'s display is not the battery\'s own level. The car reports both.'),
+    row('The car shows', n.displayedSoc != null ? `${num(n.displayedSoc, 1)}%` : '—'),
+    row('The battery\'s own level', `${num(n.actualSoc, 1)}%`),
+    n.usableKwh != null ? row('Usable size now', num(n.usableKwh, 1, ' kWh'), `Energy left ${n.energyKwh != null ? num(n.energyKwh, 1, ' kWh') : '—'} divided by the true level${n.fordKwh != null ? `. Ford's own estimate is ${num(n.fordKwh, 1, ' kWh')}` : ''}.`) : null,
+    u && u.ready ? h('p', {}, `${num(u.startKwh, 1)} → ${num(u.nowKwh, 1, ' kWh')} over the history CarTrak has (${u.changePct > 0 ? '+' : ''}${u.changePct.toFixed(1)}%). ${({ steady: 'Steady.', gentle: 'A gentle decline, which is normal.', watch: 'A bigger drop than usual; worth watching.' })[u.verdict] || ''}`) : h('p', { class: 'muted' }, 'A trend appears after a couple of months of readings between 20 and 95 percent.'));
+}

@@ -2,6 +2,7 @@ import { h, emptyState, chip, when, duration, pct, num, dist, isMetric } from '.
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
 import { chargeNow } from '../chargenow.js';
+import { curveBox, chargersCompared } from '../curve.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
@@ -46,6 +47,7 @@ function sessionCard(c, cur, admin, reload) {
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, when(c.startTs)), c.open ? chip('ok', 'charging') : null, c.cost != null ? h('b', {}, money(cur, c.cost)) : null),
     h('div', { class: 'muted' }, `${pct(c.startSoc)} → ${pct(c.endSoc)} · ${added} · ${duration(c.startTs, c.endTs)} · peak ${num(c.peakKw, 1, ' kW')}`),
     where ? h('div', { style: 'margin-top:8px' }, where) : null,
+    c.open ? null : curveBox(c.id),
     admin ? chargerBox(c, reload) : null);
 }
 
@@ -57,7 +59,7 @@ export default async function charging(root, _a, session) {
   async function load() {
     const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
-    box.replaceChildren(summaryCard(sum), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load))));
+    box.replaceChildren(...[summaryCard(sum), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
   }
   await load();
   return { cleanup: now.stop };

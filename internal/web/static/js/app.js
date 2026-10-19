@@ -144,4 +144,14 @@ const fordReturn = /[?&](code|error)=/.test(location.search) || /[#&](code|error
 if (fordReturn) location.replace('/ford/callback' + location.search + location.hash);
 else render().then(syncLabel);
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  // The app files are cached on the device. After an update the new files arrive in the background while the page
+  // still runs the old ones, which is how an old screen can sit next to a new server version. Say so, with a button.
+  const hadWorker = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadWorker || document.getElementById('upd')) return;
+    document.body.append(h('div', { id: 'upd', class: 'updbar', role: 'status' }, 'A new version of CarTrak is ready. ',
+      h('button', { onclick: () => location.reload() }, 'Reload')));
+  });
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}

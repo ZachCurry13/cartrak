@@ -125,3 +125,13 @@ func Build(ts []*store.Trip, capacityKwh *float64, temps map[int64]float64, loc 
 	}
 	return rep
 }
+
+// BandName is the name of the temperature group a temperature (Celsius) falls in.
+func BandName(c float64) string {
+	for _, b := range bands {
+		if c >= b.Lo && c < b.Hi {
+			return b.Name
+		}
+	}
+	return ""
+}

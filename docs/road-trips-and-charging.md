@@ -90,3 +90,9 @@ If your electricity plan has cheaper hours, set **Cheaper home price** and **Che
 
 ## Mileage deduction estimate
 Set **Mileage deduction per mile** in More, Settings. The Mileage log then shows an estimated deduction under the work-trip total, and Year in review shows it for the year. It is an estimate for your own planning, not tax advice.
+
+## Charging curves, speed and the reasons behind a trip
+Under a charging session, **Charging curve** shows power against battery level. **Fast chargers compared** (Charging page) groups sessions that reached 40 kW by named place; name a place under More, Places to see it by name. The road-trip planner starts its charging power from your own fast-charge average. **Efficiency insights, By speed** shows your efficiency at each speed. A trip's page has **Why this efficiency?** and the best and worst trips show reason chips (cold weather, highway speed, stop and go, idling and climate, hard braking, quick starts, or gentle driving). The reasons compare the trip with your own driving; braking and starts are inferred from speed changes between readings and are a guide only.
+
+## Vacation
+**More, Trip rules, Vacation**: pick the days and every trip on them is Personal, over your rules; trips you set by hand keep your choice, and removing the vacation puts the rules back.

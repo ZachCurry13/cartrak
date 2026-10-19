@@ -34,14 +34,16 @@ type summary struct {
 	EnergyKwh   *float64 `json:"energyKwh"`   // energy left in the traction battery
 	CapacityKwh *float64 `json:"capacityKwh"` // its estimated capacity
 	// The battery and drive motor, as the car reports them. Each is nil when this car does not send it.
-	BatteryTempC *float64 `json:"batteryTempC"`
-	PackVolts    *float64 `json:"packVolts"`
-	Battery12V   *float64 `json:"battery12v"`
-	MotorVolts   *float64 `json:"motorVolts"`
-	MotorAmps    *float64 `json:"motorAmps"`
-	MotorTempC   *float64 `json:"motorTempC"` // only if the car reports a motor or inverter temperature
-	PackAmps     *float64 `json:"packAmps"`   // current into (negative) or out of (positive) the battery
-	CoolantC     *float64 `json:"coolantC"`   // the coolant temperature the car reports
+	BatteryTempC  *float64 `json:"batteryTempC"`
+	PackVolts     *float64 `json:"packVolts"`
+	Battery12V    *float64 `json:"battery12v"`
+	MotorVolts    *float64 `json:"motorVolts"`
+	MotorAmps     *float64 `json:"motorAmps"`
+	MotorTempC    *float64 `json:"motorTempC"`    // only if the car reports a motor or inverter temperature
+	PackAmps      *float64 `json:"packAmps"`      // current into (negative) or out of (positive) the battery
+	CoolantC      *float64 `json:"coolantC"`      // the coolant temperature the car reports
+	TimeToFullMin *float64 `json:"timeToFullMin"` // the car's own estimate while charging
+	ChargerKwh    *float64 `json:"chargerKwh"`    // energy the car measured going in this session
 }
 
 func summarize(x *store.Sample) *summary {
@@ -51,7 +53,7 @@ func summarize(x *store.Sample) *summary {
 	extra := map[string]any{}
 	_ = json.Unmarshal(x.Extra, &extra)
 	return &summary{BatteryTempC: ford.Number(extra, "xevBatteryTemperature"), PackVolts: x.HVVolts, Battery12V: x.Battery12V,
-		MotorVolts: ford.Number(extra, "xevTractionMotorVoltage"), MotorAmps: ford.Number(extra, "xevTractionMotorCurrent"), MotorTempC: motorTemp(extra), PackAmps: ford.Number(extra, "xevBatteryIoCurrent"), CoolantC: ford.Number(extra, "engineCoolantTemp"), TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
+		MotorVolts: ford.Number(extra, "xevTractionMotorVoltage"), MotorAmps: ford.Number(extra, "xevTractionMotorCurrent"), MotorTempC: motorTemp(extra), PackAmps: ford.Number(extra, "xevBatteryIoCurrent"), CoolantC: ford.Number(extra, "engineCoolantTemp"), TimeToFullMin: ford.Number(extra, "xevBatteryTimeToFullCharge"), ChargerKwh: ford.Number(extra, "xevBatteryChargerEnergyOutput"), TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
 		ChargeState: x.ChargeState, Plug: x.Plug, ChargeKw: x.ChargeKw, OutsideC: x.OutsideC,
 		OdometerKm: x.OdometerKm, Lat: x.Lat, Lon: x.Lon, Locked: x.Locked, FuelPct: x.FuelPct, OilLifePct: x.OilLifePct, EnergyKwh: x.EnergyKwh, CapacityKwh: x.CapacityKwh}
 }

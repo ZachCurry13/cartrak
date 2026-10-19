@@ -353,3 +353,35 @@ func TestABumpDoesNotAlertWhenTheOwnerIsWithTheCar(t *testing.T) {
 		t.Fatalf("a phone 5 km away is not with the car: %q", got)
 	}
 }
+
+func TestAnOpenDoorOnAParkedCarIsAlertedOnceAfterTenMinutes(t *testing.T) {
+	e, r, _ := setup(t)
+	open := func(s *ford.State) {
+		s.Extra["telemetry.metrics.doorStatus[0].value"] = "CLOSED"
+		s.Extra["telemetry.metrics.doorStatus[0].vehicleDoor"] = "UNSPECIFIED_FRONT"
+		s.Extra["telemetry.metrics.doorStatus[0].vehicleSide"] = "DRIVER"
+		s.Extra["telemetry.metrics.doorStatus[1].value"] = "AJAR"
+		s.Extra["telemetry.metrics.doorStatus[1].vehicleDoor"] = "REAR_RIGHT"
+	}
+	for i := 0; i < 6; i++ {
+		e.Handle(reading(i*4, open))
+	}
+	if r.kinds() != "left_open" || !strings.Contains(r.got[0].Body, "rear right door") {
+		t.Fatalf("once, naming the door: %s %v", r.kinds(), r.got)
+	}
+	closed := func(s *ford.State) { s.Extra["telemetry.metrics.doorStatus[0].value"] = "CLOSED" }
+	e.Handle(reading(40, closed))
+	for i := 0; i < 6; i++ {
+		e.Handle(reading(44+i*4, open))
+	}
+	if len(r.got) != 2 {
+		t.Fatalf("after it was closed it can warn again: %s", r.kinds())
+	}
+	n := len(r.got)
+	for i := 0; i < 8; i++ { // ignition on: someone is in the car
+		e.Handle(reading(80+i*4, func(s *ford.State) { open(s); s.Ignition = "ON" }))
+	}
+	if len(r.got) != n {
+		t.Fatalf("nothing while the car is in use: %s", r.kinds())
+	}
+}

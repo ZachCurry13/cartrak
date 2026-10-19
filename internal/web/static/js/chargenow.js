@@ -21,8 +21,9 @@ export function chargeNow() {
       h('div', { class: 'grid' },
         h('div', { class: 'stat' }, h('div', { class: 'v' }, pct(x.socPct)), h('div', { class: 'l' }, 'Battery')),
         h('div', { class: 'stat' }, h('div', { class: 'v' }, taking && x.chargeKw != null ? num(x.chargeKw, 1, ' kW') : '—'), h('div', { class: 'l' }, 'Power')),
-        x.energyKwh != null ? h('div', { class: 'stat' }, h('div', { class: 'v' }, num(x.energyKwh, 1, ' kWh')), h('div', { class: 'l' }, 'Energy left')) : null),
-      taking ? chargeEtaBox(x, null) : null,
+        x.energyKwh != null ? h('div', { class: 'stat' }, h('div', { class: 'v' }, num(x.energyKwh, 1, ' kWh')), h('div', { class: 'l' }, 'Energy left')) : null,
+        taking && x.chargerKwh > 0 ? h('div', { class: 'stat' }, h('div', { class: 'v' }, num(x.chargerKwh, 1, ' kWh')), h('div', { class: 'l' }, 'Added (by the car)')) : null),
+      taking ? chargeEtaBox(x, x.timeToFullMin) : null,
     ].filter(Boolean));
   }
   load();

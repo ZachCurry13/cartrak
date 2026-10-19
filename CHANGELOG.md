@@ -2,6 +2,26 @@
 
 ## 0.25.0
 
+### 📈 Charging curves
+- Under each charging session, **Charging curve** draws power against battery level, with the peak, the average, how long 10 to 80 percent took, the power at 80 percent and the energy the car measured going in. **Fast chargers compared** on the Charging page lists your fast-charging places by name with their average power, and the road-trip planner now starts its charging power from what your own fast charges averaged. Fast-charger power comes from the battery's own current and voltage.
+
+### 🚗 Speed against consumption
+- **Efficiency insights** has a **By speed** card: your miles per kWh at each speed from your own drives, and how much more energy the fastest cruising uses than the band below it.
+
+### 🧐 Why was this trip efficient (or not)?
+- A trip now has **Why this efficiency?**, and the best and worst trips on Efficiency insights show short reason chips: **Freezing or cold weather, Hot weather, Highway speed, Stop and go, Idling and climate control, Hard braking, Quick starts**, or **Gentle driving** and **Mild weather** for a good one. It compares the trip with your own driving: how much of the difference the speeds explain, how much the weather explains, and what is left (wind, hills, climate control, braking). Hard braking and quick starts are inferred from big speed changes between readings, so they are a guide, not a measurement.
+
+### 🔋 True battery level and tires
+- **Health** shows the percentage the car displays next to the battery's own level, the usable battery size worked out from them (energy left divided by the true level), and its trend over the months.
+- **Tire pressure and trend** shows each tire against the placard target the car reports and warns when one tire is losing air faster than the others, after allowing for the outside temperature.
+
+### 🚪 Left-open alert and car-measured charging
+- A new optional alert, **Left open**, warns once when the parked car has a door, the tailgate, the hood or a window open for ten minutes.
+- **Right now** on Charging uses the car's own time to full and shows the energy the car counted going in this session.
+
+### 🔄 A new version is ready
+- When a new version is downloaded in the background, a bar says **A new version of CarTrak is ready** with a **Reload** button, so an old screen never sits next to a new server.
+
 ### 🏖️ Vacation mode
 - **More, Trip rules** has a **Vacation** card. Choose the first and last day (and where, if you like) and every trip on those days counts as **Personal**, over your work rules, so you do not have to change a week of trips by hand. Trips already recorded in the stretch are relabelled at once, trips you set by hand keep your choice, and removing the vacation puts the rules back. Home shows "On vacation until …" while it is on, and the mileage log and exports follow the new labels.
 

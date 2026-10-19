@@ -48,7 +48,7 @@ func TestAPersonAddsADeviceAndGetsATestAlert(t *testing.T) {
 		Devices   []map[string]any
 	}
 	json.Unmarshal([]byte(body), &cfg)
-	if code != 200 || len(cfg.PublicKey) < 80 || len(cfg.Kinds) != 21 || len(cfg.Devices) != 0 {
+	if code != 200 || len(cfg.PublicKey) < 80 || len(cfg.Kinds) != 22 || len(cfg.Devices) != 0 {
 		t.Fatalf("config: %d %s", code, body)
 	}
 	if strings.Contains(body, "vapid_private") {

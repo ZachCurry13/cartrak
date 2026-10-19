@@ -7,6 +7,7 @@ import { shareCard } from '../sharecard.js';
 import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
+import { whyCard } from '../tripwhy.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -83,6 +84,7 @@ export default async function tripDetail(root, [id], session) {
     try { await api(`/api/trips/${t.id}`, { method: 'PATCH', body: { category, notes: notes.value } }); location.reload(); } catch (e) { msg.textContent = e.message; }
   };
   const avg = saver ? null : await versusAverage(t); // one extra request, skipped on data saver
+  const why = saver || t.open ? null : await whyCard(t.id);
   const hours = t.endTs && t.startTs ? (t.endTs - t.startTs) / 3600 : 0;
   const avgKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
   const hasStart = t.startLat != null && t.startLon != null;
@@ -94,6 +96,7 @@ export default async function tripDetail(root, [id], session) {
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''))),
       avg),
+    why,
     routeBox,
     hasStart || hasEnd ? h('section', { class: 'card' }, h('h2', {}, 'Open in maps'),
       hasStart ? h('div', {}, h('b', {}, t.startPlace || 'Where it started'), mapButtons(t.startLat, t.startLon, 'where it started')) : null,

@@ -60,6 +60,8 @@ type Engine struct {
 	lastBump     time.Time
 	restVec      *[3]float64 // the previous parked reading of the motion sensors
 	lowSent      bool
+	openFrom     time.Time
+	openSent     bool
 }
 
 func (e *Engine) now() time.Time {
@@ -93,6 +95,7 @@ func (e *Engine) Handle(st *ford.State) {
 	e.parkedWatch(st, first)
 	e.lowBattery(st, first)
 	e.unlocked(st)
+	e.leftOpen(st)
 	e.trip(first)
 	e.prev = st
 }

@@ -2,7 +2,8 @@ import { h, chip, ago } from '../ui.js';
 import { api, AuthError } from '../api.js';
 import { rowEl, value, format } from '../healthrows.js';
 import { spark } from '../spark.js';
-import { batteryCard } from '../batterycard.js';
+import { batteryCard, truthCard } from '../batterycard.js';
+import { tireCard } from '../tirecard.js';
 
 const SOURCE = {
   setting: 'chosen in Admin settings',
@@ -62,6 +63,10 @@ export default async function vehicleHealth(root, _a, session) {
   }
   const bat = await batteryCard();
   if (bat) root.append(bat);
+  const tires = await tireCard();
+  if (tires) root.append(tires);
+  const truth = await truthCard();
+  if (truth) root.append(truth);
   root.append(h('p', { class: 'muted' }, `Vehicle type: ${v.label} (${SOURCE[v.source] || ''}). `,
     session.me.role === 'admin' ? h('a', { href: '#/admin' }, 'Wrong? Change it in Settings.') : ''));
 }

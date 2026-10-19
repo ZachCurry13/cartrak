@@ -2,6 +2,9 @@ package store
 
 import (
 	"database/sql"
+	"strings"
+
+	"github.com/ZachCurry13/cartrak/internal/ford"
 )
 
 // ReplayRow is one reading with the fields the trip and charge detector reads. No raw detail, so a few days of
@@ -16,11 +19,12 @@ type ReplayRow struct {
 	ChargeState string
 	ChargeKw    *float64
 	EnergyKwh   *float64
+	Plug        string
 }
 
 // ReplayRows returns the readings from `from` to `to`, oldest first.
 func (s *Store) ReplayRows(from, to int64) ([]ReplayRow, error) {
-	rows, err := s.DB.Query(`SELECT ts,odometer_km,soc_pct,lat,lon,speed_kph,ignition,charge_state,charge_kw,energy_kwh
+	rows, err := s.DB.Query(`SELECT ts,odometer_km,soc_pct,lat,lon,speed_kph,ignition,charge_state,charge_kw,energy_kwh,plug
 		FROM samples WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
 	if err != nil {
 		return nil, err
@@ -29,14 +33,36 @@ func (s *Store) ReplayRows(from, to int64) ([]ReplayRow, error) {
 	var out []ReplayRow
 	for rows.Next() {
 		var r ReplayRow
-		var ign, cs sql.NullString
-		if err := rows.Scan(&r.TS, &r.OdometerKm, &r.SoC, &r.Lat, &r.Lon, &r.SpeedKph, &ign, &cs, &r.ChargeKw, &r.EnergyKwh); err != nil {
+		var ign, cs, plug sql.NullString
+		if err := rows.Scan(&r.TS, &r.OdometerKm, &r.SoC, &r.Lat, &r.Lon, &r.SpeedKph, &ign, &cs, &r.ChargeKw, &r.EnergyKwh, &plug); err != nil {
 			return nil, err
 		}
-		r.Ignition, r.ChargeState = ign.String, cs.String
+		r.Ignition, r.ChargeState, r.Plug = ign.String, cs.String, plug.String
 		out = append(out, r)
 	}
-	return out, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+	// Readings stored before fast-charger power was understood have a power of zero. For those, work it out from the
+	// raw battery current and voltage, so a rebuilt session has the right peak.
+	for i := range out {
+		r := &out[i]
+		p := strings.ToLower(r.Plug)
+		if (r.ChargeKw != nil && *r.ChargeKw > 0.2) || !ford.ChargeStateCharging(r.ChargeState) || !strings.Contains(p, "connect") || strings.Contains(p, "dis") {
+			continue
+		}
+		var extra sql.NullString
+		if err := s.DB.QueryRow(`SELECT extra FROM samples WHERE ts=? LIMIT 1`, r.TS).Scan(&extra); err != nil || !extra.Valid {
+			continue
+		}
+		f := ford.Flatten([]byte(extra.String))
+		if i, v := ford.Number(f, "xevBatteryIoCurrent"), ford.Number(f, "xevBatteryVoltage"); i != nil && v != nil && *i <= -1 {
+			kw := -*i * *v / 1000
+			r.ChargeKw = &kw
+		}
+	}
+	return out, nil
 }
 
 // TripsTouching returns the trips that overlap [from, to] (or are still open), oldest first.
@@ -115,4 +141,83 @@ func (s *Store) ReplaceRange(oldTrips []int64, oldCharges []int64, newTrips []*T
 		c.ID, _ = r.LastInsertId()
 	}
 	return tx.Commit()
+}
+
+// DrivingReadings returns the readings of a moving car since `from`, with only what a speed and energy comparison
+// needs. Narrow columns, so a few months of driving reads quickly.
+func (s *Store) DrivingReadings(from int64) ([][4]float64, error) {
+	rows, err := s.DB.Query(`SELECT ts,odometer_km,energy_kwh,speed_kph FROM samples
+		WHERE ts>=? AND speed_kph>3 AND odometer_km IS NOT NULL AND energy_kwh IS NOT NULL ORDER BY ts`, from)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out [][4]float64
+	for rows.Next() {
+		var ts int64
+		var odo, kwh, kph float64
+		if err := rows.Scan(&ts, &odo, &kwh, &kph); err != nil {
+			return nil, err
+		}
+		out = append(out, [4]float64{float64(ts), odo, kwh, kph})
+	}
+	return out, rows.Err()
+}
+
+// TirePoints returns the tire pressures (kilopascals) and outside temperature of every reading since `from` that had
+// tire pressures, oldest first. Narrow columns only.
+func (s *Store) TirePoints(from int64) ([]struct {
+	TS       int64
+	P        [4]*float64
+	OutsideC *float64
+}, error) {
+	rows, err := s.DB.Query(`SELECT ts,tire_fl,tire_fr,tire_rl,tire_rr,outside_c FROM samples WHERE ts>=? AND tire_fl IS NOT NULL ORDER BY ts`, from)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []struct {
+		TS       int64
+		P        [4]*float64
+		OutsideC *float64
+	}
+	for rows.Next() {
+		var x struct {
+			TS       int64
+			P        [4]*float64
+			OutsideC *float64
+		}
+		if err := rows.Scan(&x.TS, &x.P[0], &x.P[1], &x.P[2], &x.P[3], &x.OutsideC); err != nil {
+			return nil, err
+		}
+		out = append(out, x)
+	}
+	return out, rows.Err()
+}
+
+// TripReadings returns every reading from `from` to `to` with only what explaining a trip needs.
+func (s *Store) TripReadings(from, to int64) ([]struct {
+	TS                    int64
+	Odo, Kwh, Speed, Temp *float64
+}, error) {
+	rows, err := s.DB.Query(`SELECT ts,odometer_km,energy_kwh,speed_kph,outside_c FROM samples WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []struct {
+		TS                    int64
+		Odo, Kwh, Speed, Temp *float64
+	}
+	for rows.Next() {
+		var x struct {
+			TS                    int64
+			Odo, Kwh, Speed, Temp *float64
+		}
+		if err := rows.Scan(&x.TS, &x.Odo, &x.Kwh, &x.Speed, &x.Temp); err != nil {
+			return nil, err
+		}
+		out = append(out, x)
+	}
+	return out, rows.Err()
 }
