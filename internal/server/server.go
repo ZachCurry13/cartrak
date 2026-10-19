@@ -146,6 +146,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /api/journeys/{id}", s.auth(true, s.deleteJourney))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
 	m.HandleFunc("DELETE /api/trips/{id}", s.auth(true, s.deleteTrip))
+	m.HandleFunc("GET /api/trips-empty", s.auth(true, s.emptyTrips))
+	m.HandleFunc("POST /api/trips-empty", s.auth(true, s.emptyTrips))
 	m.HandleFunc("POST /api/trips/{id}/close", s.auth(true, s.closeTrip))
 	m.HandleFunc("GET /api/charges", s.auth(false, s.listCharges))
 	m.HandleFunc("GET /api/export/charging.csv", s.auth(false, s.exportChargesCSV))

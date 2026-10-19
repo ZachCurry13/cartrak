@@ -36,3 +36,22 @@ func (s *Store) DeleteTripAndShares(id int64) error {
 	}
 	return s.DeleteTrip(id)
 }
+
+// EmptyTrips returns the ids of finished trips that went nowhere: under 0.2 km, never faster than 8 km/h, not part of
+// a journey and with no note. These come from sitting in the car with the ignition on.
+func (s *Store) EmptyTrips() ([]int64, error) {
+	rows, err := s.DB.Query(`SELECT id FROM trips WHERE open=0 AND distance_km<0.2 AND max_speed_kph<8 AND journey_id IS NULL AND COALESCE(notes,'')=''`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}

@@ -2,6 +2,9 @@
 
 ## 0.26.0
 
+### 🧹 Clear out empty trips
+- **More, Data check** has an **Empty trips** card (admins) when there are finished trips that went nowhere (under 0.2 km, never over 8 km/h, no note, not in a journey), which older versions recorded when you sat in the car with the ignition on. One tap deletes them all, after a confirmation. For a whole day with several problems, **Fix a day** rebuilds it from the readings.
+
 ### 🔎 Smarter search on More
 - The search box on **More** now suggests **where a thing is**, by name or by what it does. Type **vacation** and it points to Trip rules; **electricity price**, **quiet hours**, **tire**, **backup**, **dark**, **phone** or the name of any setting or alert and it says which page it is on, with a short description and a tap to open it. It knows the real names of your settings and alerts, and the menu below still narrows as you type.
 

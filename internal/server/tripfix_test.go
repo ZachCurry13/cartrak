@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -58,5 +59,40 @@ func TestAnAdminCanDeleteAFinishedTripAndCloseAStuckOne(t *testing.T) {
 	do(t, v, "POST", ts.URL+"/api/login", `{"name":"fam","password":"viewer-password-1"}`, nil)
 	if code, _ := do(t, v, "DELETE", url(done, ""), "", xh); code != 403 {
 		t.Fatalf("viewer delete: %d", code)
+	}
+}
+
+func TestEmptyTripsCanBeCountedAndDeletedInOneStepWithoutTouchingRealOnes(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	mk := func(km, top float64, notes string) int64 {
+		start := time.Now().Add(-2 * time.Hour)
+		end := start.Add(29 * time.Minute).Unix()
+		tr := &store.Trip{StartTS: start.Unix(), EndTS: &end, DistanceKm: km, MaxSpeedKph: top, Category: "personal", CategorySource: "default"}
+		if err := srv.S.CreateTrip(tr); err != nil {
+			t.Fatal(err)
+		}
+		tr.EndTS, tr.Open = &end, false
+		srv.S.UpdateTrip(tr)
+		if notes != "" {
+			srv.S.SetTripCategory(tr.ID, "personal", notes)
+		}
+		return tr.ID
+	}
+	junk, real, noted := mk(0, 0, ""), mk(12, 90, ""), mk(0, 0, "meeting in the lot")
+	code, b := do(t, admin, "GET", ts.URL+"/api/trips-empty", "", nil)
+	if code != 200 || !strings.Contains(b, `"count":1`) {
+		t.Fatalf("one empty trip: %d %s", code, b)
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/trips-empty", `{}`, xh); code != 400 {
+		t.Fatalf("it must be confirmed: %d", code)
+	}
+	if code, b := do(t, admin, "POST", ts.URL+"/api/trips-empty", `{"confirm":"DELETE"}`, xh); code != 200 || !strings.Contains(b, `"deleted":1`) {
+		t.Fatalf("%d %s", code, b)
+	}
+	for id, want := range map[int64]bool{junk: false, real: true, noted: true} {
+		if _, err := srv.S.GetTrip(id); (err == nil) != want {
+			t.Fatalf("trip %d should exist=%v", id, want)
+		}
 	}
 }

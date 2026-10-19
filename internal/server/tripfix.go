@@ -55,3 +55,31 @@ func (s *Server) closeTrip(w http.ResponseWriter, r *http.Request) {
 	}
 	ok(w, map[string]any{"closed": id})
 }
+
+// emptyTrips counts (GET) or deletes (POST, with {"confirm":"DELETE"}) the finished trips that went nowhere: under
+// 0.2 km and never faster than 8 km/h, with no note and no journey. Admin only.
+func (s *Server) emptyTrips(w http.ResponseWriter, r *http.Request) {
+	ids, err := s.S.EmptyTrips()
+	if err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	if r.Method == http.MethodGet {
+		ok(w, map[string]any{"count": len(ids)})
+		return
+	}
+	var in struct {
+		Confirm string `json:"confirm"`
+	}
+	if decode(r, &in) != nil || in.Confirm != "DELETE" {
+		fail(w, 400, "confirm to delete")
+		return
+	}
+	for _, id := range ids {
+		if err := s.S.DeleteTripAndShares(id); err != nil {
+			fail(w, 500, "db error")
+			return
+		}
+	}
+	ok(w, map[string]any{"deleted": len(ids)})
+}
