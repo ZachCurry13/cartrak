@@ -6,10 +6,10 @@ mobile-first PWA. Runs as a TrueNAS custom app behind a Cloudflare tunnel.
 ## Rules (adapted from the family-projects working rules)
 - **Plan first.** Non-trivial or multi-file changes are agreed before editing; offer options with a recommendation.
 - **Releases only with the user's OK**, every time. "Build it" never implies a release.
-- Work on `feature/vX.Y` branches. Features bump minor (0.2.0), fixes bump patch.
+- Work on one short-lived `feature/vX.Y` branch at a time. Features bump minor (0.2.0), fixes bump patch. After a release, delete the branch locally and on origin: `main`, the tags and the GitHub Releases are the history.
 - **Release flow** (after OK, one command per call): `git checkout main` -> `git pull --ff-only` -> `git merge --ff-only feature/vX.Y` -> `git push origin main` -> `gh workflow run docker.yml --ref main -f version=X.Y.Z` -> `gh run watch <id printed by that command>` -> confirm the GitHub Release -> update HANDOFF.md. Push to main publishes `:main`; a release publishes `:X.Y.Z` and `:latest`.
 - Every release needs a `## X.Y.Z` section in CHANGELOG.md (it is embedded in the app and becomes the GitHub Release notes).
-- Every user-facing change ships with: a plain-English CHANGELOG entry (emoji headings), README/docs in sync, a new service-worker cache name in `internal/web/static/sw.js` (plus new files added to its list), and updated `docs/STATUS.md` and `HANDOFF.md` after a release.
+- Every user-facing change ships with: a plain-English CHANGELOG entry (emoji headings), README/docs in sync, new files added to the list in `internal/web/static/sw.js` (the cache name follows the version on its own), and updated `docs/STATUS.md` and `HANDOFF.md` after a release.
 - Keep files small (~200 lines); split by responsibility. Read only what a task needs.
 - Delegation: `explorer` for finding code, `worker` for low-risk edits. Architecture, tricky bugs, and anything touching drives are done directly.
 

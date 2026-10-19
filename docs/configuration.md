@@ -33,6 +33,19 @@ Restart the app after editing.
 | `CARTRAK_POLL_CHARGING_SEC` | while charging | `120` |
 | `CARTRAK_POLL_LIVE_SEC` | while driving in Road trip mode (minimum 30) | `30` |
 | `CARTRAK_POLL_PARKED_SEC` | while parked (minimum 60) | `600` |
+
+## Prices, alerts and estimates
+These are set in More, Settings (or as environment variables with the same names) and are all optional:
+
+| Setting | What it does |
+|---|---|
+| `CARTRAK_PRICE_HOME`, `CARTRAK_PRICE_PUBLIC`, `CARTRAK_CURRENCY` | Price per kWh at home and away and the currency symbol, for charging costs |
+| `CARTRAK_PRICE_OFFPEAK`, `CARTRAK_OFFPEAK_WINDOW` | A cheaper home price for certain hours (for example `22:00-06:00`); home sessions are priced by the share inside the window |
+| `CARTRAK_CHARGE_EFFICIENCY` | Share of wall energy reaching the battery on slow charging (default 90 percent) until your own sessions measure it |
+| `CARTRAK_MILEAGE_RATE` | Deduction per mile for the estimates in the Mileage log and Year in review |
+| `CARTRAK_LOW_BATTERY` | Battery level for the Low battery alert (10 to 30 percent, empty is off) |
+| `CARTRAK_CHARGE_BUDGET` | Monthly charging amount for the Charging budget alert |
+| `CARTRAK_BUMP_THRESHOLD` | Size of a jump on a parked car's motion sensors that counts as a bump (`off` to switch the watch off) |
 | `CARTRAK_ADDR` | listen address | `:8080` |
 | `CARTRAK_DATA` | data folder | `./data` (`/data` in Docker) |
 | `CARTRAK_CONFIG` | config folder | `./config` (`/config` in Docker) |
