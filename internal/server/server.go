@@ -150,6 +150,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/export/all.zip", s.auth(true, s.exportAll))
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
 	m.HandleFunc("GET /api/datacheck", s.auth(false, s.dataCheck))
+	m.HandleFunc("GET /api/debug-report", s.auth(true, s.debugReport))
 	m.HandleFunc("GET /api/battery-health", s.auth(false, s.batteryHealth))
 	m.HandleFunc("GET /api/report/year", s.auth(false, s.yearSummary))
 	m.HandleFunc("GET /api/charge-forecast", s.auth(false, s.chargeForecast))

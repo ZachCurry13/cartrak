@@ -133,3 +133,41 @@ func TestRulesUseTheTimeZoneWhereTheTripStarts(t *testing.T) {
 		t.Fatalf("reclassify changed the result: mn=%s ny=%s", mn2.Category, ny2.Category)
 	}
 }
+
+func TestACarLeftOnAtAFastChargerSplitsTheRoadTripIntoTwoTrips(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Date(2026, 10, 18, 9, 0, 0, 0, time.UTC)
+	speed := func(st *ford.State, kph float64) *ford.State { st.SpeedKph = &kph; return st }
+	charge := func(st *ford.State) *ford.State { kw := 120.0; st.ChargeKw, st.ChargeState = &kw, "CHARGING"; return speed(st, 0) }
+	steps := []*ford.State{
+		speed(reading(t0, "ON", 1000, 90), 100),
+		speed(reading(t0.Add(60*time.Minute), "ON", 1150, 40), 100),
+		charge(reading(t0.Add(70*time.Minute), "ON", 1150, 42)), // arrives, ignition still on, charging
+		charge(reading(t0.Add(100*time.Minute), "ON", 1150, 80)),
+		speed(reading(t0.Add(110*time.Minute), "ON", 1151, 80), 90), // leaves
+		speed(reading(t0.Add(170*time.Minute), "ON", 1300, 35), 100),
+		reading(t0.Add(180*time.Minute), "OFF", 1300, 35),
+	}
+	for _, st := range steps {
+		if err := d.Process(st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ts, _ := s.ListTrips(store.TripFilter{})
+	if len(ts) != 2 {
+		t.Fatalf("want two drives either side of the charge, got %d", len(ts))
+	}
+	for _, tr := range ts {
+		if tr.Open {
+			t.Fatalf("both should be finished: %+v", tr)
+		}
+		if tr.DistanceKm < 140 || tr.DistanceKm > 160 {
+			t.Fatalf("each leg is about 150 km: %+v", tr.DistanceKm)
+		}
+	}
+}

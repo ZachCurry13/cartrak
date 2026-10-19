@@ -52,3 +52,9 @@ CarTrak looks at the stretches when the car sat for at least three hours, not dr
 
 ## Fixing a bad trip
 Admins see **Fix this trip** on a trip's page. **Delete this trip** removes a duplicate or junk trip (and any public link made from it); odometer and battery history are not touched. **Close this trip** finishes a trip that never ended, which needs 30 minutes without readings. A trip that is still in progress cannot be changed this way. The Data check page lists the trips worth a look.
+
+## Debug report
+When something looks wrong (a trip that is too long, an "unlocked" alert you know is wrong, a charge that does not add up), open **More, Debug report** soon afterwards, choose how far back it happened and press **Make report**. Copy it or download it and send it. It lists every reading in that time (ignition, speed, plug, charge state, power, battery, odometer, lock), the raw lock and door fields the car sent each time the lock state changed, the trips and charging sessions CarTrak made from it, and the alerts it sent. It leaves out where the car was, sign-ins, keys and the VIN, but read it before sending. Admins only.
+
+## A road trip with the car left on
+A car that is taking charge and not moving counts as parked even if the ignition was left on, so a road trip with a fast-charge stop is recorded as one trip before it and one after. Combine them into one journey on the Trips page if you want them together. Trips recorded before this change are not split automatically; use **Fix this trip** on a trip page to delete a bad one.

@@ -15,8 +15,15 @@ type Detector struct {
 	TZFn func() *time.Location // optional: read the zone live (admin panel); wins over TZ
 }
 
-// Driving reports whether a reading looks like the car is in use.
-func Driving(st *ford.State) bool { return st.Driving() }
+// Driving reports whether a reading looks like the car is in use. A car that is taking charge and not moving is
+// parked, even if the ignition was left on: otherwise a road trip with the car left on at a fast charger becomes one
+// long "trip" whose energy use nets out the charge it took.
+func Driving(st *ford.State) bool {
+	if st.Charging() && !(st.SpeedKph != nil && *st.SpeedKph > 3) {
+		return false
+	}
+	return st.Driving()
+}
 
 func charging(st *ford.State) bool { return st.Charging() }
 
