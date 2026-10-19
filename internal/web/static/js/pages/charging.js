@@ -2,7 +2,7 @@ import { h, emptyState, chip, when, duration, pct, num, dist, isMetric } from '.
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
 import { chargeNow } from '../chargenow.js';
-import { curveBox, chargersCompared } from '../curve.js';
+import { curveBox, chargersCompared, recordsCard } from '../curve.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
@@ -59,7 +59,7 @@ export default async function charging(root, _a, session) {
   async function load() {
     const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
-    box.replaceChildren(...[summaryCard(sum), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
+    box.replaceChildren(...[summaryCard(sum), recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
   }
   await load();
   return { cleanup: now.stop };

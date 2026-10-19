@@ -117,7 +117,7 @@ func (s *Server) currentEvent() liveEvent {
 	return liveEvent{Sample: summarize(latest), Trip: trip, Status: s.P.Status(), DrivingToday: s.drivingToday(), CarTS: s.S.CarLastReport(), Charge: openCharge}
 }
 
-// drivingToday adds up the time spent on trips since midnight in the car's time zone.
+// drivingToday adds up the time spent on trips since midnight in the car's time zone, leaving out trips that went nowhere.
 func (s *Server) drivingToday() int64 {
 	now := time.Now()
 	y, m, d := now.In(s.defaultLoc()).Date()
@@ -128,6 +128,9 @@ func (s *Server) drivingToday() int64 {
 	}
 	var total int64
 	for _, t := range ts {
+		if !t.Open && t.DistanceKm < 0.2 && t.MaxSpeedKph < 8 {
+			continue // a trip that went nowhere (sitting in the car) is not driving
+		}
 		from, to := t.StartTS, now.Unix()
 		if t.EndTS != nil {
 			to = *t.EndTS

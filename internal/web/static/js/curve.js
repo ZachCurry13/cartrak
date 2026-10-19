@@ -1,31 +1,23 @@
 import { h, num } from './ui.js';
 import { api } from './api.js';
+import { lineChart } from './chart.js';
 
-const NS = 'http://www.w3.org/2000/svg';
-const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
-
-// Power against battery level for one session, drawn as a plain SVG line (no chart library).
+// Power against battery level for one session: touch and drag along it to read the power at any level.
 function draw(c) {
-  const pts = c.points.filter((p) => p.kw > 0.2);
+  const pts = c.points.filter((p) => p.kw > 0.2).map((p) => ({ x: p.soc, y: p.kw })).sort((a, b) => a.x - b.x);
   if (pts.length < 2) return h('p', { class: 'muted' }, 'Not enough power readings for a curve in this session.');
-  const w = 300, ht = 130, l = 28, b = 18, t = 6, r = 6;
-  const top = Math.max(10, Math.ceil(c.peakKw / 10) * 10);
-  const x = (soc) => l + (soc / 100) * (w - l - r);
-  const y = (kw) => ht - b - (kw / top) * (ht - b - t);
-  const svg = mk('svg', { viewBox: `0 0 ${w} ${ht}`, class: 'curve', role: 'img', 'aria-label': 'Charging power against battery level' });
-  for (const kw of [0, top / 2, top]) {
-    svg.append(mk('line', { x1: l, x2: w - r, y1: y(kw), y2: y(kw), stroke: 'currentColor', 'stroke-opacity': '.15' }));
-    const tx = mk('text', { x: l - 4, y: y(kw) + 3, 'text-anchor': 'end', 'font-size': '9', fill: 'currentColor' });
-    tx.textContent = Math.round(kw);
-    svg.append(tx);
-  }
-  for (const soc of [0, 25, 50, 75, 100]) {
-    const tx = mk('text', { x: x(soc), y: ht - 4, 'text-anchor': 'middle', 'font-size': '9', fill: 'currentColor' });
-    tx.textContent = `${soc}%`;
-    svg.append(tx);
-  }
-  svg.append(mk('polyline', { points: pts.map((p) => `${x(p.soc).toFixed(1)},${y(p.kw).toFixed(1)}`).join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': '2.5', 'stroke-linejoin': 'round' }));
-  return svg;
+  const lo = Math.floor(pts[0].x / 20) * 20;
+  const ticks = [];
+  for (let t = lo; t <= 100; t += 20) if (t >= pts[0].x - 20 && t <= pts[pts.length - 1].x + 20) ticks.push(t);
+  return lineChart({
+    points: pts,
+    xFmt: (x) => `${Math.round(x)}%`,
+    yFmt: (v, axis) => (axis || v >= 100 ? `${Math.round(v)}` : `${v.toFixed(1)}`) + (axis ? '' : ' kW'),
+    xTicks: ticks.length >= 2 ? ticks : undefined,
+    xTitle: 'Battery level',
+    yTitle: 'Power (kW)',
+    summary: `Peak ${Math.round(c.peakKw)} kW${c.at80Kw != null ? ` · ${Math.round(c.at80Kw)} kW at 80%` : ''}`,
+  });
 }
 
 // "Charging curve" under a session: opens to the chart and the numbers worth comparing between chargers.
@@ -65,4 +57,26 @@ export function chargersCompared(sessions) {
     h('p', { class: 'muted' }, 'Sessions that reached 40 kW or more. Name a place under More, Places to see it here by name.'),
     ...rows.map(([name, g]) => h('div', { class: 'row' }, h('span', { class: 'grow' }, name, h('span', { class: 'muted' }, ` · ${g.n} session${g.n === 1 ? '' : 's'}`)),
       h('span', {}, h('b', {}, num(g.kw / g.n, 0, ' kW')), h('div', { class: 'muted' }, `avg · peak ${num(g.peak / g.n, 0)}`)))));
+}
+
+// Fastest and average charging speed for slow (Level 2) and fast (Level 3) charging, from the finished sessions.
+// A session that peaked at 30 kW or more counts as fast; Level 2 tops out around 19 kW.
+export function recordsCard(sessions) {
+  const classes = { l2: { name: 'Level 2 (home or public, slow)', n: 0, best: null, sum: 0, k: 0 }, l3: { name: 'Level 3 (fast chargers)', n: 0, best: null, sum: 0, k: 0 } };
+  for (const c of sessions) {
+    if (c.open || !c.endTs || !(c.peakKw > 0.5)) continue;
+    const g = c.peakKw >= 30 ? classes.l3 : classes.l2;
+    g.n++;
+    if (!g.best || c.peakKw > g.best.peakKw) g.best = c;
+    const hours = (c.endTs - c.startTs) / 3600;
+    if (c.addedKwh != null && hours >= 10 / 60) { g.sum += c.addedKwh / hours; g.k++; }
+  }
+  const rows = Object.values(classes).filter((g) => g.n > 0);
+  if (!rows.length) return null;
+  const day = (ts) => new Date(ts * 1000).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return h('section', { class: 'card' }, h('h2', {}, 'Charging speed'),
+    ...rows.map((g) => h('div', { class: 'row' },
+      h('div', { class: 'grow' }, h('b', {}, g.name), h('div', { class: 'muted' }, `${g.n} session${g.n === 1 ? '' : 's'} · fastest ${day(g.best.startTs)}${g.best.place ? ` at ${g.best.place}` : ''}`)),
+      h('div', { style: 'text-align:right' }, h('b', {}, num(g.best.peakKw, g.best.peakKw >= 100 ? 0 : 1, ' kW')), h('div', { class: 'muted' }, g.k ? `avg ${num(g.sum / g.k, g.sum / g.k >= 100 ? 0 : 1, ' kW')}` : 'avg —')))),
+    h('p', { class: 'muted' }, 'Fastest is the highest power seen. Average is the energy added over the time plugged in, so it includes the slow start and the taper.'));
 }

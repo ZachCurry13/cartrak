@@ -1,16 +1,13 @@
 import { h, stat, dist, num, when } from '../ui.js';
 import { api } from '../api.js';
 import { effSpan } from '../energy.js';
+import { tapBars } from '../chart.js';
 
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short' }); };
 
 // Bars for kilometres per month, scaled to the busiest one.
 function bars(months) {
-  const top = Math.max(...months.map((m) => m.km), 1);
-  return h('div', { class: 'ybars', role: 'img', 'aria-label': 'Distance driven each month' },
-    ...months.map((m) => h('div', { class: 'ybar' },
-      h('div', { class: 'yfill', style: `height:${Math.max(2, Math.round((m.km / top) * 100))}%`, title: `${monthName(m.month)}: ${dist(m.km, 0)}` }),
-      h('span', { class: 'muted' }, monthName(m.month)))));
+  return tapBars(months.map((m) => ({ label: monthName(m.month), value: m.km, text: `${dist(m.km, 0)} in ${m.trips} trip${m.trips === 1 ? '' : 's'}` })), { summary: 'Distance driven each month' });
 }
 
 // A plain-text version to paste into a message or a note.

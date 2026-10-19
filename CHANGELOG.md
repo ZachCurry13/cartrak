@@ -2,6 +2,15 @@
 
 ## 0.26.0
 
+### 👆 Charts you can actually use on a phone
+- Every chart now answers questions. **Touch and drag along a line** (the charging curve and the Health trends) and a readout shows the exact value at that spot, such as "48% · 105 kW" or "Oct 18 · 12.34 V". Labels are bigger, the axes say what they show (battery level, power in kW) and the highest point is marked. **Tap a bar** (Year in review months, battery size by month) and it tells you its value in words, such as "Oct: 700 mi in 40 trips".
+
+### ⚡ Charging speed records
+- **Charging** has a **Charging speed** card: your fastest charging power and your average charging speed for **Level 2** (slow, home or public) and **Level 3** (fast chargers, 30 kW or more at the peak), with the date and the named place of the fastest one. Average is the energy added over the time plugged in.
+
+### 🕒 Driving today is more honest
+- **Live, Driving today** no longer counts trips that went nowhere (sitting in the car with the ignition on), which made it read far too high.
+
 ### 🧹 Clear out empty trips
 - **More, Data check** has an **Empty trips** card (admins) when there are finished trips that went nowhere (under 0.2 km, never over 8 km/h, no note, not in a journey), which older versions recorded when you sat in the car with the ignition on. One tap deletes them all, after a confirmation. For a whole day with several problems, **Fix a day** rebuilds it from the readings.
 

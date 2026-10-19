@@ -3,7 +3,7 @@ package store
 // SpanTrips returns the trips that ended after `from` (or are still going), oldest first, with only what is needed
 // to say where and when the car moved. It has no row limit.
 func (s *Store) SpanTrips(from int64) ([]*Trip, error) {
-	rows, err := s.DB.Query(`SELECT id,start_ts,end_ts,end_lat,end_lon,open FROM trips WHERE end_ts>=? OR open=1 ORDER BY start_ts`, from)
+	rows, err := s.DB.Query(`SELECT id,start_ts,end_ts,end_lat,end_lon,open,distance_km,max_speed_kph FROM trips WHERE end_ts>=? OR open=1 ORDER BY start_ts`, from)
 	if err != nil {
 		return nil, err
 	}
@@ -11,7 +11,7 @@ func (s *Store) SpanTrips(from int64) ([]*Trip, error) {
 	var out []*Trip
 	for rows.Next() {
 		var t Trip
-		if err := rows.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.EndLat, &t.EndLon, &t.Open); err != nil {
+		if err := rows.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.EndLat, &t.EndLon, &t.Open, &t.DistanceKm, &t.MaxSpeedKph); err != nil {
 			return nil, err
 		}
 		if t.Open {
