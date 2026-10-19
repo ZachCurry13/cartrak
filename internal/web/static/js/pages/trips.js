@@ -72,7 +72,7 @@ export default async function trips(root, _a, session) {
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
   const selectRow = h('p');
   const review = h('div');
-  root.append(h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

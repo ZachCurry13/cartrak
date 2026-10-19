@@ -59,7 +59,8 @@ type Facts struct {
 	HardBrakes  int      `json:"hardBrakes"`  // big drops in speed between two readings
 	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
 	Wind        *Wind    `json:"wind"`
-	RegenKm     *float64 `json:"regenKm"` // range the car says braking gave back during the trip (its own counter)
+	RegenKm     *float64 `json:"regenKm"`  // range the car says braking gave back during the trip (its own counter)
+	RegenKwh    *float64 `json:"regenKwh"` // the energy that range is worth, at this trip's own use per kilometre
 }
 
 // Tag is one short reason shown next to a trip. Bad means it cost energy.
@@ -174,6 +175,10 @@ func BuildWithWind(rs []Reading, tripKwh float64, base Baseline, tempGroup strin
 	}
 	r.Facts.Stops = stops
 	r.Facts.IdleKwh, r.Facts.HardBrakes, r.Facts.QuickStarts = idleKwh, hardBrakes, quickStarts
+	if regenKm != nil && km > 0 && tripKwh > 0 {
+		k := *regenKm * tripKwh / km // the range braking gave back, at what this trip used per kilometre
+		r.Facts.RegenKwh = &k
+	}
 	defer func() { r.Tags = tagsFor(r, km, tripKwh) }()
 	if tempN > 0 {
 		t := tempSum / float64(tempN)

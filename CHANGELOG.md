@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.29.0
+
+### 📜 History and statistics
+- **History** (Trips, History feed): a month of driving, charging and parked time as one feed, newest first. Tabs for Charging, Driving, Parked or All; each row shows the time range, how long, the battery change on a thin bar, the place, and the cost or distance. Month totals sit on top and arrows move between months.
+- **Statistics** (Charging, Statistics): bars by Day, Month or Year for distance, cost, kWh or driving time, with tap-to-read. Below it, **Where you charge** splits charging into Home, Work and Public as a ring and three tiles. A place named Work or Office (More, Places) counts as work.
+- The segmented tabs are now rounded pills.
+
+### ♻️ Regenerative braking on each trip
+- **Why this efficiency?** shows **Range from regen** and **Energy from regen** as tiles. The energy is the range the car says braking gave back, valued at what that trip used per mile.
+
+### 🧭 Easier to find
+- **Plan a trip · 70 vs 75** buttons on the Trips and Charging pages open the planner, and searching for "70 vs 75" finds it.
 ## 0.28.0
 
 ### ⚡ 70 or 75 on a long drive, answered with your own charging

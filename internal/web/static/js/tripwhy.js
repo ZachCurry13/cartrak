@@ -1,4 +1,4 @@
-import { h, speed, temp, dist, isMetric } from './ui.js';
+import { h, speed, temp, dist, isMetric, stat, num } from './ui.js';
 import { api } from './api.js';
 
 const sign = (p) => `${p > 0 ? '+' : '−'}${Math.abs(Math.round(p))}%`;
@@ -40,11 +40,12 @@ export async function whyCard(id) {
   const f = d.facts;
   return h('section', { class: 'card' }, h('h2', {}, 'Why this efficiency?'),
     h('p', {}, h('b', {}, head)),
+    f.regenKm != null && f.regenKm > 0 ? h('div', { class: 'grid' }, stat('Range from regen', dist(f.regenKm, 1)), stat('Energy from regen', f.regenKwh != null ? `≈ ${num(f.regenKwh, 1, ' kWh')}` : '—')) : null,
     d.tags && d.tags.length ? h('p', { class: 'tags' }, ...tagChips(d.tags)) : null,
     ...(d.factors.length ? d.factors.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, say(x, f)), h('b', { class: x.pct > 0 ? 'bad' : '', style: 'white-space:nowrap' }, sign(x.pct))))
       : [h('p', { class: 'muted' }, 'Nothing stands out: speed and weather were typical for you.')]),
     f.wind == null ? h('p', { class: 'muted' }, 'Wind is not included. You can switch on the optional wind lookup in More, Settings.') : (!d.factors.some((x) => x.key === 'wind') && (f.wind.crossKph >= 15 || f.wind.gustKph >= 40) ? h('p', { class: 'muted' }, `Wind: ${speed(Math.abs(f.wind.headKph))} ${f.wind.headKph >= 0 ? 'head' : 'tail'}wind on average, ${speed(f.wind.crossKph)} of crosswind, gusts to ${speed(f.wind.gustKph)}. It made little difference to the energy used.`) : null),
-    h('p', { class: 'muted' }, [f.regenKm != null ? `braking gave back ${dist(f.regenKm, 1)} of range` : null, f.stops ? `${f.stops} stop${f.stops === 1 ? '' : 's'}${f.stoppedPct >= 1 ? `, ${Math.round(f.stoppedPct)}% of the time stopped` : ''}` : null, `top speed ${speed(f.maxKph)}`].filter(Boolean).join(' · ') + '. Percentages are against your own driving over the last few months.'));
+    h('p', { class: 'muted' }, [f.stops ? `${f.stops} stop${f.stops === 1 ? '' : 's'}${f.stoppedPct >= 1 ? `, ${Math.round(f.stoppedPct)}% of the time stopped` : ''}` : null, `top speed ${speed(f.maxKph)}`].filter(Boolean).join(' · ') + '. Percentages are against your own driving over the last few months.'));
 }
 
 // Short reason chips for a trip ("Cold weather", "Hard braking", …): red for what cost energy, green for what helped.

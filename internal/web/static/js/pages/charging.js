@@ -55,7 +55,7 @@ export default async function charging(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
   const now = chargeNow();
-  root.append(h('h2', {}, 'Charging'), h('p', {}, h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics by day, month, year'), ' ', h('a', { class: 'btn sec', href: '#/history' }, 'History feed')), now.el, forecastCard(), box);
+  root.append(h('h2', {}, 'Charging'), h('p', {}, h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics by day, month, year'), ' ', h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), now.el, forecastCard(), box);
   async function load() {
     const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
