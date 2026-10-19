@@ -24,7 +24,9 @@ func TestHistoryAndStatsAnswerForThisMonth(t *testing.T) {
 	}
 	for _, p := range []string{"day", "month", "year"} {
 		code, b = do(t, admin, "GET", ts.URL+"/api/stats?period="+p, "", nil)
-		var s struct{ Stats struct{ Buckets []map[string]any } }
+		var s struct {
+			Stats struct{ Buckets []map[string]any }
+		}
 		if code != 200 || json.Unmarshal([]byte(b), &s) != nil || len(s.Stats.Buckets) == 0 {
 			t.Fatalf("stats %s %d %s", p, code, b)
 		}
