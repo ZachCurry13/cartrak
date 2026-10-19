@@ -37,6 +37,11 @@ export function tempBandLabel(name) {
   if (m) return `${f(+m[1])} °F and above`;
   return name;
 }
+// Short distances (the size of a place) in this device's units: metres, or feet.
+export const shortDist = (m) => (metric ? `${Math.round(m)} m` : `${Math.round((m * 3.28084) / 10) * 10} ft`);
+export const smallUnit = () => (metric ? 'metres' : 'feet');
+export const fromMeters = (m) => (metric ? Math.round(m) : Math.round(m * 3.28084));
+export const toMeters = (v) => (metric ? v : v / 3.28084);
 export const pressure = (kpa) => n(kpa) ? dash : metric ? `${Math.round(kpa)} kPa` : `${(kpa * 0.145038).toFixed(0)} psi`;
 export const pct = (v) => n(v) ? dash : `${Math.round(v)}%`;
 export const num = (v, d = 1, u = '') => n(v) ? dash : `${(+v).toFixed(d)}${u}`;

@@ -1,13 +1,16 @@
-// Bump CACHE whenever any file in SHELL changes.
-const CACHE = 'cartrak-v0.26.0-6';
+// The server fills in __V__ with the running version, so every version has its own cache and its own file addresses
+// (/v0.26.0/js/app.js). Nothing needs bumping by hand.
+const V = '__V__';
+const CACHE = 'cartrak-' + V;
 const SHELL = ['/', '/css/app.css', '/css/menu.css', '/css/responsive.css', '/css/look.css', '/manifest.webmanifest', '/icons/icon.svg',
   '/js/app.js', '/js/api.js', '/js/ui.js',
   '/js/pages/login.js', '/js/pages/start.js', '/js/pages/admin.js', '/js/pages/connect.js', '/js/offline.js', '/js/pages/remote.js', '/js/pages/ford.js', '/js/pages/display.js', '/js/pages/people.js', '/js/pages/about.js', '/js/pages/status.js', '/js/healthstrip.js', '/js/cards.js', '/js/pages/live.js', '/js/datarows.js', '/js/timeline.js',
   '/js/rangeband.js', '/js/ring.js', '/js/connectorcard.js', '/js/mileagecheck.js', '/js/energy.js', '/js/chargeforecast.js', '/js/charge.js', '/js/chargecard.js', '/js/pages/notifications.js', '/js/push.js', '/js/pages/mileage.js', '/js/pages/security.js', '/js/pages/plan.js', '/js/pages/maintenance.js', '/js/pages/places.js', '/js/pages/insights.js', '/js/pages/timeuse.js', '/js/pages/parkedwatch.js', '/js/pages/guide.js', '/js/maplinks.js', '/js/restorecard.js', '/js/storagecard.js', '/js/pages/review.js', '/js/placecard.js', '/js/pages/journey.js', '/js/tripselect.js', '/js/sharecard.js', '/js/tripplan.js', '/js/pages/backup.js', '/js/map.js', '/js/pages/vehiclehealth.js', '/js/healthrows.js', '/js/spark.js', '/js/pages/phone.js', '/js/phonehelp.js', '/js/gpslog.js', '/js/gpscard.js', '/js/mode.js', '/js/diag.js', '/js/pages/changelog.js', '/js/notice.js', '/js/aboutcard.js', '/js/pages/dashboard.js', '/js/pages/trips.js', '/js/pages/tripdetail.js', '/js/pages/compare.js', '/js/pages/datacheck.js', '/js/pages/year.js', '/js/pages/debug.js', '/js/livepower.js', '/js/chargenow.js', '/js/chargestate.js', '/js/vacation.js', '/js/searchindex.js', '/js/curve.js', '/js/chart.js', '/js/speedcard.js', '/js/tirecard.js', '/js/tripwhy.js', '/js/pages/repair.js', '/js/tripfix.js', '/js/batterycard.js',
-  '/js/pages/charging.js', '/js/pages/data.js', '/js/pages/settings.js', '/js/pages/rules.js'];
+  '/js/pages/charging.js', '/js/pages/data.js', '/js/pages/settings.js', '/js/pages/rules.js'].map((p) => (p.startsWith('/js/') || p.startsWith('/css/') ? `/v${V}${p}` : p));
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips any copy kept by the browser or a CDN in front of the server, so a new version really downloads.
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));

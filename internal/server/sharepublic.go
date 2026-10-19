@@ -49,7 +49,7 @@ func (s *Server) sharePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = w.Write(page)
+	_, _ = w.Write(s.versionAssets(page))
 }
 
 func (s *Server) shareJSON(w http.ResponseWriter, r *http.Request) {

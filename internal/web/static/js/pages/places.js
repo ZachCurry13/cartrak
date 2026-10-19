@@ -1,4 +1,4 @@
-import { h, emptyState } from '../ui.js';
+import { h, emptyState, shortDist } from '../ui.js';
 import { api } from '../api.js';
 
 // Places you have named, such as Home or the office. Trips show the names, and you can get an alert on
@@ -12,14 +12,14 @@ export default async function places(root, _a, session) {
   async function load() {
     const ps = await api('/api/named-places');
     const name = h('input', { id: 'pn', placeholder: 'For example Home', maxlength: 40 });
-    const size = h('select', { id: 'pr' }, ...[[100, 'Small (100 m)'], [150, 'Normal (150 m)'], [300, 'Large (300 m)'], [600, 'Very large (600 m)']].map(([v, t]) => h('option', { value: v, selected: v === 150 }, t)));
+    const size = h('select', { id: 'pr' }, ...[[100, 'Small'], [150, 'Normal'], [300, 'Large'], [600, 'Very large']].map(([m, n]) => [m, `${n} (${shortDist(m)})`]).map(([v, t]) => h('option', { value: v, selected: v === 150 }, t)));
     const msg = h('p', { class: 'muted', role: 'status' });
     async function here() {
       try { await api('/api/named-places', { method: 'POST', body: { name: name.value, radiusM: Number(size.value), here: true } }); load(); } catch (e) { msg.textContent = e.message; }
     }
     box.replaceChildren(...[
       h('section', { class: 'card' }, h('h2', {}, 'Your places'),
-        ...(ps.length ? ps.map((p) => h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, p.name), h('div', { class: 'muted' }, `within about ${p.radiusM} m`)),
+        ...(ps.length ? ps.map((p) => h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, p.name), h('div', { class: 'muted' }, `within about ${shortDist(p.radiusM)}`)),
           admin ? h('button', { class: 'sec', onclick: async () => { if (confirm(`Remove ${p.name}?`)) { await api(`/api/named-places/${p.id}`, { method: 'DELETE' }); load(); } } }, 'Remove') : null))
           : [emptyState('No places yet', 'Drive to Home or the office and use the form below while the car is there.')])),
       admin ? h('section', { class: 'card' }, h('h2', {}, 'Add where the car is now'),

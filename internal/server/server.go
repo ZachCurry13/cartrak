@@ -196,7 +196,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/poll", s.auth(true, func(w http.ResponseWriter, r *http.Request) { s.P.Now(); ok(w, "queued") }))
 
 	static, _ := fs.Sub(web.Files, "static")
-	m.Handle("/", noCacheHTML(http.FileServer(http.FS(static))))
+	m.Handle("/", s.staticHandler(static))
 	return secHeaders(gzipHandler(m))
 }
 
@@ -207,14 +207,6 @@ func secHeaders(next http.Handler) http.Handler {
 		h.Set("X-Frame-Options", "DENY")
 		h.Set("Referrer-Policy", "same-origin")
 		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'")
-		next.ServeHTTP(w, r)
-	})
-}
-
-// noCacheHTML keeps pages and the service worker fresh; assets are versioned by sw.js.
-func noCacheHTML(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
 		next.ServeHTTP(w, r)
 	})
 }

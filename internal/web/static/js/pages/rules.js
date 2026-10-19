@@ -1,4 +1,4 @@
-import { h, chip } from '../ui.js';
+import { h, chip, fromMeters, toMeters, smallUnit } from '../ui.js';
 import { api } from '../api.js';
 import { vacationCard } from '../vacation.js';
 
@@ -38,7 +38,7 @@ export default async function rules(root, _a, session) {
     const days = DAYS.map((d, i) => { const c = h('input', { type: 'checkbox' }); c.checked = !!(v.days & (1 << i)); return [c, h('label', {}, c, d)]; });
     const lat = h('input', { type: 'number', step: 'any', value: v.geoLat ?? '', placeholder: 'Latitude' });
     const lon = h('input', { type: 'number', step: 'any', value: v.geoLon ?? '', placeholder: 'Longitude' });
-    const rad = h('input', { type: 'number', value: v.geoRadius ?? '', placeholder: 'Radius (metres)' });
+    const rad = h('input', { type: 'number', value: v.geoRadius != null ? fromMeters(v.geoRadius) : '', placeholder: `Radius (${smallUnit()})` });
     const msg = h('p', { class: 'muted', role: 'alert' });
     // Fill the place from one you named under More, Places, instead of typing coordinates.
     const named = [];
@@ -46,7 +46,7 @@ export default async function rules(root, _a, session) {
     api('/api/named-places').then((ps) => { named.push(...ps); for (const x of ps) pick.append(h('option', { value: String(x.id) }, x.name)); }).catch(() => { /* none */ });
     pick.addEventListener('change', () => {
       const x = named.find((n) => String(n.id) === pick.value);
-      if (x) { lat.value = x.lat; lon.value = x.lon; rad.value = x.radiusM; }
+      if (x) { lat.value = x.lat; lon.value = x.lon; rad.value = fromMeters(x.radiusM); }
     });
     box.replaceChildren(h('section', { class: 'card' }, h('h2', {}, r ? 'Edit rule' : 'New rule'),
       h('label', {}, 'Name'), name, h('label', {}, 'Label trips as'), cat,
@@ -60,7 +60,7 @@ export default async function rules(root, _a, session) {
           const num = (el) => el.value === '' ? null : Number(el.value);
           const body = { name: name.value, category: cat.value, priority: Number(pri.value) || 0, enabled: on.checked,
             days: days.reduce((a, [c], i) => a | (c.checked ? 1 << i : 0), 0), startMin: fromTime(st.value),
-            endMin: en.value === '23:59' ? 1440 : fromTime(en.value), geoLat: num(lat), geoLon: num(lon), geoRadius: num(rad) };
+            endMin: en.value === '23:59' ? 1440 : fromTime(en.value), geoLat: num(lat), geoLon: num(lon), geoRadius: num(rad) == null ? null : toMeters(num(rad)) };
           await api(r ? `/api/rules/${r.id}` : '/api/rules', { method: r ? 'PUT' : 'POST', body });
           draw();
         } catch (e) { msg.textContent = e.message; }
