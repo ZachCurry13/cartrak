@@ -6,8 +6,8 @@ const SECTIONS = [
   ['Prices', 'What a kWh costs you. These work out the cost of every charging session that has no receipt entered.',
     ['CARTRAK_PRICE_HOME', 'CARTRAK_PRICE_PUBLIC', 'CARTRAK_CURRENCY', 'CARTRAK_PRICE_OFFPEAK', 'CARTRAK_OFFPEAK_WINDOW']],
   ['Accuracy', 'How much of the energy from a home charger reaches the battery.', ['CARTRAK_CHARGE_EFFICIENCY']],
-  ['Compared with a petrol car', 'The petrol car you would otherwise drive. With these, CarTrak shows what you save and the CO2 you avoid. Leave them empty to turn the comparison off.',
-    ['CARTRAK_FUEL_UNITS', 'CARTRAK_PETROL_PRICE', 'CARTRAK_PETROL_ECONOMY', 'CARTRAK_GRID_CO2']],
+  ['Compared with a gas car', 'The gas car you would otherwise drive. With these, CarTrak shows what you save and the CO2 you avoid. Leave them empty to turn the comparison off.',
+    ['CARTRAK_FUEL_UNITS', 'CARTRAK_GAS_PRICE', 'CARTRAK_GAS_ECONOMY', 'CARTRAK_GRID_CO2']],
   ['Alerts about charging', 'Each person still chooses which alerts reach their own device under More, Notifications.',
     ['CARTRAK_PLUG_REMINDER_TIME', 'CARTRAK_PLUG_REMINDER_BELOW', 'CARTRAK_LOW_BATTERY', 'CARTRAK_CHARGE_BUDGET']],
 ];

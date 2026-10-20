@@ -4,7 +4,10 @@
 
 ### 💰 Cost per mile, savings and CO2
 - **Home → This month** and the **Charging** page now show what charging cost **per mile (or km)**, for the month and the year so far. Each trip page shows an estimated energy cost at your recent average price.
-- In **Charging settings → Compared with a petrol car**, give the petrol price and your petrol car's economy (US gallons and mpg, or litres and L per 100 km) to see **what you saved** against it and the **CO2 avoided**. Nothing is compared until you set both.
+- In **Charging settings → Compared with a gas car**, give the gas price and your gas car's economy (US gallons and mpg, or litres and L per 100 km) to see **what you saved** against it and the **CO2 avoided**. Nothing is compared until you set both.
+
+### 🛠️ Fix a day leaves what did not change alone
+- A rebuild now compares each trip and charging session with what it would record and only replaces the ones that come out different. The ones that are already right keep their identity, public links, notes and labels, and the preview says how many were left alone. If nothing differs, it says so and there is nothing to confirm.
 
 ### 🗓️ Plan ahead
 - Once there are two weeks of driving, Home shows the **next seven days**: the distance you usually drive on each weekday, the energy it takes, and when the battery would fall below your low-battery level without charging ("plug in by Sunday").

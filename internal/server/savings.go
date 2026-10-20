@@ -9,11 +9,11 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
-// savingsFor is the charging cost, cost per distance and saving against the petrol car for sessions that started in [from, to).
+// savingsFor is the charging cost, cost per distance and saving against the gas car for sessions that started in [from, to).
 func (s *Server) savingsFor(from, to time.Time) savings.Result {
 	in := savings.Input{GridKgPerKwh: 0.37}
 	if s.Cfg != nil {
-		p := s.Cfg.Petrol()
+		p := s.Cfg.Gas()
 		in.LitresPerKm, in.PricePerLitre, in.GridKgPerKwh = p.LitresPerKm, p.PricePerLitre, s.Cfg.GridCO2()
 	}
 	if ss, _, err := s.chargeSessionsEff(1000); err == nil {
@@ -40,15 +40,15 @@ func (s *Server) savingsFor(from, to time.Time) savings.Result {
 }
 
 // savingsView is the month and the year so far: what charging cost per distance, and what driving electric saved against the
-// petrol car set in the charging settings.
+// gas car set in the charging settings.
 func (s *Server) savingsView(w http.ResponseWriter, r *http.Request) {
 	loc, now := s.defaultLoc(), time.Now()
 	local := now.In(loc)
 	monthStart := time.Date(local.Year(), local.Month(), 1, 0, 0, 0, 0, loc)
 	yearStart := time.Date(local.Year(), 1, 1, 0, 0, 0, 0, loc)
 	end := now.Add(time.Hour)
-	petrolSet := s.Cfg != nil && s.Cfg.Petrol().Set()
-	out := map[string]any{"currency": s.currency(), "petrolSet": petrolSet, "month": s.savingsFor(monthStart, end), "year": s.savingsFor(yearStart, end)}
+	gasSet := s.Cfg != nil && s.Cfg.Gas().Set()
+	out := map[string]any{"currency": s.currency(), "gasSet": gasSet, "month": s.savingsFor(monthStart, end), "year": s.savingsFor(yearStart, end)}
 	ok(w, out)
 }
 

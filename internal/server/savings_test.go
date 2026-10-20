@@ -11,7 +11,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
-func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAPetrolCar(t *testing.T) {
+func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAGasCar(t *testing.T) {
 	ts, srv := healthServer(t, fakeProv{}, false, false)
 	admin := adminClient(t, ts.URL)
 	loc := srv.defaultLoc()
@@ -21,8 +21,8 @@ func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAPetrolCar(t *test
 		t.Skip("the first hours of a month leave no room for this month's sessions")
 	}
 	srv.Cfg.Set(settings.PriceHomeKey, "0.15")
-	srv.Cfg.Set(settings.PetrolPriceKey, "3.50")
-	srv.Cfg.Set(settings.PetrolEconomyKey, "25")
+	srv.Cfg.Set(settings.GasPriceKey, "3.50")
+	srv.Cfg.Set(settings.GasEconomyKey, "25")
 	for i, odo := range []float64{1000, 1100} {
 		if _, err := srv.S.SaveState("t", &ford.State{TS: monthStart.Add(time.Duration(i+1) * time.Hour), OdometerKm: &odo, Raw: []byte(`{}`)}); err != nil {
 			t.Fatal(err)
@@ -42,8 +42,8 @@ func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAPetrolCar(t *test
 	}
 	code, body := do(t, admin, "GET", ts.URL+"/api/savings", "", nil)
 	var v struct {
-		PetrolSet bool `json:"petrolSet"`
-		Month     struct {
+		GasSet bool `json:"gasSet"`
+		Month  struct {
 			Km        float64  `json:"km"`
 			CostPerKm *float64 `json:"costPerKm"`
 			Saved     *float64 `json:"saved"`
@@ -54,7 +54,7 @@ func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAPetrolCar(t *test
 		t.Fatalf("%d %s", code, body)
 	}
 	// 2 sessions of 20 kWh into the battery at 90% = 22.2 kWh each from the wall at 0.15 = 3.33 each, 6.67 in all, over 100 km
-	if !v.PetrolSet || math.Abs(v.Month.Km-100) > 0.01 || v.Month.CostPerKm == nil || math.Abs(*v.Month.CostPerKm-0.0667) > 0.001 {
+	if !v.GasSet || math.Abs(v.Month.Km-100) > 0.01 || v.Month.CostPerKm == nil || math.Abs(*v.Month.CostPerKm-0.0667) > 0.001 {
 		t.Fatalf("cost per km: %s", body)
 	}
 	// 100 km at 25 mpg is 2.486 gallons, 8.70 at 3.50; saved = 8.70 - 6.67
@@ -63,17 +63,17 @@ func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAPetrolCar(t *test
 	}
 }
 
-func TestSavingsViewDoesNotCompareWithoutAPetrolCar(t *testing.T) {
+func TestSavingsViewDoesNotCompareWithoutAGasCar(t *testing.T) {
 	ts, _ := healthServer(t, fakeProv{}, false, false)
 	admin := adminClient(t, ts.URL)
 	_, body := do(t, admin, "GET", ts.URL+"/api/savings", "", nil)
 	var v struct {
-		PetrolSet bool `json:"petrolSet"`
-		Year      struct {
+		GasSet bool `json:"gasSet"`
+		Year   struct {
 			Saved *float64 `json:"saved"`
 		} `json:"year"`
 	}
-	if err := json.Unmarshal([]byte(body), &v); err != nil || v.PetrolSet || v.Year.Saved != nil {
+	if err := json.Unmarshal([]byte(body), &v); err != nil || v.GasSet || v.Year.Saved != nil {
 		t.Fatalf("nothing to compare with: %s", body)
 	}
 }

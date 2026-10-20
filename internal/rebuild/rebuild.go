@@ -30,6 +30,10 @@ type Plan struct {
 	NewTrips   []*store.Trip   `json:"newTrips"`
 	NewCharges []*store.Charge `json:"newCharges"`
 	Blockers   []string        `json:"blockers"`
+	// UnchangedTrips and UnchangedCharges are the ones the replay recorded exactly as they are stored. They are left alone and
+	// are in neither list above.
+	UnchangedTrips   int `json:"unchangedTrips"`
+	UnchangedCharges int `json:"unchangedCharges"`
 }
 
 func end(t *store.Trip) int64 {
@@ -117,6 +121,7 @@ func Compute(s *store.Store, d *trips.Detector, from, to int64, now time.Time) (
 		return nil, err
 	}
 	p.NewTrips, p.NewCharges = nt, nc
+	p.dropUnchanged()
 	return p, nil
 }
 

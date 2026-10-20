@@ -1,10 +1,10 @@
-#uundefineddundefundefinednedfinedndefinedRundefineduundefineddefundefinednedndefineddundefinedtundefinedipundefined,undefinedundefinedundefinedundefinedundefinedundefinedinundefinedundefinedundefinednd undefinedfficiencundefined
+# Road trips, charging and efficiency
 
-## Eneundefinedundefinedy undefinedeft
-The undefinedundefinedLiveundefinedundefined page haundefined an **Eneundefinedgy undefinedeft** tile in kWh (and abundefinedut how much the battery holdundefined when full), and Home shows the same in the Battery card. It is the car's own reading, so it changes only when Ford sends a new one, not every second.
+## Energy left
+The **Live** page has an **Energy left** tile in kWh (and about how much the battery holds when full), and Home shows the same in the Battery card. It is the car's own reading, so it changes only when Ford sends a new one, not every second.
 
-## undefinediles until your reserve
-If you do not like to go below a certain level on a road trip, set it once under **More, Display and data, Road-trip reserve (%)** (default 20, kept on this device). Home (Battery card) and Live then show how far you can still go before the battery reaches it, for example "Until 20%undefined 142 mi".
+## Miles until your reserve
+If you do not like to go below a certain level on a road trip, set it once under **More, Display and data, Road-trip reserve (%)** (default 20, kept on this device). Home (Battery card) and Live then show how far you can still go before the battery reaches it, for example "Until 20%: 142 mi".
 
 How it is worked out: the car's own range estimate, scaled to the part of the battery above your reserve (range x (charge - reserve) / charge). So it follows how the car expects to be driven right now. A hard climb, headwind or cold weather can use the battery faster than the estimate.
 
@@ -34,6 +34,10 @@ The **Trips** page has a **Range by month** table with the same figure for each 
 The **Charging** tab lists each session with the energy that went into the battery, the battery levels, how long it took and the peak power. The energy is the difference in the car's own energy-left reading; for older sessions without it, it is estimated from the battery percent and marked "(estimate)".
 
 To see what it costs, an admin sets **Price per kWh at home** (and, if you like, a price away from home and a currency symbol) in More, Settings. Then each session shows its cost and the top of the tab shows each month: sessions, kWh, cost, miles driven and **cost per mile**. On a slow (AC) charger some of the wall energy is lost as heat, so the cost is the energy added divided by the charging efficiency, times the price. Until CarTrak has measured your efficiency it uses the **Slow-charging efficiency** setting in More, Settings (90% by default). Fast (DC) sessions use the energy added.
+
+**Cost per distance, savings and CO2:** Home's **This month** card and the Charging page show what charging cost per mile (or km), for the month and the year so far, when every session has a price. Under **More, Charging prices, Compared with a gas car**, give the gas price and the economy of the gas car you would otherwise drive (US gallons and mpg, or litres and L per 100 km), and they also show what you saved against it and the CO2 you avoided (a litre of gas makes about 2.35 kg; your electricity is counted at 0.37 kg per kWh unless you set yours). Nothing is compared until both numbers are set. Each trip page shows an estimated energy cost, at your average price per kWh lately.
+
+**Plan ahead:** once there are two weeks of driving, Home shows the next seven days: the distance you usually drive on each weekday, the energy that takes at your recent efficiency, and when the battery would fall below your low-battery level if you did not plug in ("plug in by Sunday"). It is an estimate from your habits and assumes no charging.
 
 **Measuring your real charging loss:** the car reports what went into the battery, and your charger reports what it delivered. On each session, admins can type the charger's kWh (from the charger's app or a meter) into **kWh from the charger**. The session then shows how much of it reached the battery, for example 87%. Once at least three slow-charging sessions have the number, CarTrak uses your measured average (weighted by energy) instead of the setting, and the Charging cost card says so. A number lower than the battery received is refused as a typing mistake, and clearing the box removes the entry. When a session ends, CarTrak also fills in this number itself from the car's own count of what the charger delivered, but only when that count fits the energy that went into the battery (a charger delivers a little more than the pack gains). A figure you typed is never replaced.
 

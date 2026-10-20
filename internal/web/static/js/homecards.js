@@ -27,7 +27,7 @@ async function todayCard() {
 async function monthCard(maint) {
   const [sum, sav] = await Promise.all([api('/api/charges/summary').catch(() => null), api('/api/savings').catch(() => null)]);
   const m = sum && sum.thisMonth;
-  const saved = sav && sav.month.km > 0 ? periodLines(sav.currency, sav.month, sav.petrolSet) : [];
+  const saved = sav && sav.month.km > 0 ? periodLines(sav.currency, sav.month, sav.gasSet) : [];
   const next = ((maint && maint.items) || []).filter((i) => i.state === 'ok' && (i.kmLeft != null || i.daysLeft != null))
     .sort((a, b) => (a.kmLeft ?? 1e9) - (b.kmLeft ?? 1e9) || (a.daysLeft ?? 1e9) - (b.daysLeft ?? 1e9))[0];
   if (!(m && m.kwh > 0) && !next && !saved.length) return null;

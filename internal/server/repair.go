@@ -59,5 +59,5 @@ func (s *Server) repairApply(w http.ResponseWriter, r *http.Request) {
 		fail(w, 409, err.Error())
 		return
 	}
-	ok(w, map[string]any{"trips": len(p.NewTrips), "charges": len(p.NewCharges), "replacedTrips": len(p.OldTrips), "replacedCharges": len(p.OldCharges)})
+	ok(w, map[string]any{"trips": len(p.NewTrips), "charges": len(p.NewCharges), "replacedTrips": len(p.OldTrips), "replacedCharges": len(p.OldCharges), "unchangedTrips": p.UnchangedTrips, "unchangedCharges": p.UnchangedCharges})
 }

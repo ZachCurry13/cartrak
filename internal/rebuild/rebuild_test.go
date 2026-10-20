@@ -166,3 +166,37 @@ func TestACorrectedDistanceSurvivesARebuildOnlyForTheSameDrive(t *testing.T) {
 		}
 	}
 }
+
+func TestRebuildingAgainLeavesWhatAlreadyMatchesAlone(t *testing.T) {
+	s, d, t0 := seed(t)
+	from, to := t0.Add(20*time.Minute).Unix(), t0.Add(100*time.Minute).Unix()
+	p, _ := Compute(s, d, from, to, time.Now())
+	if err := Apply(s, d, p); err != nil {
+		t.Fatal(err)
+	}
+	before, _ := s.ListTrips(store.TripFilter{})
+	ids := map[int64]bool{}
+	for _, tr := range before {
+		ids[tr.ID] = true
+	}
+	// everything is now as the replay would record it, so there is nothing to replace
+	again, err := Compute(s, d, from, to, time.Now())
+	if err != nil || len(again.Blockers) > 0 {
+		t.Fatalf("%v %v", err, again.Blockers)
+	}
+	if len(again.OldTrips) != 0 || len(again.NewTrips) != 0 || len(again.OldCharges) != 0 || len(again.NewCharges) != 0 {
+		t.Fatalf("nothing differs: old %d/%d new %d/%d", len(again.OldTrips), len(again.OldCharges), len(again.NewTrips), len(again.NewCharges))
+	}
+	if again.UnchangedTrips != 2 || again.UnchangedCharges != 1 {
+		t.Fatalf("two trips and a charge were left alone: %d %d", again.UnchangedTrips, again.UnchangedCharges)
+	}
+	if err := Apply(s, d, again); err != nil {
+		t.Fatal(err)
+	}
+	after, _ := s.ListTrips(store.TripFilter{})
+	for _, tr := range after {
+		if !ids[tr.ID] {
+			t.Fatalf("a trip that did not change got a new id: %+v", tr)
+		}
+	}
+}
