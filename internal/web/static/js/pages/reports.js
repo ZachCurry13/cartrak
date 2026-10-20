@@ -22,9 +22,25 @@ export default async function reports(root, _a, session) {
   const controls = runControls(opts.categories);
   let tab = 'standard';
   let editing = null;
-  const run = (extra) => {
+  const status = h('p', { class: 'muted', role: 'status' });
+  // The cities are named a few at a time first (the lookup service is slow on purpose), so the file has them.
+  async function namePlaces(p) {
+    for (let i = 0; i < 80; i++) {
+      const r = await api(`/api/reports/lookup?${p}`, { method: 'POST' }).catch((e) => ({ pending: 0, error: e.message }));
+      if (!r.pending) return r.error ? `Some places could not be named (${r.error}). They are left blank.` : '';
+      status.textContent = `Looking up the cities of ${r.pending} places…`;
+      if (!r.looked) return `${r.pending} places could not be named${r.error ? ` (${r.error})` : ''}. They are left blank.`;
+    }
+    return '';
+  }
+  const run = async (extra) => {
     const p = controls.params();
     for (const [k, v] of Object.entries(extra)) p.set(k, v);
+    const cols = (extra.columns || '').split(',');
+    const needCities = extra.template === 'fedex' || (!extra.template && (!extra.columns || cols.includes('from') || cols.includes('to')));
+    status.textContent = '';
+    if (admin && needCities) status.textContent = await namePlaces(p);
+    else if (needCities) status.textContent = 'Cities are those already looked up.';
     download(controls.format(), p);
   };
   async function reload(fresh) {
@@ -37,7 +53,7 @@ export default async function reports(root, _a, session) {
     const tabs = h('div', { class: 'seg' }, ...[['standard', 'Standard report'], ['custom', 'Custom reports']].map(([k, t]) => h('button', { class: tab === k ? 'on' : '', onclick: () => { tab = k; draw(); } }, t)));
     builder.replaceChildren(h('h2', {}, 'Download a report'), tabs,
       tab === 'standard' ? standardTab(opts, run) : customTab(opts, run, admin, () => reload(true), (t) => { editing = t || false; draw(); }),
-      h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), controls.el);
+      h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0' }), controls.el, status);
   }
   draw();
 

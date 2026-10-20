@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ZachCurry13/cartrak/internal/geocode"
 	"github.com/ZachCurry13/cartrak/internal/report"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -120,12 +119,9 @@ func (s *Server) reportTrips(ts []*store.Trip, loc *time.Location) []report.Trip
 				l = x
 			}
 		}
-		name := func(label string, lat, lon *float64) string {
-			if label != "" {
-				return label
-			}
-			if lat != nil && lon != nil { // a city CarTrak already looked up; nothing is fetched while a report is made
-				if c, ok := s.S.GetPlace(geocode.Key(*lat, *lon)); ok {
+		city := func(lat, lon *float64) string { // just the city, from what CarTrak has already looked up; nothing is fetched here
+			if lat != nil && lon != nil {
+				if c, ok := s.places().Cached(*lat, *lon); ok {
 					return c
 				}
 			}
@@ -136,7 +132,7 @@ func (s *Server) reportTrips(ts []*store.Trip, loc *time.Location) []report.Trip
 			method = "Phone GPS"
 		}
 		out = append(out, report.Trip{ID: t.ID, Start: time.Unix(t.StartTS, 0).In(l), End: time.Unix(*t.EndTS, 0).In(l), Zone: l.String(),
-			Category: t.Category, DistanceKm: t.DistanceKm, Notes: t.Notes, From: name(o.StartPlace, t.StartLat, t.StartLon), To: name(o.EndPlace, t.EndLat, t.EndLon),
+			Category: t.Category, DistanceKm: t.DistanceKm, Notes: t.Notes, From: city(t.StartLat, t.StartLon), To: city(t.EndLat, t.EndLon),
 			Method: method, EnergyKwh: o.EnergyKwh, SoCStart: t.StartSoC, SoCEnd: t.EndSoC, OdoStartKm: t.StartOdo, OdoEndKm: t.EndOdo, TopSpeedKph: t.MaxSpeedKph})
 	}
 	return out
@@ -175,6 +171,10 @@ func (s *Server) downloadReport(w http.ResponseWriter, r *http.Request) {
 			names = append(names, labels[k])
 		}
 	}
+	if q.Get("template") == "fedex" { // the mileage log, in the layout it has always had
+		s.downloadMileageLog(w, r, start, end, want, loc)
+		return
+	}
 	purpose := "All"
 	if len(names) > 0 {
 		purpose = strings.Join(names, ", ")
@@ -209,16 +209,10 @@ func (s *Server) downloadReport(w http.ResponseWriter, r *http.Request) {
 		opt.Capacity = *c
 	}
 	opt.KwhPrice = s.periodKwhPrice(start.Unix(), end.Unix())
-	all, err := s.S.TripsBetween(start.Unix(), end.Unix())
+	picked, err := s.tripsOf(start, end, want)
 	if err != nil {
 		fail(w, 500, "db error")
 		return
-	}
-	var picked []*store.Trip
-	for _, t := range all {
-		if len(want) == 0 || want[t.Category] {
-			picked = append(picked, t)
-		}
 	}
 	rows := s.reportTrips(picked, loc)
 	name := fmt.Sprintf("cartrak-trips-%s-%s", start.Format("2006-01-02"), end.AddDate(0, 0, -1).Format("2006-01-02"))

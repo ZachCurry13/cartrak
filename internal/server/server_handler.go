@@ -120,6 +120,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/reports/options", s.auth(false, s.reportOptions))
 	m.HandleFunc("GET /api/reports/trips.xlsx", s.auth(false, s.downloadReport))
 	m.HandleFunc("GET /api/reports/trips.csv", s.auth(false, s.downloadReport))
+	m.HandleFunc("POST /api/reports/lookup", s.auth(true, s.lookupReportPlaces))
 	m.HandleFunc("POST /api/reports/templates", s.auth(true, s.saveReportTemplate))
 	m.HandleFunc("DELETE /api/reports/templates/{id}", s.auth(true, s.deleteReportTemplate))
 	m.HandleFunc("GET /api/categories", s.auth(false, s.listCategories))

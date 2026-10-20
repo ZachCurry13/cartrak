@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/ZachCurry13/cartrak/internal/geocode"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"net/http/httptest"
 	"strings"
@@ -100,5 +101,33 @@ func TestAReportCanBeDownloadedForSomeCategoriesAndADateRange(t *testing.T) {
 	}
 	if code, _ := do(t, admin, "POST", ts.URL+"/api/reports/templates", `{"name":"x","config":{"columns":[{"key":"bogus"}]}}`, xh); code != 400 {
 		t.Fatal("an unknown column is refused")
+	}
+}
+
+func TestTheFedExReportIsTheMileageLogAndStandardReportsNameJustTheCity(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	f := func(v float64) *float64 { return &v }
+	home, shop := [2]float64{45.16, -93.86}, [2]float64{45.02, -93.45}
+	_ = srv.S.SetPlace(geocode.Key(home[0], home[1]), "Buffalo")
+	_ = srv.S.SetPlace(geocode.Key(shop[0], shop[1]), "Plymouth")
+	end := int64(1773500000 + 1800)
+	tr := &store.Trip{StartTS: 1773500000, Category: "work", CategorySource: "manual", StartLat: f(home[0]), StartLon: f(home[1])}
+	_ = srv.S.CreateTrip(tr)
+	tr.EndTS, tr.DistanceKm, tr.Open, tr.EndLat, tr.EndLon = &end, 16.0934, false, f(shop[0]), f(shop[1])
+	_ = srv.S.UpdateTrip(tr)
+	day := time.Unix(1773500000, 0).In(srv.defaultLoc()).Format("2006-01-02")
+	_, body := do(t, admin, "GET", ts.URL+"/api/reports/trips.csv?template=fedex&from="+day+"&to="+day, "", nil)
+	lines := strings.Split(strings.TrimSpace(body), "\n")
+	if lines[0] != "Date,Origin City,Destination City,Description,Total Miles Driven" || lines[1] != day+",Buffalo,Plymouth,Customer Visits,10" || !strings.Contains(body, "Total Mileage Recorded:,,,,10") {
+		t.Fatalf("the mileage log layout: %q", body)
+	}
+	_, body = do(t, admin, "GET", ts.URL+"/api/reports/trips.csv?from="+day+"&to="+day+"&columns=from,to,distance", "", nil)
+	if !strings.Contains(body, "Buffalo,Plymouth,10") {
+		t.Fatalf("just the city: %q", body)
+	}
+	_, body = do(t, admin, "POST", ts.URL+"/api/reports/lookup?from="+day+"&to="+day, "", xh)
+	if !strings.Contains(body, `"pending":0`) {
+		t.Fatalf("everything is already named: %s", body)
 	}
 }

@@ -9,6 +9,7 @@ import { routes } from './routes.js';
 import { loadCategories } from './categories.js';
 import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
+import { openMore } from './moresheet.js';
 
 
 const view = document.getElementById('view');
@@ -135,6 +136,8 @@ async function syncLabel() {
   } catch (e) { /* offline */ }
 }
 
+// The More tab slides a sheet up over the page, as the app on a phone usually does; the whole More page is one row down in it.
+tabs.querySelector('a[href="#/settings"]').addEventListener('click', (e) => { if (session.me) { e.preventDefault(); openMore(session); } });
 addEventListener('hashchange', render);
 setInterval(() => { if (!document.hidden) syncLabel(); }, effective() === 'saver' ? 300000 : 30000);
 // Ford may send the browser back to the site root (the redirect address registered on the Ford app may have
