@@ -19,7 +19,7 @@ export default async function data(root) {
   const head = h('div');
   const tabs = h('div', { class: 'seg datatabs' });
   const body = h('div');
-  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Car data')),
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Car data'), h('a', { class: 'btn sec', href: '#/fields' }, 'Field watcher')),
     h('p', { class: 'muted' }, 'Everything the car tells CarTrak, in plain words. Tap the ? next to anything to see what it means. You can also look at how the car was at any earlier time.'), head, tabs, body);
 
   async function load(at) {

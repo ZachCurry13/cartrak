@@ -90,3 +90,13 @@ func (s *Store) RecentEvents(limit int) ([]Event, error) {
 	}
 	return out, rows.Err()
 }
+
+// SampleCounts is how many readings the car sent between two times and how many of them carried a position.
+func (s *Store) SampleCounts(from, to int64) (total, withPosition int, err error) {
+	var pos *int
+	err = s.DB.QueryRow(`SELECT COUNT(*), SUM(lat IS NOT NULL AND lon IS NOT NULL) FROM samples WHERE ts BETWEEN ? AND ?`, from, to).Scan(&total, &pos)
+	if pos != nil {
+		withPosition = *pos
+	}
+	return
+}

@@ -16,6 +16,9 @@ A tab shows only what your car reports, so a car without a value simply has no r
 
 Tap the **?** next to any value to see what it means and Ford's own name for it. Ford sends some values only when the car wakes, so a value that is much older than the reading says how old it is.
 
+## Field watcher
+Open **Field watcher** from the Car data page to see every kind of reading the car sends, over the last day, two days or week: its latest value, how often it changes and when it last did. A tag says what CarTrak uses it for, whether it is only shown on the Car data page, or not used at all. A reading that never changes (the oil life of an electric car) is listed too. The readings are thinned to about 400 so the page stays quick on a long window.
+
 ## Looking back in time
 CarTrak keeps every reading, so the page can show the car as it was at any earlier moment:
 - **Earlier** and **Later** step between readings.

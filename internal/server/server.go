@@ -130,6 +130,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/history", s.auth(false, s.historyFeed))
 	m.HandleFunc("GET /api/stats", s.auth(false, s.periodStats))
 	m.HandleFunc("GET /api/remote-starts", s.auth(false, s.remoteStarts))
+	m.HandleFunc("GET /api/fields", s.auth(false, s.fieldWatch))
 	m.HandleFunc("GET /api/named-places", s.auth(false, s.listNamedPlaces))
 	m.HandleFunc("POST /api/named-places", s.auth(true, s.addNamedPlace))
 	m.HandleFunc("PATCH /api/named-places/{id}", s.auth(true, s.patchNamedPlace))

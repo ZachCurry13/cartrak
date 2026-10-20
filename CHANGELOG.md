@@ -2,6 +2,15 @@
 
 ## 0.31.0
 
+### 🔎 Field watcher
+- **Car data → Field watcher** lists every kind of reading the car sends and what each one has been doing: its latest value, how many times it changed in the last 24 hours, 2 days or 7 days, and when it last changed. Each is marked with what CarTrak uses it for, **Car data only**, or **Not used**, so a field nobody is looking at stands out. Filter by Changing, Never changed or Not used, search by name, and tap one for its range and the car's own time for it. A new field Ford starts sending shows up here on its own.
+
+### 🔋 Range at 100%
+- Home shows the range the car expects on a full charge next to the energy left and the battery temperature.
+
+### 🧭 Debug report: where a trip's route comes from
+- Each trip in the **Debug report** now has a line saying how many readings the car sent during it, how many of them carried a position, and how many phone GPS points there were. It shows why one trip's route is a dense line (phone GPS) and another is a single straight line (the car sent only its start and end).
+
 ### 🔥 Remote start, on screen
 - When the car is running from a **remote start**, **Home** and **Live** show a **Remote start · 12:30 left** chip that counts down each second, using the car's own countdown until it shuts itself off. It disappears when the countdown ends.
 - Press the chip's area (hover or long-press) to see how many remote starts CarTrak has seen since the car was last driven. The car only allows a couple in a row, so this is a quick way to know where you stand. It is CarTrak's own count from the readings it saw, so a start that began and ended between two readings is missed.

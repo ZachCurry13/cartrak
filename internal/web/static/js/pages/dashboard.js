@@ -108,7 +108,8 @@ export default async function dashboard(root, _args, session) {
         remoteChip(latest));
       out.push(card('Battery', ring.el, chips,
         h('div', { class: 'grid' }, stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
-          stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),
+          stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE'))),
+          pick(x, 'xevBatteryMaximumRange') != null ? stat('Range at 100%', dist(pick(x, 'xevBatteryMaximumRange'), 0)) : null),
         reserveRow(latest),
         bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));

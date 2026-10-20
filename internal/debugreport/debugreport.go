@@ -26,6 +26,7 @@ type Input struct {
 	Locks    map[int64][]string // raw lock and door fields, by reading time
 	Fields   []string           // every field of the latest reading as "name = value", positions and identifiers already removed
 	Trips    []*store.Trip
+	Points   map[int64][3]int // by trip id: readings the car sent, how many had a position, and phone GPS points
 	Charges  []*store.Charge
 	Alerts   []store.AlertLogEntry
 	MaxLines int
@@ -129,13 +130,16 @@ func Build(in Input) string {
 		b.WriteString("    " + f + "\n")
 	}
 
-	b.WriteString("\nTRIPS (id | start | end | km | battery start>end | energy kWh start>end | open | category)\n")
+	b.WriteString("\nTRIPS (id | start | end | km | battery start>end | energy kWh start>end | open | category; then a line of readings, car positions, phone points)\n")
 	for _, t := range in.Trips {
 		end := "open"
 		if t.EndTS != nil {
 			end = at(*t.EndTS)
 		}
 		fmt.Fprintf(&b, "%d | %s | %s | %.1f | %s>%s | %s>%s | %v | %s\n", t.ID, at(t.StartTS), end, t.DistanceKm, fp(t.StartSoC, "%.0f"), fp(t.EndSoC, "%.0f"), fp(t.StartKwh, "%.1f"), fp(t.EndKwh, "%.1f"), t.Open, t.Category)
+		if p, ok := in.Points[t.ID]; ok {
+			fmt.Fprintf(&b, "    positions: %d readings, %d with a position, %d phone GPS points\n", p[0], p[1], p[2])
+		}
 	}
 	if len(in.Trips) == 0 {
 		b.WriteString("(none)\n")

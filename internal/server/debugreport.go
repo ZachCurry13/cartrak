@@ -111,6 +111,15 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		fields = allFields(x.Extra)
 	}
 	trips, _ := s.S.ListTrips(store.TripFilter{From: from.Unix(), Limit: 200})
+	points := map[int64][3]int{}
+	for _, t := range trips {
+		if t.EndTS == nil {
+			continue
+		}
+		n, withPos, _ := s.S.SampleCounts(t.StartTS, *t.EndTS)
+		phone, _ := s.S.PointsBetween(t.StartTS-routeSlack, *t.EndTS+routeSlack)
+		points[t.ID] = [3]int{n, withPos, len(phone)}
+	}
 	charges, _ := s.S.ListCharges(200)
 	var recent []*store.Charge
 	for _, c := range charges {
@@ -125,6 +134,6 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		lastOK = time.Unix(st.LastOK, 0)
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
-		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Charges: recent, Alerts: alerts})
+		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts})
 	ok(w, map[string]any{"text": text, "hours": hours, "readings": len(rows)})
 }
