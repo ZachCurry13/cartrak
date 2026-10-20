@@ -58,7 +58,7 @@ var Kinds = []Kind{
 	{BackupReminder, "Backup reminder", "No backup has been downloaded in the last month. At most once a month, and only after CarTrak has been recording for two weeks."},
 	{LowTire, "Low tire pressure", "The car reports a tire as low."},
 	{CarFault, "Car-reported problem", "The car's own checks report something other than normal: the main battery, the tire pressure system or the 12 V load. At most once a day for each."},
-	{ChargeSlow, "Slow fast charge", "A fast charge that has just ended averaged much less than your fast charges usually do, so a different charger or stall may be better. Needs a few earlier fast sessions."},
+	{ChargeSlow, "Slow fast charge", "A fast charge that has just ended averaged much less than your fast charges usually do, so a different charger or stall may be better. Only charges that stopped by about 85% are judged, because every charger slows down near full. Needs a few earlier fast sessions."},
 	{Low12V, "Low 12 V battery", "The small battery is low enough to risk the car not waking. At most once a day."},
 	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},
 	{TripStart, "Trip started", "A trip began."},

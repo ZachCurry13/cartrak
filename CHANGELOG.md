@@ -6,6 +6,9 @@
 - **Home → This month** and the **Charging** page now show what charging cost **per mile (or km)**, for the month and the year so far. Each trip page shows an estimated energy cost at your recent average price.
 - In **Charging settings → Compared with a gas car**, give the gas price and your gas car's economy (US gallons and mpg, or litres and L per 100 km) to see **what you saved** against it and the **CO2 avoided**. Nothing is compared until you set both.
 
+### 🐢 Slow fast charge is fairer
+- A charge all the way to 100% tapers off near full on every charger, so its average is always lower. The **Slow fast charge** alert now only judges fast charges that stopped by about 85%, and only against your earlier charges that did the same.
+
 ### 🛠️ Fix a day leaves what did not change alone
 - A rebuild now compares each trip and charging session with what it would record and only replaces the ones that come out different. The ones that are already right keep their identity, public links, notes and labels, and the preview says how many were left alone. If nothing differs, it says so and there is nothing to confirm.
 

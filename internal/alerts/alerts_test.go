@@ -321,3 +321,28 @@ func TestASlowFastChargeIsFlaggedAgainstYourUsual(t *testing.T) {
 		t.Fatalf("one alert for the slow session: %s %+v", r.kinds(), r.got)
 	}
 }
+
+func TestAChargeToFullIsNotCalledSlowForTapering(t *testing.T) {
+	e, r, s := setup(t)
+	f := func(v float64) *float64 { return &v }
+	add := func(startTS int64, endSoC, kwh float64, mins int64) {
+		c := &store.Charge{StartTS: startTS, StartSoC: f(20), StartKwh: f(20), PeakKw: 120}
+		if err := s.CreateCharge(c); err != nil {
+			t.Fatal(err)
+		}
+		end := startTS + mins*60
+		c.EndTS, c.EndSoC, c.EndKwh, c.Open = &end, f(endSoC), f(20+kwh), false
+		if err := s.UpdateCharge(c); err != nil {
+			t.Fatal(err)
+		}
+	}
+	base := t0.Unix()
+	for i := 0; i < 3; i++ {
+		add(base+int64(i)*86400, 80, 30, 30) // 60 kW to 80%
+	}
+	add(base+3*86400, 100, 45, 80) // 34 kW, but all the way to 100%
+	e.chargeSpeed()
+	if len(r.got) != 0 {
+		t.Fatalf("a charge to full tapers, so it is not judged: %s", r.kinds())
+	}
+}

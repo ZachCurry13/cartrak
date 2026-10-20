@@ -14,6 +14,7 @@ const (
 	slowMinSess = 3    // earlier fast sessions needed to know what usual is
 	slowMaxFrom = 60.0 // a session that started above this is expected to taper, so it is not judged
 	slowMinMin  = 10   // minutes a session must last to be judged
+	slowMaxEnd  = 85.0 // a session that ran above this spent its last part tapering, which lowers the average on any charger
 	kvSlow      = "alert_slow_charge_id"
 )
 
@@ -31,6 +32,12 @@ func fastAvg(c *store.Charge) (kw float64, ok bool) {
 	return (*c.EndKwh - *c.StartKwh) / (mins / 60), true
 }
 
+// judgeable is whether a fast session can be compared by its average power: it began low enough to be at full speed and ended
+// before the taper near full. A charge to 100% always averages less than one to 80%, however good the charger is.
+func judgeable(c *store.Charge) bool {
+	return c.StartSoC != nil && *c.StartSoC <= slowMaxFrom && (c.EndSoC == nil || *c.EndSoC <= slowMaxEnd)
+}
+
 // chargeSpeed tells you when a fast charge that has just ended gave much less than your fast charges usually do.
 func (e *Engine) chargeSpeed() {
 	cs, err := e.S.ListCharges(40)
@@ -39,7 +46,7 @@ func (e *Engine) chargeSpeed() {
 	}
 	cur := cs[0] // newest first
 	kw, ok := fastAvg(cur)
-	if !ok || cur.StartSoC == nil || *cur.StartSoC > slowMaxFrom {
+	if !ok || !judgeable(cur) {
 		return
 	}
 	if e.S.GetKV(kvSlow) == strconv.FormatInt(cur.ID, 10) {
@@ -47,7 +54,7 @@ func (e *Engine) chargeSpeed() {
 	}
 	var prev []float64
 	for _, c := range cs[1:] {
-		if v, ok := fastAvg(c); ok && c.StartSoC != nil && *c.StartSoC <= slowMaxFrom {
+		if v, ok := fastAvg(c); ok && judgeable(c) {
 			prev = append(prev, v)
 		}
 	}
