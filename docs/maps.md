@@ -33,6 +33,8 @@ Older trips: open More, Trips and press **Estimate their roads** to do them a fe
 ## Day view
 Open **Day view** from the Trips page (or **Map of this day** in the History feed) to see a whole day at once: each trip is its own colour, stops between trips are numbered markers that match the list below the map, and a written summary gives the day's driving, stops, charging, energy and cost. Move between days with the arrows or the date box. A phone GPS track is used where there is one, then a kept estimated road, then the car's own positions (which may be only a few). Tap a drive or a charging session in the list to open its details right there instead of leaving the day.
 
+Each row of the day, and of the History feed, says where it happened: a drive as "from → to", a stop or a charge by its place. A place you named wins; otherwise it is the city, looked up in the background the first time (a drive that began and ended in the same town reads "Around" it). Drives also show their average speed and efficiency, and charges their average power.
+
 ## Good to know
 - OpenStreetMap's tile server is meant for light use and asks apps to identify themselves; CarTrak sends `CarTrak/<version>` with a link to its project page and keeps copies so each tile is downloaded rarely. For heavy or commercial use choose a provider that allows it and set it above.
 - The credit "© OpenStreetMap contributors" appears on every map and links to the copyright page.

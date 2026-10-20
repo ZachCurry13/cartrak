@@ -107,6 +107,7 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 	named, _ := s.S.ListNamedPlaces()
 	now := time.Now().Unix()
 	events := history.Build(list, charges, named, from.Unix(), to.Unix()-1, now)
+	s.placeEvents(events, list, named)
 	sort.SliceStable(events, func(i, j int) bool { return events[i].Start < events[j].Start }) // the day reads forwards
 	capacity := s.capacityKwh()
 	lookups := 0

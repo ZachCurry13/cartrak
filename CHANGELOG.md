@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.41.1
+## 0.42.0
+
+### 📍 The day says where things happened
+- Each row of **Day view** (and the **History** feed) now says where it was: a drive reads **Traverse City → Glen Arbor**, a stop or a charge shows its place, using a place you named or else the city. A drive that began and ended in the same town reads **Around** it.
+- Drives also show their **average speed** and **efficiency**, and charges their **average power** ("about 9 kW on average"). A charge reads **Public · Escanaba Super Charger** instead of just Public.
 
 ### 🧹 A tidy-up after a review of the whole app
 - **What's new** shows **bold** text as bold instead of with asterisks around it.

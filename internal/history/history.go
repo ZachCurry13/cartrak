@@ -38,6 +38,7 @@ type Event struct {
 	Where      string   `json:"where"`     // charging: home, public or ""
 	Lat        *float64 `json:"lat"`       // where it happened (the end of a drive), for a map
 	Lon        *float64 `json:"lon"`
+	EnergyKwh  *float64 `json:"energyKwh,omitempty"` // a drive's energy use, for its efficiency
 }
 
 // minParked is the shortest gap worth showing as its own row.

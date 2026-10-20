@@ -52,6 +52,7 @@ func (s *Server) historyFeed(w http.ResponseWriter, r *http.Request) {
 	named, _ := s.S.ListNamedPlaces()
 	now := time.Now().Unix()
 	events := history.Build(trips, charges, named, from.Unix(), to.Unix(), now)
+	s.placeEvents(events, trips, named)
 	ok(w, map[string]any{"month": from.Format("2006-01"), "from": from.Unix(), "to": to.Unix(), "events": events,
 		"totals": history.Sum(events, from.Unix(), to.Unix(), now), "tz": s.defaultLoc().String(), "currency": s.currency()})
 }

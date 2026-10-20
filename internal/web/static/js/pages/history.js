@@ -1,4 +1,5 @@
-import { h, emptyState, dist, num } from '../ui.js';
+import { h, emptyState, dist, num, speed } from '../ui.js';
+import { effSpan } from '../energy.js';
 import { api } from '../api.js';
 
 const KINDS = [['all', 'All'], ['charging', 'Charging'], ['driving', 'Driving'], ['parked', 'Parked']];
@@ -31,7 +32,13 @@ export function eventRow(e, tz, cur, stopNumber) {
   const now = Date.now() / 1000;
   const end = e.end == null ? now : e.end;
   const delta = e.startSoc != null && e.endSoc != null ? Math.round(e.endSoc - e.startSoc) : null;
-  const place = e.kind === 'driving' ? [e.fromPlace, e.place].filter(Boolean).join(' → ') : e.place || (e.kind === 'charging' ? WHERE[e.where] || 'Charging' : '');
+  // where it happened: a drive from → to, a charge as home or public and its place
+  const place = e.kind === 'driving' ? [e.fromPlace, e.place].filter(Boolean).join(' → ') : e.kind === 'charging' ? [WHERE[e.where] || 'Charging', e.place].filter(Boolean).join(' · ') : e.place;
+  // one more line of what it was like: a drive's average speed and efficiency, a charge's average power
+  const secs = end - e.start;
+  const detail = e.kind === 'driving' && e.end != null && e.distanceKm >= 0.5 && secs > 60
+    ? [speed((e.distanceKm / secs) * 3600) + ' average', e.energyKwh > 0.2 ? effSpan(e.distanceKm, e.energyKwh) : null]
+    : e.kind === 'charging' && e.addedKwh > 0 && secs > 300 ? [`about ${num((e.addedKwh / secs) * 3600, 0, ' kW')} on average`] : [];
   const right = e.kind === 'charging' ? (e.cost != null ? money(cur, e.cost) : e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '') : e.kind === 'driving' ? dist(e.distanceKm, 1) : '';
   const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '';
   const body = [
@@ -39,7 +46,8 @@ export function eventRow(e, tz, cur, stopNumber) {
       h('b', {}, `${clock(e.start, tz)} – ${e.end == null ? 'Now' : clock(e.end, tz)}`), h('span', { class: 'muted grow' }, span(end - e.start)),
       delta != null ? h('span', { class: 'hdelta' }, `${delta > 0 ? '+' : ''}${delta}%`) : null),
     levelBar(e),
-    h('div', { class: 'hrow2' }, h('span', { class: 'hplace' }, place || (e.kind === 'parked' ? 'Parked' : 'Drive')), h('span', { class: 'hright' }, right, sub ? h('div', { class: 'muted' }, sub) : null))];
+    h('div', { class: 'hrow2' }, h('span', { class: 'hplace' }, h('span', {}, place || (e.kind === 'parked' ? 'Parked' : 'Drive')), e.kind === 'parked' && place ? h('div', { class: 'muted' }, 'Parked') : null,
+      detail.filter(Boolean).length ? h('div', { class: 'muted' }, ...detail.filter(Boolean).flatMap((x, i) => (i ? [' · ', x] : [x]))) : null), h('span', { class: 'hright' }, right, sub ? h('div', { class: 'muted' }, sub) : null))];
   const href = e.kind === 'driving' ? `#/trip/${e.id}` : e.kind === 'charging' ? '#/charging' : null;
   return h(href ? 'a' : 'div', { class: `hcard ${e.kind}`, ...(href ? { href } : {}) }, ...body.filter(Boolean));
 }
