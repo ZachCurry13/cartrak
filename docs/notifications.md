@@ -47,3 +47,7 @@ Each alert is sent once. After CarTrak restarts it does not repeat what was alre
 - **Test alert fails with "the push service answered HTTP ...":** the push service refused the message; try Turn off, then Turn on again on that device.
 - **Nothing arrives on iPhone:** it must be opened from the Home Screen icon, and notifications allowed in iOS Settings for CarTrak.
 - **No alerts for trips or charging:** they follow Ford's readings, which can be minutes apart and only update when the car wakes. Check Status.
+
+## The inbox (the bell)
+
+The bell in the header opens a list of every alert CarTrak has raised lately about the cars you can open, with the car's name when you have more than one. It does not depend on push: alerts are listed even when this device has notifications off, so nothing is missed. The red number counts alerts newer than the last time you opened the inbox on this device. It keeps the latest 200 alerts for each car.

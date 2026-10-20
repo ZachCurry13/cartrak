@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.36.0
+
+### 🔔 A bell, a search and a help button in the header
+- **Notifications (the bell).** Every alert CarTrak raises, for every car you can open, is kept in an inbox, newest first, grouped by day, with the car's name when you have more than one. Tap an alert to open the trip or page it is about. A red number on the bell counts what is new since you last looked, on this device. It works even when push notifications are off. If something needs a look (Status is not OK), the inbox says so at the top.
+- **Search.** The magnifier opens a search box over any page, so a setting or a page is a word away instead of a trip through More.
+- **Help (the ?).** One place for everyone: quick settings for units, theme and data use; a short getting-started checklist (connect the car, put CarTrak on the home screen, turn on notifications); what each part of the app is for; and links to the guide and Status. Admins also get a link to the full checklist.
+
+### 🏠 More on Home
+- **Today**: trips and distance so far today, what you charged and what it cost, with a way into the day's map and yesterday.
+- **This month**: charging energy and cost so far this month, and the next service coming up. Tap it for statistics.
+- **Share this trip** on the Last trip card opens the trip with its share box ready (admins).
+
+### 🧰 Under the hood
+- Fourteen source files that had grown past 200 lines were split by responsibility, and the list of pages moved out of the app's start-up file. Nothing you see changes.
+- Alerts now remember the page they open, so the inbox can link to it (alerts from before the update are listed but do not open anything).
+
 ## 0.35.2
 
 ### 🧰 Under the hood

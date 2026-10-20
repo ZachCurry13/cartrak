@@ -18,7 +18,13 @@
 </head>
 <body>
 <a class="skip" href="#view">Skip to content</a>
-<header id="top"><h1>CarTrak</h1><select id="carsel" aria-label="Which car" hidden></select><span id="sync" class="muted"></span><a id="ver" class="muted" href="#/settings"></a></header>
+<header id="top"><h1>CarTrak</h1><select id="carsel" aria-label="Which car" hidden></select>
+  <div class="hicons">
+    <button id="srch" class="ico" type="button" aria-label="Search" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg></button>
+    <a id="bell" class="ico" href="#/inbox" aria-label="Notifications" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V11a6 6 0 0112 0v6l2 2H4zM10 21h4"/></svg><b id="belln" hidden></b></a>
+    <a id="help" class="ico" href="#/help" aria-label="Help and getting started" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17.2v.1"/></svg></a>
+  </div>
+  <div class="hsub"><span id="sync" class="muted"></span><a id="ver" class="muted" href="#/settings"></a></div></header>
 <div id="carnote" class="banner" role="note" hidden></div>
 <main id="view" tabindex="-1" aria-live="polite"></main>
 <nav id="tabs" hidden>

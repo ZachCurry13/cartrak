@@ -71,7 +71,7 @@ async function versusAverage(t) {
   return h('p', { class: 'muted' }, `${Math.abs(diff)}% ${diff > 0 ? 'more' : 'less'} efficient than your average over the last year.`);
 }
 
-export default async function tripDetail(root, [id], session) {
+export default async function tripDetail(root, [id, action], session) {
   const saver = isSaver();
   const [{ trip: t, ...data }, mc] = await Promise.all([api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`), mapConfig()]);
   const routeBox = h('section', { class: 'card' }, h('h2', {}, 'Route'));
@@ -116,4 +116,7 @@ export default async function tripDetail(root, [id], session) {
       h('p', { class: 'seg' }, h('button', { onclick: set('work') }, 'Work'), h('button', { onclick: set('personal') }, 'Personal')),
       h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null,
     admin ? tripFixCard(t) : null].filter(Boolean));
+  if (action === 'share') { // opened from the Share button on Home: bring the share box into view
+    setTimeout(() => { const el = root.querySelector('#sht'); if (el) { el.closest('section').scrollIntoView({ block: 'start' }); el.focus(); } }, 60);
+  }
 }

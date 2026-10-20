@@ -43,4 +43,6 @@ export const routes = {
   status: () => import('./pages/status.js'),
   live: () => import('./pages/live.js'),
   cars: () => import('./pages/cars.js'),
+  inbox: () => import('./pages/inbox.js'),
+  help: () => import('./pages/help.js'),
 };

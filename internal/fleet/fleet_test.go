@@ -340,3 +340,32 @@ func TestEachCarsRestoreFolderIsItsOwn(t *testing.T) {
 		t.Fatalf("car 2 should now hold the restored trip and car 1 keep its own: %d %d", len(t1), len(t2))
 	}
 }
+
+func TestTheInboxListsAlertsOfTheCarsAPersonCanOpenOnly(t *testing.T) {
+	f, ts, _ := start(t)
+	ann := login(t, ts.URL, "ann")
+	bob := login(t, ts.URL, "bob")
+	if code, _ := ann.do("POST", "/api/cars", `{"name":"Truck"}`, nil); code != 200 {
+		t.Fatal("add car")
+	}
+	_ = f.Runtime(1).S.LogAlert(store.AlertLogEntry{TS: 100, Kind: "trip_end", Title: "Trip ended", Body: "5 mi", URL: "#/trip/1"})
+	_ = f.Runtime(2).S.LogAlert(store.AlertLogEntry{TS: 200, Kind: "plug_in", Title: "Plugged in", URL: "#/charging"})
+	var got struct {
+		Items []struct {
+			Car     int64  `json:"car"`
+			CarName string `json:"carName"`
+			Title   string `json:"title"`
+			URL     string `json:"url"`
+		} `json:"items"`
+	}
+	_, body := ann.do("GET", "/api/inbox", "", nil)
+	if err := json.Unmarshal([]byte(body), &got); err != nil || len(got.Items) != 2 || got.Items[0].Title != "Plugged in" || got.Items[0].CarName != "Truck" || got.Items[1].URL != "#/trip/1" {
+		t.Fatalf("an administrator with both cars sees both, newest first, with car names: %s", body)
+	}
+	_, body = bob.do("GET", "/api/inbox", "", nil)
+	got.Items = nil
+	_ = json.Unmarshal([]byte(body), &got)
+	if len(got.Items) != 1 || got.Items[0].Car != 1 || got.Items[0].CarName != "" {
+		t.Fatalf("a viewer of one car sees only its alerts, and no car name: %s", body)
+	}
+}

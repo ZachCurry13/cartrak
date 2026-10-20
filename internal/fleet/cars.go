@@ -3,6 +3,7 @@ package fleet
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/ZachCurry13/cartrak/internal/server"
@@ -92,4 +93,33 @@ func (f *Fleet) AdminViews(id int64) map[string]int64 {
 		return nil
 	}
 	return server.ReadAdminViews(r.S.GetKV(server.AdminViewsKey))
+}
+
+// Inbox is the latest alerts about the cars a person can open, newest first.
+func (f *Fleet) Inbox(userID int64, limit int) []server.InboxItem {
+	var out []server.InboxItem
+	var seen []*Runtime
+	for _, r := range f.all() {
+		if f.canSee(userID, r.Car.ID) {
+			seen = append(seen, r)
+		}
+	}
+	for _, r := range seen {
+		xs, _ := r.S.RecentAlerts(limit)
+		for _, x := range xs {
+			it := server.InboxItem{Car: r.Car.ID, ID: x.ID, TS: x.TS, Kind: x.Kind, Title: x.Title, Body: x.Body, URL: x.URL}
+			if len(seen) > 1 {
+				it.CarName = r.Car.Name
+			}
+			out = append(out, it)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].TS > out[j].TS })
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	if out == nil {
+		out = []server.InboxItem{}
+	}
+	return out
 }

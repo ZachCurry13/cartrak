@@ -1,4 +1,5 @@
 import { remoteChip } from '../remotestart.js';
+import { homeCards } from '../homecards.js';
 import { h, stat, chip, nice, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
@@ -120,10 +121,12 @@ export default async function dashboard(root, _args, session) {
         ...due.map((m) => h('a', { class: 'row', href: '#/maintenance', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, m.name), chip(m.state === 'overdue' ? 'bad' : 'work', m.state === 'overdue' ? 'service due' : 'due soon'))),
         unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null));
     }
+    if (full) out.push(...await homeCards(maint)); // the day so far and the month: skipped in Data saver
     if (week && week.work.trips + week.personal.trips > 0) out.push(weekCard(week));
     const lastTrip = trips[0];
     if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),
-      h('p', { class: 'muted' }, `${lastTrip.startPlace || lastTrip.endPlace ? `${lastTrip.startPlace || '…'} → ${lastTrip.endPlace || '…'} · ` : ''}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`)));
+      h('p', { class: 'muted' }, `${lastTrip.startPlace || lastTrip.endPlace ? `${lastTrip.startPlace || '…'} → ${lastTrip.endPlace || '…'} · ` : ''}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`),
+      session.me.role === 'admin' && !lastTrip.open ? h('p', {}, h('a', { class: 'btn sec', href: `#/trip/${lastTrip.id}/share` }, 'Share this trip')) : null));
     if (veh.engine && latest.fuelPct != null) {
       out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
         stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—')),

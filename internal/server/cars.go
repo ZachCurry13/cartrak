@@ -17,6 +17,7 @@ type CarManager interface {
 	Remove(id int64) error
 	Status(id int64) (linked bool, lastOK int64, found bool)
 	BackupAll(tmpDir string, w io.Writer) error // a zip of the core database and every car's database
+	Inbox(userID int64, limit int) []InboxItem  // the latest alerts about the cars a person can open
 	AdminViews(id int64) map[string]int64       // administrators who opened the car without having been given access, by name, when last
 }
 

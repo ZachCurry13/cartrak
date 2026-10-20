@@ -100,3 +100,25 @@ input[type=checkbox],input[type=radio]{width:22px;height:22px;accent-color:var(-
 #carsel{font:inherit;font-size:.85rem;max-width:9.5em;min-height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:2px 8px;text-overflow:ellipsis}
 #carnote{margin:0 16px 8px}
 .row[hidden],.card[hidden]{display:none!important}
+
+header{flex-wrap:wrap;align-items:center}
+.hicons{margin-left:auto;display:flex;gap:2px;align-items:center}
+.ico{position:relative;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:none;border:0;color:var(--text);cursor:pointer;padding:0}
+.ico:hover,.ico:focus-visible{background:var(--card)}
+.ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ico[hidden]{display:none}
+.ico b{position:absolute;top:3px;right:1px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#dc2626;color:#fff;font-size:.7rem;line-height:18px;text-align:center}
+.ico b[hidden]{display:none}
+.hsub{flex-basis:100%;display:flex;gap:12px;align-items:baseline;min-width:0}
+.hsub #sync{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
+.sheet{background:var(--bg);color:var(--text);border-radius:16px;width:100%;max-width:560px;max-height:85vh;overflow:auto;padding:14px}
+.sheet input[type=search]{width:100%;box-sizing:border-box}
+.sheet .sg{display:block;padding:10px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.ibrow{display:block;padding:12px 14px;margin:0 0 8px;border-radius:14px;background:var(--card);color:var(--text);text-decoration:none}
+a.ibrow:hover,a.ibrow:focus-visible{background:var(--card2)}
+.ibrow .ibt{display:flex;gap:8px;align-items:baseline}
+.ibrow.new{box-shadow:inset 3px 0 0 var(--accent,#16a34a)}
+header{gap:6px 8px}
+#carsel{max-width:6.6em;min-width:0}
+header h1{flex:0 0 auto}

@@ -6,6 +6,8 @@ import { startRefresh, effective } from './mode.js';
 import { cached } from './offline.js';
 import { currentCar, setCar } from './car.js';
 import { routes } from './routes.js';
+import { refreshBell } from './inboxstate.js';
+import { openSearch } from './searchsheet.js';
 
 
 const view = document.getElementById('view');
@@ -58,6 +60,9 @@ async function loadCars() {
   // whole installation (people, remote access) stays as siteRole.
   session.me.siteRole = session.me.siteRole || session.me.role;
   session.me.role = session.me.siteRole === 'admin' || (here && here.level === 'owner') ? 'admin' : 'viewer';
+  for (const id of ['srch', 'bell', 'help']) document.getElementById(id).hidden = !d.cars.length; // a person with no car yet still sees Help
+  document.getElementById('srch').onclick = () => openSearch(session.me.role === 'admin');
+  refreshBell();
   const note = document.getElementById('carnote');
   note.hidden = !(here && here.theirs);
   note.textContent = here && here.theirs ? `You are looking at ${here.name} as an administrator. It is not your car, and its owner can see that you looked.` : '';
@@ -124,6 +129,7 @@ async function syncLabel() {
     el.textContent = st.poller.linked ? `car reported ${ago(car)}${stale ? ' · Ford not answering' : ''}` : 'not linked';
     el.title = st.poller.linked ? `CarTrak last checked Ford ${ago(st.poller.lastOk)}. The car sends data when it is awake, so an older time here usually means it is parked and asleep.` : '';
     loadVehicle();
+    refreshBell();
   } catch (e) { /* offline */ }
 }
 

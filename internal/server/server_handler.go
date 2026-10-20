@@ -141,6 +141,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /api/rules/{id}", s.auth(true, s.deleteRule))
 	m.HandleFunc("POST /api/rules/apply", s.auth(true, s.applyRules))
 
+	m.HandleFunc("GET /api/inbox", s.authSite(false, s.inbox))
 	m.HandleFunc("GET /api/cars", s.authSite(false, s.listCars))
 	m.HandleFunc("POST /api/cars", s.authSite(false, s.addCar))
 	m.HandleFunc("PATCH /api/cars/{id}", s.authSite(false, s.patchCar))
