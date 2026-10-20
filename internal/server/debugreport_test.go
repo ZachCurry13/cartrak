@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 func TestTheDebugReportListsReadingsAndLockFieldsButNeverPositionsOrTheVIN(t *testing.T) {
@@ -72,5 +73,42 @@ func TestTheDebugReportListsEveryFieldOfTheLatestReadingMinusPositionsAndIdentif
 		if strings.Contains(b, never) {
 			t.Errorf("must not contain %q", never)
 		}
+	}
+}
+
+func TestTheDebugReportShowsFastChargerPowerPollingSettingsAndDecisions(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	t0 := time.Now().Add(-2 * time.Hour).Truncate(time.Second)
+	fp := func(v float64) *float64 { return &v }
+	for i, soc := range []float64{15, 25, 45, 65, 85} {
+		st := &ford.State{TS: t0.Add(time.Duration(i*5) * time.Minute), SoCPct: fp(soc), Plug: "CONNECTED", ChargeState: "IN_PROGRESS", ChargeKw: fp(0), EnergyKwh: fp(10 + soc/2), HVVolts: fp(380), Raw: []byte(`{}`),
+			Extra: map[string]any{"xevBatteryIoCurrent.value": -300.0, "xevBatteryVoltage.value": 380.0}}
+		if _, err := srv.S.SaveState("t", st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	c := &store.Charge{StartTS: t0.Unix(), StartSoC: fp(15), StartKwh: fp(17), PeakKw: 114, Station: "DC"}
+	if err := srv.S.CreateCharge(c); err != nil {
+		t.Fatal(err)
+	}
+	end := t0.Add(20 * time.Minute).Unix()
+	c.EndTS, c.EndSoC, c.EndKwh, c.Open = &end, fp(85), fp(52), false
+	if err := srv.S.UpdateCharge(c); err != nil {
+		t.Fatal(err)
+	}
+	srv.S.LogDecision("trip_discarded", "trip 9 thrown away as a blip: 0.00 km in 40 s")
+	code, b := do(t, admin, "GET", ts.URL+"/api/debug-report?hours=6", "", nil)
+	var out struct{ Text string }
+	if code != 200 || json.Unmarshal([]byte(b), &out) != nil {
+		t.Fatalf("%d %s", code, b)
+	}
+	for _, want := range []string{"| ~114.0 |", "kWh left", "power: 20% 114 kW", "charger type DC", "SETTINGS THAT SHAPE BEHAVIOUR", "polling: driving every", "POLLING (how often", "DECISIONS CARTRAK MADE", "trip_discarded | trip 9 thrown away"} {
+		if !strings.Contains(out.Text, want) {
+			t.Fatalf("the report lacks %q:\n%s", want, out.Text)
+		}
+	}
+	if strings.Contains(out.Text, "lat") && strings.Contains(strings.ToLower(out.Text), "latitude =") {
+		t.Fatal("no positions")
 	}
 }

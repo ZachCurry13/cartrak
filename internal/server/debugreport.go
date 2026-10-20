@@ -94,6 +94,7 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
+	s.withPackPower(rows, from.Unix(), now.Unix())
 	locks := map[int64][]string{}
 	var prev *bool
 	for i, row := range rows {
@@ -134,6 +135,7 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		lastOK = time.Unix(st.LastOK, 0)
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
-		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts})
+		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
+		Polls: toPollInfo(s.P.RecentPolls(from)), Decisions: s.S.RecentDecisions(from.Unix()), Settings: s.debugSettings(), Curves: s.chargeCurves(recent)})
 	ok(w, map[string]any{"text": text, "hours": hours, "readings": len(rows)})
 }

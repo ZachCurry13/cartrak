@@ -55,6 +55,7 @@ type Poller struct {
 	liveUntil  time.Time
 	hintUntil  time.Time // a phone said a trip is under way until then
 	chargeSeen time.Time // the last time a reading showed the car taking charge
+	polls      []PollRec // the latest polls, for the Debug report (in memory: starts again at a restart)
 	rlCount    int       // consecutive 429s, for the backoff
 	srvCount   int       // consecutive Ford server errors (HTTP 5xx), for the retry pace
 }
@@ -127,6 +128,7 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 			w := rateLimitWait(rl.After, p.rlCount)
 			p.mu.Unlock()
 			log.Printf("ford rate limit: waiting %s", w)
+			p.record(PollRec{TS: now.Unix(), Result: "rate limit", NextSec: int(w.Seconds()), Detail: "Ford asked CarTrak to slow down"})
 			p.set(func(s *Status) {
 				s.RateLimited, s.FordTrouble = true, false
 				s.LastError = fmt.Sprintf("Ford asked CarTrak to slow down; trying again in %d s", int(w.Seconds()))
@@ -140,10 +142,12 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 			w := serverErrorWait(p.srvCount)
 			p.mu.Unlock()
 			log.Printf("ford is having trouble: %v; trying again in %s", err, w)
+			p.record(PollRec{TS: now.Unix(), Result: "Ford error", NextSec: int(w.Seconds()), Detail: err.Error()})
 			p.set(func(s *Status) { s.LastError, s.RateLimited, s.FordTrouble = err.Error(), false, true })
 			return w
 		}
 		log.Printf("poll failed: %v", err)
+		p.record(PollRec{TS: now.Unix(), Result: "failed", NextSec: int(backoff(prev, p.Iv.Parked).Seconds()), Detail: err.Error()})
 		p.mu.Lock()
 		p.srvCount = 0
 		p.mu.Unlock()
@@ -167,7 +171,9 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 	if p.After != nil {
 		p.After()
 	}
-	return p.interval(st)
+	next := p.interval(st)
+	p.record(PollRec{TS: now.Unix(), Result: "ok", NextSec: int(next.Seconds()), Detail: fmt.Sprintf("ignition %s, plug %s, charge %s", st.Ignition, st.Plug, st.ChargeState)})
+	return next
 }
 
 func (p *Poller) set(f func(*Status)) {

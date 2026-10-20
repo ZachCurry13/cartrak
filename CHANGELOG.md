@@ -2,6 +2,14 @@
 
 ## 0.33.0
 
+### 🪲 A fuller Debug report
+- **Power and energy on every reading.** Fast chargers report no power at all, so the report showed 0.0 kW for a whole fast charge. It now shows the power worked out from the battery's current and voltage (marked with a ~), and the energy left in kWh, so a charge can be checked against a receipt line by line.
+- **Decisions that leave no trace.** A trip thrown away as a blip, a charging session picked up again after a pause, a charging stop and why it was called complete or interrupted, and a bump alert held back (and why) are now listed with their times. They used to vanish.
+- **Polling.** How often CarTrak really asked Ford since it last started: the pace it planned, the actual time between answers, and each rate limit or error.
+- **Settings snapshot.** The settings that shape behaviour (poll intervals, prices, alert levels, whether the wind and road lookups are on, the time zone, the battery size and the named places) with no secrets and no positions.
+- **Per-session detail.** Each charging session shows its charger type, what you paid if you entered it, and the power as the battery passed 20, 40, 60 and 80 percent.
+- It lists up to 1100 reading lines instead of 700, so more of a three-day window fits.
+
 ### 🗺️ Day view
 - **Trips → Day view** (and **Map of this day** on each day of the History feed, and **See the whole day** on a trip) shows a whole day on one map: every trip in its own colour, the stops between them as numbered markers that match the numbers in the list underneath, and the day's totals.
 - A written **Summary** says it in plain words: how long you drove over how many trips and how far, at what average and top speed; how many times you stopped and for how long in all (and the longest stop); how many times you charged (fast or slow), for how long, how many kWh were added, at what average and peak power, and what it cost. The cost says how much comes from receipts you entered and how much is worked out from a price, and sessions that could not be priced are called out. Below it: when you were out from and to, the battery at the start and the end, charging cost per mile, and the energy used driving.

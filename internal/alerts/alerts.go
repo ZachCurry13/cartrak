@@ -115,11 +115,18 @@ func (e *Engine) plugAndCharge(prev, st *ford.State) {
 		e.chargeSpeed()
 	}
 	if charging(prev) && !charging(st) && nowKnown && now { // stopped while still plugged in
+		soc := "?"
+		if st.SoCPct != nil {
+			soc = fmt.Sprintf("%.0f%%", *st.SoCPct)
+		}
 		if why := chargeFault(st); why != "" {
+			e.S.LogDecision("charge_stop", fmt.Sprintf("charging stopped at %s, state %s: sent 'interrupted' (%s)", soc, st.ChargeState, strings.TrimSpace(why)))
 			e.send(push.Alert{Kind: push.ChargeInterrupted, Title: "Charging interrupted", Body: why + strings.TrimRight(charge(st), " "), URL: "#/charging"})
 		} else if e.stoppedEarly(st) {
+			e.S.LogDecision("charge_stop", fmt.Sprintf("charging stopped at %s, state %s: sent 'stopped early' (lower than your sessions usually end)", soc, st.ChargeState))
 			e.send(push.Alert{Kind: push.ChargeInterrupted, Title: "Charging stopped early", Body: fmt.Sprintf("Charging stopped at %.0f%% while still plugged in, lower than it usually stops. Check the cable and the charger.", *st.SoCPct), URL: "#/charging"})
 		} else {
+			e.S.LogDecision("charge_stop", fmt.Sprintf("charging stopped at %s, state %s: sent 'complete'", soc, st.ChargeState))
 			e.send(push.Alert{Kind: push.ChargeComplete, Title: "Charging complete", Body: strings.TrimSpace(charge(st)), URL: "#/charging"})
 		}
 	}

@@ -14,22 +14,26 @@ import (
 
 // Input is everything the report is built from.
 type Input struct {
-	Version  string
-	Now      time.Time
-	Loc      *time.Location
-	From     time.Time
-	Vehicle  string
-	Linked   bool
-	LastOK   time.Time
-	LastErr  string
-	Rows     []store.DebugRow
-	Locks    map[int64][]string // raw lock and door fields, by reading time
-	Fields   []string           // every field of the latest reading as "name = value", positions and identifiers already removed
-	Trips    []*store.Trip
-	Points   map[int64][3]int // by trip id: readings the car sent, how many had a position, and phone GPS points
-	Charges  []*store.Charge
-	Alerts   []store.AlertLogEntry
-	MaxLines int
+	Version   string
+	Now       time.Time
+	Loc       *time.Location
+	From      time.Time
+	Vehicle   string
+	Linked    bool
+	LastOK    time.Time
+	LastErr   string
+	Rows      []store.DebugRow
+	Locks     map[int64][]string // raw lock and door fields, by reading time
+	Fields    []string           // every field of the latest reading as "name = value", positions and identifiers already removed
+	Trips     []*store.Trip
+	Polls     []PollInfo       // the latest polls CarTrak made (since it last started)
+	Decisions []store.LogEntry // blips thrown away, charges picked up again, alerts held back, and why
+	Settings  []string         // the settings that shape behaviour, without secrets or positions
+	Curves    map[int64]string // by charging session id: the power at 20, 40, 60 and 80 percent
+	Points    map[int64][3]int // by trip id: readings the car sent, how many had a position, and phone GPS points
+	Charges   []*store.Charge
+	Alerts    []store.AlertLogEntry
+	MaxLines  int
 }
 
 func fp(p *float64, f string) string {
@@ -37,6 +41,25 @@ func fp(p *float64, f string) string {
 		return "-"
 	}
 	return fmt.Sprintf(f, *p)
+}
+
+// PollInfo is one poll of Ford.
+type PollInfo struct {
+	TS      int64
+	Result  string
+	NextSec int
+	Detail  string
+}
+
+// kwText is the power of a reading: the car's own figure, or one worked out from the pack (marked ~).
+func kwText(r store.DebugRow) string {
+	if r.ChargeKw != nil && *r.ChargeKw > 0.2 {
+		return fmt.Sprintf("%.1f", *r.ChargeKw)
+	}
+	if r.PackKw != nil && *r.PackKw > 0.2 {
+		return fmt.Sprintf("~%.1f", *r.PackKw)
+	}
+	return fp(r.ChargeKw, "%.1f")
 }
 
 func lock(b *bool) string {
@@ -69,10 +92,10 @@ func Build(in Input) string {
 	fmt.Fprintf(&b, "Ford link: linked=%v, last answer %s, last error: %s\n", in.Linked, last, dash(in.LastErr))
 	fmt.Fprintf(&b, "window: from %s, %d readings\n\n", in.From.In(in.Loc).Format("01-02 15:04"), len(in.Rows))
 
-	b.WriteString("READINGS (time | ignition | speed km/h | plug | charge state | kW | battery % | odometer km | lock)\n")
+	b.WriteString("READINGS (time | ignition | speed km/h | plug | charge state | kW (~ worked out from the pack, which fast chargers need) | kWh left | battery % | odometer km | lock)\n")
 	max := in.MaxLines
 	if max <= 0 {
-		max = 700
+		max = 1100
 	}
 	type line struct {
 		ts   int64
@@ -88,7 +111,7 @@ func Build(in Input) string {
 		repeat = 0
 	}
 	for _, r := range in.Rows {
-		key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s", dash(r.Ignition), fp(r.SpeedKph, "%.0f"), dash(r.Plug), dash(r.ChargeState), fp(r.ChargeKw, "%.1f"), fp(r.SoC, "%.0f"), fp(r.OdometerKm, "%.0f"), lock(r.Locked))
+		key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s|%s", dash(r.Ignition), fp(r.SpeedKph, "%.0f"), dash(r.Plug), dash(r.ChargeState), kwText(r), fp(r.EnergyKwh, "%.1f"), fp(r.SoC, "%.0f"), fp(r.OdometerKm, "%.0f"), lock(r.Locked))
 		if key == prevKey {
 			repeat++
 			repeatFrom = r.TS
@@ -145,16 +168,43 @@ func Build(in Input) string {
 		b.WriteString("(none)\n")
 	}
 
-	b.WriteString("\nCHARGING (id | start | end | battery start>end | energy kWh start>end | peak kW | charger kWh | open)\n")
+	b.WriteString("\nCHARGING (id | start | end | battery start>end | energy kWh start>end | peak kW | charger kWh | open; then charger type, what you paid and the power at 20/40/60/80 percent)\n")
 	for _, c := range in.Charges {
 		end := "open"
 		if c.EndTS != nil {
 			end = at(*c.EndTS)
 		}
 		fmt.Fprintf(&b, "%d | %s | %s | %s>%s | %s>%s | %.1f | %s | %v\n", c.ID, at(c.StartTS), end, fp(c.StartSoC, "%.0f"), fp(c.EndSoC, "%.0f"), fp(c.StartKwh, "%.1f"), fp(c.EndKwh, "%.1f"), c.PeakKw, fp(c.ChargerKwh, "%.1f"), c.Open)
+		if c.Station != "" || c.ActualCost != nil {
+			fmt.Fprintf(&b, "    charger type %s, paid %s\n", dash(c.Station), fp(c.ActualCost, "%.2f"))
+		}
+		if cv, ok := in.Curves[c.ID]; ok {
+			fmt.Fprintf(&b, "    power: %s\n", cv)
+		}
 	}
 	if len(in.Charges) == 0 {
 		b.WriteString("(none)\n")
+	}
+
+	b.WriteString("\nSETTINGS THAT SHAPE BEHAVIOUR (no secrets, no positions)\n")
+	for _, l := range in.Settings {
+		b.WriteString("    " + l + "\n")
+	}
+
+	b.WriteString("\nPOLLING (how often CarTrak asked Ford, since it last started)\n")
+	b.WriteString(pollSummary(in.Polls, at))
+
+	b.WriteString("\nDECISIONS CARTRAK MADE THAT LEAVE NO TRACE (time | kind | what)\n")
+	anyDecision := false
+	for _, d := range in.Decisions {
+		if time.Unix(d.TS, 0).Before(in.From) {
+			continue
+		}
+		anyDecision = true
+		fmt.Fprintf(&b, "%s | %s | %s\n", at(d.TS), d.Kind, d.Note)
+	}
+	if !anyDecision {
+		b.WriteString("(none in this window)\n")
 	}
 
 	b.WriteString("\nALERTS SENT (time | kind | title)\n")

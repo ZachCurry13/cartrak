@@ -101,7 +101,18 @@ func (e *Engine) parkedWatch(st *ford.State, first bool) {
 		return
 	}
 	_ = e.S.AddParkedEvent(store.ParkedEvent{TS: at, Kind: "motion", Value: m, Note: fmt.Sprintf("%.2f m/s²", m)})
-	if m >= level && !first && e.now().Sub(e.lastBump) >= bumpQuietFor && st.TS.Sub(e.lastDrive) >= settleAfterDrive && !e.ownerWithCar(st) {
+	if m >= level && !first {
+		switch {
+		case e.now().Sub(e.lastBump) < bumpQuietFor:
+			e.S.LogDecision("alert_held", fmt.Sprintf("bump of %.1f m/s² not alerted: another bump alert went out lately", m))
+			return
+		case st.TS.Sub(e.lastDrive) < settleAfterDrive:
+			e.S.LogDecision("alert_held", fmt.Sprintf("bump of %.1f m/s² not alerted: the car was in use %d s ago and is still settling", m, int(st.TS.Sub(e.lastDrive).Seconds())))
+			return
+		case e.ownerWithCar(st):
+			e.S.LogDecision("alert_held", fmt.Sprintf("bump of %.1f m/s² not alerted: the car is unlocked or a paired phone is beside it", m))
+			return
+		}
 		e.lastBump = e.now()
 		e.send(push.Alert{Kind: push.BumpWhileParked, Title: "Bump while parked", Body: fmt.Sprintf("The parked car's motion sensors read %.1f m/s² (your level is %.1f). Take a look at the car.", m, level), URL: "#/parkedwatch"})
 	}

@@ -1,6 +1,7 @@
 package trips
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -117,6 +118,7 @@ func (d *Detector) trip(st *ford.State) error {
 	if !Driving(st) {
 		open.Open = false
 		if (open.DistanceKm < 0.3 && now-open.StartTS < 120) || (open.DistanceKm < 0.2 && open.MaxSpeedKph < 8) {
+			d.S.LogDecision("trip_discarded", fmt.Sprintf("trip %d thrown away as a blip: %.2f km in %d s, top speed %.0f km/h", open.ID, open.DistanceKm, now-open.StartTS, open.MaxSpeedKph))
 			return d.S.DeleteTrip(open.ID) // an ignition blip, or sitting in the car with it on: not a trip
 		}
 	}
@@ -183,6 +185,7 @@ func (d *Detector) charge(st *ford.State) error {
 				return err
 			}
 			prev.Open = true
+			d.S.LogDecision("charge_resumed", fmt.Sprintf("charging session %d picked up again after a pause of %d min (cable still connected)", prev.ID, (now-*prev.EndTS)/60))
 			open = prev
 		}
 	}
