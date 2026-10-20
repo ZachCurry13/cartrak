@@ -1,0 +1,244 @@
+package server
+
+import (
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/ZachCurry13/cartrak/internal/store"
+)
+
+// CarManager is what the server asks of the fleet to add, rename and remove cars. It is nil when only one car exists
+// (tests), and then the cars API says it is not available.
+type CarManager interface {
+	AddCar(name string, ownerID int64) (int64, error)
+	Rename(id int64, name string) error
+	Remove(id int64) error
+	Status(id int64) (linked bool, lastOK int64, found bool)
+	AdminViews(id int64) map[string]int64 // administrators who opened the car without having been given access, by name, when last
+}
+
+// carView is one car as a person sees it in the car switcher.
+type carView struct {
+	ID      int64  `json:"id"`
+	Name    string `json:"name"`
+	Level   string `json:"level"`   // owner, viewer, or admin (a site administrator looking at someone else's car)
+	Theirs  bool   `json:"theirs"`  // true when the person has no access of their own and sees it as an administrator
+	OwnerID int64  `json:"ownerId"` // who brought the car; 0 for the first
+	Linked  bool   `json:"linked"`
+	LastOK  int64  `json:"lastOk"`
+	// AdminViews is shown to the car's owner: which administrators opened the car without having been given access.
+	AdminViews map[string]int64 `json:"adminViews,omitempty"`
+}
+
+// listCars: GET /api/cars. The cars the signed-in person can open, with what they may do, and whether they may add one.
+func (s *Server) listCars(w http.ResponseWriter, r *http.Request) {
+	u := userFrom(r)
+	cars, err := s.core().ListCars()
+	if err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	access, _ := s.core().UserAccess(u.ID)
+	out := []carView{}
+	for _, c := range cars {
+		lvl, mine := access[c.ID]
+		if !mine && u.Role != "admin" {
+			continue
+		}
+		v := carView{ID: c.ID, Name: c.Name, Level: lvl, Theirs: !mine, OwnerID: c.OwnerID}
+		if !mine {
+			v.Level = "admin"
+		}
+		if s.Cars != nil {
+			v.Linked, v.LastOK, _ = s.Cars.Status(c.ID)
+			if mine && lvl == store.AccessOwner {
+				v.AdminViews = s.Cars.AdminViews(c.ID)
+			}
+		}
+		out = append(out, v)
+	}
+	ok(w, map[string]any{"cars": out, "canAdd": s.Cars != nil && (u.Role == "admin" || u.OwnCar) && len(cars) < maxCars, "max": maxCars})
+}
+
+// maxCars matches fleet.MaxCars (the server cannot import the fleet).
+const maxCars = 6
+
+func cleanCarName(n string) string {
+	n = strings.Join(strings.Fields(n), " ")
+	if len([]rune(n)) > 40 {
+		n = string([]rune(n)[:40])
+	}
+	return n
+}
+
+// addCar: POST /api/cars {name}. A site administrator, or a person allowed to bring a car, adds a car that they own.
+func (s *Server) addCar(w http.ResponseWriter, r *http.Request) {
+	u := userFrom(r)
+	if s.Cars == nil {
+		fail(w, 501, "several cars are not available here")
+		return
+	}
+	if u.Role != "admin" && !u.OwnCar {
+		fail(w, 403, "you were not given the right to add a car; ask an administrator")
+		return
+	}
+	var b struct{ Name string }
+	if decode(r, &b) != nil || cleanCarName(b.Name) == "" {
+		fail(w, 400, "give the car a name")
+		return
+	}
+	if cars, _ := s.core().ListCars(); len(cars) >= maxCars {
+		fail(w, 409, "that is the most cars CarTrak follows ("+strconv.Itoa(maxCars)+")")
+		return
+	}
+	id, err := s.Cars.AddCar(cleanCarName(b.Name), u.ID)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	ok(w, map[string]any{"id": id})
+}
+
+// manage says whether the person may change this car: a site administrator or its owner.
+func (s *Server) manage(r *http.Request, id int64) bool {
+	u := userFrom(r)
+	return u.Role == "admin" || s.core().Access(u.ID, id) == store.AccessOwner
+}
+
+// patchCar: PATCH /api/cars/{id} {name}.
+func (s *Server) patchCar(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if s.Cars == nil || !s.manage(r, id) {
+		fail(w, 403, "only the car's owner or an administrator can do that")
+		return
+	}
+	var b struct{ Name string }
+	if decode(r, &b) != nil || cleanCarName(b.Name) == "" {
+		fail(w, 400, "give the car a name")
+		return
+	}
+	if err := s.Cars.Rename(id, cleanCarName(b.Name)); err != nil {
+		fail(w, 409, err.Error())
+		return
+	}
+	ok(w, "renamed")
+}
+
+// removeCar: DELETE /api/cars/{id}. The car stops being followed and disappears from the lists; its database stays on disk.
+func (s *Server) removeCar(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if s.Cars == nil || !s.manage(r, id) {
+		fail(w, 403, "only the car's owner or an administrator can do that")
+		return
+	}
+	if cars, _ := s.core().ListCars(); len(cars) < 2 {
+		fail(w, 409, "the last car cannot be removed")
+		return
+	}
+	if err := s.Cars.Remove(id); err != nil {
+		fail(w, 409, err.Error())
+		return
+	}
+	ok(w, "removed")
+}
+
+type accessRow struct {
+	UserID int64  `json:"userId"`
+	Name   string `json:"name"`
+	Level  string `json:"level"`
+}
+
+// carAccess: GET /api/cars/{id}/access. Who can open the car.
+func (s *Server) carAccess(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if !s.manage(r, id) {
+		fail(w, 403, "only the car's owner or an administrator can see who has access")
+		return
+	}
+	m, _ := s.core().CarAccess(id)
+	users, _ := s.core().ListUsers()
+	out := []accessRow{}
+	for _, u := range users {
+		out = append(out, accessRow{UserID: u.ID, Name: u.Name, Level: m[u.ID]})
+	}
+	ok(w, out)
+}
+
+// setCarAccess: PUT /api/cars/{id}/access {userId, level} with level owner, viewer or "" (none). An owner can share the
+// car with others as viewers; making someone an owner, or taking an owner's access away, is for site administrators.
+func (s *Server) setCarAccess(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if !s.manage(r, id) {
+		fail(w, 403, "only the car's owner or an administrator can change who has access")
+		return
+	}
+	var b struct {
+		UserID int64  `json:"userId"`
+		Level  string `json:"level"`
+	}
+	if decode(r, &b) != nil || (b.Level != "" && b.Level != store.AccessOwner && b.Level != store.AccessViewer) {
+		fail(w, 400, "level must be owner, viewer or empty")
+		return
+	}
+	u := userFrom(r)
+	if u.Role != "admin" && (b.Level == store.AccessOwner || s.core().Access(b.UserID, id) == store.AccessOwner) {
+		fail(w, 403, "only an administrator can make or remove an owner")
+		return
+	}
+	if car, _ := s.core().GetCar(id); car == nil {
+		fail(w, 404, "no such car")
+		return
+	}
+	if err := s.core().SetAccess(b.UserID, id, b.Level); err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	ok(w, "saved")
+}
+
+// patchUser: PATCH /api/users/{id} {ownCar, seeMain}. A site administrator sets what a person may do with cars.
+// seeMain gives or takes away read access to the first car.
+func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	var b struct {
+		OwnCar  *bool `json:"ownCar"`
+		SeeMain *bool `json:"seeMain"`
+	}
+	if decode(r, &b) != nil {
+		fail(w, 400, "bad request")
+		return
+	}
+	if b.OwnCar != nil {
+		if err := s.core().SetOwnCar(id, *b.OwnCar); err != nil {
+			fail(w, 500, "db error")
+			return
+		}
+	}
+	if b.SeeMain != nil {
+		cars, _ := s.core().ListCars()
+		if len(cars) > 0 && s.core().Access(id, cars[0].ID) != store.AccessOwner {
+			level := ""
+			if *b.SeeMain {
+				level = store.AccessViewer
+			}
+			_ = s.core().SetAccess(id, cars[0].ID, level)
+		}
+	}
+	ok(w, "saved")
+}
+
+// grantNewUser gives a new person the starting access: read access to the first car (administrators own it).
+func (s *Server) grantNewUser(name, role string, seeMain bool) {
+	u, _ := s.core().UserByName(name)
+	cars, _ := s.core().ListCars()
+	if u == nil || len(cars) == 0 || s.CarID == 0 {
+		return
+	}
+	switch {
+	case role == "admin":
+		_ = s.core().SetAccess(u.ID, cars[0].ID, store.AccessOwner)
+	case seeMain:
+		_ = s.core().SetAccess(u.ID, cars[0].ID, store.AccessViewer)
+	}
+}

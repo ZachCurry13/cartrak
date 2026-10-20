@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
@@ -15,18 +14,12 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/tripwhy"
 )
 
-var (
-	whyMu   sync.Mutex
-	whyAt   time.Time
-	whyBase tripwhy.Baseline
-)
-
 // whyBaseline is what the driver's own history says about speed and temperature, kept for half an hour.
 func (s *Server) whyBaseline() tripwhy.Baseline {
-	whyMu.Lock()
-	defer whyMu.Unlock()
-	if time.Since(whyAt) < 30*time.Minute && whyBase.Overall > 0 {
-		return whyBase
+	s.cc.whyMu.Lock()
+	defer s.cc.whyMu.Unlock()
+	if time.Since(s.cc.whyAt) < 30*time.Minute && s.cc.whyBase.Overall > 0 {
+		return s.cc.whyBase
 	}
 	var b tripwhy.Baseline
 	b.TempKmPKwh = map[string]float64{}
@@ -60,7 +53,7 @@ func (s *Server) whyBaseline() tripwhy.Baseline {
 			}
 		}
 	}
-	whyBase, whyAt = b, time.Now()
+	s.cc.whyBase, s.cc.whyAt = b, time.Now()
 	return b
 }
 
@@ -131,13 +124,6 @@ func (s *Server) tripWhy(w http.ResponseWriter, r *http.Request) {
 	ok(w, rep)
 }
 
-var (
-	reasonsMu   sync.Mutex
-	reasonsAt   time.Time
-	reasonsDays int
-	reasonsOut  map[string]any
-)
-
 // efficiencyReasons adds up, across recent trips, how much energy each reason cost or saved compared with your usual:
 // the speeds you drove, the weather, and everything else. GET /api/efficiency-reasons?days=60
 func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
@@ -145,10 +131,10 @@ func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
 	if days < 7 || days > 365 {
 		days = 60
 	}
-	reasonsMu.Lock()
-	defer reasonsMu.Unlock()
-	if reasonsOut != nil && reasonsDays == days && time.Since(reasonsAt) < 30*time.Minute {
-		ok(w, reasonsOut)
+	s.cc.reasonsMu.Lock()
+	defer s.cc.reasonsMu.Unlock()
+	if s.cc.reasonsOut != nil && s.cc.reasonsDays == days && time.Since(s.cc.reasonsAt) < 30*time.Minute {
+		ok(w, s.cc.reasonsOut)
 		return
 	}
 	ts, err := s.S.ListTrips(store.TripFilter{From: time.Now().AddDate(0, 0, -days).Unix(), Limit: 400})
@@ -189,7 +175,7 @@ func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
 			items = append(items, map[string]any{"key": k, "kwh": extra[k], "pctOfUse": extra[k] / usual * 100})
 		}
 	}
-	reasonsOut = map[string]any{"days": days, "trips": n, "usedKwh": used, "usualKwh": usual, "items": items}
-	reasonsDays, reasonsAt = days, time.Now()
-	ok(w, reasonsOut)
+	s.cc.reasonsOut = map[string]any{"days": days, "trips": n, "usedKwh": used, "usualKwh": usual, "items": items}
+	s.cc.reasonsDays, s.cc.reasonsAt = days, time.Now()
+	ok(w, s.cc.reasonsOut)
 }

@@ -15,7 +15,7 @@ export async function routeEstimateBar() {
     while (left > 0 && guard++ < 30) {
       msg.textContent = `Estimating… ${left} to go.`;
       const r = await api('/api/trips/estimate-routes?limit=10', { method: 'POST' }).catch(() => null);
-      if (!r || (r.done === 0 && r.failed > 0 && r.pending >= left)) { msg.textContent = 'Some trips could not be estimated (the routing service gave no usable road). Try again later.'; btn.hidden = false; btn.disabled = false; return; }
+      if (!r || (r.done === 0 && r.failed > 0 && r.pending >= left)) { msg.textContent = 'Some trips could not be estimated (the routing service gave no usable road).' + (r.why ? ` Last reason: ${r.why}.` : '') + ' Try again later.'; btn.hidden = false; btn.disabled = false; return; }
       left = r.pending;
     }
     msg.textContent = left > 0 ? `${left} more can be done later.` : 'Done. Open a trip to see its estimated road.';

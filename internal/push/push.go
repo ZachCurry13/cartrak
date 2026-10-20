@@ -118,6 +118,10 @@ type Service struct {
 	AllowAny bool                  // tests only: accept any push address
 	// Log, when set, is told about every alert: how many devices wanted it, were in quiet hours, and accepted it.
 	Log func(a Alert, devices, wanted, quiet, sent int)
+	// Visible, when set, says whether a person may be told about this car (several cars share one list of devices).
+	Visible func(userID int64) bool
+	// CarName, when set and not empty, is put before the title so people with several cars know which one it is about.
+	CarName func() string
 }
 
 const (
@@ -175,7 +179,16 @@ func (s *Service) Notify(ctx context.Context, a Alert) {
 		now = now.In(s.Location())
 	}
 	wanted, quiet, sent := 0, 0, 0
+	out := a
+	if s.CarName != nil {
+		if n := s.CarName(); n != "" {
+			out.Title = n + ": " + a.Title
+		}
+	}
 	for _, sub := range subs {
+		if s.Visible != nil && !s.Visible(sub.UserID) {
+			continue
+		}
 		if !has(sub.Events, a.Kind) {
 			continue
 		}
@@ -184,7 +197,7 @@ func (s *Service) Notify(ctx context.Context, a Alert) {
 			continue
 		}
 		wanted++
-		if s.SendTo(ctx, sub, a) == nil {
+		if s.SendTo(ctx, sub, out) == nil {
 			sent++
 		}
 	}

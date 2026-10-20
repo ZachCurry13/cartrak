@@ -38,7 +38,7 @@ func (s *Server) pushConfig(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "could not prepare notifications")
 		return
 	}
-	subs, _ := s.S.ListPushSubs(userFrom(r).ID)
+	subs, _ := s.core().ListPushSubs(userFrom(r).ID)
 	ok(w, map[string]any{"publicKey": key, "kinds": push.Kinds, "devices": subs, "defaults": defaultAlerts})
 }
 
@@ -82,8 +82,8 @@ func (s *Server) pushSubscribe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userFrom(r)
-	if subs, _ := s.S.ListPushSubs(u.ID); len(subs) >= maxDevicesPerPerson {
-		if _, err := s.S.GetPushSub(u.ID, in.Endpoint); err != nil { // not just re-saving a known device
+	if subs, _ := s.core().ListPushSubs(u.ID); len(subs) >= maxDevicesPerPerson {
+		if _, err := s.core().GetPushSub(u.ID, in.Endpoint); err != nil { // not just re-saving a known device
 			fail(w, 400, "remove a device first (limit 10)")
 			return
 		}
@@ -95,7 +95,7 @@ func (s *Server) pushSubscribe(w http.ResponseWriter, r *http.Request) {
 	if len(in.Events) == 0 {
 		in.Events = defaultAlerts
 	}
-	err := s.S.SavePushSub(&store.PushSub{UserID: u.ID, Endpoint: in.Endpoint, P256dh: in.Keys.P256dh, Auth: in.Keys.Auth, Label: label, Events: in.Events, Quiet: in.Quiet})
+	err := s.core().SavePushSub(&store.PushSub{UserID: u.ID, Endpoint: in.Endpoint, P256dh: in.Keys.P256dh, Auth: in.Keys.Auth, Label: label, Events: in.Events, Quiet: in.Quiet})
 	if err != nil {
 		fail(w, 500, "could not save the device")
 		return
@@ -113,7 +113,7 @@ func (s *Server) pushPrefs(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, msg)
 		return
 	}
-	if err := s.S.SetPushPrefs(userFrom(r).ID, in.Endpoint, in.Events, in.Quiet); err != nil {
+	if err := s.core().SetPushPrefs(userFrom(r).ID, in.Endpoint, in.Events, in.Quiet); err != nil {
 		fail(w, 500, "could not save")
 		return
 	}
@@ -126,7 +126,7 @@ func (s *Server) pushUnsubscribe(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "bad request")
 		return
 	}
-	_ = s.S.DeletePushSub(userFrom(r).ID, in.Endpoint)
+	_ = s.core().DeletePushSub(userFrom(r).ID, in.Endpoint)
 	s.pushConfig(w, r)
 }
 
@@ -137,7 +137,7 @@ func (s *Server) pushTest(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "bad request")
 		return
 	}
-	sub, err := s.S.GetPushSub(userFrom(r).ID, in.Endpoint)
+	sub, err := s.core().GetPushSub(userFrom(r).ID, in.Endpoint)
 	if err != nil {
 		fail(w, 404, "that device is not set up for alerts")
 		return

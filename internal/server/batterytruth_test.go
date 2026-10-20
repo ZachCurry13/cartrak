@@ -10,9 +10,6 @@ import (
 )
 
 func TestBatteryTruthComparesTheDisplayWithTheBatterysOwnLevel(t *testing.T) {
-	truthMu.Lock()
-	truthCache, truthAt = nil, time.Time{}
-	truthMu.Unlock()
 	ts, srv := healthServer(t, fakeProv{}, false, false)
 	admin := adminClient(t, ts.URL)
 	soc := 67.5

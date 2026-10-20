@@ -17,9 +17,6 @@ import (
 )
 
 func TestTheWindLookupIsOffByDefaultThenGivesATailwindAskingOnlyForACellOnce(t *testing.T) {
-	whyMu.Lock()
-	whyAt = time.Time{}
-	whyMu.Unlock()
 	ts, srv := healthServer(t, fakeProv{}, false, false)
 	admin := adminClient(t, ts.URL)
 	var asked int32

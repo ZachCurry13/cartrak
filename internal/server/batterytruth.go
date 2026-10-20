@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/batteryhealth"
@@ -30,20 +29,13 @@ func usable(f map[string]any) (float64, bool) {
 	return *kwh / (*soc / 100), true
 }
 
-var (
-	truthMu    sync.Mutex
-	truthAt    time.Time
-	truthCache []store.Day
-	rangeCache []store.Day // the range the car expects on a full charge, the same days
-)
-
 // truthSeries is the usable size, one reading a day for the last half year, kept for six hours (it reads the raw
 // field list of about a hundred readings).
 func (s *Server) truthSeries() (usableDays, rangeDays []store.Day) {
-	truthMu.Lock()
-	defer truthMu.Unlock()
-	if time.Since(truthAt) < 6*time.Hour && truthCache != nil {
-		return truthCache, rangeCache
+	s.cc.truthMu.Lock()
+	defer s.cc.truthMu.Unlock()
+	if time.Since(s.cc.truthAt) < 6*time.Hour && s.cc.truthCache != nil {
+		return s.cc.truthCache, s.cc.rangeCache
 	}
 	var out, rng []store.Day
 	seen := map[int64]bool{}
@@ -67,14 +59,14 @@ func (s *Server) truthSeries() (usableDays, rangeDays []store.Day) {
 			rng = append(rng, store.Day{TS: day, Avg: *m, Min: *m, Max: *m, N: 1})
 		}
 	}
-	truthCache, rangeCache, truthAt = out, rng, time.Now()
-	if truthCache == nil {
-		truthCache = []store.Day{}
+	s.cc.truthCache, s.cc.rangeCache, s.cc.truthAt = out, rng, time.Now()
+	if s.cc.truthCache == nil {
+		s.cc.truthCache = []store.Day{}
 	}
-	if rangeCache == nil {
-		rangeCache = []store.Day{}
+	if s.cc.rangeCache == nil {
+		s.cc.rangeCache = []store.Day{}
 	}
-	return truthCache, rangeCache
+	return s.cc.truthCache, s.cc.rangeCache
 }
 
 // batteryTruth compares what the car shows with the battery's own figures, and tracks the usable size over time.

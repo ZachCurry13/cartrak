@@ -9,7 +9,10 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type Store struct{ DB *sql.DB }
+type Store struct {
+	DB   *sql.DB
+	Path string // the database file
+}
 
 const schema = `
 CREATE TABLE IF NOT EXISTS snapshots (
@@ -100,23 +103,27 @@ CREATE TABLE IF NOT EXISTS device_events (
 CREATE INDEX IF NOT EXISTS device_events_ts ON device_events(ts);
 `
 
-func Open(dir string) (*Store, error) {
+// Open opens (or creates) a car's database in dir.
+func Open(dir string) (*Store, error) { return openFile(dir, "cartrak.db") }
+
+func openFile(dir, name string) (*Store, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
-	db, err := sql.Open("sqlite", "file:"+filepath.ToSlash(filepath.Join(dir, "cartrak.db"))+
+	path := filepath.Join(dir, name)
+	db, err := sql.Open("sqlite", "file:"+filepath.ToSlash(path)+
 		"?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)")
 	if err != nil {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1) // SQLite: serialize writers, avoids SQLITE_BUSY
-	if _, err := db.Exec(schema); err != nil {
+	if _, err := db.Exec(schema + schemaCars); err != nil {
 		return nil, err
 	}
 	if err := migrate(db); err != nil {
 		return nil, err
 	}
-	return &Store{DB: db}, nil
+	return &Store{DB: db, Path: path}, nil
 }
 
 func (s *Store) GetKV(k string) string {

@@ -12,7 +12,7 @@ import (
 )
 
 // UpdateCheckEnabled is on unless an admin turned it off.
-func (s *Server) UpdateCheckEnabled() bool { return s.S.GetKV("update_check") != "off" }
+func (s *Server) UpdateCheckEnabled() bool { return s.core().GetKV("update_check") != "off" }
 
 func (s *Server) about(w http.ResponseWriter, r *http.Request) {
 	var info updater.Info
@@ -62,7 +62,7 @@ func (s *Server) setUpdateCheck(w http.ResponseWriter, r *http.Request) {
 	if b.Enabled {
 		v = "on"
 	}
-	_ = s.S.SetKV("update_check", v)
+	_ = s.core().SetKV("update_check", v)
 	if b.Enabled && s.Upd != nil {
 		go func() { _ = s.Upd.Check(context.Background()) }()
 	}
@@ -83,7 +83,7 @@ func (s *Server) onboarding(w http.ResponseWriter, r *http.Request) {
 	maintenance, _ := s.S.ListMaintenance()
 	alerts := 0
 	if s.Push != nil {
-		if subs, err := s.S.ListPushSubs(0); err == nil {
+		if subs, err := s.core().ListPushSubs(0); err == nil {
 			alerts = len(subs)
 		}
 	}
@@ -94,19 +94,19 @@ func (s *Server) onboarding(w http.ResponseWriter, r *http.Request) {
 		"alerts":      alerts,
 		"priceSet":    pr.Home != nil || pr.Public != nil,
 		"backedUp":    s.S.GetKV(kvBackupTaken) != "",
-		"dismissed":   s.S.GetKV("onboarding_dismissed") == "1",
+		"dismissed":   s.core().GetKV("onboarding_dismissed") == "1",
 		"linked":      st.Linked,
 		"canLink":     s.Link != nil,
 		"configured":  s.Cfg == nil || s.Cfg.Configured(),
 		"remote":      s.Tunnel != nil && s.Tunnel.Status().State == tunnel.Connected,
 		"hasReading":  latest != nil,
 		"rules":       len(rules),
-		"users":       s.S.CountUsers(),
+		"users":       s.core().CountUsers(),
 		"provider":    st.Provider,
 	})
 }
 
 func (s *Server) dismissOnboarding(w http.ResponseWriter, r *http.Request) {
-	_ = s.S.SetKV("onboarding_dismissed", "1")
+	_ = s.core().SetKV("onboarding_dismissed", "1")
 	ok(w, "dismissed")
 }

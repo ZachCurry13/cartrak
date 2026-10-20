@@ -12,16 +12,18 @@ type creds struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
+	OwnCar   bool   `json:"ownCar"`
+	SeeMain  *bool  `json:"seeMain"` // read access to the first car; on unless said otherwise
 }
 
 // setupState tells the UI whether first-run setup is still needed.
 func (s *Server) setupState(w http.ResponseWriter, r *http.Request) {
-	ok(w, map[string]bool{"needsSetup": s.S.CountUsers() == 0})
+	ok(w, map[string]bool{"needsSetup": s.core().CountUsers() == 0})
 }
 
 // setup creates the first admin. It only works while there are no users.
 func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
-	if s.S.CountUsers() != 0 {
+	if s.core().CountUsers() != 0 {
 		fail(w, 403, "already set up")
 		return
 	}
@@ -34,7 +36,7 @@ func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "could not create user")
 		return
 	}
-	u, _ := s.S.UserByName(c.Name)
+	u, _ := s.core().UserByName(c.Name)
 	if err := s.startSession(w, r, u); err != nil {
 		fail(w, 500, "session error")
 		return
@@ -51,7 +53,13 @@ func (s *Server) makeUser(name, pass, role string) error {
 	if err != nil {
 		return err
 	}
-	return s.S.CreateUser(strings.TrimSpace(name), h, role)
+	if err := s.core().CreateUser(strings.TrimSpace(name), h, role); err != nil {
+		return err
+	}
+	if role == "admin" { // the first person to sign up, or one made by the seed, manages the first car
+		s.grantNewUser(name, role, true)
+	}
+	return nil
 }
 
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +73,7 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "bad request")
 		return
 	}
-	u, _ := s.S.UserByName(strings.TrimSpace(c.Name))
+	u, _ := s.core().UserByName(strings.TrimSpace(c.Name))
 	if u == nil || checkPassword(u.Hash, c.Password) != nil {
 		s.lim.fail(ip)
 		s.logSignin(r, strings.TrimSpace(c.Name), false)
@@ -82,14 +90,14 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie(cookieName); err == nil {
-		s.S.DeleteSession(c.Value)
+		s.core().DeleteSession(c.Value)
 	}
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Path: "/", MaxAge: -1})
 	ok(w, "bye")
 }
 
 func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) {
-	us, err := s.S.ListUsers()
+	us, err := s.core().ListUsers()
 	if err != nil {
 		fail(w, 500, "db error")
 		return
@@ -107,6 +115,10 @@ func (s *Server) addUser(w http.ResponseWriter, r *http.Request) {
 		fail(w, 409, "that name is taken")
 		return
 	}
+	if u, _ := s.core().UserByName(strings.TrimSpace(c.Name)); u != nil && c.OwnCar {
+		_ = s.core().SetOwnCar(u.ID, true)
+	}
+	s.grantNewUser(strings.TrimSpace(c.Name), c.Role, c.SeeMain == nil || *c.SeeMain)
 	ok(w, "created")
 }
 
@@ -116,7 +128,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "you cannot delete yourself")
 		return
 	}
-	if err := s.S.DeleteUser(id); err != nil {
+	if err := s.core().DeleteUser(id); err != nil {
 		fail(w, 500, "db error")
 		return
 	}
@@ -133,13 +145,13 @@ func (s *Server) SeedAdmin(name, pass string, reset bool) {
 	}
 	if reset {
 		if h, err := hashPassword(pass); err == nil {
-			if ok, _ := s.S.SetPassword(name, h); !ok && s.S.CountUsers() == 0 {
+			if ok, _ := s.core().SetPassword(name, h); !ok && s.core().CountUsers() == 0 {
 				_ = s.makeUser(name, pass, "admin")
 			}
 		}
 		return
 	}
-	if s.S.CountUsers() == 0 {
+	if s.core().CountUsers() == 0 {
 		_ = s.makeUser(name, pass, "admin")
 	}
 }

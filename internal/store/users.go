@@ -6,10 +6,11 @@ import (
 )
 
 type User struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-	Hash string `json:"-"`
-	Role string `json:"role"` // admin | viewer
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	Hash   string `json:"-"`
+	Role   string `json:"role"`   // admin | viewer
+	OwnCar bool   `json:"ownCar"` // may bring a car of their own
 }
 
 func (s *Store) CountUsers() int {
@@ -25,15 +26,17 @@ func (s *Store) CreateUser(name, hash, role string) error {
 
 func (s *Store) UserByName(name string) (*User, error) {
 	var u User
-	err := s.DB.QueryRow(`SELECT id,name,hash,role FROM users WHERE name=?`, name).Scan(&u.ID, &u.Name, &u.Hash, &u.Role)
+	var own int
+	err := s.DB.QueryRow(`SELECT id,name,hash,role,own_car FROM users WHERE name=?`, name).Scan(&u.ID, &u.Name, &u.Hash, &u.Role, &own)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
+	u.OwnCar = own != 0
 	return &u, err
 }
 
 func (s *Store) ListUsers() ([]User, error) {
-	rows, err := s.DB.Query(`SELECT id,name,role FROM users ORDER BY id`)
+	rows, err := s.DB.Query(`SELECT id,name,role,own_car FROM users ORDER BY id`)
 	if err != nil {
 		return nil, err
 	}
@@ -41,9 +44,11 @@ func (s *Store) ListUsers() ([]User, error) {
 	out := []User{}
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Name, &u.Role); err != nil {
+		var own int
+		if err := rows.Scan(&u.ID, &u.Name, &u.Role, &own); err != nil {
 			return nil, err
 		}
+		u.OwnCar = own != 0
 		out = append(out, u)
 	}
 	return out, rows.Err()
@@ -51,6 +56,7 @@ func (s *Store) ListUsers() ([]User, error) {
 
 func (s *Store) DeleteUser(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM users WHERE id=?`, id)
+	_, _ = s.DB.Exec(`DELETE FROM car_access WHERE user_id=?`, id)
 	return err
 }
 
@@ -61,11 +67,13 @@ func (s *Store) NewSession(token string, userID int64, ttl time.Duration) error 
 
 func (s *Store) SessionUser(token string) (*User, error) {
 	var u User
-	err := s.DB.QueryRow(`SELECT u.id,u.name,u.hash,u.role FROM sessions s JOIN users u ON u.id=s.user_id
-		WHERE s.token=? AND s.expires>?`, token, time.Now().Unix()).Scan(&u.ID, &u.Name, &u.Hash, &u.Role)
+	var own int
+	err := s.DB.QueryRow(`SELECT u.id,u.name,u.hash,u.role,u.own_car FROM sessions s JOIN users u ON u.id=s.user_id
+		WHERE s.token=? AND s.expires>?`, token, time.Now().Unix()).Scan(&u.ID, &u.Name, &u.Hash, &u.Role, &own)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
+	u.OwnCar = own != 0
 	return &u, err
 }
 

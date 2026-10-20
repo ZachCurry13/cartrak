@@ -11,9 +11,6 @@ import (
 )
 
 func TestTheWhyOfATripComparesItWithTheDriversOwnHistory(t *testing.T) {
-	whyMu.Lock()
-	whyAt = time.Time{}
-	whyMu.Unlock()
 	ts, srv := healthServer(t, fakeProv{}, false, false)
 	admin := adminClient(t, ts.URL)
 	fp := func(v float64) *float64 { return &v }
@@ -61,9 +58,9 @@ func TestTheWhyOfATripComparesItWithTheDriversOwnHistory(t *testing.T) {
 		t.Fatalf("no such trip: %d", code)
 	}
 	// Across the recent trips: how much energy each reason cost or saved against the usual.
-	reasonsMu.Lock()
-	reasonsOut = nil
-	reasonsMu.Unlock()
+	srv.cc.reasonsMu.Lock()
+	srv.cc.reasonsOut = nil
+	srv.cc.reasonsMu.Unlock()
 	code, b = do(t, admin, "GET", ts.URL+"/api/efficiency-reasons?days=30", "", nil)
 	var rr struct {
 		Trips int

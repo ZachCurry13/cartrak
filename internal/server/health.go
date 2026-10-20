@@ -106,7 +106,7 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 		add(phoneItem(ds, now))
 	}
 	if s.Push != nil {
-		if subs, err := s.S.ListPushSubs(0); err == nil {
+		if subs, err := s.core().ListPushSubs(0); err == nil {
 			add(alertsItem(len(subs)))
 		}
 	}

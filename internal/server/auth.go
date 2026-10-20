@@ -35,10 +35,10 @@ func secure(r *http.Request) bool {
 
 func (s *Server) startSession(w http.ResponseWriter, r *http.Request, u *store.User) error {
 	tok := randToken()
-	if err := s.S.NewSession(tok, u.ID, s.sessionTTL()); err != nil {
+	if err := s.core().NewSession(tok, u.ID, s.sessionTTL()); err != nil {
 		return err
 	}
-	_ = s.S.SetSessionInfo(tok, s.clientIP(r), describeAgent(r.UserAgent()))
+	_ = s.core().SetSessionInfo(tok, s.clientIP(r), describeAgent(r.UserAgent()))
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: tok, Path: "/", HttpOnly: true,
 		SameSite: http.SameSiteLaxMode, Secure: secure(r), MaxAge: int(s.sessionTTL().Seconds())})
 	return nil
@@ -49,18 +49,57 @@ func userFrom(r *http.Request) *store.User {
 	return u
 }
 
-// auth requires a valid session; admin additionally requires the admin role.
+// auth requires a valid session and access to this server's car; admin additionally requires being an administrator of
+// that car: a site administrator, or the person who owns the car.
 func (s *Server) auth(admin bool, next http.HandlerFunc) http.HandlerFunc {
+	return s.guard(admin, false, next)
+}
+
+// authSite is for what belongs to the whole installation (people, sign-in log, notification devices, remote access): a
+// valid session is enough unless admin is set, which then needs the site administrator role.
+func (s *Server) authSite(admin bool, next http.HandlerFunc) http.HandlerFunc {
+	return s.guard(admin, true, next)
+}
+
+// carRole is the role a person has for this server's car: "admin" for a site administrator or the car's owner, "viewer"
+// for someone it was shared with, "" for no access. With a single car (CarID 0) the person's own role stands.
+func (s *Server) carRole(u *store.User) string {
+	if s.CarID == 0 || u.Role == "admin" {
+		return u.Role
+	}
+	switch s.core().Access(u.ID, s.CarID) {
+	case store.AccessOwner:
+		return "admin"
+	case store.AccessViewer:
+		return "viewer"
+	}
+	return ""
+}
+
+func (s *Server) guard(admin, site bool, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie(cookieName)
 		if err != nil {
 			fail(w, 401, "login required")
 			return
 		}
-		u, err := s.S.SessionUser(c.Value)
+		u, err := s.core().SessionUser(c.Value)
 		if err != nil || u == nil {
 			fail(w, 401, "login required")
 			return
+		}
+		if !site {
+			role := s.carRole(u)
+			if role == "" {
+				fail(w, 403, "you do not have access to this car")
+				return
+			}
+			if u.Role == "admin" && s.CarID != 0 && s.core().Access(u.ID, s.CarID) == "" {
+				s.noteAdminView(u.Name) // an administrator looking at a car that is not theirs: its owner is told
+			}
+			eu := *u
+			eu.Role = role
+			u = &eu
 		}
 		if admin && u.Role != "admin" {
 			fail(w, 403, "admin only")

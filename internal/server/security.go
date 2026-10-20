@@ -34,17 +34,17 @@ func (s *Server) logSignin(r *http.Request, name string, ok bool) {
 	if len(name) > 60 {
 		name = name[:60]
 	}
-	_ = s.S.RecordSignin(name, ok, s.clientIP(r), describeAgent(r.UserAgent()))
+	_ = s.core().RecordSignin(name, ok, s.clientIP(r), describeAgent(r.UserAgent()))
 }
 
 // securityInfo is the sign-in log and the devices signed in right now. Admin only.
 func (s *Server) securityInfo(w http.ResponseWriter, r *http.Request) {
-	logs, err := s.S.RecentSignins(100)
+	logs, err := s.core().RecentSignins(100)
 	if err != nil {
 		fail(w, 500, "db error")
 		return
 	}
-	sessions, err := s.S.ListSessions()
+	sessions, err := s.core().ListSessions()
 	if err != nil {
 		fail(w, 500, "db error")
 		return
@@ -77,7 +77,7 @@ func (s *Server) revokeSession(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "bad id")
 		return
 	}
-	if err := s.S.DeleteSessionByID(id); err != nil {
+	if err := s.core().DeleteSessionByID(id); err != nil {
 		fail(w, 500, "db error")
 		return
 	}

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -69,21 +70,25 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 	if t.EndLat != nil && t.EndLon != nil && (len(recorded) == 0 || recorded[len(recorded)-1] != (routeest.Point{*t.EndLat, *t.EndLon})) {
 		recorded = append(recorded, routeest.Point{*t.EndLat, *t.EndLon})
 	}
-	fail := func() *estimateOut {
+	fail := func(why string) *estimateOut {
 		s.routeMu.Lock()
 		if s.routeFail == nil {
 			s.routeFail = map[int64]time.Time{}
 		}
 		s.routeFail[t.ID] = time.Now()
+		s.routeWhy = why
 		s.routeMu.Unlock()
 		return nil
 	}
 	if len(recorded) < 2 {
-		return fail()
+		return fail("too few positions to route between")
 	}
 	road, km, err := s.routeClient().Route(context.Background(), routeest.Via(recorded, 8))
-	if err != nil || !routeest.Plausible(km, t.DistanceKm) {
-		return fail()
+	if err != nil {
+		return fail(err.Error())
+	}
+	if !routeest.Plausible(km, t.DistanceKm) {
+		return fail(fmt.Sprintf("the road found was %.0f km but the odometer says %.0f km", km, t.DistanceKm))
 	}
 	line := make([][2]float64, 0, 300)
 	for _, p := range routeest.Thin(road, 300) {
@@ -131,5 +136,8 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 			failed++
 		}
 	}
-	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done})
+	s.routeMu.Lock()
+	why := s.routeWhy
+	s.routeMu.Unlock()
+	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done, "why": why})
 }

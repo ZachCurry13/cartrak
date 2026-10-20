@@ -30,6 +30,8 @@ type Linker interface {
 
 type Server struct {
 	S           *store.Store
+	Core        *store.Store // the people, sign-ins and the list of cars; nil means this one database holds them (single car, tests)
+	CarID       int64        // which car this server answers for; 0 when there is only one
 	P           *poller.Poller
 	D           *trips.Detector
 	Link        Linker // nil when the provider needs no account link
@@ -44,6 +46,7 @@ type Server struct {
 	RouteEst    *routeest.Client // optional, for tests
 	routeMu     sync.Mutex
 	routeFail   map[int64]time.Time // trips whose road estimate failed lately
+	routeWhy    string              // why the latest estimate failed
 	TrustProxy  bool                // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
 	SessionDays int                 // "keep me signed in" length; 0 = 30
 	Upd         *updater.Checker    // nil disables update checks
@@ -59,6 +62,16 @@ type Server struct {
 	geo         geoState
 	tiles       tileFlight
 	trim        trimState
+	Cars        CarManager // adds, renames and removes cars (nil with a single car)
+	cc          carCaches  // answers kept for a while, for this car only
+}
+
+// core is the database of people and sign-ins: the shared core database, or the one database when there is a single car.
+func (s *Server) core() *store.Store {
+	if s.Core != nil {
+		return s.Core
+	}
+	return s.S
 }
 
 func (s *Server) Handler() http.Handler {
@@ -68,34 +81,34 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/setup", s.setupState)
 	m.HandleFunc("POST /api/setup", s.setup)
 	m.HandleFunc("POST /api/login", s.login)
-	m.HandleFunc("POST /api/logout", s.auth(false, s.logout))
-	m.HandleFunc("GET /api/me", s.auth(false, func(w http.ResponseWriter, r *http.Request) { ok(w, userFrom(r)) }))
+	m.HandleFunc("POST /api/logout", s.authSite(false, s.logout))
+	m.HandleFunc("GET /api/me", s.authSite(false, func(w http.ResponseWriter, r *http.Request) { ok(w, userFrom(r)) }))
 
 	m.HandleFunc("GET /api/admin/settings", s.auth(true, s.getSettings))
 	m.HandleFunc("PUT /api/admin/settings", s.auth(true, s.saveSettings))
 	m.HandleFunc("POST /api/admin/ford-probe", s.auth(true, s.fordProbe))
 	m.HandleFunc("POST /api/admin/ford/detect-redirect", s.auth(true, s.detectRedirect))
-	m.HandleFunc("GET /api/admin/remote", s.auth(true, s.getRemote))
-	m.HandleFunc("PUT /api/admin/remote", s.auth(true, s.saveRemote))
+	m.HandleFunc("GET /api/admin/remote", s.authSite(true, s.getRemote))
+	m.HandleFunc("PUT /api/admin/remote", s.authSite(true, s.saveRemote))
 	m.HandleFunc("GET /api/about", s.auth(false, s.about))
-	m.HandleFunc("POST /api/settings/update-check", s.auth(true, s.setUpdateCheck))
+	m.HandleFunc("POST /api/settings/update-check", s.authSite(true, s.setUpdateCheck))
 	m.HandleFunc("GET /api/changelog", s.auth(false, s.changelog))
 	m.HandleFunc("GET /api/onboarding", s.auth(false, s.onboarding))
 	m.HandleFunc("POST /api/onboarding/dismiss", s.auth(true, s.dismissOnboarding))
 
 	m.HandleFunc("GET /api/health", s.auth(false, s.health))
 	m.HandleFunc("GET /api/vehicle", s.auth(false, s.vehicle))
-	m.HandleFunc("GET /api/push/config", s.auth(false, s.pushConfig))
-	m.HandleFunc("POST /api/push/subscribe", s.auth(false, s.pushSubscribe))
-	m.HandleFunc("POST /api/push/prefs", s.auth(false, s.pushPrefs))
-	m.HandleFunc("POST /api/push/unsubscribe", s.auth(false, s.pushUnsubscribe))
-	m.HandleFunc("POST /api/push/test", s.auth(false, s.pushTest))
+	m.HandleFunc("GET /api/push/config", s.authSite(false, s.pushConfig))
+	m.HandleFunc("POST /api/push/subscribe", s.authSite(false, s.pushSubscribe))
+	m.HandleFunc("POST /api/push/prefs", s.authSite(false, s.pushPrefs))
+	m.HandleFunc("POST /api/push/unsubscribe", s.authSite(false, s.pushUnsubscribe))
+	m.HandleFunc("POST /api/push/test", s.authSite(false, s.pushTest))
 	m.HandleFunc("GET /api/mileage", s.auth(true, s.mileageReport))
-	m.HandleFunc("GET /api/connector", s.auth(true, s.connectorInfo))
-	m.HandleFunc("POST /api/connector/check", s.auth(true, s.connectorCheck))
-	m.HandleFunc("POST /api/connector/update", s.auth(true, s.connectorUpdate))
-	m.HandleFunc("GET /api/security", s.auth(true, s.securityInfo))
-	m.HandleFunc("DELETE /api/security/sessions/{id}", s.auth(true, s.revokeSession))
+	m.HandleFunc("GET /api/connector", s.authSite(true, s.connectorInfo))
+	m.HandleFunc("POST /api/connector/check", s.authSite(true, s.connectorCheck))
+	m.HandleFunc("POST /api/connector/update", s.authSite(true, s.connectorUpdate))
+	m.HandleFunc("GET /api/security", s.authSite(true, s.securityInfo))
+	m.HandleFunc("DELETE /api/security/sessions/{id}", s.authSite(true, s.revokeSession))
 	m.HandleFunc("GET /api/backup", s.auth(true, s.backupDownload))
 	m.HandleFunc("GET /api/storage", s.auth(true, s.storageInfo))
 	m.HandleFunc("POST /api/storage/trim", s.auth(true, s.storageTrim))
@@ -193,9 +206,16 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("DELETE /api/rules/{id}", s.auth(true, s.deleteRule))
 	m.HandleFunc("POST /api/rules/apply", s.auth(true, s.applyRules))
 
-	m.HandleFunc("GET /api/users", s.auth(true, s.listUsers))
-	m.HandleFunc("POST /api/users", s.auth(true, s.addUser))
-	m.HandleFunc("DELETE /api/users/{id}", s.auth(true, s.deleteUser))
+	m.HandleFunc("GET /api/cars", s.authSite(false, s.listCars))
+	m.HandleFunc("POST /api/cars", s.authSite(false, s.addCar))
+	m.HandleFunc("PATCH /api/cars/{id}", s.authSite(false, s.patchCar))
+	m.HandleFunc("DELETE /api/cars/{id}", s.authSite(false, s.removeCar))
+	m.HandleFunc("GET /api/cars/{id}/access", s.authSite(false, s.carAccess))
+	m.HandleFunc("PUT /api/cars/{id}/access", s.authSite(false, s.setCarAccess))
+	m.HandleFunc("PATCH /api/users/{id}", s.authSite(true, s.patchUser))
+	m.HandleFunc("GET /api/users", s.authSite(true, s.listUsers))
+	m.HandleFunc("POST /api/users", s.authSite(true, s.addUser))
+	m.HandleFunc("DELETE /api/users/{id}", s.authSite(true, s.deleteUser))
 
 	m.HandleFunc("GET /api/devices", s.auth(true, s.listDevices))
 	m.HandleFunc("POST /api/devices", s.auth(true, s.addDevice))

@@ -2,19 +2,12 @@ package server
 
 import (
 	"encoding/json"
-	"sync"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/smooth"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/tripwhy"
-)
-
-var (
-	smoothMu   sync.Mutex
-	smoothAt   time.Time
-	smoothBase smooth.Baseline
 )
 
 // driveTorque is the torque readings of a trip while the car was moving.
@@ -57,10 +50,10 @@ func (s *Server) driveTorque(t *store.Trip) []smooth.Point {
 
 // smoothBaseline is what a firm reading is for this driver, from the last dozen trips, kept for an hour.
 func (s *Server) smoothBaseline() smooth.Baseline {
-	smoothMu.Lock()
-	defer smoothMu.Unlock()
-	if time.Since(smoothAt) < time.Hour {
-		return smoothBase
+	s.cc.smoothMu.Lock()
+	defer s.cc.smoothMu.Unlock()
+	if time.Since(s.cc.smoothAt) < time.Hour {
+		return s.cc.smoothBase
 	}
 	var accel, brake []float64
 	n := 0
@@ -79,9 +72,9 @@ func (s *Server) smoothBaseline() smooth.Baseline {
 			brake = append(brake, p.Brake)
 		}
 	}
-	smoothBase = smooth.Baseline{Accel: smooth.Percentile90(accel), Brake: smooth.Percentile90(brake), Trips: n}
-	smoothAt = time.Now()
-	return smoothBase
+	s.cc.smoothBase = smooth.Baseline{Accel: smooth.Percentile90(accel), Brake: smooth.Percentile90(brake), Trips: n}
+	s.cc.smoothAt = time.Now()
+	return s.cc.smoothBase
 }
 
 // withSmoothness adds how firmly the trip was driven, and a short reason when it matters: called bad or good only when the
