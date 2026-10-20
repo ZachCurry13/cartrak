@@ -42,3 +42,16 @@ func TestLeftOpenSaysWhenTheCarLastReportedAndDoesNotRepeatAnOldReport(t *testin
 		t.Fatalf("the same old report must not alert twice: %s", r.kinds())
 	}
 }
+
+func TestAccessoryModeIsNotACarProblem(t *testing.T) {
+	e, r, _ := setup(t)
+	e.Handle(reading(0, func(s *ford.State) { s.Extra["telemetry.metrics.batteryLoadStatus.value"] = "NORMAL_OPERATION" }))
+	e.Handle(reading(1, func(s *ford.State) { s.Extra["telemetry.metrics.batteryLoadStatus.value"] = "ACCESSORY_MODE" }))
+	if len(r.got) != 0 {
+		t.Fatalf("the car switched on without driving is normal: %s", r.kinds())
+	}
+	e.Handle(reading(2, func(s *ford.State) { s.Extra["telemetry.metrics.batteryLoadStatus.value"] = "LOAD_SHED" }))
+	if r.kinds() != "car_fault" {
+		t.Fatalf("a real load problem is still reported: %s", r.kinds())
+	}
+}

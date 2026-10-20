@@ -1,8 +1,9 @@
 package vhealth
 
 import (
-	"strings"
 	"time"
+
+	"github.com/ZachCurry13/cartrak/internal/ford"
 )
 
 // twelveVolt is the small battery that runs the electronics. Its charge is the car's own estimate, not a
@@ -38,7 +39,7 @@ func twelveVolt(f map[string]any, t Trends, opts Options) Section {
 	load := text(f, "Load", "batteryLoadStatus")
 	if load != nil {
 		load.State = "ok"
-		if !strings.Contains(strings.ToUpper(load.Text), "NORMAL") {
+		if !ford.LoadNormal(load.Text) {
 			load.State = "warn"
 		}
 		load.wordy()

@@ -12,10 +12,13 @@ import (
 
 // The car runs its own checks and reports the result. These are the ones worth a message when they are anything but
 // normal: the high-voltage battery's performance, the tire pressure system itself (not a low tire) and the 12 V load.
-var carChecks = []struct{ field, key, text string }{
-	{"xevBatteryPerformanceStatus", "battery", "The car says the main battery is not performing normally (%s). Power or charging speed may be reduced."},
-	{"tirePressureSystemStatus", "tpms", "The tire pressure system reports %s. A sensor or the system itself may need attention."},
-	{"batteryLoadStatus", "load", "The car is managing the load on the 12 V battery (%s)."},
+var carChecks = []struct {
+	field, key, text string
+	normal           func(string) bool // a value this check counts as fine besides the usual ones; nil when none
+}{
+	{"xevBatteryPerformanceStatus", "battery", "The car says the main battery is not performing normally (%s). Power or charging speed may be reduced.", nil},
+	{"tirePressureSystemStatus", "tpms", "The tire pressure system reports %s. A sensor or the system itself may need attention.", nil},
+	{"batteryLoadStatus", "load", "The car is managing the load on the 12 V battery (%s).", ford.LoadNormal},
 }
 
 // reportNormal says whether a status word means all is well, or that the car is not saying anything useful.
@@ -32,7 +35,7 @@ func reportNormal(v string) bool {
 func (e *Engine) carFaults(st *ford.State) {
 	for _, c := range carChecks {
 		v := ford.Text(st.Extra, c.field)
-		if reportNormal(v) {
+		if reportNormal(v) || (c.normal != nil && c.normal(v)) {
 			continue
 		}
 		kv := "alert_fault_" + c.key

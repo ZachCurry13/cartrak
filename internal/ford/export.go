@@ -15,6 +15,16 @@ func Find(f map[string]any, names ...string) (any, bool) { return lookup(f, name
 // Text returns a metric as text ("" when absent).
 func Text(f map[string]any, names ...string) string { return strAt(f, names...) }
 
+// LoadNormal says whether the 12 V load status is one the car reports in ordinary use: normal operation, or accessory mode, which
+// only means the car is switched on without driving (sitting in it, or just after unplugging).
+func LoadNormal(v string) bool {
+	switch strings.ToUpper(strings.TrimSpace(v)) {
+	case "", "NORMAL", "NORMAL_OPERATION", "ACCESSORY_MODE":
+		return true
+	}
+	return false
+}
+
 // Number returns a metric as a number (nil when absent or not numeric).
 func Number(f map[string]any, names ...string) *float64 { return numAt(f, names...) }
 

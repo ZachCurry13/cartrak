@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.42.1
+
+### 🔕 No false alarm when the car is just switched on
+- The car reports its 12 V load as **accessory mode** when it is switched on without driving (sitting in it, or right after unplugging). CarTrak treated that as a problem and sent **The car reports a problem**. It is now counted as normal, in the alert and on the Health page; a real load problem is still reported.
+
 ## 0.42.0
 
 ### 📍 The day says where things happened
