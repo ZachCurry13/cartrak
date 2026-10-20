@@ -1,7 +1,7 @@
 import { h, emptyState, stat, catChip, chip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
 import { categoryList, catLabel } from '../categories.js';
-import { tripCard } from '../tripcard.js';
+import { tripCard, colourKey } from '../tripcard.js';
 import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
@@ -78,7 +78,7 @@ export default async function trips(root, _a, session) {
   const review = h('div');
   const estBar = h('div');
   if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
-  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/reports' }, 'Reports'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/reports' }, 'Reports'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, colourKey(), selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

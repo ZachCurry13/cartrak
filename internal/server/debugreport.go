@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/debugreport"
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
@@ -40,25 +42,55 @@ func allFields(extra json.RawMessage) []string {
 	return out
 }
 
-// lockFields picks the lock and door fields out of one raw reading, as sorted "name = value" lines.
+// lockFields sums up the locks, doors, hood and alarm of one raw reading in a few lines, with the time Ford says the car reported
+// them. The raw fields are still in the full field list at the latest reading; this keeps a long report readable.
 func lockFields(extra json.RawMessage) []string {
 	f := map[string]any{}
 	if json.Unmarshal(extra, &f) != nil {
 		return nil
 	}
-	var out []string
-	for k, v := range f {
-		lk := strings.ToLower(k)
-		if !containsAny(lk, lockWords) || containsAny(lk, neverWords) {
-			continue
+	label := func(it map[string]any, key string) string {
+		where := strings.ReplaceAll(strings.ToLower(fmt.Sprint(it[key])), "unspecified_", "")
+		if side := strings.ToLower(fmt.Sprint(it["vehicleside"])); side != "" && side != "<nil>" && side != "unknown" {
+			where = side + " " + where
 		}
-		val := strings.TrimSpace(strings.ReplaceAll(strings.TrimSpace(toString(v)), "\n", " "))
-		if len(val) > 80 {
-			val = val[:80]
-		}
-		out = append(out, k+" = "+val)
+		return strings.ReplaceAll(where, "_", " ")
 	}
-	sort.Strings(out)
+	var out []string
+	if at := ford.Updated(f, "doorStatus"); at != "" {
+		out = append(out, "car reported at "+at)
+	} else if at := ford.Updated(f, "doorLockStatus"); at != "" {
+		out = append(out, "car reported at "+at)
+	}
+	var locks []string
+	for _, it := range ford.ListItems(f, "doorLockStatus") {
+		locks = append(locks, label(it, "vehicledoor")+" "+strings.ToLower(fmt.Sprint(it["value"])))
+	}
+	if len(locks) > 0 {
+		out = append(out, "locks: "+strings.Join(locks, ", "))
+	}
+	var open []string
+	doors := ford.ListItems(f, "doorStatus")
+	for _, it := range doors {
+		if v := strings.ToUpper(fmt.Sprint(it["value"])); v != "CLOSED" && v != "UNKNOWN" && v != "" {
+			open = append(open, label(it, "vehicledoor")+" "+strings.ToLower(v))
+		}
+	}
+	switch {
+	case len(open) > 0:
+		out = append(out, "doors: "+strings.Join(open, ", ")+" (the rest closed)")
+	case len(doors) > 0:
+		out = append(out, fmt.Sprintf("doors: all %d closed", len(doors)))
+	}
+	var rest []string
+	for _, k := range []string{"hoodStatus", "alarmStatus", "panicAlarmStatus"} {
+		if v := ford.Text(f, k); v != "" {
+			rest = append(rest, strings.TrimSuffix(k, "Status")+" "+strings.ToLower(v))
+		}
+	}
+	if len(rest) > 0 {
+		out = append(out, strings.Join(rest, ", "))
+	}
 	return out
 }
 

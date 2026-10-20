@@ -50,3 +50,9 @@ a.tcard:hover,a.tcard:focus-visible{background:var(--card2)}
 .pill.good{color:var(--ok)}.pill.bad{color:var(--bad)}
 .ico.sm{width:36px;height:36px;border-radius:50%;background:var(--card2)}
 .ico.sm svg{width:18px;height:18px}
+
+.tkey{margin:0 0 10px;color:var(--muted)}.tkey summary{cursor:pointer;min-height:40px;display:flex;align-items:center}
+.tkey p{margin:4px 0}
+.key{display:inline-block;width:14px;height:10px;border-radius:3px;vertical-align:middle;background:var(--line)}
+.key.left{background:var(--ok)}.key.used{background:var(--warn)}.key.good{background:var(--ok)}.key.bad{background:var(--bad)}
+.key.start,.key.end{width:10px;border-radius:50%}.key.start{background:#16a34a}.key.end{background:#dc2626}

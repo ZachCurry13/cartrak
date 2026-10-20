@@ -34,7 +34,7 @@ func TestTheDebugReportListsReadingsAndLockFieldsButNeverPositionsOrTheVIN(t *te
 	if code != 200 || json.Unmarshal([]byte(b), &out) != nil || out.Readings != 3 {
 		t.Fatalf("%d %s", code, b)
 	}
-	for _, want := range []string{"CarTrak debug report", "READINGS", "locked", "UNLOCKED", "LOCK AND DOOR FIELDS", "doorLockStatus[0].value = UNLOCKED", "TRIPS", "CHARGING", "ALERTS SENT", "the same 1 more time"} {
+	for _, want := range []string{"CarTrak debug report", "READINGS", "locked", "UNLOCKED", "LOCKS AND DOORS", "locks: front unlocked", "doorLockStatus[0].value = UNLOCKED", "TRIPS", "CHARGING", "ALERTS SENT", "the same 1 more time"} {
 		if !strings.Contains(out.Text, want) {
 			t.Errorf("missing %q in:\n%s", want, out.Text)
 		}

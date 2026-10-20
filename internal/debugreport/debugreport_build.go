@@ -66,7 +66,7 @@ func Build(in Input) string {
 		b.WriteString(l.text + "\n")
 	}
 
-	b.WriteString("\nLOCK AND DOOR FIELDS as the car sent them, each time the lock state changed and for the latest reading\n")
+	b.WriteString("\nLOCKS AND DOORS each time the lock state changed and at the latest reading (the raw fields are in the full list below)\n")
 	var tss []int64
 	for ts := range in.Locks {
 		tss = append(tss, ts)
@@ -144,12 +144,12 @@ func Build(in Input) string {
 		b.WriteString("(none in this window)\n")
 	}
 
-	b.WriteString("\nALERTS SENT (time | kind | title)\n")
+	b.WriteString("\nALERTS SENT (time | kind | title | what it said)\n")
 	for _, a := range in.Alerts {
 		if time.Unix(a.TS, 0).Before(in.From) {
 			continue
 		}
-		fmt.Fprintf(&b, "%s | %s | %s\n", at(a.TS), a.Kind, a.Title)
+		fmt.Fprintf(&b, "%s | %s | %s | %s\n", at(a.TS), a.Kind, a.Title, a.Body)
 	}
 	return b.String()
 }

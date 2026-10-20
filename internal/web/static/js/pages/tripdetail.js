@@ -10,6 +10,7 @@ import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
 import { whyCard } from '../tripwhy.js';
+import { battery } from '../tripcard.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -106,6 +107,7 @@ export default async function tripDetail(root, [id, action], session) {
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : '')),
         t.estCost != null ? stat('Energy cost (estimate)', `≈ ${t.currency || '$'}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${t.currency || '$'}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null),
+      battery(t) ? h('div', { style: 'margin-top:10px' }, battery(t), h('p', { class: 'muted', style: 'margin:4px 0 0' }, 'Green: battery left after the drive. Amber: what the drive used.')) : null,
       avg),
     why,
     routeBox,

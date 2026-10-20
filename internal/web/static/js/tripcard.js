@@ -25,10 +25,20 @@ function thumb(points, color) {
 }
 
 // How much of the battery the drive used: the level it ended at, then the stretch it spent.
-function battery(t) {
+export function battery(t) {
   if (t.startSoc == null || t.endSoc == null) return null;
   const end = Math.max(0, Math.min(100, t.endSoc)), start = Math.max(end, Math.min(100, t.startSoc));
   return h('div', { class: 'sbar', title: `${pct(t.startSoc)} to ${pct(t.endSoc)}` }, h('i', { class: 'used', style: `left:${end}%;width:${start - end}%` }), h('i', { class: 'left', style: `width:${end}%` }));
+}
+
+// What the colours on a trip card mean, in a fold that stays closed until asked.
+export function colourKey() {
+  const sw = (cls) => h('i', { class: `key ${cls}`, 'aria-hidden': 'true' });
+  return h('details', { class: 'tkey' }, h('summary', {}, 'What the colours mean'),
+    h('p', {}, sw('left'), ' Green bar: battery left after the drive. ', sw('used'), ' Amber: the part the drive used.'),
+    h('p', {}, sw('good'), ' Green badge: more efficient than your average drive. ', sw('bad'), ' Red: less efficient. No colour: about average.'),
+    h('p', {}, sw('start'), ' Green dot: where it started. ', sw('end'), ' Red dot: where it ended.'),
+    h('p', {}, 'The stripe down the left is the trip\'s category colour (Personal, Work and your own).'));
 }
 
 // One drive in the Trips list: its route, how far and how long, where, how much battery it took and how efficient it was against the rest.
@@ -42,7 +52,7 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
   const from = t.startPlace || t.startCity, to = t.endPlace || t.endCity;
   // two lines that wrap, so a long township name is never cut off; one line when it ended where it began
   const end = to || (from && t.open ? 'on the way' : '');
-  const places = from && from === end ? [h('span', {}, from)] : from || end ? [h('span', {}, from || '…'), h('span', {}, `→ ${end || '…'}`)] : null;
+  const places = from && from === end ? [h('span', {}, `Around ${from}`)] : from || end ? [h('span', {}, from || '…'), h('span', {}, `→ ${end || '…'}`)] : null;
   const share = admin && !t.open && !sel.state.on
     ? h('button', { class: 'ico sm', type: 'button', 'aria-label': 'Share this trip', title: 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } },
       (() => { const s = svgEl('svg', { viewBox: '0 0 24 24' }); s.append(svgEl('path', { d: 'M12 3v12M8 7l4-4 4 4M5 12v8h14v-8' })); return s; })()) : null;

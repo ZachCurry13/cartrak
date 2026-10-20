@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.42.2
+
+### 🎨 What the colours mean
+- The Trips list has a **What the colours mean** fold: the green bar is battery left after the drive and amber the part it used, a green badge is more efficient than your average and red less, the dots mark where a drive started (green) and ended (red), and the stripe on the left is the category colour.
+- The trip page now shows the same battery bar, with what its colours mean.
+- A trip that started and ended in the same town reads **Around Traverse City** instead of just the town.
+
+### 🪲 A clearer Debug report
+- The locks-and-doors section is a few plain lines per change (when the car reported, the locks, which doors were open, hood and alarm) instead of every raw field, so the report is much shorter. The raw fields are still in the full list.
+- **Alerts sent** now includes what each alert said, not only its title.
+
 ## 0.42.1
 
 ### 🔕 No false alarm when the car is just switched on
