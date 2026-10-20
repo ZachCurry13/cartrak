@@ -363,3 +363,54 @@ func TestAPausedChargeThatResumesIsOneSessionButAnUnpluggedOneIsNot(t *testing.T
 		t.Fatalf("half an hour later is a new session: %d", len(cs))
 	}
 }
+
+func TestAQuickReplugAtAChargerIsOneSessionButASlowOneIsNot(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now().Add(-3 * time.Hour)
+	at := func(sec int) time.Time { return t0.Add(time.Duration(sec) * time.Second) }
+	d.Process(chargeReading(at(0), "IN_PROGRESS", "CONNECTED", 53))
+	d.Process(chargeReading(at(600), "IN_PROGRESS", "CONNECTED", 68))
+	d.Process(chargeReading(at(630), "PAUSED", "CONNECTED", 68))       // the charger stops
+	d.Process(chargeReading(at(750), "NOT_READY", "DISCONNECTED", 68)) // the plug comes out
+	d.Process(chargeReading(at(780), "NOT_READY", "CONNECTED", 68))    // and goes back in
+	d.Process(chargeReading(at(810), "IN_PROGRESS", "CONNECTED", 68))
+	d.Process(chargeReading(at(1200), "IN_PROGRESS", "CONNECTED", 82))
+	cs, _ := s.ListCharges(10)
+	if len(cs) != 1 || *cs[0].StartSoC != 53 {
+		t.Fatalf("a replug three minutes later is the same stop: %+v", cs)
+	}
+	// out for ten minutes is a different stop
+	d.Process(chargeReading(at(1230), "PAUSED", "CONNECTED", 82))
+	d.Process(chargeReading(at(1300), "NOT_READY", "DISCONNECTED", 82))
+	d.Process(chargeReading(at(1900), "IN_PROGRESS", "CONNECTED", 82))
+	if cs, _ := s.ListCharges(10); len(cs) != 2 {
+		t.Fatalf("ten minutes is a new session: %d", len(cs))
+	}
+}
+
+func TestTheReportedPowerIsAddedUpAcrossASession(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now().Add(-3 * time.Hour)
+	kw := func(min int, v float64) *ford.State {
+		st := chargeReading(t0.Add(time.Duration(min)*time.Minute), "IN_PROGRESS", "CONNECTED", 50)
+		st.ChargeKw = &v
+		return st
+	}
+	d.Process(kw(0, 10))  // the session starts; nothing is counted before the next reading
+	d.Process(kw(10, 10)) // 10 minutes at 10 kW = 1.667 kWh
+	d.Process(kw(20, 4))  // 10 minutes from 10 down to 4 kW = 1.167 kWh
+	cs, _ := s.ListCharges(5)
+	if len(cs) != 1 || cs[0].PowerKwh == nil || *cs[0].PowerKwh < 2.83 || *cs[0].PowerKwh > 2.84 {
+		t.Fatalf("expected 2.83 kWh from the power: %+v", cs[0].PowerKwh)
+	}
+	// a reading hours later does not add the silence in between
+	d.Process(kw(300, 4))
+	cs, _ = s.ListCharges(5)
+	if *cs[0].PowerKwh > 2.84 {
+		t.Fatalf("a long silence must not be counted: %v", *cs[0].PowerKwh)
+	}
+}

@@ -11,6 +11,10 @@
 - **First start after updating.** CarTrak makes a shared database for the people, copies them in, and keeps a copy of your database from before, in the data folder under `backups`. Nothing else changes: you stay signed in and see the car you always did.
 - Details in [docs/several-cars.md](docs/several-cars.md).
 
+### 🔌 Charging
+- **A quick unplug and replug is one stop.** A fast charger that stops and is plugged back in within 5 minutes, at the same place with the battery no lower, now continues the same session instead of starting a second one.
+- **Slow-charging energy now counts what the car drew beyond the battery.** Overnight at home the car keeps drawing power at 100% (a top-up, warming the battery or cabin before leaving) that never shows as battery gain, so the energy and cost came out about a tenth low. CarTrak now adds up the power the car reports while plugged in and uses it when it is larger. Run **Fix a day** over older charging to apply it to past sessions. The Debug report lists it as "power kWh".
+
 ### 🛣️ Road estimates
 - When some trips could not be estimated, the message now says why (the routing service answered an error, no route, or the road found was a different length from the odometer).
 

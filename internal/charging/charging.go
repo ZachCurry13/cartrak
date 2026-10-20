@@ -91,6 +91,11 @@ func enrichBase(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Se
 			eff = acEfficiency
 		}
 		wall /= eff
+		// The battery rose by less than the charger delivered when the car also warmed itself from the wall (a top-up
+		// before leaving, cold weather). The power the car reported while plugged in sees that.
+		if c.PowerKwh != nil && *c.PowerKwh/eff > wall {
+			wall = *c.PowerKwh / eff
+		}
 	}
 	s.WallKwh = &wall
 	price := p.Home // unknown place: the home price, the usual single-price case

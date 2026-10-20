@@ -133,8 +133,8 @@ func (s *Store) ReplaceRange(oldTrips []int64, oldCharges []int64, newTrips []*T
 		t.ID, _ = r.LastInsertId()
 	}
 	for _, c := range newCharges {
-		r, err := tx.Exec(`INSERT INTO charges(start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station,actual_cost)
-			VALUES(?,?,?,?,?,?,?,0,?,?,?,?,?,?)`, c.StartTS, c.EndTS, c.Lat, c.Lon, c.StartSoC, c.EndSoC, c.PeakKw, c.StartKwh, c.EndKwh, c.Kind, c.ChargerKwh, c.Station, c.ActualCost)
+		r, err := tx.Exec(`INSERT INTO charges(start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station,actual_cost,power_kwh)
+			VALUES(?,?,?,?,?,?,?,0,?,?,?,?,?,?,?)`, c.StartTS, c.EndTS, c.Lat, c.Lon, c.StartSoC, c.EndSoC, c.PeakKw, c.StartKwh, c.EndKwh, c.Kind, c.ChargerKwh, c.Station, c.ActualCost, c.PowerKwh)
 		if err != nil {
 			return err
 		}

@@ -19,8 +19,9 @@ type Detector struct {
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
 	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
 
-	lastReading    int64 // time of the previous reading this detector saw
-	lastDisconnect int64 // the last time a reading showed the cable unplugged
+	lastReading    int64   // time of the previous reading this detector saw
+	lastDisconnect int64   // the last time a reading showed the cable unplugged
+	lastKw         float64 // the charging power the previous reading reported
 }
 
 // Driving reports whether a reading looks like the car is in use. A car that is taking charge and not moving is
@@ -37,7 +38,13 @@ func charging(st *ford.State) bool { return st.Charging() }
 
 // Process applies one reading. Call it once per poll, oldest first.
 func (d *Detector) Process(st *ford.State) error {
-	defer func() { d.lastReading = st.TS.Unix() }()
+	defer func() {
+		d.lastReading = st.TS.Unix()
+		d.lastKw = 0
+		if st.ChargeKw != nil {
+			d.lastKw = *st.ChargeKw
+		}
+	}()
 	if st.Plug != "" && !st.PlugConnected() {
 		d.lastDisconnect = st.TS.Unix()
 	}
@@ -205,6 +212,14 @@ func (d *Detector) charge(st *ford.State) error {
 		open.PeakKw = *st.ChargeKw
 	}
 	open.Open = charging(st)
+	if dt := now - d.lastReading; d.lastReading > 0 && st.ChargeKw != nil && dt > 0 && dt <= maxPowerGap {
+		kwh := (d.lastKw + *st.ChargeKw) / 2 * float64(dt) / 3600 // the power between two readings, as a straight line
+		sum := kwh
+		if open.PowerKwh != nil {
+			sum += *open.PowerKwh
+		}
+		open.PowerKwh = &sum
+	}
 	if s := stationOf(st); s != "" {
 		open.Station = s
 	}
@@ -271,8 +286,17 @@ func (d *Detector) leftTheSpot(st *ford.State) bool {
 // resumeWithin is how long a charging session can stay paused and still be the same session when charging resumes.
 const resumeWithin = 20 * 60
 
+// maxPowerGap is the longest gap between two readings that is still counted as charging when adding up the power; a
+// longer silence says nothing about what happened in it.
+const maxPowerGap = 15 * 60
+
+// replugWithin is how long the cable can be out and back in, at the same place, and still be the same session. A fast
+// charger that stops or faults often gets exactly that: the driver pulls the plug and puts it back.
+const replugWithin = 5 * 60
+
 // resumable is the session that has just paused and that charging has now resumed in: it ended no more than twenty minutes
-// ago, this detector watched the whole gap, the cable was not unplugged in between, and the car has not moved.
+// ago, this detector watched the whole gap, the cable was not unplugged in between (or only for a quick replug), and the
+// car has not moved.
 func (d *Detector) resumable(st *ford.State) *store.Charge {
 	if !st.PlugConnected() {
 		return nil
@@ -286,8 +310,13 @@ func (d *Detector) resumable(st *ford.State) *store.Charge {
 	if prev.Open || prev.EndTS == nil || now-*prev.EndTS > resumeWithin || now < *prev.EndTS {
 		return nil
 	}
-	if d.lastReading < *prev.EndTS || d.lastDisconnect >= *prev.EndTS {
-		return nil // not watched, or unplugged in between
+	if d.lastReading < *prev.EndTS {
+		return nil // not watched
+	}
+	if d.lastDisconnect >= *prev.EndTS { // unplugged in between: only a quick replug with the battery not lower counts
+		if now-*prev.EndTS > replugWithin || (prev.EndSoC != nil && st.SoCPct != nil && *st.SoCPct < *prev.EndSoC-2) {
+			return nil
+		}
 	}
 	if prev.Lat != nil && prev.Lon != nil && st.Lat != nil && st.Lon != nil && Haversine(*prev.Lat, *prev.Lon, *st.Lat, *st.Lon) > 150 {
 		return nil // somewhere else

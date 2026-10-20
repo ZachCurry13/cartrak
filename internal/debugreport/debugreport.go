@@ -168,13 +168,13 @@ func Build(in Input) string {
 		b.WriteString("(none)\n")
 	}
 
-	b.WriteString("\nCHARGING (id | start | end | battery start>end | energy kWh start>end | peak kW | charger kWh | open; then charger type, what you paid and the power at 20/40/60/80 percent)\n")
+	b.WriteString("\nCHARGING (id | start | end | battery start>end | energy kWh start>end | peak kW | charger kWh | power kWh (the reported power added up) | open; then charger type, what you paid and the power at 20/40/60/80 percent)\n")
 	for _, c := range in.Charges {
 		end := "open"
 		if c.EndTS != nil {
 			end = at(*c.EndTS)
 		}
-		fmt.Fprintf(&b, "%d | %s | %s | %s>%s | %s>%s | %.1f | %s | %v\n", c.ID, at(c.StartTS), end, fp(c.StartSoC, "%.0f"), fp(c.EndSoC, "%.0f"), fp(c.StartKwh, "%.1f"), fp(c.EndKwh, "%.1f"), c.PeakKw, fp(c.ChargerKwh, "%.1f"), c.Open)
+		fmt.Fprintf(&b, "%d | %s | %s | %s>%s | %s>%s | %.1f | %s | %s | %v\n", c.ID, at(c.StartTS), end, fp(c.StartSoC, "%.0f"), fp(c.EndSoC, "%.0f"), fp(c.StartKwh, "%.1f"), fp(c.EndKwh, "%.1f"), c.PeakKw, fp(c.ChargerKwh, "%.1f"), fp(c.PowerKwh, "%.1f"), c.Open)
 		if c.Station != "" || c.ActualCost != nil {
 			fmt.Fprintf(&b, "    charger type %s, paid %s\n", dash(c.Station), fp(c.ActualCost, "%.2f"))
 		}

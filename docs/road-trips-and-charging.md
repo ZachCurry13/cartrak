@@ -114,3 +114,9 @@ Switch on **Wind lookup for trips** in More, Settings. CarTrak then asks Open-Me
 
 ## How firmly you drove, and regen
 On a trip, **Why this efficiency?** also says whether it was driven firmer or smoother than your usual, using the car's torque readings. The readings have no stated unit, so firm means above what your own last dozen trips reached nine times out of ten. The regen tiles show the range braking gave back, as the car reports it, and the energy that range is worth at the trip's own use per kilometre (an estimate, marked as one).
+
+## How the energy of a slow charge is worked out
+
+For a home or level 2 charge, CarTrak takes the larger of two figures: the rise in the battery divided by the charging efficiency, and the power the car reported while plugged in, added up and divided by the same efficiency. The second one also sees energy the car used itself while plugged in, such as warming the battery before you leave. If you enter what the charger delivered, that number is used instead. Fast charging is unchanged.
+
+A fast charge that stops and is plugged back in within 5 minutes at the same place, with the battery no lower, continues the same session.

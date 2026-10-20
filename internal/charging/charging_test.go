@@ -105,3 +105,21 @@ func TestWhatYouPaidReplacesTheCostWorkedOutFromAPrice(t *testing.T) {
 		t.Fatalf("the receipt wins: %+v", got.Cost)
 	}
 }
+
+func TestSlowChargingWallEnergyCountsWhatTheCarDrewBeyondTheBatteryRise(t *testing.T) {
+	// the battery gained 0.4 kWh, but the car drew 2.0 kWh at the battery side while plugged in (warming up before leaving)
+	topUp := Enrich(&store.Charge{StartKwh: f(83.8), EndKwh: f(84.2), PeakKw: 9.3, PowerKwh: f(2.0)}, nil, nil, Prices{Home: f(0.15)})
+	if !close(topUp.WallKwh, 2.0/0.9) {
+		t.Fatalf("wall energy should follow the reported power: %+v", topUp.WallKwh)
+	}
+	// when the battery rise is the larger figure, it still wins
+	normal := Enrich(&store.Charge{StartKwh: f(40), EndKwh: f(58), PeakKw: 11, PowerKwh: f(17)}, nil, nil, Prices{})
+	if !close(normal.WallKwh, 20) {
+		t.Fatalf("%+v", normal.WallKwh)
+	}
+	// fast charging is untouched
+	fast := Enrich(&store.Charge{StartKwh: f(20), EndKwh: f(60), PeakKw: 150, PowerKwh: f(90)}, nil, nil, Prices{})
+	if !close(fast.WallKwh, 40) {
+		t.Fatalf("%+v", fast.WallKwh)
+	}
+}

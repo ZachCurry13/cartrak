@@ -21,13 +21,17 @@ type Charge struct {
 	Station string `json:"station"`
 	// ActualCost is what the owner paid, typed in from the receipt. It replaces the cost CarTrak works out from a flat price.
 	ActualCost *float64 `json:"actualCost"`
+	// PowerKwh is the energy worked out by adding up the power the car reported while the session ran. It reaches the
+	// battery side of the charger, so unlike the rise in the battery it includes what the car used itself (warming the
+	// battery or cabin) while plugged in.
+	PowerKwh *float64 `json:"powerKwh"`
 }
 
-const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station,actual_cost`
+const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station,actual_cost,power_kwh`
 
 func scanCharge(r interface{ Scan(...any) error }) (*Charge, error) {
 	var c Charge
-	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh, &c.Station, &c.ActualCost)
+	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh, &c.Station, &c.ActualCost, &c.PowerKwh)
 	return &c, err
 }
 
@@ -51,8 +55,8 @@ func (s *Store) CreateCharge(c *Charge) error {
 }
 
 func (s *Store) UpdateCharge(c *Charge) error {
-	_, err := s.DB.Exec(`UPDATE charges SET end_ts=?,end_soc=?,end_kwh=?,peak_kw=?,open=?,station=? WHERE id=?`,
-		c.EndTS, c.EndSoC, c.EndKwh, c.PeakKw, c.Open, c.Station, c.ID)
+	_, err := s.DB.Exec(`UPDATE charges SET end_ts=?,end_soc=?,end_kwh=?,peak_kw=?,open=?,station=?,power_kwh=? WHERE id=?`,
+		c.EndTS, c.EndSoC, c.EndKwh, c.PeakKw, c.Open, c.Station, c.PowerKwh, c.ID)
 	return err
 }
 
