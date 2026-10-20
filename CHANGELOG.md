@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.35.2
+
+### 🧰 Under the hood
+- Fourteen source files that had grown past 200 lines were split by responsibility, and the list of pages moved out of the app's start-up file. Nothing you see changes; it makes the code easier to read and to change safely.
+
 ## 0.35.1
 
 ### 🔧 Fixes
