@@ -1,4 +1,13 @@
 // Tiny DOM helpers. All data goes in through textContent, never innerHTML.
+
+// The browser's own append and replaceChildren turn null into the word "null". Pages pass null for "nothing here", as h() already
+// treats it, so leave null, undefined and false out of every call. This is why no page can show a stray "null".
+for (const name of ['append', 'prepend', 'replaceChildren', 'before', 'after']) {
+  for (const proto of [Element.prototype, DocumentFragment.prototype]) {
+    const native = proto[name];
+    if (typeof native === 'function') proto[name] = function (...nodes) { return native.apply(this, nodes.filter((n) => n != null && n !== false)); };
+  }
+}
 export function h(tag, attrs, ...kids) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {

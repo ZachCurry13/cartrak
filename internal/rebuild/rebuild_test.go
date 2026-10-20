@@ -150,3 +150,19 @@ func TestRebuildMergesAPausedChargeBecauseItKnowsThePlug(t *testing.T) {
 		t.Fatalf("one session from 38 to 51: %d %+v", len(p.NewCharges), p.NewCharges)
 	}
 }
+
+func TestACorrectedDistanceSurvivesARebuildOnlyForTheSameDrive(t *testing.T) {
+	// split: the long wrong trip becomes two legs, so its corrected distance must not be copied onto either
+	s, d, t0 := seed(t)
+	_, _ = s.DB.Exec(`UPDATE trips SET distance_src='manual', distance_km=299`)
+	p, _ := Compute(s, d, t0.Unix(), t0.Add(3*time.Hour).Unix(), time.Now())
+	if err := Apply(s, d, p); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := s.ListTrips(store.TripFilter{})
+	for _, tr := range got {
+		if tr.DistanceSrc != "" || tr.DistanceKm > 200 {
+			t.Fatalf("the legs are measured again: %+v", tr)
+		}
+	}
+}

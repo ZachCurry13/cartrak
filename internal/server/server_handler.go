@@ -107,6 +107,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/journeys/{id}", s.auth(false, s.journeyDetail))
 	m.HandleFunc("PATCH /api/journeys/{id}", s.auth(true, s.patchJourney))
 	m.HandleFunc("DELETE /api/journeys/{id}", s.auth(true, s.deleteJourney))
+	m.HandleFunc("GET /api/trips/{id}/road", s.auth(true, s.tripRoad))
+	m.HandleFunc("POST /api/trips/{id}/distance", s.auth(true, s.setTripDistance))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
 	m.HandleFunc("DELETE /api/trips/{id}", s.auth(true, s.deleteTrip))
 	m.HandleFunc("GET /api/trips-empty", s.auth(true, s.emptyTrips))

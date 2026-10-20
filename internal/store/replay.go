@@ -124,9 +124,9 @@ func (s *Store) ReplaceRange(oldTrips []int64, oldCharges []int64, newTrips []*T
 	}
 	for _, t := range newTrips {
 		r, err := tx.Exec(`INSERT INTO trips(start_ts,end_ts,start_lat,start_lon,end_lat,end_lon,start_odo,end_odo,distance_km,start_soc,end_soc,
-			max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,?,?,?)`,
+			max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh,distance_src) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,?,?,?,?)`,
 			t.StartTS, t.EndTS, t.StartLat, t.StartLon, t.EndLat, t.EndLon, t.StartOdo, t.EndOdo, t.DistanceKm, t.StartSoC, t.EndSoC,
-			t.MaxSpeedKph, t.Category, t.CategorySource, t.RuleID, t.Notes, t.TZ, t.StartKwh, t.EndKwh)
+			t.MaxSpeedKph, t.Category, t.CategorySource, t.RuleID, t.Notes, t.TZ, t.StartKwh, t.EndKwh, t.DistanceSrc)
 		if err != nil {
 			return err
 		}

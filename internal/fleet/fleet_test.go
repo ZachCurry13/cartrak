@@ -369,3 +369,32 @@ func TestTheInboxListsAlertsOfTheCarsAPersonCanOpenOnly(t *testing.T) {
 		t.Fatalf("a viewer of one car sees only its alerts, and no car name: %s", body)
 	}
 }
+
+func TestTheDebugReportCanCoverThisCarOrEveryCarAndNamesNoCar(t *testing.T) {
+	f, ts, _ := start(t)
+	ann := login(t, ts.URL, "ann")
+	if code, _ := ann.do("POST", "/api/cars", `{"name":"My secret truck name"}`, nil); code != 200 {
+		t.Fatal("add car")
+	}
+	_, one := ann.do("GET", "/api/debug-report?hours=6", "", car("2"))
+	if !strings.Contains(one, "installation: car 2 of 2 (added by a person)") || !strings.Contains(one, "categories: 3 (0 of your own)") || strings.Contains(one, "CAR 1 of") {
+		t.Fatalf("this car's report says where it sits: %.600s", one)
+	}
+	_, all := ann.do("GET", "/api/debug-report?hours=6&all=1", "", nil)
+	if !strings.Contains(all, "CAR 1 of 2") || !strings.Contains(all, "CAR 2 of 2") || strings.Contains(all, "My secret truck name") {
+		t.Fatalf("every car, by number and never by name: %.600s", all)
+	}
+	// an owner who is not an administrator of the whole installation cannot ask for every car
+	catU, _ := f.Core.UserByName("cat")
+	_ = f.Core.SetOwnCar(catU.ID, true)
+	cat := login(t, ts.URL, "cat")
+	if code, _ := cat.do("POST", "/api/cars", `{"name":"c"}`, nil); code != 200 {
+		t.Fatal("cat adds a car")
+	}
+	if code, _ := cat.do("GET", "/api/debug-report?hours=6&all=1", "", car("3")); code != 403 {
+		t.Fatalf("every car is for the installation's administrators: %d", code)
+	}
+	if code, _ := cat.do("GET", "/api/debug-report?hours=6", "", car("3")); code != 200 {
+		t.Fatalf("an owner gets her own car's report: %d", code)
+	}
+}

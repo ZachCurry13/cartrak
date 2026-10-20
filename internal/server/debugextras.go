@@ -103,6 +103,49 @@ func (s *Server) debugSettings() []string {
 		}
 		add("named places (%d): %s", len(named), strings.Join(ps, ", "))
 	}
+	add("%s", s.debugInstallation())
+	if cats, err := s.S.ListCategories(); err == nil {
+		custom := 0
+		for _, c := range cats {
+			if !c.Builtin {
+				custom++
+			}
+		}
+		mode := s.S.TimeOffKind(time.Now().In(s.defaultLoc()).Format("2006-01-02"))
+		if mode == "" {
+			mode = "none"
+		}
+		add("categories: %d (%d of your own); mode today: %s", len(cats), custom, mode)
+	}
+	home := "none"
+	if s.namedHome() != nil {
+		home = "a place named Home"
+	} else if s.homePoint() != nil {
+		home = "a session marked as Home"
+	}
+	priced := 0
+	if named, err := s.S.ListNamedPlaces(); err == nil {
+		for _, p := range named {
+			if p.ChargePrice != nil || p.ChargeHome {
+				priced++
+			}
+		}
+	}
+	add("home is known from: %s; places with their own charging price or counted as home: %d", home, priced)
+	add("trips with a corrected distance: %d; trips whose road could not be estimated: %d", s.S.CountCorrectedTrips(), s.S.CountNoRoutes())
+	if shares, err := s.S.ListShares(); err == nil {
+		live := 0
+		now := time.Now().Unix()
+		for _, x := range shares {
+			if !x.Revoked && (x.Expires == 0 || x.Expires > now) {
+				live++
+			}
+		}
+		add("public share links in use: %d", live)
+	}
+	if ts, err := s.S.ListReportTemplates(); err == nil {
+		add("custom reports: %d", len(ts))
+	}
 	add("data window: first reading %s", time.Unix(s.S.FirstSampleTS(), 0).In(s.defaultLoc()).Format("2006-01-02"))
 	return out
 }
@@ -120,4 +163,22 @@ func toPollInfo(ps []poller.PollRec) []debugreport.PollInfo {
 		out = append(out, debugreport.PollInfo{TS: p.TS, Result: p.Result, NextSec: p.NextSec, Detail: p.Detail})
 	}
 	return out
+}
+
+// debugInstallation says where this car sits among the others, without naming anyone or any car.
+func (s *Server) debugInstallation() string {
+	cars, _ := s.core().ListCars()
+	if s.CarID == 0 || len(cars) == 0 {
+		return "installation: a single car"
+	}
+	pos, owner := 0, "the first car"
+	for i, c := range cars {
+		if c.ID == s.CarID {
+			pos = i + 1
+			if c.OwnerID != 0 {
+				owner = "added by a person"
+			}
+		}
+	}
+	return fmt.Sprintf("installation: car %d of %d (%s)", pos, len(cars), owner)
 }

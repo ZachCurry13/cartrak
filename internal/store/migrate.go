@@ -32,6 +32,8 @@ var migrations = []struct{ table, column, ddl string }{
 	{"alert_log", "url", `ALTER TABLE alert_log ADD COLUMN url TEXT NOT NULL DEFAULT ''`},
 	{"named_places", "charge_price", `ALTER TABLE named_places ADD COLUMN charge_price REAL`},
 	{"named_places", "charge_home", `ALTER TABLE named_places ADD COLUMN charge_home INTEGER NOT NULL DEFAULT 0`},
+	{"trips", "distance_src", `ALTER TABLE trips ADD COLUMN distance_src TEXT NOT NULL DEFAULT ''`},
+	{"shares", "show_insights", `ALTER TABLE shares ADD COLUMN show_insights INTEGER NOT NULL DEFAULT 0`},
 	{"users", "own_car", `ALTER TABLE users ADD COLUMN own_car INTEGER NOT NULL DEFAULT 0`},
 	{"charges", "station", `ALTER TABLE charges ADD COLUMN station TEXT NOT NULL DEFAULT ''`},
 }

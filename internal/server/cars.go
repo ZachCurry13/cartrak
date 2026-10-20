@@ -16,9 +16,10 @@ type CarManager interface {
 	Rename(id int64, name string) error
 	Remove(id int64) error
 	Status(id int64) (linked bool, lastOK int64, found bool)
-	BackupAll(tmpDir string, w io.Writer) error // a zip of the core database and every car's database
-	Inbox(userID int64, limit int) []InboxItem  // the latest alerts about the cars a person can open
-	AdminViews(id int64) map[string]int64       // administrators who opened the car without having been given access, by name, when last
+	BackupAll(tmpDir string, w io.Writer) error           // a zip of the core database and every car's database
+	Inbox(userID int64, limit int) []InboxItem            // the latest alerts about the cars a person can open
+	AllDebugReports(hours int, metric bool) (string, int) // every car's debug report in one text, and the readings they cover
+	AdminViews(id int64) map[string]int64                 // administrators who opened the car without having been given access, by name, when last
 }
 
 // carView is one car as a person sees it in the car switcher.

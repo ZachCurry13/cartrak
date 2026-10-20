@@ -37,7 +37,7 @@ func TestAPublicLinkShowsOnlyWhatWasChosenAndCanBeTurnedOff(t *testing.T) {
 		t.Fatalf("a made-up mode: %d", code)
 	}
 	code, path, _ := create(fmt.Sprintf(`{"kind":"trip","id":%d,"mode":"trimmed","title":"Trip to the lake","units":"mi","expiresDays":7}`, tr.ID))
-	if code != 200 || !strings.HasPrefix(path, "/s/sh_") {
+	if code != 200 || !strings.HasPrefix(path, "/s/") || len(path) != len("/s/")+12 {
 		t.Fatalf("create: %d %s", code, path)
 	}
 	anon := &http.Client{}
@@ -135,7 +135,7 @@ func TestAWholeDayCanBeSharedAndOnlyARealDay(t *testing.T) {
 	code, out := do(t, admin, "POST", ts.URL+"/api/shares", fmt.Sprintf(`{"kind":"day","id":%d,"mode":"stats","title":"My day"}`, id), xh)
 	var r struct{ Path string }
 	_ = json.Unmarshal([]byte(out), &r)
-	if code != 200 || !strings.HasPrefix(r.Path, "/s/sh_") {
+	if code != 200 || !strings.HasPrefix(r.Path, "/s/") || len(r.Path) != len("/s/")+12 {
 		t.Fatalf("share a day: %d %s", code, out)
 	}
 	_, data := do(t, &http.Client{}, "GET", ts.URL+r.Path+"/data", "", nil)
@@ -157,5 +157,35 @@ func TestAWholeDayCanBeSharedAndOnlyARealDay(t *testing.T) {
 	}
 	if code, _ := do(t, admin, "POST", ts.URL+"/api/shares", `{"kind":"day","id":20200101,"mode":"stats"}`, xh); code != 404 {
 		t.Fatalf("a day with no trips: %d", code)
+	}
+}
+
+func TestALinkShowsTheEfficiencyDetailsOnlyWhenAsked(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	start := time.Now().Add(-5 * time.Hour).Truncate(time.Minute)
+	end := start.Add(30 * time.Minute).Unix()
+	a, b := 100.0, 130.0
+	tr := &store.Trip{StartTS: start.Unix(), EndTS: &end, DistanceKm: 30, StartOdo: &a, EndOdo: &b, MaxSpeedKph: 112, Category: "medical", TZ: "UTC"}
+	if err := srv.S.AddManualTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	_, _ = srv.S.DB.Exec(`UPDATE trips SET max_speed_kph=112 WHERE id=?`, tr.ID)
+	data := func(extra string) string {
+		_, out := do(t, admin, "POST", ts.URL+"/api/shares", fmt.Sprintf(`{"kind":"trip","id":%d,"mode":"stats"%s}`, tr.ID, extra), xh)
+		var r struct{ Path string }
+		_ = json.Unmarshal([]byte(out), &r)
+		_, body := do(t, &http.Client{}, "GET", ts.URL+r.Path+"/data", "", nil)
+		return body
+	}
+	with, without := data(`,"showInsights":true`), data(`,"showInsights":false`)
+	if !strings.Contains(with, `"insights"`) || !strings.Contains(with, `"topKph":112`) || !strings.Contains(with, `"avgKph":60`) {
+		t.Fatalf("the details are there when asked: %s", with)
+	}
+	if strings.Contains(without, "insights") || strings.Contains(without, "112") {
+		t.Fatalf("and absent when not: %s", without)
+	}
+	if strings.Contains(with, "medical") {
+		t.Fatalf("never the category: %s", with)
 	}
 }

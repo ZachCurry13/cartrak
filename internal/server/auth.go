@@ -30,6 +30,18 @@ func siteAdmin(r *http.Request) bool {
 	return v
 }
 
+// shortToken is a short secret for a public link: n characters of lowercase letters and digits (5 bits each, so 12 is 60 bits). That is far
+// more than can be guessed through the limit on wrong links, and short enough to read out or type.
+func shortToken(n int) string {
+	const alphabet = "abcdefghijklmnopqrstuvwxyz234567"
+	b := make([]byte, n)
+	_, _ = rand.Read(b)
+	for i := range b {
+		b[i] = alphabet[int(b[i])%len(alphabet)] // 256 is a multiple of 32, so every letter is equally likely
+	}
+	return string(b)
+}
+
 func randToken() string {
 	b := make([]byte, 32)
 	_, _ = rand.Read(b)

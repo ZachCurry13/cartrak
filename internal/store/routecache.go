@@ -79,3 +79,20 @@ func (s *Store) RouteGaveUp(tripID int64) bool {
 	}
 	return raw == "[]"
 }
+
+// CountNoRoutes is how many trips were tried and found to have no usable road.
+func (s *Store) CountNoRoutes() int {
+	if _, err := s.DB.Exec(routeCacheDDL); err != nil {
+		return 0
+	}
+	var n int
+	_ = s.DB.QueryRow(`SELECT COUNT(*) FROM route_cache WHERE points='[]'`).Scan(&n)
+	return n
+}
+
+// CountCorrectedTrips is how many trips have a distance the owner corrected.
+func (s *Store) CountCorrectedTrips() int {
+	var n int
+	_ = s.DB.QueryRow(`SELECT COUNT(*) FROM trips WHERE distance_src!=''`).Scan(&n)
+	return n
+}

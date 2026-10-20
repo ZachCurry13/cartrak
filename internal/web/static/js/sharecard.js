@@ -11,6 +11,7 @@ export function shareCard(kind, id, defaultTitle = '') {
     h('option', { value: 'full' }, 'The whole route, including where it started and ended'));
   const cities = h('input', { type: 'checkbox', id: 'shc' });
   const time = h('input', { type: 'checkbox', id: 'sht2' });
+  const insights = h('input', { type: 'checkbox', id: 'shi', checked: true });
   const expires = h('select', { id: 'she' }, h('option', { value: '7' }, 'In 7 days'), h('option', { value: '30', selected: true }, 'In 30 days'), h('option', { value: '90' }, 'In 90 days'), h('option', { value: '0' }, 'Never'));
   const msg = h('p', { class: 'muted', role: 'status' });
   const result = h('div');
@@ -19,11 +20,11 @@ export function shareCard(kind, id, defaultTitle = '') {
   async function make() {
     msg.textContent = 'Creating the link…';
     try {
-      const r = await api('/api/shares', { method: 'POST', body: { kind, id: Number(id), title: title.value.trim() || defaultTitle, mode: mode.value, showCities: cities.checked, showTime: time.checked, units: isMetric() ? 'km' : 'mi', expiresDays: Number(expires.value) } });
+      const r = await api('/api/shares', { method: 'POST', body: { kind, id: Number(id), title: title.value.trim() || defaultTitle, mode: mode.value, showCities: cities.checked, showInsights: insights.checked, showTime: time.checked, units: isMetric() ? 'km' : 'mi', expiresDays: Number(expires.value) } });
       const url = r.publicAddressKnown ? r.url : `${location.origin}${r.path}`;
       msg.textContent = '';
       result.replaceChildren(h('p', { class: 'banner notice' }, 'Anyone with this link can open this page. You will not see the link again, so copy it now. You can turn it off any time under More, Security.'),
-        h('pre', { class: 'code' }, url), h('p', {}, copyButton(url, 'Copy link')),
+        h('pre', { class: 'code' }, url), h('p', { class: 'seg' }, copyButton(url, 'Copy link'), navigator.share ? h('button', { class: 'sec', onclick: () => navigator.share({ title: title.value.trim() || defaultTitle || 'CarTrak', url }).catch(() => {}) }, 'Share…') : null),
         r.publicAddressKnown ? null : h('p', { class: 'muted' }, 'Remote access has no public address yet, so this link only works where this address can be reached. Set up Remote access to share outside your home.'));
     } catch (e) { msg.textContent = e.message; }
   }
@@ -34,6 +35,7 @@ export function shareCard(kind, id, defaultTitle = '') {
     h('label', { for: 'shm' }, 'Route'), mode,
     check(cities, 'shc', 'Show the city names where it started and ended'),
     check(time, 'sht2', 'Show the date and time'),
+    check(insights, 'shi', kind === 'trip' ? 'Show the efficiency details: speed, temperature and what affected it' : 'Show the speed details'),
     h('label', { for: 'she' }, 'The link stops working'), expires,
     h('p', {}, h('button', { onclick: make }, 'Create link')), msg, result);
 }

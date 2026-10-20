@@ -87,12 +87,30 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 	if hours < 1 || hours > 336 {
 		hours = 24
 	}
+	if r.URL.Query().Get("all") == "1" { // every car's report in one, for an administrator of the whole installation
+		if s.Cars == nil || !siteAdmin(r) {
+			fail(w, 403, "only an administrator of the whole installation can make the report for every car")
+			return
+		}
+		text, n := s.Cars.AllDebugReports(hours, metricReq(r))
+		ok(w, map[string]any{"text": text, "hours": hours, "readings": n})
+		return
+	}
+	text, n, err := s.DebugText(hours, metricReq(r))
+	if err != nil {
+		fail(w, 500, "db error")
+		return
+	}
+	ok(w, map[string]any{"text": text, "hours": hours, "readings": n})
+}
+
+// DebugText is the debug report of this car for the last hours, and how many readings it covers.
+func (s *Server) DebugText(hours int, metric bool) (string, int, error) {
 	now := time.Now()
 	from := now.Add(-time.Duration(hours) * time.Hour)
 	rows, err := s.S.DebugRows(from.Unix(), now.Unix())
 	if err != nil {
-		fail(w, 500, "db error")
-		return
+		return "", 0, err
 	}
 	s.withPackPower(rows, from.Unix(), now.Unix())
 	locks := map[int64][]string{}
@@ -135,7 +153,7 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		lastOK = time.Unix(st.LastOK, 0)
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
-		MaxLines: min(6000, max(1100, hours*30)), Metric: metricReq(r), Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
+		MaxLines: min(6000, max(1100, hours*30)), Metric: metric, Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
 		Polls: toPollInfo(s.P.RecentPolls(from)), Decisions: s.S.RecentDecisions(from.Unix()), Settings: s.debugSettings(), Curves: s.chargeCurves(recent)})
-	ok(w, map[string]any{"text": text, "hours": hours, "readings": len(rows)})
+	return text, len(rows), nil
 }

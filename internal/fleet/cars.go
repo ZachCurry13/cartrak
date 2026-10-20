@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/ZachCurry13/cartrak/internal/server"
 	"github.com/ZachCurry13/cartrak/internal/store"
@@ -122,4 +123,23 @@ func (f *Fleet) Inbox(userID int64, limit int) []server.InboxItem {
 		out = []server.InboxItem{}
 	}
 	return out
+}
+
+// AllDebugReports is the debug report of every car, one after the other, each under a heading with its number (never its name).
+func (f *Fleet) AllDebugReports(hours int, metric bool) (string, int) {
+	runtimes := f.all()
+	sort.Slice(runtimes, func(i, j int) bool { return runtimes[i].Car.ID < runtimes[j].Car.ID })
+	var b strings.Builder
+	total := 0
+	for i, r := range runtimes {
+		text, n, err := r.Srv.DebugText(hours, metric)
+		fmt.Fprintf(&b, "\n======================== CAR %d of %d (id %d) ========================\n", i+1, len(runtimes), r.Car.ID)
+		if err != nil {
+			fmt.Fprintf(&b, "(the report could not be made: %v)\n", err)
+			continue
+		}
+		b.WriteString(text)
+		total += n
+	}
+	return b.String(), total
 }

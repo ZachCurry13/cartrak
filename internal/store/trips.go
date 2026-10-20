@@ -28,16 +28,19 @@ type Trip struct {
 	StartKwh       *float64 `json:"startKwh"` // energy left in the battery at the start and end, kWh
 	EndKwh         *float64 `json:"endKwh"`
 	JourneyID      *int64   `json:"journeyId"` // the journey this trip belongs to, if any
+	// DistanceSrc says where an adjusted distance came from: "road" (the estimated road), "manual" (entered by the owner) or empty
+	// for the odometer's own figure.
+	DistanceSrc string `json:"distanceSrc"`
 }
 
 const tripCols = `id,start_ts,end_ts,start_lat,start_lon,end_lat,end_lon,start_odo,end_odo,distance_km,
- start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh,journey_id`
+ start_soc,end_soc,max_speed_kph,category,category_source,rule_id,notes,open,tz,start_kwh,end_kwh,journey_id,distance_src`
 
 func scanTrip(r interface{ Scan(...any) error }) (*Trip, error) {
 	var t Trip
 	err := r.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.StartLat, &t.StartLon, &t.EndLat, &t.EndLon,
 		&t.StartOdo, &t.EndOdo, &t.DistanceKm, &t.StartSoC, &t.EndSoC, &t.MaxSpeedKph,
-		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ, &t.StartKwh, &t.EndKwh, &t.JourneyID)
+		&t.Category, &t.CategorySource, &t.RuleID, &t.Notes, &t.Open, &t.TZ, &t.StartKwh, &t.EndKwh, &t.JourneyID, &t.DistanceSrc)
 	return &t, err
 }
 

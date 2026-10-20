@@ -23,6 +23,10 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 		d.ClassifyTrip(n)
 		if best != nil {
 			n.Notes = best.Notes
+			// a distance the owner corrected carries over when the new trip is the same drive, not a merge or a split of it
+			if best.DistanceSrc != "" && best.EndTS != nil && bestOv*10 >= (*best.EndTS-best.StartTS)*8 && bestOv*10 >= (end(n)-n.StartTS)*8 {
+				n.DistanceKm, n.DistanceSrc = best.DistanceKm, best.DistanceSrc
+			}
 			if best.CategorySource == "manual" {
 				n.Category, n.CategorySource, n.RuleID = best.Category, "manual", nil
 			}

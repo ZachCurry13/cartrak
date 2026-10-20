@@ -79,7 +79,7 @@ export default async function trips(root, _a, session) {
   const review = h('div');
   const estBar = h('div');
   if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
-  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/reports' }, 'Reports'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/reports' }, 'Reports'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

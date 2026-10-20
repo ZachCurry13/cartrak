@@ -55,6 +55,24 @@ func (s *Server) hasPhoneTrack(t *store.Trip) bool {
 	return len(s.phoneRoute(t.StartTS, end)) >= 2
 }
 
+// recordedPoints are the positions a trip has: the car's own, with its start and end added when they are missing.
+func (s *Server) recordedPoints(t *store.Trip) []routeest.Point {
+	ss, _ := s.S.TrackBetween(t.StartTS, *t.EndTS)
+	var recorded []routeest.Point
+	for _, x := range ss {
+		if x.Lat != nil && x.Lon != nil {
+			recorded = append(recorded, routeest.Point{*x.Lat, *x.Lon})
+		}
+	}
+	if t.StartLat != nil && t.StartLon != nil && (len(recorded) == 0 || recorded[0] != (routeest.Point{*t.StartLat, *t.StartLon})) {
+		recorded = append([]routeest.Point{{*t.StartLat, *t.StartLon}}, recorded...)
+	}
+	if t.EndLat != nil && t.EndLon != nil && (len(recorded) == 0 || recorded[len(recorded)-1] != (routeest.Point{*t.EndLat, *t.EndLon})) {
+		recorded = append(recorded, routeest.Point{*t.EndLat, *t.EndLon})
+	}
+	return recorded
+}
+
 // estimateFor is the estimated road for a finished trip that has no phone GPS track. It uses the kept estimate when there
 // is one. With fetch set, and the lookup switched on, it asks the routing service and keeps the answer; a failure is
 // remembered for an hour so a page view never keeps hammering the service.
@@ -77,19 +95,7 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 		return nil
 	}
 	s.routeMu.Unlock()
-	ss, _ := s.S.TrackBetween(t.StartTS, *t.EndTS)
-	var recorded []routeest.Point
-	for _, x := range ss {
-		if x.Lat != nil && x.Lon != nil {
-			recorded = append(recorded, routeest.Point{*x.Lat, *x.Lon})
-		}
-	}
-	if t.StartLat != nil && t.StartLon != nil && (len(recorded) == 0 || recorded[0] != (routeest.Point{*t.StartLat, *t.StartLon})) {
-		recorded = append([]routeest.Point{{*t.StartLat, *t.StartLon}}, recorded...)
-	}
-	if t.EndLat != nil && t.EndLon != nil && (len(recorded) == 0 || recorded[len(recorded)-1] != (routeest.Point{*t.EndLat, *t.EndLon})) {
-		recorded = append(recorded, routeest.Point{*t.EndLat, *t.EndLon})
-	}
+	recorded := s.recordedPoints(t)
 	fail := func(f routeFailure) *estimateOut {
 		f.At = time.Now()
 		s.routeMu.Lock()
@@ -145,9 +151,11 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 	}
 	done, failed := 0, 0
 	type failedTrip struct {
-		ID      int64  `json:"id"`
-		StartTS int64  `json:"startTs"`
-		Why     string `json:"why"`
+		ID      int64   `json:"id"`
+		StartTS int64   `json:"startTs"`
+		Why     string  `json:"why"`
+		RoadKm  float64 `json:"roadKm"` // the length of the road found, when one was found: the owner can choose to use it
+		OdoKm   float64 `json:"odoKm"`
 	}
 	var failures []failedTrip
 	for i, t := range pending {
@@ -164,7 +172,7 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 			s.routeMu.Lock()
 			f := s.routeFail[t.ID]
 			s.routeMu.Unlock()
-			failures = append(failures, failedTrip{t.ID, t.StartTS, f.text(metricReq(r))})
+			failures = append(failures, failedTrip{t.ID, t.StartTS, f.text(metricReq(r)), f.RoadKm, f.OdoKm})
 		}
 	}
 	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done, "failures": failures})

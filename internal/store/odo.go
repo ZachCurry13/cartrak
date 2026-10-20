@@ -67,6 +67,13 @@ func (s *Store) AddManualTrip(t *Trip) error {
 
 // SetTripOdometer widens a trip's odometer range and distance, for miles the car drove just before or
 // after the part CarTrak recorded.
+// SetTripDistance sets a finished trip's distance and says where the figure came from ("road", "manual", or "" to go back to what the
+// odometer said).
+func (s *Store) SetTripDistance(id int64, km float64, src string) error {
+	_, err := s.DB.Exec(`UPDATE trips SET distance_km=?,distance_src=? WHERE id=?`, km, src, id)
+	return err
+}
+
 func (s *Store) SetTripOdometer(id int64, startOdo, endOdo, distanceKm float64) error {
 	_, err := s.DB.Exec(`UPDATE trips SET start_odo=?,end_odo=?,distance_km=? WHERE id=?`, startOdo, endOdo, distanceKm, id)
 	return err

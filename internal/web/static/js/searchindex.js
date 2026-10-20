@@ -34,7 +34,7 @@ const EXTRA = [
   ['12 V battery', 'Health', '#/health', 'The small battery that wakes the car.', '12v 12 volt battery small battery dead jump'],
   ['Battery health', 'Health', '#/health', 'Battery size over time and the true battery level.', 'battery health degradation capacity usable true level soc'],
   ['Charging curve', 'Charging → a session → Charging curve', '#/charging', 'Power against battery level for a session.', 'charging curve speed kw power peak fast charger supercharger taper'],
-  ['Best speed (70 vs 75)', 'Trips → Plan a trip', '#/plan', 'Compare two cruising speeds on a long trip: driving time saved against charging time added.', 'best speed ideal speed 70 75 compare faster slower road trip planner charging time stops'],
+  ['Best speed for a trip', 'Trips → Plan a trip', '#/plan', 'Compare two cruising speeds on a long trip: driving time saved against charging time added.', 'best speed ideal speed 70 75 compare faster slower road trip planner charging time stops'],
   ['Day view', 'Trips → Day view', '#/day', 'All of a day on one map: every trip, the stops between them and the totals.', 'day view map route whole day combined stops charging trip stops'],
   ['Field watcher', 'Data → Field watcher', '#/fields', 'Every reading the car sends, how often it changes and what CarTrak uses it for.', 'fields watcher every field unused data changes api readings explore'],
   ['History', 'Trips → History feed', '#/history', 'Driving, charging and parked time as one feed, by month.', 'history timeline feed log parked driving charging month'],

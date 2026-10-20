@@ -60,3 +60,7 @@ Notes:
 - Ford reports the odometer only when the car wakes, so the times inside a stretch are approximate. The total is exact.
 - It needs at least two odometer readings in the period. Readings from before CarTrak was linked do not exist.
 - Only admins can see and use it.
+
+## When a drive's distance is wrong
+
+The car's odometer sometimes updates late, so a drive can be recorded shorter than it was. Open the trip and use **Does the distance look wrong?**: **Check the road distance** asks the routing service for the length of a road between the positions the car reported, and **Use** puts that length on the trip; or type the real distance; or **Go back to the odometer**. The trip is marked as corrected, its road is drawn, and the mileage log, reports and efficiency use the corrected distance. A trip that the road estimate could not do because the road was a very different length shows a **Use** button for it right in that notice.

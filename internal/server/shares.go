@@ -61,14 +61,15 @@ func (s *Server) shareTrips(kind string, id int64) []*store.Trip {
 }
 
 type shareIn struct {
-	Kind        string `json:"kind"`
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Mode        string `json:"mode"`
-	ShowCities  bool   `json:"showCities"`
-	ShowTime    bool   `json:"showTime"`
-	Units       string `json:"units"`
-	ExpiresDays int    `json:"expiresDays"`
+	Kind         string `json:"kind"`
+	ID           int64  `json:"id"`
+	Title        string `json:"title"`
+	Mode         string `json:"mode"`
+	ShowCities   bool   `json:"showCities"`
+	ShowTime     bool   `json:"showTime"`
+	ShowInsights bool   `json:"showInsights"`
+	Units        string `json:"units"`
+	ExpiresDays  int    `json:"expiresDays"`
 }
 
 // createShare makes a public link and returns it once; only a hash of its secret is kept. Admin only.
@@ -96,7 +97,7 @@ func (s *Server) createShare(w http.ResponseWriter, r *http.Request) {
 	if len(title) > 80 {
 		title = title[:80]
 	}
-	sh := &store.Share{Kind: in.Kind, TargetID: in.ID, Title: title, Mode: in.Mode, ShowTime: in.ShowTime, ShowCities: in.ShowCities, Units: in.Units}
+	sh := &store.Share{Kind: in.Kind, TargetID: in.ID, Title: title, Mode: in.Mode, ShowTime: in.ShowTime, ShowCities: in.ShowCities, ShowInsights: in.ShowInsights, Units: in.Units}
 	if in.ExpiresDays > 0 {
 		sh.Expires = time.Now().AddDate(0, 0, in.ExpiresDays).Unix()
 	}
@@ -107,7 +108,7 @@ func (s *Server) createShare(w http.ResponseWriter, r *http.Request) {
 		first, last := ts[0], ts[len(ts)-1]
 		sh.Origin, sh.Dest = s.cityOf(ctx, first.StartLat, first.StartLon), s.cityOf(ctx, last.EndLat, last.EndLon)
 	}
-	tok := "sh_" + randToken()
+	tok := shortToken(12) // links made before this were longer; they keep working
 	sh.TokenHash = store.TokenHash(tok)
 	if err := s.S.CreateShare(sh); err != nil {
 		fail(w, 500, "db error")
@@ -168,6 +169,9 @@ func (s *Server) shareData(sh *store.Share) map[string]any {
 	if sh.ShowTime && len(ts) > 0 {
 		out["start"], out["end"] = sum.StartTS, sum.EndTS
 		out["tz"] = ts[0].TZ
+	}
+	if sh.ShowInsights {
+		out["insights"] = s.shareInsights(ts)
 	}
 	routes := s.shareRoutes(sh, ts)
 	out["routes"] = routes

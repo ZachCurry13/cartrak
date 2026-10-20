@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.37.1
+
+### 🔧 Fixes
+- **No more stray "null".** The share box showed the word "null" under the link once the link was made, and any other page that left a spot empty could do the same. One fix covers every page.
+- **Plan a trip** is just "Plan a trip" now, without "70 vs 75" (the two speeds are still picked on the planner itself).
+
+### 📏 Fix a drive's distance
+- The car's odometer sometimes updates late, so a drive can be recorded much shorter than it was, and the road estimate then refuses it ("the road found was 11.2 mi but the odometer says 5.6 mi"). Each such trip in that notice now has a **Use 11.2 mi** button, and every trip has a **Does the distance look wrong?** card: check the road distance and use it, type the real distance, or go back to the odometer's. The road is drawn on the trip, the trip is marked as corrected, and reports and the mileage log use the corrected figure. Fix a day keeps a correction when the drive stays the same drive.
+
+### 🪲 A fuller Debug report, for one car or every car
+- The report is for the car on screen. Administrators of the whole installation can now choose **Every car** and get one report with each car under its own heading (by number, never by name).
+- It now also lists where this car sits among the others, how many categories there are and today's mode, how CarTrak knows where home is, places with their own charging price, trips with a corrected distance, trips whose road could not be estimated, public links in use and custom reports. Still no positions, names, keys or VIN.
+
+### 📈 Share the efficiency details
+- A share link can now include **how it went**: top and average speed, the temperature, how much more or less energy the trip used than usual, and the reasons (cold weather, highway speed, stop and go…). It is a tick box in the share box, on by default, and works for a trip, a journey or a day (a single trip also gets the temperature and reasons). It never shows the trip's category or where it went beyond what you chose.
+
+### 🔗 Shorter share links
+- New share links are 12 letters and digits (for example `/s/k4m9q2x7t3ha`) instead of 64, and the share box has a **Share…** button beside Copy on phones. Links made before keep working.
+
 ## 0.37.0
 
 ### 📊 Reports and insights

@@ -25,21 +25,24 @@ type Share struct {
 	Revoked    bool   `json:"revoked"`
 	TokenHash  string `json:"-"`
 	ShowCities bool   `json:"showCities"`
+	// ShowInsights adds the efficiency details to the public page: average and top speed, the temperature and what made the trip use more or
+	// less energy.
+	ShowInsights bool `json:"showInsights"`
 }
 
-const shareCols = `id,kind,target_id,title,mode,show_time,units,origin,dest,bbox,created,expires,views,last_view,revoked,token_hash,show_cities`
+const shareCols = `id,kind,target_id,title,mode,show_time,units,origin,dest,bbox,created,expires,views,last_view,revoked,token_hash,show_cities,show_insights`
 
 func scanShare(r interface{ Scan(...any) error }) (*Share, error) {
 	var s Share
-	var st, rv, sc int
-	err := r.Scan(&s.ID, &s.Kind, &s.TargetID, &s.Title, &s.Mode, &st, &s.Units, &s.Origin, &s.Dest, &s.BBox, &s.Created, &s.Expires, &s.Views, &s.LastView, &rv, &s.TokenHash, &sc)
-	s.ShowTime, s.Revoked, s.ShowCities = st == 1, rv == 1, sc == 1
+	var st, rv, sc, si int
+	err := r.Scan(&s.ID, &s.Kind, &s.TargetID, &s.Title, &s.Mode, &st, &s.Units, &s.Origin, &s.Dest, &s.BBox, &s.Created, &s.Expires, &s.Views, &s.LastView, &rv, &s.TokenHash, &sc, &si)
+	s.ShowTime, s.Revoked, s.ShowCities, s.ShowInsights = st == 1, rv == 1, sc == 1, si == 1
 	return &s, err
 }
 
 func (s *Store) CreateShare(x *Share) error {
-	r, err := s.DB.Exec(`INSERT INTO shares(`+shareCols[len("id,"):]+`) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,0,?,?)`,
-		x.Kind, x.TargetID, x.Title, x.Mode, b2i(x.ShowTime), x.Units, x.Origin, x.Dest, x.BBox, time.Now().Unix(), x.Expires, 0, 0, x.TokenHash, b2i(x.ShowCities))
+	r, err := s.DB.Exec(`INSERT INTO shares(`+shareCols[len("id,"):]+`) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,0,?,?,?)`,
+		x.Kind, x.TargetID, x.Title, x.Mode, b2i(x.ShowTime), x.Units, x.Origin, x.Dest, x.BBox, time.Now().Unix(), x.Expires, 0, 0, x.TokenHash, b2i(x.ShowCities), b2i(x.ShowInsights))
 	if err != nil {
 		return err
 	}

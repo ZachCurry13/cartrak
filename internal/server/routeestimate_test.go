@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -63,5 +64,64 @@ func TestATripWithOnlyTwoCarPositionsGetsAnEstimatedRoadOnceAndOnlyWhenSwitchedO
 	get()
 	if atomic.LoadInt32(&calls) != 1 {
 		t.Fatalf("the service is asked once and the answer kept: %d calls", calls)
+	}
+}
+
+func TestADriveTheOdometerCountedShortCanUseTheRoadsLengthOrBeTyped(t *testing.T) {
+	osrm := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"code":"Ok","routes":[{"distance":18000,"geometry":{"coordinates":[[-85.60,44.76],[-85.55,44.80],[-85.50,44.85]]}}]}`))
+	}))
+	defer osrm.Close()
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.RouteEst = &routeest.Client{BaseURL: osrm.URL}
+	admin := adminClient(t, ts.URL)
+	_ = srv.Cfg.KV.SetKV("setting:CARTRAK_ROUTE_LOOKUP", "on")
+	fp := func(v float64) *float64 { return &v }
+	t0 := time.Now().Add(-3 * time.Hour).Truncate(time.Second)
+	end := t0.Add(13 * time.Minute).Unix()
+	tr := &store.Trip{StartTS: t0.Unix(), StartLat: fp(44.76), StartLon: fp(-85.60), StartOdo: fp(1000), Category: "personal", CategorySource: "default"}
+	if err := srv.S.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	tr.EndTS, tr.EndLat, tr.EndLon, tr.EndOdo, tr.DistanceKm, tr.Open = &end, fp(44.85), fp(-85.50), fp(1009), 9, false
+	if err := srv.S.UpdateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	// the batch finds a road twice as long as the odometer and says so, so the owner can choose it
+	code, body := do(t, admin, "POST", ts.URL+"/api/trips/estimate-routes", "", xh)
+	if code != 200 || !strings.Contains(body, `"roadKm":18`) || !strings.Contains(body, `"odoKm":9`) {
+		t.Fatalf("the failure carries both lengths: %d %s", code, body)
+	}
+	url := fmt.Sprintf("%s/api/trips/%d/distance", ts.URL, tr.ID)
+	if code, _ := do(t, admin, "POST", url, `{"use":"road"}`, xh); code != 200 {
+		t.Fatalf("use the road: %d", code)
+	}
+	got, _ := srv.S.GetTrip(tr.ID)
+	if got.DistanceKm != 18 || got.DistanceSrc != "road" {
+		t.Fatalf("corrected to the road: %+v", got)
+	}
+	if pts, _ := srv.S.RouteEstimate(tr.ID); len(pts) < 2 {
+		t.Fatal("the road is kept so it can be drawn")
+	}
+	if code, _ := do(t, admin, "POST", url, `{"km":16.5}`, xh); code != 200 {
+		t.Fatal("type a distance")
+	}
+	if got, _ = srv.S.GetTrip(tr.ID); got.DistanceKm != 16.5 || got.DistanceSrc != "manual" {
+		t.Fatalf("typed: %+v", got)
+	}
+	if code, _ := do(t, admin, "POST", url, `{"use":"odometer"}`, xh); code != 200 {
+		t.Fatal("back to the odometer")
+	}
+	if got, _ = srv.S.GetTrip(tr.ID); got.DistanceKm != 9 || got.DistanceSrc != "" {
+		t.Fatalf("back to what the odometer said: %+v", got)
+	}
+	for _, bad := range []string{`{"km":0}`, `{"km":5000}`, `{}`} {
+		if code, _ := do(t, admin, "POST", url, bad, xh); code != 400 {
+			t.Fatalf("%s should be refused: %d", bad, code)
+		}
+	}
+	// a viewer cannot change a distance
+	if code, _ := do(t, &http.Client{}, "POST", url, `{"km":1}`, xh); code == 200 {
+		t.Fatal("signed-out callers cannot")
 	}
 }

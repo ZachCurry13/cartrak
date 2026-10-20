@@ -10,6 +10,20 @@ const fmtDist = (km, units, d = 1) => (units === 'km' ? `${km.toFixed(d)} km` : 
 const fmtTime = (sec) => { const m = Math.round(sec / 60); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`; };
 const tile = (label, value) => h('div', { class: 'stat' }, h('div', { class: 'v' }, value), h('div', { class: 'l' }, label));
 
+const fmtSpeed = (kph, units) => (units === 'km' ? `${Math.round(kph)} km/h` : `${Math.round(kph * 0.621371)} mph`);
+const fmtTemp = (c, units) => (units === 'km' ? `${Math.round(c)}°C` : `${Math.round(c * 9 / 5 + 32)}°F`);
+
+// The efficiency detail a link was set up to show: speeds, the weather, and what made the trip use more or less energy.
+function insightsCard(d) {
+  const i = d.insights;
+  const vs = i.vsUsualPct;
+  return h('section', { class: 'card' }, h('h2', {}, 'How it went'),
+    h('div', { class: 'grid' }, tile('Top speed', fmtSpeed(i.topKph, d.units)), i.avgKph ? tile('Average speed', fmtSpeed(i.avgKph, d.units)) : null,
+      i.tempC != null ? tile('Temperature', fmtTemp(i.tempC, d.units)) : null, i.stops != null ? tile('Stops', String(i.stops)) : null),
+    vs != null ? h('p', {}, Math.abs(vs) < 3 ? 'About as efficient as the driver\'s usual.' : `${Math.abs(Math.round(vs))}% ${vs > 0 ? 'more' : 'less'} energy per ${d.units === 'km' ? 'km' : 'mile'} than the driver\'s usual.`) : null,
+    i.tags && i.tags.length ? h('p', { class: 'tags' }, ...i.tags.map((t) => h('span', { class: `chip ${t.level === 'bad' ? 'bad' : t.level === 'good' ? 'ok' : 'work'}` }, t.label))) : null);
+}
+
 function plainRoute(routes) {
   const NS = 'http://www.w3.org/2000/svg';
   const pts = routes.flat();
@@ -52,6 +66,7 @@ async function main() {
         ...(d.kind === 'day' ? [tile('Trips', String(d.legs))] : []),
         ...(journey ? [tile('Elapsed', d.elapsedSec != null ? fmtTime(d.elapsedSec) : '—'), tile('Stops', String(d.stops))] : []),
         ...(d.energyKwh != null ? [tile('Energy used', `${d.energyEstimated ? '≈ ' : ''}${d.energyKwh.toFixed(1)} kWh`), eff ? tile('Efficiency', eff) : null] : []).filter(Boolean))),
+    d.insights ? insightsCard(d) : null,
     d.routeHidden ? h('p', { class: 'muted' }, 'The route is hidden because the trip is too short to show without revealing where it started or ended.') : null,
     mapBox,
     h('p', { class: 'muted foot' }, 'Shared from a CarTrak. This page shows only what its owner chose to share.')].filter(Boolean));
