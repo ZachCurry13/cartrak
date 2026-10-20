@@ -44,7 +44,7 @@ jobs:
           V="${{ github.event.inputs.version }}"
           if [ -n "$V" ]; then TAGS="${IMAGE}:${V},${IMAGE}:latest"; fi
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
