@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.38.1
+
+### 🪲 Pick any car for the Debug report
+- The Debug report now has a list of the cars you can open, by name, so you can make the report for any one of them (an administrator of the whole installation sees every car, marked "not yours" when it belongs to someone else), as well as the car on screen or every car together. The report itself still names no car and no person.
+
 ## 0.38.0
 
 ### 🛑 Stops are stops on the road
