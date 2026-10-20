@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan } from '../energy.js';
 import { eventRow } from './history.js';
+import { expandable } from '../daydetail.js';
 
 const COLORS = ['#1b5fc4', '#d97706', '#7c3aed', '#0d9488', '#be185d', '#475569'];
 const STOP_COLOR = { charging: '#16a34a', parked: '#64748b' };
@@ -69,7 +70,7 @@ export default async function day(root, [date]) {
       m.show({ routes, markers });
       map = h('div', {}, m.el, x.routes.some((r) => r.kind === 'estimate') ? h('div', { class: 'legend' }, h('span', {}, h('i'), 'recorded route'), h('span', {}, h('i', { class: 'dot' }), 'estimated road')) : null);
     } else if (x.routes.length) map = h('p', { class: 'muted' }, 'Maps are switched off, so only the list is shown.');
-    const list = x.events.length ? x.events.map((v) => eventRow(v, x.tz, x.currency, stopNo.get(v))) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
+    const list = x.events.length ? x.events.flatMap((v) => expandable(eventRow(v, x.tz, x.currency, stopNo.get(v)), v, x.currency)) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
     box.replaceChildren(nav, h('p', {}, picker), summaryCard(x), tiles, map, h('h3', { style: 'margin:16px 0 6px' }, 'The day, in order'), ...list);
   }
   await load(date);

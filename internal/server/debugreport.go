@@ -81,10 +81,10 @@ func toString(v any) string {
 
 // debugReport is the text an owner can copy and send when something looks wrong: the last few hours of readings,
 // the raw lock fields around each lock change, the trips and charging sessions, and the alerts sent. It leaves out
-// positions, sign-ins, keys and the VIN. Admin only. ?hours=24 (1 to 72).
+// positions, sign-ins, keys and the VIN. Admin only. ?hours=24 (1 to 336, two weeks).
 func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 	hours, _ := strconv.Atoi(r.URL.Query().Get("hours"))
-	if hours < 1 || hours > 72 {
+	if hours < 1 || hours > 336 {
 		hours = 24
 	}
 	now := time.Now()
@@ -135,7 +135,7 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		lastOK = time.Unix(st.LastOK, 0)
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
-		Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
+		MaxLines: min(6000, max(1100, hours*30)), Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
 		Polls: toPollInfo(s.P.RecentPolls(from)), Decisions: s.S.RecentDecisions(from.Unix()), Settings: s.debugSettings(), Curves: s.chargeCurves(recent)})
 	ok(w, map[string]any{"text": text, "hours": hours, "readings": len(rows)})
 }

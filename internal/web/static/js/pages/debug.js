@@ -5,7 +5,7 @@ import { api } from '../api.js';
 export default async function debug(root, _a, session) {
   if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   const hours = h('select', { id: 'dh', 'aria-label': 'How far back' },
-    ...[[6, 'Last 6 hours'], [24, 'Last 24 hours'], [48, 'Last 2 days'], [72, 'Last 3 days']].map(([v, t]) => h('option', { value: v, selected: v === 24 }, t)));
+    ...[[6, 'Last 6 hours'], [24, 'Last 24 hours'], [48, 'Last 2 days'], [72, 'Last 3 days'], [168, 'Last 7 days'], [336, 'Last 14 days']].map(([v, t]) => h('option', { value: v, selected: v === 24 }, t)));
   const box = h('textarea', { readonly: true, rows: 16, 'aria-label': 'Debug report', style: 'width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;white-space:pre;overflow:auto' });
   const msg = h('p', { class: 'muted', role: 'status' });
   const copy = h('button', { class: 'sec', disabled: true, onclick: async () => { try { await navigator.clipboard.writeText(box.value); msg.textContent = 'Copied'; } catch (e) { box.select(); msg.textContent = 'Select all and copy (the browser blocked the button)'; } } }, 'Copy');

@@ -26,3 +26,8 @@ a.hcard:hover,a.hcard:focus-visible{background:var(--card2)}
 .hdaylink{margin-left:auto;font-size:.72rem;letter-spacing:0;text-transform:none;font-weight:600;color:var(--accent)}
 .dtiles.day{grid-template-columns:repeat(auto-fit,minmax(7rem,1fr))}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 0;font-size:.78rem;color:var(--muted)}.legend i{display:inline-block;width:18px;height:0;border-top:3px solid #1b5fc4;vertical-align:middle;margin-right:6px}.legend i.dot{border-top-style:dotted}
+.hcard.hopen{cursor:pointer}
+.hcard.hopen[aria-expanded="true"]{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0}
+.hpanel{background:var(--card);border-radius:0 0 16px 16px;margin:0 0 8px;padding:4px 14px 12px;border-top:1px solid var(--card2)}
+.hpanel[hidden]{display:none}
+.hpanel .card{background:var(--card2)}

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.34.0
+
+### 🗺️ Day view opens details in place
+- Tap a drive or a charging session in the Day view and its details open right under it, so you stay on the day. A drive shows distance, average and top speed, energy, efficiency, battery and why the efficiency was what it was; a charge shows energy, cost, where, and its power curve. A link to the full trip or to Charging is still there when you want to edit.
+
+### 🪲 Debug report
+- The window now goes back **7 or 14 days** (it was 3), and lists more reading lines the longer the window.
+- The per-session power line only lists battery levels the session actually climbed through; a session that began at 48% no longer shows "20%" and "40%".
+
 ## 0.33.0
 
 ### 🪲 A fuller Debug report

@@ -44,13 +44,21 @@ func (s *Server) chargeCurves(charges []*store.Charge) map[int64]string {
 		}
 		var parts []string
 		for _, lvl := range []float64{20, 40, 60, 80} {
+			var prev *float64
 			for _, x := range rows {
-				if x.SoCPct != nil && *x.SoCPct >= lvl {
-					if kw := samplePower(x); kw > 0.2 {
-						parts = append(parts, fmt.Sprintf("%.0f%% %.0f kW", lvl, kw))
+				if x.SoCPct == nil {
+					continue
+				}
+				if *x.SoCPct >= lvl {
+					// only levels the session climbed through: it must have started below it
+					if prev != nil && *prev < lvl {
+						if kw := samplePower(x); kw > 0.2 {
+							parts = append(parts, fmt.Sprintf("%.0f%% %.0f kW", lvl, kw))
+						}
 					}
 					break
 				}
+				prev = x.SoCPct
 			}
 		}
 		if len(parts) > 0 {
