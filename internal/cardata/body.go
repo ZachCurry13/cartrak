@@ -10,7 +10,8 @@ import (
 // body is the Body and security tab: locks, doors, windows, tires, seat belts and the alarm.
 func (s src) body() Tab {
 	locks := group("Locks", "", s.listRows(ford.ListItems(s.f, "doorLockStatus"), "Whether each door is locked. Double locked means the extra deadbolt is on.", func(d map[string]any) string { return doorName(d) }, "doorLockStatus")...)
-	doors := group("Doors", "", s.listRows(ford.ListItems(s.f, "doorStatus"), "Closed is what you want. Ajar means a door is not fully shut.", func(d map[string]any) string { return doorName(d) }, "doorStatus")...)
+	doorItems := ford.ListItems(s.f, "doorStatus")
+	doors := group("Doors", "", s.listRows(doorItems, "Closed is what you want. Ajar means a door is not fully shut. Ford reports both front doors as one entry, so it cannot say which of them is open.", doorNamer(doorItems), "doorStatus")...)
 	hood := s.text("Hood", "Whether the hood is shut.", "hoodStatus")
 	if doors != nil && hood != nil {
 		doors.Rows = append(doors.Rows, *hood)

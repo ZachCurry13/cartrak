@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.38.3
+
+### 🚪 Honest door names
+- Ford reports the two front doors as a single "front" entry, labelled with the driver's side, so a passenger door that was open showed up as "Driver front". CarTrak now calls it **Front door (driver or passenger side)** on the Body tab, the Doors summary and the Left open alert, unless Ford ever reports the passenger door on its own. The rear doors are named as before.
+
 ## 0.38.2
 
 ### 📍 Where each trip began and ended

@@ -53,9 +53,10 @@ func (s src) doorSummary() *Row {
 		return nil
 	}
 	var open []string
+	name := doorNamer(doors)
 	for _, d := range doors {
 		if v := strings.ToUpper(fmt.Sprint(d["value"])); v != "CLOSED" && v != "UNKNOWN" && v != "" {
-			open = append(open, doorName(d))
+			open = append(open, name(d))
 		}
 	}
 	if hood := strings.ToUpper(ford.Text(s.f, "hoodStatus")); hood != "" && hood != "CLOSED" {
@@ -108,6 +109,26 @@ func (s src) freshness() *Row {
 		text += "; the oldest is from " + oldest.Local().Format("Jan 2")
 	}
 	return say("Values updated recently", text, "A high number means the car has been awake and reporting. A low number is normal for a car that has been parked a while.")
+}
+
+// doorNamer names the doors of one list. Ford lists the front doors as a single "front" entry, labelled with the driver's side, when it
+// does not report the passenger door on its own; calling that one "driver" would be a guess, so it is named for what it is.
+func doorNamer(items []map[string]any) func(map[string]any) string {
+	front := func(d map[string]any) bool {
+		return strings.EqualFold(fmt.Sprint(d["vehicledoor"]), "UNSPECIFIED_FRONT")
+	}
+	split := false
+	for _, d := range items {
+		if front(d) && strings.EqualFold(fmt.Sprint(d["vehicleside"]), "PASSENGER") {
+			split = true
+		}
+	}
+	return func(d map[string]any) string {
+		if front(d) && !split {
+			return "Front door (driver or passenger side)"
+		}
+		return doorName(d)
+	}
 }
 
 func doorName(d map[string]any) string {

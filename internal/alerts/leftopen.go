@@ -16,13 +16,24 @@ const openAfter = 10 * time.Minute
 // Ford's list for the tailgate and the inner tailgate counts too.
 func openThings(f map[string]any) []string {
 	var out []string
-	for _, it := range ford.ListItems(f, "doorStatus") {
+	items := ford.ListItems(f, "doorStatus")
+	passengerFront := false
+	for _, it := range items {
+		if d, _ := it["vehicledoor"].(string); strings.EqualFold(d, "UNSPECIFIED_FRONT") && strings.EqualFold(fmt.Sprint(it["vehicleside"]), "PASSENGER") {
+			passengerFront = true
+		}
+	}
+	for _, it := range items {
 		v, _ := it["value"].(string)
 		if v == "" || strings.EqualFold(v, "CLOSED") || strings.EqualFold(v, "UNKNOWN") {
 			continue
 		}
 		door, _ := it["vehicledoor"].(string)
 		side, _ := it["vehicleside"].(string)
+		if strings.EqualFold(door, "UNSPECIFIED_FRONT") && !passengerFront {
+			out = append(out, "front door (driver or passenger side)")
+			continue
+		}
 		out = append(out, doorName(door, side))
 	}
 	if h := strings.ToUpper(ford.Text(f, "hoodStatus")); h != "" && h != "CLOSED" && h != "UNKNOWN" {
