@@ -61,3 +61,21 @@ func (s *Store) DeleteRouteEstimate(tripID int64) {
 		_, _ = s.DB.Exec(`DELETE FROM route_cache WHERE trip_id=?`, tripID)
 	}
 }
+
+// SaveNoRoute remembers that a trip's road cannot be estimated (the routing service found a road of a very different length),
+// so it is neither offered again nor asked for again. Forgotten with DeleteRouteEstimate.
+func (s *Store) SaveNoRoute(tripID int64) error {
+	return s.SaveRouteEstimate(tripID, [][2]float64{}, 0)
+}
+
+// RouteGaveUp says whether a trip's road was tried and found unusable.
+func (s *Store) RouteGaveUp(tripID int64) bool {
+	if _, err := s.DB.Exec(routeCacheDDL); err != nil {
+		return false
+	}
+	var raw string
+	if s.DB.QueryRow(`SELECT points FROM route_cache WHERE trip_id=?`, tripID).Scan(&raw) != nil {
+		return false
+	}
+	return raw == "[]"
+}

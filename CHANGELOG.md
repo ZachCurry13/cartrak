@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.35.1
+
+### 🔧 Fixes
+- **Fix a day now merges a paused charge.** A rebuild left the cable out of the readings it replayed, so it never joined a charge that paused and picked up again, and never joined a quick replug. Run **Fix a day** again over the days with split sessions.
+- **Road estimates name the trips they could not do.** The message now lists each trip (tap it to open it) and why, for example that the road found was 11.2 mi but the odometer says 5.6 mi. A trip whose road came out a very different length is remembered and not asked for again, so the notice does not keep coming back.
+
+### 📏 Miles and kilometres
+- A hunt through every screen with the app set to miles found distances in kilometres in a few places. The **Data check** findings, the road-estimate message, the service reminder checks, the **Debug report** and the wind lookup help now follow the units set on the device. The Debug report names its units in its column headings.
+- The **trips spreadsheet (CSV)** has two more columns at the end, distance in miles and top speed in mph.
+
 ## 0.35.0
 
 ### 🚗 Several cars and several people

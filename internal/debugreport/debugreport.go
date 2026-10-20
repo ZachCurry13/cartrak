@@ -22,6 +22,7 @@ type Input struct {
 	Linked    bool
 	LastOK    time.Time
 	LastErr   string
+	Metric    bool // distances and speeds in kilometres; otherwise miles
 	Rows      []store.DebugRow
 	Locks     map[int64][]string // raw lock and door fields, by reading time
 	Fields    []string           // every field of the latest reading as "name = value", positions and identifiers already removed
@@ -83,6 +84,16 @@ func dash(s string) string {
 // Build writes the report.
 func Build(in Input) string {
 	var b strings.Builder
+	dunit, sunit, per := "mi", "mph", 1.0/1.609344 // distances, speeds, and what to multiply kilometres by
+	if in.Metric {
+		dunit, sunit, per = "km", "km/h", 1
+	}
+	conv := func(p *float64, f string) string {
+		if p == nil {
+			return "-"
+		}
+		return fmt.Sprintf(f, *p*per)
+	}
 	at := func(ts int64) string { return time.Unix(ts, 0).In(in.Loc).Format("01-02 15:04:05") }
 	fmt.Fprintf(&b, "CarTrak debug report\nversion %s, made %s (%s)\nvehicle: %s\n", in.Version, in.Now.In(in.Loc).Format("2006-01-02 15:04:05"), in.Loc, dash(in.Vehicle))
 	last := "never"
@@ -92,7 +103,7 @@ func Build(in Input) string {
 	fmt.Fprintf(&b, "Ford link: linked=%v, last answer %s, last error: %s\n", in.Linked, last, dash(in.LastErr))
 	fmt.Fprintf(&b, "window: from %s, %d readings\n\n", in.From.In(in.Loc).Format("01-02 15:04"), len(in.Rows))
 
-	b.WriteString("READINGS (time | ignition | speed km/h | plug | charge state | kW (~ worked out from the pack, which fast chargers need) | kWh left | battery % | odometer km | lock)\n")
+	b.WriteString("READINGS (time | ignition | speed " + sunit + " | plug | charge state | kW (~ worked out from the pack, which fast chargers need) | kWh left | battery % | odometer " + dunit + " | lock)\n")
 	max := in.MaxLines
 	if max <= 0 {
 		max = 1100
@@ -111,7 +122,7 @@ func Build(in Input) string {
 		repeat = 0
 	}
 	for _, r := range in.Rows {
-		key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s|%s", dash(r.Ignition), fp(r.SpeedKph, "%.0f"), dash(r.Plug), dash(r.ChargeState), kwText(r), fp(r.EnergyKwh, "%.1f"), fp(r.SoC, "%.0f"), fp(r.OdometerKm, "%.0f"), lock(r.Locked))
+		key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s|%s", dash(r.Ignition), conv(r.SpeedKph, "%.0f"), dash(r.Plug), dash(r.ChargeState), kwText(r), fp(r.EnergyKwh, "%.1f"), fp(r.SoC, "%.0f"), conv(r.OdometerKm, "%.0f"), lock(r.Locked))
 		if key == prevKey {
 			repeat++
 			repeatFrom = r.TS
@@ -153,13 +164,13 @@ func Build(in Input) string {
 		b.WriteString("    " + f + "\n")
 	}
 
-	b.WriteString("\nTRIPS (id | start | end | km | battery start>end | energy kWh start>end | open | category; then a line of readings, different car positions, phone points)\n")
+	b.WriteString("\nTRIPS (id | start | end | " + dunit + " | battery start>end | energy kWh start>end | open | category; then a line of readings, different car positions, phone points)\n")
 	for _, t := range in.Trips {
 		end := "open"
 		if t.EndTS != nil {
 			end = at(*t.EndTS)
 		}
-		fmt.Fprintf(&b, "%d | %s | %s | %.1f | %s>%s | %s>%s | %v | %s\n", t.ID, at(t.StartTS), end, t.DistanceKm, fp(t.StartSoC, "%.0f"), fp(t.EndSoC, "%.0f"), fp(t.StartKwh, "%.1f"), fp(t.EndKwh, "%.1f"), t.Open, t.Category)
+		fmt.Fprintf(&b, "%d | %s | %s | %.1f | %s>%s | %s>%s | %v | %s\n", t.ID, at(t.StartTS), end, t.DistanceKm*per, fp(t.StartSoC, "%.0f"), fp(t.EndSoC, "%.0f"), fp(t.StartKwh, "%.1f"), fp(t.EndKwh, "%.1f"), t.Open, t.Category)
 		if p, ok := in.Points[t.ID]; ok {
 			fmt.Fprintf(&b, "    positions: %d readings, %d different car positions (the car repeats its last one), %d phone GPS points\n", p[0], p[1], p[2])
 		}

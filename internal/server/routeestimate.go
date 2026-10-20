@@ -16,6 +16,23 @@ type estimateOut struct {
 	Km     float64      `json:"km"`
 }
 
+// routeFailure is why a trip's road could not be estimated. RoadKm is set when the routing service did answer, with a
+// road of a different length from the odometer.
+type routeFailure struct {
+	At     time.Time
+	Msg    string
+	RoadKm float64
+	OdoKm  float64
+}
+
+// text writes the reason in the units the person uses.
+func (f routeFailure) text(metric bool) string {
+	if f.RoadKm > 0 {
+		return fmt.Sprintf("the road found was %s but the odometer says %s", distText(f.RoadKm, metric, 1), distText(f.OdoKm, metric, 1))
+	}
+	return f.Msg
+}
+
 func (s *Server) routeLookupOn() bool { return s.Cfg != nil && s.Cfg.RouteLookup() }
 
 func (s *Server) routeClient() *routeest.Client {
@@ -48,11 +65,14 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 	if pts, km := s.S.RouteEstimate(t.ID); pts != nil {
 		return &estimateOut{Points: pts, Km: km}
 	}
+	if s.S.RouteGaveUp(t.ID) {
+		return nil
+	}
 	if !fetch || !s.routeLookupOn() || t.DistanceKm < 0.5 || s.hasPhoneTrack(t) {
 		return nil
 	}
 	s.routeMu.Lock()
-	if at, bad := s.routeFail[t.ID]; bad && time.Since(at) < time.Hour {
+	if f, bad := s.routeFail[t.ID]; bad && time.Since(f.At) < time.Hour {
 		s.routeMu.Unlock()
 		return nil
 	}
@@ -70,25 +90,26 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 	if t.EndLat != nil && t.EndLon != nil && (len(recorded) == 0 || recorded[len(recorded)-1] != (routeest.Point{*t.EndLat, *t.EndLon})) {
 		recorded = append(recorded, routeest.Point{*t.EndLat, *t.EndLon})
 	}
-	fail := func(why string) *estimateOut {
+	fail := func(f routeFailure) *estimateOut {
+		f.At = time.Now()
 		s.routeMu.Lock()
 		if s.routeFail == nil {
-			s.routeFail = map[int64]time.Time{}
+			s.routeFail = map[int64]routeFailure{}
 		}
-		s.routeFail[t.ID] = time.Now()
-		s.routeWhy = why
+		s.routeFail[t.ID] = f
 		s.routeMu.Unlock()
 		return nil
 	}
 	if len(recorded) < 2 {
-		return fail("too few positions to route between")
+		return fail(routeFailure{Msg: "the car reported too few positions to route between"})
 	}
 	road, km, err := s.routeClient().Route(context.Background(), routeest.Via(recorded, 8))
 	if err != nil {
-		return fail(err.Error())
+		return fail(routeFailure{Msg: err.Error()})
 	}
 	if !routeest.Plausible(km, t.DistanceKm) {
-		return fail(fmt.Sprintf("the road found was %.0f km but the odometer says %.0f km", km, t.DistanceKm))
+		_ = s.S.SaveNoRoute(t.ID) // asking again would give the same road
+		return fail(routeFailure{RoadKm: km, OdoKm: t.DistanceKm})
 	}
 	line := make([][2]float64, 0, 300)
 	for _, p := range routeest.Thin(road, 300) {
@@ -123,6 +144,12 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 		limit = n
 	}
 	done, failed := 0, 0
+	type failedTrip struct {
+		ID      int64  `json:"id"`
+		StartTS int64  `json:"startTs"`
+		Why     string `json:"why"`
+	}
+	var failures []failedTrip
 	for i, t := range pending {
 		if i >= limit || r.Context().Err() != nil {
 			break
@@ -134,10 +161,11 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 			done++
 		} else {
 			failed++
+			s.routeMu.Lock()
+			f := s.routeFail[t.ID]
+			s.routeMu.Unlock()
+			failures = append(failures, failedTrip{t.ID, t.StartTS, f.text(metricReq(r))})
 		}
 	}
-	s.routeMu.Lock()
-	why := s.routeWhy
-	s.routeMu.Unlock()
-	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done, "why": why})
+	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done, "failures": failures})
 }

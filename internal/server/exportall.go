@@ -13,11 +13,11 @@ import (
 
 const exportReadme = `CarTrak export
 ==============
-trips.csv     every recorded trip: times (UTC and local), distance in km, battery, energy used, named places
+trips.csv     every recorded trip: times (UTC and local), distance in km and miles, battery, energy used, named places
 charging.csv  every charging session: energy added, the charger's own kWh and efficiency where entered, cost
 places.csv    the places you named, with a centre point and radius
 service.csv   your service reminders
-Distances are in kilometres and energy in kWh. Times ending in Z are UTC.
+Distances are in kilometres (trips.csv also has miles and mph in its last columns) and energy in kWh. Times ending in Z are UTC.
 It contains where your car has been, so keep it somewhere private.
 `
 

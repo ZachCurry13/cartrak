@@ -40,7 +40,13 @@ type Finding struct {
 }
 
 // Check runs every check over odometer readings (oldest first) and trips, and returns the findings newest first.
-func Check(odo []Odo, trips []Trip) []Finding {
+func Check(odo []Odo, trips []Trip, metric bool) []Finding {
+	dist := func(km float64, dec int) string { // a distance in the units the person uses
+		if metric {
+			return fmt.Sprintf("%.*f km", dec, km)
+		}
+		return fmt.Sprintf("%.*f mi", dec, km/1.609344)
+	}
 	var out []Finding
 	for i := 1; i < len(odo); i++ {
 		a, b := odo[i-1], odo[i]
@@ -48,7 +54,7 @@ func Check(odo []Odo, trips []Trip) []Finding {
 			out = append(out, Finding{Kind: "gap", Level: "info", TS: a.TS, Text: fmt.Sprintf("No odometer reading for %s. Usually the car was asleep or CarTrak was not running.", span(b.TS-a.TS))})
 		}
 		if a.Km-b.Km > backKm {
-			out = append(out, Finding{Kind: "odo-back", Level: "warn", TS: b.TS, Text: fmt.Sprintf("The odometer went back from %.1f to %.1f km. A wrong reading from Ford is the likely cause.", a.Km, b.Km)})
+			out = append(out, Finding{Kind: "odo-back", Level: "warn", TS: b.TS, Text: fmt.Sprintf("The odometer went back from %s to %s. A wrong reading from Ford is the likely cause.", dist(a.Km, 1), dist(b.Km, 1))})
 		}
 	}
 	ts := append([]Trip(nil), trips...)
@@ -68,7 +74,7 @@ func Check(odo []Odo, trips []Trip) []Finding {
 		case dur/3600 > longTripHour:
 			out = append(out, Finding{Kind: "long", Level: "warn", TS: t.StartTS, TripID: t.ID, Text: fmt.Sprintf("This trip lasted %s. It was probably not closed when the car stopped.", span(int64(dur)))})
 		case dur > 0 && t.DistanceKm/(dur/3600) > fastKph:
-			out = append(out, Finding{Kind: "fast", Level: "warn", TS: t.StartTS, TripID: t.ID, Text: fmt.Sprintf("%.0f km in %s is faster than a car drives. The times or the distance are probably off.", t.DistanceKm, span(int64(dur)))})
+			out = append(out, Finding{Kind: "fast", Level: "warn", TS: t.StartTS, TripID: t.ID, Text: fmt.Sprintf("%s in %s is faster than a car drives. The times or the distance are probably off.", dist(t.DistanceKm, 0), span(int64(dur)))})
 		case t.DistanceKm < tinyKm:
 			out = append(out, Finding{Kind: "tiny", Level: "info", TS: t.StartTS, TripID: t.ID, Text: "A finished trip with almost no distance. Probably the car was moved or woke up briefly."})
 		}

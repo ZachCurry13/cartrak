@@ -45,12 +45,11 @@ type Server struct {
 	hub         hub
 	RouteEst    *routeest.Client // optional, for tests
 	routeMu     sync.Mutex
-	routeFail   map[int64]time.Time // trips whose road estimate failed lately
-	routeWhy    string              // why the latest estimate failed
-	TrustProxy  bool                // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
-	SessionDays int                 // "keep me signed in" length; 0 = 30
-	Upd         *updater.Checker    // nil disables update checks
-	Weather     *weather.Client     // the optional wind lookup (nil uses the real service)
+	routeFail   map[int64]routeFailure // trips whose road estimate failed lately
+	TrustProxy  bool                   // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
+	SessionDays int                    // "keep me signed in" length; 0 = 30
+	Upd         *updater.Checker       // nil disables update checks
+	Weather     *weather.Client        // the optional wind lookup (nil uses the real service)
 	lim         limiter
 	devRate     rateWindow    // per-device call limit for the phone ingest API
 	TileDir     string        // where downloaded map tiles are kept; empty switches maps off

@@ -40,12 +40,15 @@ type maintIn struct {
 	ClearDays bool     `json:"clearDays"`
 }
 
-func (in *maintIn) valid() string {
+func (in *maintIn) valid(metric bool) string {
 	if in.Name != nil && (strings.TrimSpace(*in.Name) == "" || len(*in.Name) > 60) {
 		return "give the reminder a short name"
 	}
 	if in.EveryKm != nil && (*in.EveryKm < 100 || *in.EveryKm > 200000) {
-		return "the distance must be between 100 km and 200,000 km"
+		if metric {
+			return "the distance must be between 100 km and 200,000 km"
+		}
+		return "the distance must be between 62 miles and 124,000 miles"
 	}
 	if in.EveryDays != nil && (*in.EveryDays < 7 || *in.EveryDays > 3650) {
 		return "the time must be between 7 days and 10 years"
@@ -60,7 +63,7 @@ func (s *Server) addMaintenance(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "give a name and a distance, a time, or both")
 		return
 	}
-	if msg := in.valid(); msg != "" {
+	if msg := in.valid(metricReq(r)); msg != "" {
 		fail(w, 400, msg)
 		return
 	}
@@ -80,7 +83,7 @@ func (s *Server) patchMaintenance(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "no such reminder")
 		return
 	}
-	if msg := in.valid(); msg != "" {
+	if msg := in.valid(metricReq(r)); msg != "" {
 		fail(w, 400, msg)
 		return
 	}

@@ -135,7 +135,7 @@ func (s *Server) debugReport(w http.ResponseWriter, r *http.Request) {
 		lastOK = time.Unix(st.LastOK, 0)
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
-		MaxLines: min(6000, max(1100, hours*30)), Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
+		MaxLines: min(6000, max(1100, hours*30)), Metric: metricReq(r), Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
 		Polls: toPollInfo(s.P.RecentPolls(from)), Decisions: s.S.RecentDecisions(from.Unix()), Settings: s.debugSettings(), Curves: s.chargeCurves(recent)})
 	ok(w, map[string]any{"text": text, "hours": hours, "readings": len(rows)})
 }

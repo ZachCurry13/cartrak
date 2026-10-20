@@ -5,6 +5,9 @@ export class AuthError extends Error {}
 export async function api(path, opts = {}) {
   const init = { credentials: 'same-origin', headers: {}, method: opts.method || 'GET' };
   if (init.method !== 'GET') init.headers['X-Requested-With'] = 'cartrak';
+  let units = 'imperial';
+  try { if (localStorage.getItem('units') === 'metric') units = 'metric'; } catch (e) { /* storage blocked */ }
+  init.headers['X-Units'] = units; // the server writes messages in the units this device uses
   const car = currentCar();
   if (car) init.headers['X-Car'] = car;
   if (opts.body !== undefined) {

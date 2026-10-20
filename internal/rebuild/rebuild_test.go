@@ -117,3 +117,36 @@ func TestRebuildRefusesWhenItCouldHurt(t *testing.T) {
 		t.Fatal("a refused rebuild changes nothing")
 	}
 }
+
+// A charge that pauses and picks up again with the cable in is one session, in a rebuild as much as live. The rebuild
+// once left the plug out of the readings it fed the detector, so it never merged anything.
+func TestRebuildMergesAPausedChargeBecauseItKnowsThePlug(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	d := &trips.Detector{S: s, TZ: time.UTC}
+	t0 := time.Now().Add(-30 * time.Hour).Truncate(time.Minute)
+	for _, x := range []struct {
+		min   int
+		state string
+		soc   float64
+	}{{0, "IN_PROGRESS", 38}, {10, "IN_PROGRESS", 42}, {20, "NOT_READY", 46}, {30, "IN_PROGRESS", 47}, {40, "IN_PROGRESS", 50}, {50, "COMPLETED", 51}} {
+		st := &ford.State{TS: t0.Add(time.Duration(x.min) * time.Minute), OdometerKm: f(500), SoCPct: f(x.soc), SpeedKph: f(0), Ignition: "OFF",
+			ChargeState: x.state, Plug: "CONNECTED", Lat: f(44), Lon: f(-93), Raw: []byte(`{}`)}
+		if x.state == "IN_PROGRESS" {
+			st.ChargeKw = f(10)
+		}
+		if _, err := s.SaveState("t", st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	p, err := Compute(s, d, t0.Unix(), t0.Add(55*time.Minute).Unix(), time.Now())
+	if err != nil || len(p.Blockers) > 0 {
+		t.Fatalf("%v %v", err, p.Blockers)
+	}
+	if len(p.NewCharges) != 1 || *p.NewCharges[0].StartSoC != 38 || *p.NewCharges[0].EndSoC != 51 {
+		t.Fatalf("one session from 38 to 51: %d %+v", len(p.NewCharges), p.NewCharges)
+	}
+}

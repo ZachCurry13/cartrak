@@ -12,11 +12,11 @@ func kinds(fs []Finding) map[string]int {
 
 func TestOdometerGapsAndGoingBackwards(t *testing.T) {
 	d := int64(86400)
-	got := kinds(Check([]Odo{{0, 100}, {d / 2, 101}, {d/2 + 3*d, 102}, {d/2 + 3*d + 100, 90}}, nil))
+	got := kinds(Check([]Odo{{0, 100}, {d / 2, 101}, {d/2 + 3*d, 102}, {d/2 + 3*d + 100, 90}}, nil, true))
 	if got["gap"] != 1 || got["odo-back"] != 1 {
 		t.Fatalf("%v", got)
 	}
-	if len(Check([]Odo{{0, 100}, {3600, 100.2}, {7200, 100.1}}, nil)) != 0 {
+	if len(Check([]Odo{{0, 100}, {3600, 100.2}, {7200, 100.1}}, nil, true)) != 0 {
 		t.Fatal("small wobble is not a finding")
 	}
 }
@@ -31,7 +31,7 @@ func TestTripsThatCannotBeRight(t *testing.T) {
 		{ID: 5, StartTS: 30 * h, EndTS: 70 * h, DistanceKm: 10},       // 40 hours
 		{ID: 6, StartTS: 100 * h, Open: true},                         // still going: never judged
 	}
-	got := Check(nil, trips)
+	got := Check(nil, trips, true)
 	m := map[int64]string{}
 	for _, f := range got {
 		m[f.TripID] = f.Kind

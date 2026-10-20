@@ -154,7 +154,7 @@ func (s *Server) exportCSV(w http.ResponseWriter, r *http.Request) {
 func (s *Server) writeTripsCSV(w io.Writer, ts []*store.Trip, header bool) {
 	c := csv.NewWriter(w)
 	if header {
-		_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes", "energy_kwh", "energy_estimated", "start_place", "end_place"})
+		_ = c.Write([]string{"id", "start", "end", "start_local", "timezone", "category", "source", "distance_km", "start_soc", "end_soc", "max_speed_kph", "notes", "energy_kwh", "energy_estimated", "start_place", "end_place", "distance_mi", "max_speed_mph"})
 	}
 	for _, o := range s.tripsWithEnergy(ts) {
 		t := o.Trip
@@ -164,7 +164,8 @@ func (s *Server) writeTripsCSV(w io.Writer, ts []*store.Trip, header bool) {
 		}
 		_ = c.Write([]string{strconv.FormatInt(t.ID, 10), time.Unix(t.StartTS, 0).UTC().Format(time.RFC3339), end,
 			localStart(t), t.TZ, t.Category, t.CategorySource, fmt.Sprintf("%.2f", t.DistanceKm), fl(t.StartSoC), fl(t.EndSoC),
-			fmt.Sprintf("%.0f", t.MaxSpeedKph), csvSafe(t.Notes), fl2(o.EnergyKwh), strconv.FormatBool(o.EnergyEstimated), csvSafe(o.StartPlace), csvSafe(o.EndPlace)})
+			fmt.Sprintf("%.0f", t.MaxSpeedKph), csvSafe(t.Notes), fl2(o.EnergyKwh), strconv.FormatBool(o.EnergyEstimated), csvSafe(o.StartPlace), csvSafe(o.EndPlace),
+			fmt.Sprintf("%.2f", t.DistanceKm/kmPerMile), fmt.Sprintf("%.0f", t.MaxSpeedKph/kmPerMile)})
 	}
 	c.Flush()
 }

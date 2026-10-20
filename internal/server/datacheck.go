@@ -36,7 +36,7 @@ func (s *Server) dataCheck(w http.ResponseWriter, r *http.Request) {
 		}
 		trips = append(trips, x)
 	}
-	f := datacheck.Check(odo, trips)
+	f := datacheck.Check(odo, trips, metricReq(r))
 	if f == nil {
 		f = []datacheck.Finding{}
 	}
