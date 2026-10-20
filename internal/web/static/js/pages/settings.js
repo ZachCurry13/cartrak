@@ -28,7 +28,7 @@ export default async function settings(root, _a, session) {
     h('div', { class: 'menu-cols' },
       h('div', {},
         group('Reports', item('#/reports', 'Reports and insights', 'Year in review, statistics, efficiency, mileage and exports')),
-        group('Cars', item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`, session.cars.length > 1 ? chip('work', 'Switch') : null)),
+        group('Cars', admin ? item('#/charging-settings', 'Charging settings', 'Prices, night rates, home place, charging alerts') : null, item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`, session.cars.length > 1 ? chip('work', 'Switch') : null)),
         admin ? group('Connections',
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),
           site ? item('#/remote', 'Remote access', remote && remote.connectorUpdate ? 'A newer Cloudflare connector is available' : 'Cloudflare tunnel for use away from home', remoteChip) : null,

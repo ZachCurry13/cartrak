@@ -22,6 +22,7 @@ const EXTRA = [
   ['Cloudflare tunnel', 'More → Remote access', '#/remote', 'Reach CarTrak away from home.', 'cloudflare tunnel remote access away outside domain https'],
   ['Add family or a viewer', 'More → People', '#/people', 'Give family read-only accounts.', 'family viewer account user people password admin invite'],
   ['Reports and insights', 'More → Reports', '#/reports', 'Year in review, statistics, efficiency insights, mileage and spreadsheets in one place.', 'reports report year review statistics insights efficiency mileage export csv spreadsheet summary'],
+  ['Charging settings', 'Charging → Charging settings', '#/charging-settings', 'Prices, cheaper night rates, where home is, and charging alerts.', 'charging price cost kwh rate electricity night home currency budget efficiency settings'],
   ['Add or switch cars', 'More → Cars', '#/cars', 'Follow another car, switch between cars, and share a car.', 'car cars second vehicle switch add truck family another own'],
   ['See recent alerts (the bell)', 'Header → bell', '#/inbox', 'Every alert about your cars, newest first, even with push off.', 'inbox notifications alerts bell history unread messages'],
   ['Help and quick settings', 'Header → ?', '#/help', 'Units, theme, data use and a getting-started checklist.', 'help getting started quick settings units theme data install home screen'],
@@ -58,6 +59,8 @@ export async function buildIndex(admin) {
     if (s.secret) continue;
     out.push({ title: s.label, where: 'More → Settings', href: '#/admin', text: s.help || '', keys: String(s.key).replace(/_/g, ' ') });
   }
+  const cs = admin ? await api('/api/admin/settings?group=charging').catch(() => null) : null;
+  for (const s of (cs && cs.settings) || []) out.push({ title: s.label, where: 'Charging → Charging settings', href: '#/charging-settings', text: s.help || '', keys: `${String(s.key).replace(/_/g, ' ')} price cost charging electricity` });
   const push = await api('/api/push/config').catch(() => null);
   for (const k of (push && push.kinds) || []) out.push({ title: `${k.label} (alert)`, where: 'More → Notifications', href: '#/notifications', text: k.help || '', keys: 'alert notification notify push' });
   cached = out;

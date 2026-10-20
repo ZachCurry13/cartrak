@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/charging"
@@ -10,8 +11,12 @@ import (
 
 const kvHomeLat, kvHomeLon = "home_lat", "home_lon"
 
-// homePoint is where the owner said home is (by marking a session as home), nil until then.
+// homePoint is where home is: the place the owner named Home (More, Places), or else where they marked a session as home. Nil
+// until one of those exists.
 func (s *Server) homePoint() *charging.Point {
+	if p := s.namedHome(); p != nil {
+		return p
+	}
 	la, e1 := strconv.ParseFloat(s.S.GetKV(kvHomeLat), 64)
 	lo, e2 := strconv.ParseFloat(s.S.GetKV(kvHomeLon), 64)
 	if e1 != nil || e2 != nil {
@@ -25,6 +30,13 @@ func (s *Server) prices() charging.Prices {
 		return charging.Prices{}
 	}
 	p := charging.Prices{Home: s.Cfg.PriceHome(), Public: s.Cfg.PricePublic()}
+	if ps, err := s.S.ListNamedPlaces(); err == nil {
+		for _, x := range ps {
+			if x.ChargePrice != nil || x.ChargeHome || strings.EqualFold(strings.TrimSpace(x.Name), "home") {
+				p.Places = append(p.Places, charging.PlaceRate{Name: x.Name, Lat: x.Lat, Lon: x.Lon, RadiusM: x.RadiusM, Price: x.ChargePrice, Home: x.ChargeHome || strings.EqualFold(strings.TrimSpace(x.Name), "home")})
+			}
+		}
+	}
 	if price, from, to := s.Cfg.OffPeak(); price != nil {
 		p.OffPeak, p.Window, p.Loc = price, &charging.Window{From: from, To: to}, s.Cfg.Location()
 	}

@@ -25,6 +25,30 @@ type Prices struct {
 	Window       *Window        // when OffPeak applies
 	Loc          *time.Location // the zone Window is read in
 	AcEfficiency float64        // share of the wall energy that reaches the battery on slow charging; 0 uses the default
+	Places       []PlaceRate    // named places with their own charging price or that count as home
+}
+
+// PlaceRate is a named place that changes how charging there is priced or counted.
+type PlaceRate struct {
+	Name     string
+	Lat, Lon float64
+	RadiusM  float64
+	Price    *float64 // per kWh; nil means the usual price
+	Home     bool
+}
+
+// placeAt is the named place that holds a position, the nearest if several do.
+func (p Prices) placeAt(lat, lon float64) *PlaceRate {
+	var best *PlaceRate
+	bestD := 0.0
+	for i := range p.Places {
+		pl := &p.Places[i]
+		d := distanceM(Point{pl.Lat, pl.Lon}, Point{lat, lon})
+		if d <= pl.RadiusM && (best == nil || d < bestD) {
+			best, bestD = pl, d
+		}
+	}
+	return best
 }
 
 // Session is a charging session with what it added and cost.
@@ -34,6 +58,7 @@ type Session struct {
 	Estimated  bool     `json:"estimated"` // worked out from the battery percent, not the car's energy reading
 	WallKwh    *float64 `json:"wallKwh"`   // what the charger delivered, allowing for AC losses
 	Where      string   `json:"where"`     // home, public, or "" when it cannot be told
+	Place      string   `json:"place"`     // the named place it was at, when that place sets its own price or counts as home
 	Cost       *float64 `json:"cost"`
 	CostActual bool     `json:"costActual"` // the cost is what the owner paid, not worked out from a price
 	Efficiency *float64 `json:"efficiency"` // added / delivered, only when the charger's number was entered
@@ -98,8 +123,23 @@ func enrichBase(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Se
 		}
 	}
 	s.WallKwh = &wall
+	var rate *PlaceRate // a named place can set its own price, or count as home
+	if c.Kind == "" && c.Lat != nil && c.Lon != nil {
+		if rate = p.placeAt(*c.Lat, *c.Lon); rate != nil && (rate.Price != nil || rate.Home) {
+			s.Place = rate.Name
+			if rate.Home {
+				s.Where = "home"
+			} else if s.Where == "" || s.Where == "home" {
+				s.Where = "public"
+			}
+		} else {
+			rate = nil
+		}
+	}
 	price := p.Home // unknown place: the home price, the usual single-price case
-	if s.Where == "public" {
+	if rate != nil && rate.Price != nil {
+		price = rate.Price
+	} else if s.Where == "public" {
 		price = p.Public
 	} else if price != nil && p.OffPeak != nil && p.Window != nil && p.Loc != nil {
 		end := c.StartTS

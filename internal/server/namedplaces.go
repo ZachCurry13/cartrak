@@ -37,6 +37,10 @@ type placeIn struct {
 	TripID  int64    `json:"tripId"`
 	End     string   `json:"end"`  // "start" or "end" of that trip
 	Here    bool     `json:"here"` // where the car is now
+	// What charging here costs: a price per kWh, or ClearPrice to go back to the usual one. ChargeHome counts it as home.
+	ChargePrice *float64 `json:"chargePrice"`
+	ClearPrice  bool     `json:"clearPrice"`
+	ChargeHome  *bool    `json:"chargeHome"`
 }
 
 func (in *placeIn) check() string {
@@ -45,6 +49,9 @@ func (in *placeIn) check() string {
 	}
 	if in.RadiusM != nil && (*in.RadiusM < 50 || *in.RadiusM > 2000) {
 		return "the size must be between 50 m and 2000 m"
+	}
+	if in.ChargePrice != nil && (*in.ChargePrice < 0 || *in.ChargePrice > 20) {
+		return "the price per kWh must be between 0 (free) and 20"
 	}
 	return ""
 }
@@ -85,6 +92,10 @@ func (s *Server) addNamedPlace(w http.ResponseWriter, r *http.Request) {
 	if in.RadiusM != nil {
 		p.RadiusM = *in.RadiusM
 	}
+	p.ChargePrice = in.ChargePrice
+	if in.ChargeHome != nil {
+		p.ChargeHome = *in.ChargeHome
+	}
 	if err := s.S.SaveNamedPlace(p); err != nil {
 		fail(w, 500, "db error")
 		return
@@ -109,6 +120,14 @@ func (s *Server) patchNamedPlace(w http.ResponseWriter, r *http.Request) {
 	}
 	if in.RadiusM != nil {
 		p.RadiusM = *in.RadiusM
+	}
+	if in.ClearPrice {
+		p.ChargePrice = nil
+	} else if in.ChargePrice != nil {
+		p.ChargePrice = in.ChargePrice
+	}
+	if in.ChargeHome != nil {
+		p.ChargeHome = *in.ChargeHome
 	}
 	if err := s.S.SaveNamedPlace(p); err != nil {
 		fail(w, 500, "db error")

@@ -19,14 +19,16 @@ type settingView struct {
 	Locked bool   `json:"locked"` // set by env/config.yaml: edit it there
 }
 
-func (s *Server) settingsView() []settingView {
+// settingsView lists the settings of one page: group "" is the general settings, "charging" the charging ones.
+func (s *Server) settingsView(group string) []settingView {
 	out := make([]settingView, 0, len(settings.Defs))
 	for _, d := range settings.Defs {
-		if d.Group == "remote" { // shown on the Remote access page instead
+		if settings.GroupOf(d) != group { // remote access and charging have pages of their own
 			continue
 		}
 		v, src := s.Cfg.Get(d.Key)
 		sv := settingView{Def: d, IsSet: v != "", Source: src, Locked: s.Cfg.Locked(d.Key)}
+		sv.Group = settings.GroupOf(d)
 		if !d.Secret {
 			sv.Value = v
 		}
@@ -40,7 +42,7 @@ func (s *Server) getSettings(w http.ResponseWriter, r *http.Request) {
 		fail(w, 503, "settings unavailable")
 		return
 	}
-	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": s.origin(r) + "/ford/callback"})
+	ok(w, map[string]any{"settings": s.settingsView(r.URL.Query().Get("group")), "suggestedRedirect": s.origin(r) + "/ford/callback"})
 }
 
 // originOf rebuilds the address the browser used, e.g. https://cartrak.example.com.
@@ -124,7 +126,7 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 	for _, k := range b.Clear {
 		_ = s.Cfg.Set(k, "")
 	}
-	ok(w, map[string]any{"settings": s.settingsView(), "suggestedRedirect": s.origin(r) + "/ford/callback"})
+	ok(w, map[string]any{"settings": s.settingsView(r.URL.Query().Get("group")), "suggestedRedirect": s.origin(r) + "/ford/callback"})
 }
 
 // Prober is implemented by providers that can call every endpoint once and

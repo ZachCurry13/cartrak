@@ -123,3 +123,30 @@ func TestSlowChargingWallEnergyCountsWhatTheCarDrewBeyondTheBatteryRise(t *testi
 		t.Fatalf("%+v", fast.WallKwh)
 	}
 }
+
+func TestANamedPlaceCanSetItsOwnPriceOrCountAsHome(t *testing.T) {
+	cabin := PlaceRate{Name: "Cabin", Lat: 45.0, Lon: -90.0, RadiusM: 150, Price: f(0.20)}
+	free := PlaceRate{Name: "Work", Lat: 46.0, Lon: -91.0, RadiusM: 150, Price: f(0)}
+	house := PlaceRate{Name: "Parents", Lat: 47.0, Lon: -92.0, RadiusM: 150, Home: true}
+	prices := Prices{Home: f(0.10), Public: f(0.50), Places: []PlaceRate{cabin, free, house}}
+	at := func(lat, lon float64) Session {
+		return Enrich(&store.Charge{Lat: f(lat), Lon: f(lon), StartKwh: f(10), EndKwh: f(19), PeakKw: 7}, nil, &Point{Lat: 40, Lon: -75}, prices) // 9 kWh, wall 10
+	}
+	if s := at(45.0001, -90.0001); !close(s.Cost, 2.0) || s.Where != "public" || s.Place != "Cabin" {
+		t.Fatalf("the cabin has its own price: %+v %v", s.Where, s.Cost)
+	}
+	if s := at(46.0, -91.0); !close(s.Cost, 0) || s.Place != "Work" {
+		t.Fatalf("free charging is a price of zero: %v", s.Cost)
+	}
+	if s := at(47.0, -92.0); !close(s.Cost, 1.0) || s.Where != "home" {
+		t.Fatalf("a place that counts as home uses the home price: %+v %v", s.Where, s.Cost)
+	}
+	if s := at(10.0, 10.0); !close(s.Cost, 5.0) || s.Where != "public" || s.Place != "" {
+		t.Fatalf("elsewhere is the usual public price: %+v %v", s.Where, s.Cost)
+	}
+	// a hand-set kind wins over the place
+	hand := Enrich(&store.Charge{Kind: "home", Lat: f(45.0), Lon: f(-90.0), StartKwh: f(10), EndKwh: f(19), PeakKw: 7}, nil, nil, prices)
+	if !close(hand.Cost, 1.0) {
+		t.Fatalf("choosing home by hand uses the home price: %v", hand.Cost)
+	}
+}

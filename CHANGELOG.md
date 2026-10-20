@@ -6,6 +6,11 @@
 - **More, Reports.** One page for everything that adds your driving and charging up: Year in review, Statistics, History, Time, Efficiency insights, Compare two trips, Day view, the road-trip planner, Charging cost and the Mileage log, each with a line of what it shows (and the year's distance, this month's charging). The spreadsheets (trips, charging, everything) are at the bottom. A **Reports** button is also on the Trips page.
 - **Did you know (Home).** One thing worth knowing about how you drive, taken from your own history and changing each day: what cold weather costs you, your best month, your most efficient trip, or what driving fast used over the last 60 days. Tap it for all the efficiency insights.
 
+### ⚡ Charging settings, and a price for each place
+- **Charging, Charging settings.** The price per kWh at home and away, the currency, the cheaper night rate and its hours, the charger's efficiency, the plug-in reminder, the low-battery level and the monthly budget now have a page of their own under Charging (and in More), instead of being mixed in with the technical settings. The owner of each car sets them for that car. They no longer appear in the general settings list.
+- **Where home is.** CarTrak now treats a place you named **Home** (More, Places) as home, so charging there is priced at the home rate and counts as home in the statistics. Before, it only knew home once you marked a session as Home by hand. The page says whether CarTrak knows where home is, and how.
+- **A price for any place.** Under each place in More, Places, set what charging costs there (0 if it is free), or tick that it counts as home. A cabin, a relative's house or a workplace charger can have its own rate; every other place keeps the usual home or public price. A session you set to Home or Away by hand still uses that choice.
+
 ### 🔗 Share a trip from more places
 - A **Share** button on every trip in the Trips list, and **Share this trip** in a drive opened in the Day view (admins). Both open the trip with its share box ready. The Home Last trip card already had it.
 
