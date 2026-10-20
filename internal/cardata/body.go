@@ -36,6 +36,9 @@ func (s src) listRows(items []map[string]any, help string, label func(map[string
 			continue
 		}
 		r := &Row{Label: label(it), Kind: "text", Text: words(v), Raw: raw}
+		if at := fmt.Sprint(it["updatetime"]); at != "" && at != "<nil>" {
+			r.At = at // when Ford last heard this from the car: a parked car stops reporting, so an open door can be an old report
+		}
 		if i == 0 {
 			r.Help = help
 		}

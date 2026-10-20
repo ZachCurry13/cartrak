@@ -66,6 +66,31 @@ func doorName(door, side string) string {
 	return d + " door"
 }
 
+// openStamp is when Ford says the car last reported its doors ("" when unknown). A parked car stops reporting, so a door shown
+// open can be the last thing the car said before it went to sleep.
+func openStamp(f map[string]any) string {
+	latest := ""
+	for _, it := range ford.ListItems(f, "doorStatus") {
+		if at, _ := it["updatetime"].(string); at > latest { // RFC 3339 times sort as text
+			latest = at
+		}
+	}
+	return latest
+}
+
+// reportedAt says when the car last reported, in the local time zone.
+func (e *Engine) reportedAt(stamp string) string {
+	t, err := time.Parse(time.RFC3339, stamp)
+	if err != nil {
+		return ""
+	}
+	t = t.In(e.zone())
+	if t.YearDay() == e.now().In(e.zone()).YearDay() && t.Year() == e.now().In(e.zone()).Year() {
+		return t.Format("3:04 pm")
+	}
+	return t.Format("Mon 3:04 pm")
+}
+
 // leftOpen warns once when the car is parked with a door, the tailgate, the hood or a window open for ten minutes.
 func (e *Engine) leftOpen(st *ford.State) {
 	things := openThings(st.Extra)
@@ -76,8 +101,18 @@ func (e *Engine) leftOpen(st *ford.State) {
 	if e.openFrom.IsZero() {
 		e.openFrom = st.TS
 	}
+	stamp := openStamp(st.Extra)
+	key := strings.Join(things, ",") + "|" + stamp
 	if !e.openSent && st.TS.Sub(e.openFrom) >= openAfter {
 		e.openSent = true
-		e.send(push.Alert{Kind: push.LeftOpen, Title: "Left open", Body: fmt.Sprintf("The parked car has its %s open.", strings.Join(things, ", ")), URL: "#/"})
+		if stamp != "" && key == e.openKey {
+			return // the car has not reported anything new since the last alert about this
+		}
+		e.openKey = key
+		body := fmt.Sprintf("The parked car has its %s open.", strings.Join(things, ", "))
+		if at := e.reportedAt(stamp); at != "" {
+			body += fmt.Sprintf(" The car last reported this at %s, so it may have been closed since.", at)
+		}
+		e.send(push.Alert{Kind: push.LeftOpen, Title: "Left open", Body: body, URL: "#/"})
 	}
 }

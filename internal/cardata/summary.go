@@ -77,7 +77,12 @@ func (s src) doorSummary() *Row {
 	case len(locks) == 0:
 		text = "All closed"
 	}
-	return say("Doors and locks", text, "Whether every door, the tailgate and the hood are shut, and the car is locked.")
+	r := say("Doors and locks", text, "Whether every door, the tailgate and the hood are shut, and the car is locked. A parked car stops reporting, so this is the last thing it said.")
+	r.At = ford.Updated(s.f, "doorStatus")
+	if r.At == "" && len(doors) > 0 {
+		r.At = fmt.Sprint(doors[0]["updatetime"])
+	}
+	return r
 }
 
 // freshness counts how many values are recent compared with the moment of the reading.

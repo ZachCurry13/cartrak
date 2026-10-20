@@ -206,3 +206,15 @@ func TestEveryRowIsWellFormed(t *testing.T) {
 		}
 	}
 }
+
+func TestDoorRowsSayWhenTheCarLastReportedThem(t *testing.T) {
+	p := "telemetry.metrics.doorStatus"
+	f := map[string]any{
+		p + "[0].value": "AJAR", p + "[0].vehicleDoor": "UNSPECIFIED_FRONT", p + "[0].vehicleSide": "PASSENGER", p + "[0].updateTime": "2026-10-20T14:29:55Z",
+		p + "[1].value": "CLOSED", p + "[1].vehicleDoor": "UNSPECIFIED_FRONT", p + "[1].vehicleSide": "DRIVER", p + "[1].updateTime": "2026-10-20T14:29:55Z",
+	}
+	body := tabOf(Build(f, reading, ford.EV), "body")
+	if x := rowOf(body, "Passenger front"); x == nil || x.Text != "Ajar" || x.At != "2026-10-20T14:29:55Z" {
+		t.Errorf("a door row carries the car's own report time: %+v", x)
+	}
+}

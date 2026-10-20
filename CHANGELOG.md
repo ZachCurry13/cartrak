@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.39.1
+
+### 🕒 Old door reports are labelled as old
+- A parked car stops reporting, so a door shown as open can be the last thing the car said before it went to sleep. The **Doors** rows on the Body tab and the **Doors and locks** line now say when the car last reported them.
+- The **Left open** alert says "The car last reported this at 9:29 am, so it may have been closed since", and it no longer repeats for the very same old report (for example after every trip).
+
 ## 0.39.0
 
 ### 📴 Works with no signal

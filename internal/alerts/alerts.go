@@ -63,6 +63,7 @@ type Engine struct {
 	lowSent      bool
 	openFrom     time.Time
 	openSent     bool
+	openKey      string // what the last Left open alert was about, so the same old report never alerts twice
 }
 
 func (e *Engine) now() time.Time {
