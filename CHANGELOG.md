@@ -4,6 +4,9 @@
 
 ### 🐛 Fixes
 - **Charging was cut off at the newest 100 sessions** in three places: the charging file in **Export everything**, the **History** feed for older months, and **Statistics** for a year. All three now include every session.
+- **No more "Trip started" for things that are not trips.** A trip is announced only once it has gone somewhere (about 300 m or 8 km/h), so sitting in the car with the ignition on, or a blip that is thrown away, sends nothing, and neither does the "Trip ended" that used to follow. The first reading after the car wakes often has no speed; a trip now waits for the odometer to move before it starts.
+- **No "Bump while parked" right after you park.** For five minutes after the car was last in use, jumps in the motion sensors are logged on the Parked watch page but do not send an alert: the door, the seat and the car settling look like a bump, and so does the sensor's first fresh reading after a drive.
+- **Removed the car's regen counter.** It looked like energy in 0.30.0, but it barely moves between trips (99.5, then 98.2) while the range braking gave back falls by 40%, so it is not an energy count. The regen tiles go back to the range the car reports and the energy worked out from it, marked as an estimate.
 - **Statistics and History pick the right month** whatever time zone the phone is in (the month and year are now named by the server, not worked out from the phone's clock).
 ## 0.30.1
 

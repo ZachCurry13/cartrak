@@ -165,6 +165,12 @@ func TestTripStartAndEndComeFromTheTripRecords(t *testing.T) {
 	if err := s.CreateTrip(tr); err != nil {
 		t.Fatal(err)
 	}
+	e.Handle(reading(2, nil))
+	if len(r.got) != 0 {
+		t.Fatalf("a trip that has not gone anywhere is not announced: %s", r.kinds())
+	}
+	tr.DistanceKm, tr.MaxSpeedKph = 2.5, 60 // now it has moved
+	s.UpdateTrip(tr)
 	e.Handle(reading(5, nil))
 	end := t0.Add(30 * time.Minute).Unix()
 	tr.EndTS, tr.DistanceKm, tr.Open = &end, 16.0934, false
@@ -173,13 +179,13 @@ func TestTripStartAndEndComeFromTheTripRecords(t *testing.T) {
 	if r.kinds() != "trip_start,trip_end" || !strings.Contains(r.got[1].Body, "10.0 mi (16.1 km)") || r.got[1].URL != "#/trip/1" {
 		t.Fatalf("got %s %+v", r.kinds(), r.got)
 	}
-	// A trip that the detector threw away (an ignition blip) is not announced as ended.
+	// A blip the detector throws away was never announced as started, so there is no "ended" either.
 	blip := &store.Trip{StartTS: t0.Add(40 * time.Minute).Unix(), Category: "work", CategorySource: "default"}
 	s.CreateTrip(blip)
 	e.Handle(reading(41, nil))
 	s.DeleteTrip(blip.ID)
 	e.Handle(reading(42, nil))
-	if r.kinds() != "trip_start,trip_end,trip_start" {
+	if r.kinds() != "trip_start,trip_end" {
 		t.Fatalf("got %s", r.kinds())
 	}
 }

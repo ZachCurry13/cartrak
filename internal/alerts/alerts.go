@@ -58,6 +58,7 @@ type Engine struct {
 	silentSent   bool
 	inside       map[int64]bool // which named places the car is inside
 	lastBump     time.Time
+	lastDrive    time.Time   // the last reading with the ignition on or the car moving
 	restVec      *[3]float64 // the previous parked reading of the motion sensors
 	lowSent      bool
 	openFrom     time.Time
@@ -182,8 +183,12 @@ func (e *Engine) unlocked(st *ford.State) {
 func (e *Engine) trip(first bool) {
 	open, _ := e.S.OpenTrip()
 	var id int64
-	if open != nil {
+	// A trip is announced once it has actually gone somewhere. One that is only sitting with the ignition on, or that is
+	// about to be thrown away as a blip, would otherwise send a "started" now and an "ended" later for nothing.
+	if open != nil && (open.DistanceKm >= 0.3 || open.MaxSpeedKph >= 8) {
 		id = open.ID
+	} else if open != nil {
+		id = e.openTrip // not announced yet: keep what is already announced
 	}
 	if !first && id != e.openTrip {
 		if id != 0 && e.openTrip == 0 {

@@ -14,6 +14,9 @@ type Detector struct {
 	S    *store.Store
 	TZ   *time.Location
 	TZFn func() *time.Location // optional: read the zone live (admin panel); wins over TZ
+
+	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
+	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
 }
 
 // Driving reports whether a reading looks like the car is in use. A car that is taking charge and not moving is
@@ -30,7 +33,14 @@ func charging(st *ford.State) bool { return st.Charging() }
 
 // Process applies one reading. Call it once per poll, oldest first.
 func (d *Detector) Process(st *ford.State) error {
-	if err := d.trip(st); err != nil {
+	err := d.trip(st)
+	if st.OdometerKm != nil {
+		d.lastOdo = st.OdometerKm
+	}
+	if st.SpeedKph != nil {
+		d.sawSpeed = true
+	}
+	if err != nil {
 		return err
 	}
 	return d.charge(st)
@@ -77,7 +87,7 @@ func (d *Detector) trip(st *ford.State) error {
 		return err
 	}
 	now := st.TS.Unix()
-	if Driving(st) && open == nil && moving(st) {
+	if Driving(st) && open == nil && moving(st) && d.leftTheSpot(st) {
 		t := &store.Trip{StartTS: now, StartLat: st.Lat, StartLon: st.Lon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		var rid *int64
 		loc := d.zone(st.Lat, st.Lon)
@@ -225,4 +235,14 @@ func stationOf(st *ford.State) string {
 		return ""
 	}
 	return v
+}
+
+// leftTheSpot is for a reading that carries no speed although the feed normally does, such as the first one after the car
+// wakes: a trip then starts only when the odometer shows the car has moved since the reading before. A feed that never
+// sends a speed, or an odometer, still has to take the ignition at its word.
+func (d *Detector) leftTheSpot(st *ford.State) bool {
+	if st.SpeedKph != nil || !d.sawSpeed || st.OdometerKm == nil {
+		return true
+	}
+	return d.lastOdo != nil && *st.OdometerKm-*d.lastOdo >= 0.1
 }

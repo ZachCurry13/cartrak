@@ -68,6 +68,9 @@ func alarmGoingOff(f map[string]any) (string, bool) {
 // is kept on the Parked watch page, so the owner can judge how well it works before relying on it.
 func (e *Engine) parkedWatch(st *ford.State, first bool) {
 	// Ignition on (even while the car charges) means someone is in it, so it is not "parked" for this purpose.
+	if st.Driving() {
+		e.lastDrive = st.TS
+	}
 	if e.BumpLevel == nil || st.Driving() {
 		e.restVec = nil // the resting reading is learned again once the car is parked
 		return
@@ -98,11 +101,15 @@ func (e *Engine) parkedWatch(st *ford.State, first bool) {
 		return
 	}
 	_ = e.S.AddParkedEvent(store.ParkedEvent{TS: at, Kind: "motion", Value: m, Note: fmt.Sprintf("%.2f m/s²", m)})
-	if m >= level && !first && e.now().Sub(e.lastBump) >= bumpQuietFor && !e.ownerWithCar(st) {
+	if m >= level && !first && e.now().Sub(e.lastBump) >= bumpQuietFor && st.TS.Sub(e.lastDrive) >= settleAfterDrive && !e.ownerWithCar(st) {
 		e.lastBump = e.now()
 		e.send(push.Alert{Kind: push.BumpWhileParked, Title: "Bump while parked", Body: fmt.Sprintf("The parked car's motion sensors read %.1f m/s² (your level is %.1f). Take a look at the car.", m, level), URL: "#/parkedwatch"})
 	}
 }
+
+// settleAfterDrive is how long after the car was last in use a jump is not alerted: the door, the seat and the car settling,
+// and the accelerometer reporting its first fresh value after the drive, look like a bump but are not.
+const settleAfterDrive = 5 * time.Minute
 
 // withCarRadiusM is how close a paired phone must be to the car for the owner to count as with it.
 const withCarRadiusM = 150

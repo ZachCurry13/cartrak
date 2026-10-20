@@ -302,3 +302,24 @@ func TestARemoteStartIsNotATripEvenWhenTheCarSendsNoSpeed(t *testing.T) {
 		t.Fatalf("driving without a speed field still counts: %+v", ts)
 	}
 }
+
+func TestAWakeReadingWithNoSpeedDoesNotStartATripUntilTheOdometerMoves(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now()
+	sp := 0.0
+	parked := reading(t0, "OFF", 500, 60)
+	parked.SpeedKph = &sp
+	d.Process(parked) // the feed does send a speed
+	wake := reading(t0.Add(10*time.Minute), "ON", 500, 60)
+	d.Process(wake) // ignition on, no speed, the odometer has not moved
+	if ts, _ := s.ListTrips(store.TripFilter{}); len(ts) != 0 {
+		t.Fatalf("waking is not a trip: %+v", ts)
+	}
+	went := reading(t0.Add(11*time.Minute), "ON", 500.4, 60)
+	d.Process(went) // no speed, but the odometer moved
+	if ts, _ := s.ListTrips(store.TripFilter{}); len(ts) != 1 {
+		t.Fatalf("a car that has moved starts a trip: %+v", ts)
+	}
+}

@@ -385,3 +385,31 @@ func TestAnOpenDoorOnAParkedCarIsAlertedOnceAfterTenMinutes(t *testing.T) {
 		t.Fatalf("nothing while the car is in use: %s", r.kinds())
 	}
 }
+
+func TestParkingMovesAreNotBumps(t *testing.T) {
+	e, r, _ := setup(t)
+	e.BumpLevel = func() float64 { return 1.0 }
+	at := func(sec int, ign string, speed, x, y float64) {
+		e.Handle(reading(0, func(st *ford.State) {
+			st.TS = t0.Add(time.Duration(sec) * time.Second)
+			st.Ignition = ign
+			st.SpeedKph = &speed
+			st.Extra["telemetry.metrics.acceleration.value.x"] = x
+			st.Extra["telemetry.metrics.acceleration.value.y"] = y
+			st.Extra["telemetry.metrics.acceleration.value.z"] = 0.0
+		}))
+	}
+	at(0, "OFF", 0, 0.0, -0.05)   // parked
+	at(600, "ON", 17, 0.9, 0.7)   // the drive begins
+	at(631, "ON", 8, 1.5, 0.2)    // slowing to park
+	at(662, "OFF", 0, 0.0, -0.05) // parked: the first reading after the drive
+	at(663, "OFF", 0, 1.8, 0.9)   // the first fresh accelerometer value after the drive: a jump, but only settling
+	if len(r.got) != 0 {
+		t.Fatalf("parking is not a bump: %s", r.kinds())
+	}
+	at(1300, "OFF", 0, 0.0, -0.05) // quiet again
+	at(1900, "OFF", 0, 1.9, 1.0)   // a real jump, well after parking
+	if r.kinds() != "bump_parked" {
+		t.Fatalf("a bump after the car has settled still alerts: %s", r.kinds())
+	}
+}

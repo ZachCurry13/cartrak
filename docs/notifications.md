@@ -9,7 +9,7 @@ CarTrak can send a notification to your phone or computer when something happens
 | Plugged in / Unplugged | The charging cable was connected or removed |
 | Low tire pressure | The car reports a tire as low (sent once, until the tire is fixed) |
 | Charging interrupted / stopped early | A charge stopped while still plugged in, lower than your sessions usually end. Off by default |
-| Bump while parked | A parked car's motion sensors read above the bump level (More, Settings). Experimental: see Parked watch. Off by default |
+| Bump while parked | A parked car's motion sensors read above the bump level (More, Settings). Not alerted for five minutes after the car was last in use. Experimental: see Parked watch. Off by default |
 | Car alarm | The car reports its alarm or panic alarm is going off. Off by default |
 | Left open | The parked car has a door, the tailgate, the hood or a window open for ten minutes. Off by default |
 | Backup reminder | No backup has been downloaded in the last month. At most once a month, and only after CarTrak has been recording for two weeks |
