@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.38.2
+
+### 📍 Where each trip began and ended
+- Each trip in the Trips list now shows **where it started and where it stopped**: the place you named if one applies (Home, Work…), otherwise the city. Cities are looked up in the background a few at a time, so a long history fills in over the next few visits to the list; nothing waits for them.
+
 ## 0.38.1
 
 ### 🪲 Pick any car for the Debug report

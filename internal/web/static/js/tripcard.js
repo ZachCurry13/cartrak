@@ -38,7 +38,9 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
   const kmPerKwh = t.energyKwh > 0 && t.distanceKm > 1 ? t.distanceKm / t.energyKwh : null;
   const grade = kmPerKwh && avgKmPerKwh ? (kmPerKwh >= avgKmPerKwh * 1.08 ? 'good' : kmPerKwh <= avgKmPerKwh * 0.9 ? 'bad' : '') : '';
   const picked = sel.picked.has(t.id);
-  const places = t.startPlace || t.endPlace ? `${t.startPlace || '…'} → ${t.endPlace || '…'}` : '';
+  // where it began and ended: a place you named, otherwise the city
+  const from = t.startPlace || t.startCity, to = t.endPlace || t.endCity;
+  const places = from || to ? `${from || '…'} → ${to || (t.open ? 'on the way' : '…')}` : '';
   const share = admin && !t.open && !sel.state.on
     ? h('button', { class: 'ico sm', type: 'button', 'aria-label': 'Share this trip', title: 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } },
       (() => { const s = svgEl('svg', { viewBox: '0 0 24 24' }); s.append(svgEl('path', { d: 'M12 3v12M8 7l4-4 4 4M5 12v8h14v-8' })); return s; })()) : null;

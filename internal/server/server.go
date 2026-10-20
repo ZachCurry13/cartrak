@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/connector"
@@ -56,6 +57,8 @@ type Server struct {
 	Push        *push.Service // Web Push alerts (nil in some tests)
 	GeoGap      time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo         geoState
+	CityLookups bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
+	cityBusy    atomic.Bool // such a lookup is running
 	tiles       tileFlight
 	trim        trimState
 	Cars        CarManager // adds, renames and removes cars (nil with a single car)

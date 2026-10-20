@@ -64,7 +64,7 @@ func (f *Fleet) build(c store.Car, primary bool) (*Runtime, error) {
 	p := poller.New(prov, st, det, poller.Intervals{Driving: f.Cfg.PollDriving, Charging: f.Cfg.PollCharge, Parked: f.Cfg.PollParked, Live: f.Cfg.PollLive})
 	srv := &server.Server{S: st, Core: f.Core, CarID: c.ID, P: p, D: det, Link: link, Version: f.Version, Upd: f.Upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
 		Tunnel: f.Tun, Conn: f.Conn, Port: f.Cfg.Addr[strings.LastIndex(f.Cfg.Addr, ":")+1:], TrustProxy: f.Cfg.TrustProxy, SessionDays: f.Cfg.SessionDays,
-		TileDir: filepath.Join(f.Cfg.DataDir, "tiles"), DataDir: f.Cfg.DataDir, Exit: f.Exit}
+		TileDir: filepath.Join(f.Cfg.DataDir, "tiles"), DataDir: f.Cfg.DataDir, Exit: f.Exit, CityLookups: true}
 	srv.Cars = f
 	p.After = srv.Broadcast
 	id := c.ID

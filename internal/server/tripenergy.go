@@ -13,6 +13,8 @@ type tripOut struct {
 	EnergyEstimated bool     `json:"energyEstimated"` // from battery percent, not the car's own energy reading
 	StartPlace      string   `json:"startPlace"`      // the named place it started or ended at, if any
 	EndPlace        string   `json:"endPlace"`
+	StartCity       string   `json:"startCity"` // the city it started or ended in, when CarTrak has looked it up
+	EndCity         string   `json:"endCity"`
 }
 
 // capacityKwh is the battery's latest estimated capacity, used to estimate trips that were recorded

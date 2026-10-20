@@ -60,7 +60,9 @@ func (s *Server) listTrips(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, s.tripsWithEnergy(ts))
+	out := s.tripsWithEnergy(ts)
+	s.nameCities(out)
+	ok(w, out)
 }
 
 func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
