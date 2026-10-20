@@ -11,6 +11,13 @@
 - **Where home is.** CarTrak now treats a place you named **Home** (More, Places) as home, so charging there is priced at the home rate and counts as home in the statistics. Before, it only knew home once you marked a session as Home by hand. The page says whether CarTrak knows where home is, and how.
 - **A price for any place.** Under each place in More, Places, set what charging costs there (0 if it is free), or tick that it counts as home. A cabin, a relative's house or a workplace charger can have its own rate; every other place keeps the usual home or public price. A session you set to Home or Away by hand still uses that choice.
 
+### 📑 Downloadable reports
+- **More, Reports now has a report you can download.** The **standard report** is a mileage log like the ones other apps export: one row per trip with its value, a summary above it and a Totals By Label sheet, as an Excel file (or a CSV). Untick the columns you do not want.
+- **Custom reports.** Save a layout with its own columns, headings and fixed columns (such as a company name), then run it whenever it is needed.
+- Extra columns to add: **energy used (kWh)**, **efficiency** in the unit you prefer (mi/kWh, kWh per 100 km, Wh per mile, or distance per percent), **energy cost**, **cost per mile**, **MPGe** and **average speed**.
+- Every time you run one, choose **all categories, some, or one**, and the **days** (first and last day, or calendar week numbers such as 26-28).
+- See [docs/reports.md](docs/reports.md).
+
 ### 🏷️ Trip categories and modes
 - **Medical, and categories of your own.** A trip can now be Personal, Work, **Medical**, or any category you add (More, Trip rules, Trip categories): a name, a colour and an optional mileage rate for each. Trip rules, the trip filter, the review list, the year in review and the Mileage log all use them. Removing one of your own makes its trips Personal again.
 - **Modes.** Vacation mode is now one of several: pick the days and a mode (Vacation, **Work trip**, **Medical**, or one of your categories) and every trip in them gets that label. If two modes cover the same day, the one you added last wins. Trips you set by hand keep what you chose.

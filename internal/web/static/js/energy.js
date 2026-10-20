@@ -24,6 +24,9 @@ function loadCapacity() {
 }
 
 // "3.42 mi/kWh", "292 Wh/mi" or "1.2 mi/%" following the chosen unit, or null when not meaningful.
+// The efficiency unit chosen on this device: kwh, wh or pct.
+export const getEfficiencyUnit = () => unit;
+
 export function efficiency(distanceKm, kwh) {
   if (kwh == null || kwh < MIN_KWH || !(distanceKm >= MIN_KM)) return null;
   const metric = isMetric();
