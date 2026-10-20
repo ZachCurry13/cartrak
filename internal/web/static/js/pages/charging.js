@@ -12,16 +12,21 @@ function perDistance(cur, costPerKm) {
   return `${money(cur, isMetric() ? costPerKm : costPerKm * 1.609344)} per ${isMetric() ? 'km' : 'mi'}`;
 }
 
-// What the charger reported: type it in to see this session's real efficiency, and to teach CarTrak yours.
-function chargerBox(c, reload) {
+// What the charger reported and what you paid: type them in from the receipt to see this session's real efficiency and
+// cost, and to teach CarTrak yours.
+function chargerBox(c, cur, reload) {
   if (c.open || c.addedKwh == null) return null;
   const input = h('input', { type: 'number', step: '0.1', min: 0, inputmode: 'decimal', placeholder: 'kWh from the charger', 'aria-label': 'kWh the charger reported', value: c.chargerKwh != null ? c.chargerKwh : '', style: 'max-width:11em' });
+  const paid = h('input', { type: 'number', step: '0.01', min: 0, inputmode: 'decimal', placeholder: `${cur || '$'} paid`, 'aria-label': 'What you paid', value: c.costActual && c.cost != null ? c.cost.toFixed(2) : '', style: 'max-width:8em' });
   const msg = h('span', { class: 'muted', role: 'status' });
   const save = async () => {
-    try { await api(`/api/charges/${c.id}`, { method: 'PATCH', body: input.value ? { chargerKwh: Number(input.value) } : { clearCharger: true } }); reload(); } catch (e) { msg.textContent = e.message; }
+    const body = input.value ? { chargerKwh: Number(input.value) } : { clearCharger: true };
+    if (paid.value) body.cost = Number(paid.value); else if (c.costActual) body.clearCost = true;
+    try { await api(`/api/charges/${c.id}`, { method: 'PATCH', body }); reload(); } catch (e) { msg.textContent = e.message; }
   };
-  return h('div', { style: 'margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, input, h('button', { class: 'sec', onclick: save }, 'Save'),
-    c.measured && c.efficiency != null ? chip('ok', `${Math.round(c.efficiency * 100)}% reached the battery`) : null, msg);
+  return h('div', { style: 'margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, input, paid, h('button', { class: 'sec', onclick: save }, 'Save'),
+    c.measured && c.efficiency != null ? chip('ok', `${Math.round(c.efficiency * 100)}% reached the battery`) : null,
+    c.costActual ? chip('ok', 'cost from your receipt') : null, msg);
 }
 
 function summaryCard(sum) {
@@ -48,7 +53,7 @@ function sessionCard(c, cur, admin, reload) {
     h('div', { class: 'muted' }, `${pct(c.startSoc)} → ${pct(c.endSoc)} · ${added} · ${duration(c.startTs, c.endTs)} · peak ${num(c.peakKw, 1, ' kW')}`),
     where ? h('div', { style: 'margin-top:8px' }, where) : null,
     c.open ? null : curveBox(c.id),
-    admin ? chargerBox(c, reload) : null);
+    admin ? chargerBox(c, cur, reload) : null);
 }
 
 export default async function charging(root, _a, session) {

@@ -81,3 +81,20 @@ func TestEventsNewestFirst(t *testing.T) {
 		t.Fatalf("events: %+v", es)
 	}
 }
+
+func TestSampleCountsCountDifferentPositionsNotRepeats(t *testing.T) {
+	s, _ := Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	for i, p := range [][2]float64{{44.1, -85.1}, {44.1, -85.1}, {44.1, -85.1}, {44.2, -85.2}} {
+		if _, err := s.DB.Exec(`INSERT INTO samples(ts,lat,lon) VALUES(?,?,?)`, 1000+i*30, p[0], p[1]); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := s.DB.Exec(`INSERT INTO samples(ts) VALUES(2000)`); err != nil {
+		t.Fatal(err)
+	}
+	n, d, err := s.SampleCounts(900, 3000)
+	if err != nil || n != 5 || d != 2 {
+		t.Fatalf("5 readings, 2 different positions: %d %d %v", n, d, err)
+	}
+}

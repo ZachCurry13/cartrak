@@ -35,6 +35,7 @@ type Session struct {
 	WallKwh    *float64 `json:"wallKwh"`   // what the charger delivered, allowing for AC losses
 	Where      string   `json:"where"`     // home, public, or "" when it cannot be told
 	Cost       *float64 `json:"cost"`
+	CostActual bool     `json:"costActual"` // the cost is what the owner paid, not worked out from a price
 	Efficiency *float64 `json:"efficiency"` // added / delivered, only when the charger's number was entered
 	Measured   bool     `json:"measured"`
 }
@@ -49,6 +50,15 @@ func distanceM(a, b Point) float64 {
 
 // Enrich adds energy, place and cost to a finished or running session. capacityKwh and home may be nil.
 func Enrich(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Session {
+	s := enrichBase(c, capacityKwh, home, p)
+	if c.ActualCost != nil { // what was really paid beats any price per kWh
+		v := *c.ActualCost
+		s.Cost, s.CostActual = &v, true
+	}
+	return s
+}
+
+func enrichBase(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Session {
 	s := Session{Charge: c, Where: c.Kind}
 	switch {
 	case c.StartKwh != nil && c.EndKwh != nil:

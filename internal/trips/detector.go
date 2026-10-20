@@ -17,6 +17,9 @@ type Detector struct {
 
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
 	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
+
+	lastReading    int64 // time of the previous reading this detector saw
+	lastDisconnect int64 // the last time a reading showed the cable unplugged
 }
 
 // Driving reports whether a reading looks like the car is in use. A car that is taking charge and not moving is
@@ -33,6 +36,10 @@ func charging(st *ford.State) bool { return st.Charging() }
 
 // Process applies one reading. Call it once per poll, oldest first.
 func (d *Detector) Process(st *ford.State) error {
+	defer func() { d.lastReading = st.TS.Unix() }()
+	if st.Plug != "" && !st.PlugConnected() {
+		d.lastDisconnect = st.TS.Unix()
+	}
 	err := d.trip(st)
 	if st.OdometerKm != nil {
 		d.lastOdo = st.OdometerKm
@@ -169,6 +176,17 @@ func (d *Detector) charge(st *ford.State) error {
 	}
 	now := st.TS.Unix()
 	if charging(st) && open == nil {
+		if prev := d.resumable(st); prev != nil {
+			// A pause (the charger handing over, a hiccup) is not the end of a session. Pick it up again, so the energy that went
+			// in during the gap is counted and the session is not split in two.
+			if err := d.S.ReopenCharge(prev.ID); err != nil {
+				return err
+			}
+			prev.Open = true
+			open = prev
+		}
+	}
+	if charging(st) && open == nil {
 		c := &store.Charge{StartTS: now, Lat: st.Lat, Lon: st.Lon, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		if st.ChargeKw != nil {
 			c.PeakKw = *st.ChargeKw
@@ -245,4 +263,31 @@ func (d *Detector) leftTheSpot(st *ford.State) bool {
 		return true
 	}
 	return d.lastOdo != nil && *st.OdometerKm-*d.lastOdo >= 0.1
+}
+
+// resumeWithin is how long a charging session can stay paused and still be the same session when charging resumes.
+const resumeWithin = 20 * 60
+
+// resumable is the session that has just paused and that charging has now resumed in: it ended no more than twenty minutes
+// ago, this detector watched the whole gap, the cable was not unplugged in between, and the car has not moved.
+func (d *Detector) resumable(st *ford.State) *store.Charge {
+	if !st.PlugConnected() {
+		return nil
+	}
+	list, err := d.S.ListCharges(1) // newest first
+	if err != nil || len(list) == 0 {
+		return nil
+	}
+	prev := list[0]
+	now := st.TS.Unix()
+	if prev.Open || prev.EndTS == nil || now-*prev.EndTS > resumeWithin || now < *prev.EndTS {
+		return nil
+	}
+	if d.lastReading < *prev.EndTS || d.lastDisconnect >= *prev.EndTS {
+		return nil // not watched, or unplugged in between
+	}
+	if prev.Lat != nil && prev.Lon != nil && st.Lat != nil && st.Lon != nil && Haversine(*prev.Lat, *prev.Lon, *st.Lat, *st.Lon) > 150 {
+		return nil // somewhere else
+	}
+	return prev
 }

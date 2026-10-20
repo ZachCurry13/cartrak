@@ -197,7 +197,10 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 			}
 		}
 		if best != nil {
-			n.Kind, n.ChargerKwh = best.Kind, best.ChargerKwh
+			n.Kind, n.ChargerKwh, n.ActualCost = best.Kind, best.ChargerKwh, best.ActualCost
+			if n.Station == "" {
+				n.Station = best.Station
+			}
 		}
 	}
 	var ot, oc []int64

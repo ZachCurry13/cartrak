@@ -50,12 +50,13 @@ type Poller struct {
 	OnReading func(*ford.State)
 	kick      chan struct{}
 
-	mu        sync.Mutex
-	st        Status
-	liveUntil time.Time
-	hintUntil time.Time // a phone said a trip is under way until then
-	rlCount   int       // consecutive 429s, for the backoff
-	srvCount  int       // consecutive Ford server errors (HTTP 5xx), for the retry pace
+	mu         sync.Mutex
+	st         Status
+	liveUntil  time.Time
+	hintUntil  time.Time // a phone said a trip is under way until then
+	chargeSeen time.Time // the last time a reading showed the car taking charge
+	rlCount    int       // consecutive 429s, for the backoff
+	srvCount   int       // consecutive Ford server errors (HTTP 5xx), for the retry pace
 }
 
 func New(p ford.Provider, s *store.Store, d *trips.Detector, iv Intervals) *Poller {

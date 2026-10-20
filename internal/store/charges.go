@@ -19,13 +19,15 @@ type Charge struct {
 	ChargerKwh *float64 `json:"chargerKwh"`
 	// Station is what the car said the charger was: AC_BASIC for a home or level 2 charger, DC for a fast charger. Empty when it did not say.
 	Station string `json:"station"`
+	// ActualCost is what the owner paid, typed in from the receipt. It replaces the cost CarTrak works out from a flat price.
+	ActualCost *float64 `json:"actualCost"`
 }
 
-const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station`
+const chargeCols = `id,start_ts,end_ts,lat,lon,start_soc,end_soc,peak_kw,open,start_kwh,end_kwh,kind,charger_kwh,station,actual_cost`
 
 func scanCharge(r interface{ Scan(...any) error }) (*Charge, error) {
 	var c Charge
-	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh, &c.Station)
+	err := r.Scan(&c.ID, &c.StartTS, &c.EndTS, &c.Lat, &c.Lon, &c.StartSoC, &c.EndSoC, &c.PeakKw, &c.Open, &c.StartKwh, &c.EndKwh, &c.Kind, &c.ChargerKwh, &c.Station, &c.ActualCost)
 	return &c, err
 }
 
@@ -88,6 +90,18 @@ func (s *Store) GetCharge(id int64) (*Charge, error) {
 // SetChargeKind records the owner's choice: "home", "public", or "" to let CarTrak decide from the place.
 func (s *Store) SetChargeKind(id int64, kind string) error {
 	_, err := s.DB.Exec(`UPDATE charges SET kind=? WHERE id=?`, kind, id)
+	return err
+}
+
+// ReopenCharge marks a finished session as running again: charging resumed after a pause.
+func (s *Store) ReopenCharge(id int64) error {
+	_, err := s.DB.Exec(`UPDATE charges SET open=1 WHERE id=?`, id)
+	return err
+}
+
+// SetChargeCost records what the owner paid for a session, or clears it with nil.
+func (s *Store) SetChargeCost(id int64, cost *float64) error {
+	_, err := s.DB.Exec(`UPDATE charges SET actual_cost=? WHERE id=?`, cost, id)
 	return err
 }
 

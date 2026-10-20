@@ -138,6 +138,8 @@ func (s *Server) patchCharge(w http.ResponseWriter, r *http.Request) {
 		Kind         *string  `json:"kind"`
 		ChargerKwh   *float64 `json:"chargerKwh"`
 		ClearCharger bool     `json:"clearCharger"`
+		Cost         *float64 `json:"cost"` // what was paid, from the receipt
+		ClearCost    bool     `json:"clearCost"`
 	}
 	if err := decode(r, &in); err != nil || (in.Kind != nil && *in.Kind != "" && *in.Kind != "home" && *in.Kind != "public") {
 		fail(w, 400, "choose home, public or automatic")
@@ -156,6 +158,18 @@ func (s *Server) patchCharge(w http.ResponseWriter, r *http.Request) {
 		if *in.Kind == "home" && c.Lat != nil && c.Lon != nil {
 			_ = s.S.SetKV(kvHomeLat, strconv.FormatFloat(*c.Lat, 'f', 5, 64))
 			_ = s.S.SetKV(kvHomeLon, strconv.FormatFloat(*c.Lon, 'f', 5, 64))
+		}
+	}
+	if in.ClearCost {
+		_ = s.S.SetChargeCost(id, nil)
+	} else if in.Cost != nil {
+		if *in.Cost < 0 || *in.Cost > 2000 {
+			fail(w, 400, "enter what you paid, for example 13.06")
+			return
+		}
+		if err := s.S.SetChargeCost(id, in.Cost); err != nil {
+			fail(w, 500, "db error")
+			return
 		}
 	}
 	if in.ClearCharger {
@@ -193,7 +207,7 @@ func (s *Server) exportChargesCSV(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) writeChargesCSV(w io.Writer, ss []charging.Session) {
 	c := csv.NewWriter(w)
-	_ = c.Write([]string{"id", "start", "end", "start_local", "start_percent", "end_percent", "added_kwh", "added_estimated", "charger_kwh", "efficiency_percent", "where", "peak_kw", "cost"})
+	_ = c.Write([]string{"id", "start", "end", "start_local", "start_percent", "end_percent", "added_kwh", "added_estimated", "charger_kwh", "efficiency_percent", "where", "peak_kw", "cost", "cost_from_receipt", "charger_type"})
 	loc := s.defaultLoc()
 	for _, x := range ss {
 		end := ""
@@ -206,7 +220,7 @@ func (s *Server) writeChargesCSV(w io.Writer, ss []charging.Session) {
 		}
 		_ = c.Write([]string{strconv.FormatInt(x.ID, 10), time.Unix(x.StartTS, 0).UTC().Format(time.RFC3339), end,
 			time.Unix(x.StartTS, 0).In(loc).Format("2006-01-02 15:04"), fl(x.StartSoC), fl(x.EndSoC), fl2(x.AddedKwh), strconv.FormatBool(x.Estimated),
-			fl2(x.ChargerKwh), eff, x.Where, fmt.Sprintf("%.1f", x.PeakKw), fl2(x.Cost)})
+			fl2(x.ChargerKwh), eff, x.Where, fmt.Sprintf("%.1f", x.PeakKw), fl2(x.Cost), strconv.FormatBool(x.CostActual), x.Station})
 	}
 	c.Flush()
 }

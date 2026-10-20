@@ -94,6 +94,11 @@ Set **Mileage deduction per mile** in More, Settings. The Mileage log then shows
 ## Charging curves, speed and the reasons behind a trip
 Under a charging session, **Charging curve** shows power against battery level. **Fast chargers compared** (Charging page) groups sessions that reached 40 kW by named place; name a place under More, Places to see it by name. The road-trip planner starts its charging power from your own fast-charge average. **Efficiency insights, By speed** shows your efficiency at each speed. A trip's page has **Why this efficiency?** and the best and worst trips show reason chips (cold weather, highway speed, stop and go, idling and climate, hard braking, quick starts, or gentle driving). The reasons compare the trip with your own driving; braking and starts are inferred from speed changes between readings and are a guide only.
 
+## What you paid, and paused charges
+On the Charging page each finished session has boxes for the **kWh the charger reported** and **what you paid**. Fill them from the receipt (the Tesla, Electrify America and Red E apps all show both) and CarTrak shows the real cost and, from the kWh, how much of the energy reached the battery. A session with a receipt cost is marked, and its cost replaces the flat price in the totals. Fast charging often costs more or less per kWh than your flat price, so this is where the true monthly cost comes from.
+
+A charge that pauses and resumes within 20 minutes, at the same place with the cable still connected, is one session. Unplugging ends it.
+
 ## Best speed for a trip
 Under the plan, **Best speed for this trip** gives the total time at each cruising speed: driving, charging for the extra energy a faster speed needs, and a few minutes lost at each stop (you can change that, five minutes by default). The speed with the shortest total is named, and the next faster speed is compared with it, so you can see when five more miles an hour stops paying for itself. The energy use at each speed is fitted to your own drives (it needs a few speed ranges with some distance in each), and the weather you picked in the plan carries over. Speeds you have not driven are estimates.
 

@@ -11,6 +11,9 @@ func (s *State) Driving() bool {
 	return s.SpeedKph != nil && *s.SpeedKph > 3
 }
 
+// PlugConnected reports whether the reading says a charging cable is connected.
+func (s *State) PlugConnected() bool { return plugConnected(s.Plug) }
+
 // Charging reports whether a reading shows the car taking charge.
 func (s *State) Charging() bool {
 	return ChargeStateCharging(s.ChargeState) || (s.ChargeKw != nil && *s.ChargeKw > 0.2)

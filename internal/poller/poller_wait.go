@@ -21,7 +21,16 @@ func (p *Poller) interval(st *ford.State) time.Duration {
 			return p.Iv.Live
 		}
 		return p.Iv.Driving
-	case st.ChargeKw != nil && *st.ChargeKw > 0.2:
+	case st.Charging():
+		// Fast chargers report no power at all, only the charge state, so the state counts as well as the kilowatts. With
+		// only the kilowatts, a car on a fast charger with the ignition off was read every ten minutes.
+		p.mu.Lock()
+		p.chargeSeen = time.Now()
+		p.mu.Unlock()
+		return p.Iv.Charging
+	case st.PlugConnected() && p.chargedRecently():
+		// A charge that pauses or hiccups usually resumes within minutes. Keep looking at the charging pace for a while so
+		// the restart is seen when it happens, not ten minutes later.
 		return p.Iv.Charging
 	case p.PhoneActive() && p.Iv.Driving > 0 && p.Iv.Driving < p.Iv.Parked:
 		return p.Iv.Driving // the phone says a trip is starting; the car has not reported it yet
@@ -95,4 +104,13 @@ func serverErrorWait(n int) time.Duration {
 		w = 10 * time.Minute
 	}
 	return w
+}
+
+// pausedGrace is how long after the last charging reading a plugged-in car keeps being read at the charging pace.
+const pausedGrace = 20 * time.Minute
+
+func (p *Poller) chargedRecently() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return !p.chargeSeen.IsZero() && time.Since(p.chargeSeen) < pausedGrace
 }

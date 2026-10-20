@@ -91,12 +91,9 @@ func (s *Store) RecentEvents(limit int) ([]Event, error) {
 	return out, rows.Err()
 }
 
-// SampleCounts is how many readings the car sent between two times and how many of them carried a position.
-func (s *Store) SampleCounts(from, to int64) (total, withPosition int, err error) {
-	var pos *int
-	err = s.DB.QueryRow(`SELECT COUNT(*), SUM(lat IS NOT NULL AND lon IS NOT NULL) FROM samples WHERE ts BETWEEN ? AND ?`, from, to).Scan(&total, &pos)
-	if pos != nil {
-		withPosition = *pos
-	}
+// SampleCounts is how many readings the car sent between two times and how many different positions they carried. The
+// car repeats its last known position in every reading, so the number that matters is how many distinct ones there are.
+func (s *Store) SampleCounts(from, to int64) (total, distinctPositions int, err error) {
+	err = s.DB.QueryRow(`SELECT COUNT(*), COUNT(DISTINCT CASE WHEN lat IS NOT NULL AND lon IS NOT NULL THEN printf('%.4f,%.4f', lat, lon) END) FROM samples WHERE ts BETWEEN ? AND ?`, from, to).Scan(&total, &distinctPositions)
 	return
 }

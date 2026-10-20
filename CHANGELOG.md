@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.33.0
+
+### 🔌 A paused charge is one session
+- When a charger pauses and starts again (a fast charger handing over, or a hiccup), CarTrak used to close the session at the pause and start a new one, missing the energy that went in while it was between the two. A session that resumes within 20 minutes, at the same place, with the cable still plugged in, is now **one session**. Unplugging and plugging back in is still a new one. **Fix a day** applies this to older days.
+- **Fast chargers are read at the charging pace.** Ford reports no power at a DC fast charger, only the charge state, and CarTrak was only speeding up when it saw power. With the ignition off it read the car every ten minutes for a whole fast charge, which made charging curves coarse. It now speeds up on the charge state too, and keeps the faster pace for 20 minutes after a pause while the car is plugged in, so a restart is seen when it happens.
+
+### 🧾 What you really paid
+- Each finished session on the Charging page can take the **kWh the charger reported** and **what you paid**, typed from the receipt. A session with a receipt cost shows "cost from your receipt" and its real cost goes into the monthly totals, the year in review and the CSV, instead of the flat price. The CSV has two new columns, whether the cost is from a receipt and the charger type.
+- A rebuild (Fix a day) keeps the cost and kWh you entered.
+
+### 🧭 Debug report: real route points
+- The per-trip line now counts **different car positions**, not readings. The car repeats its last known position in every reading, so a trip with 283 readings can have only two distinct positions, which is why a car-only trip is a straight line.
 ## 0.32.0
 
 ### 🗺️ Estimated roads for trips without phone GPS (optional, off by default)

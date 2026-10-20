@@ -323,3 +323,43 @@ func TestAWakeReadingWithNoSpeedDoesNotStartATripUntilTheOdometerMoves(t *testin
 		t.Fatalf("a car that has moved starts a trip: %+v", ts)
 	}
 }
+
+func chargeReading(ts time.Time, state, plug string, soc float64) *ford.State {
+	st := reading(ts, "OFF", 100, soc)
+	st.ChargeState, st.Plug = state, plug
+	lat, lon := 44.76, -85.62
+	st.Lat, st.Lon = &lat, &lon
+	return st
+}
+
+func TestAPausedChargeThatResumesIsOneSessionButAnUnpluggedOneIsNot(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now().Add(-3 * time.Hour)
+	at := func(min int) time.Time { return t0.Add(time.Duration(min) * time.Minute) }
+	d.Process(chargeReading(at(0), "IN_PROGRESS", "CONNECTED", 38))
+	d.Process(chargeReading(at(39), "IN_PROGRESS", "CONNECTED", 46))
+	d.Process(chargeReading(at(40), "NOT_READY", "CONNECTED", 46)) // a pause
+	if cs, _ := s.ListCharges(10); len(cs) != 1 || cs[0].Open {
+		t.Fatalf("paused, so the session is closed for now: %+v", cs)
+	}
+	d.Process(chargeReading(at(50), "IN_PROGRESS", "CONNECTED", 48)) // resumed ten minutes later
+	d.Process(chargeReading(at(52), "FAULT", "CONNECTED", 48))
+	cs, _ := s.ListCharges(10)
+	if len(cs) != 1 || *cs[0].EndSoC != 48 || cs[0].StartSoC == nil || *cs[0].StartSoC != 38 {
+		t.Fatalf("one session from 38 to 48: %+v", cs)
+	}
+	// Unplugged and plugged in again is a new session.
+	d.Process(chargeReading(at(60), "NOT_READY", "DISCONNECTED", 48))
+	d.Process(chargeReading(at(62), "IN_PROGRESS", "CONNECTED", 48))
+	if cs, _ := s.ListCharges(10); len(cs) != 2 {
+		t.Fatalf("a new cable is a new session: %d", len(cs))
+	}
+	// A long gap is a new session too.
+	d.Process(chargeReading(at(70), "NOT_READY", "CONNECTED", 50))
+	d.Process(chargeReading(at(100), "IN_PROGRESS", "CONNECTED", 50))
+	if cs, _ := s.ListCharges(10); len(cs) != 3 {
+		t.Fatalf("half an hour later is a new session: %d", len(cs))
+	}
+}
