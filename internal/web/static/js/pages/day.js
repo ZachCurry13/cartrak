@@ -17,6 +17,7 @@ const clock = (ts, tz) => new Date(ts * 1000).toLocaleTimeString([], { hour: 'nu
 
 // The day in words: how long was driven and stood still, how many stops, what was charged and what it cost.
 function summaryCard(x) {
+  const atHome = x.events.filter((v) => v.kind === 'charging' && v.where === 'home').length;
   const s = x.summary, t = x.totals, e = x.energy, cur = x.currency;
   if (!s.trips && !s.sessions) return null;
   const lines = [];
@@ -25,7 +26,7 @@ function summaryCard(x) {
   if (s.sessions) {
     const kind = s.fastSessions ? `${s.fastSessions} fast${s.sessions - s.fastSessions ? ` and ${s.sessions - s.fastSessions} slow` : ''}` : 'slow';
     const price = e.cost > 0 ? `, which cost ${s.estimated ? 'about ' : ''}${money(cur, e.cost)}${s.receipts && !s.estimated ? ' (from your receipts)' : s.receipts ? ` (${s.receipts} from receipts, ${s.estimated} worked out)` : ''}` : '';
-    lines.push(`You charged ${plural(s.sessions, 'time')} (${kind}) for ${hm(s.chargeSec)}, adding ${num(e.addedKwh, 0, ' kWh')} at an average of ${num(s.avgKw, 0, ' kW')} (peak ${num(s.peakKw, 0, ' kW')})${price}.`);
+    lines.push(`You charged ${plural(s.sessions, 'time')} (${kind}${atHome ? `; ${atHome === 1 ? 'one' : atHome} at home` : ''}) for ${hm(s.chargeSec)}, adding ${num(e.addedKwh, 0, ' kWh')} at an average of ${num(s.avgKw, 0, ' kW')} (peak ${num(s.peakKw, 0, ' kW')})${price}.`);
     if (s.unpriced) lines.push(`${plural(s.unpriced, 'session')} could not be priced. Set your price per kWh in More, Settings, or enter what you paid on the Charging page.`);
   }
   const bits = [
@@ -52,15 +53,16 @@ export default async function day(root, [date, action], session) {
     const picker = h('input', { type: 'date', value: x.date, 'aria-label': 'Pick a day', style: 'max-width:12em' });
     picker.addEventListener('change', () => { if (picker.value) location.hash = `#/day/${picker.value}`; });
     const stops = x.events.filter((v) => v.kind !== 'driving');
+    const roadCharges = stops.filter((v) => v.kind === 'charging' && v.where !== 'home').length; // charging stops away from home; a charge at home is not a stop
     const stopNo = new Map();
     let n = 0;
     for (const v of x.events) if (v.kind !== 'driving' && v.lat != null && v.lon != null) stopNo.set(v, ++n);
     const tiles = h('div', { class: 'dtiles day' },
-      stat('Distance', dist(t.km, 0)), stat('Driving', hm(t.drivingSec)),
-      e.addedKwh > 0 ? stat('Charged', `${num(e.addedKwh, 0, ' kWh')} · ${hm(t.chargingSec)}`) : null,
-      e.cost > 0 ? stat('Charging cost', money(x.currency, e.cost)) : null,
-      e.usedKwh > 0 ? stat('Efficiency', effSpan(e.usedKm, e.usedKwh)) : null,
-      stat('Stops', stops.filter((v) => v.kind === 'charging').length ? `${stops.filter((v) => v.kind === 'charging').length} charging` : String(stops.length)));
+      stat('🛣️ Distance', dist(t.km, 0)), stat('⏱️ Driving', hm(t.drivingSec)),
+      e.addedKwh > 0 ? stat('⚡ Charged', `${num(e.addedKwh, 0, ' kWh')} · ${hm(t.chargingSec)}`) : null,
+      e.cost > 0 ? stat('💲 Charging cost', money(x.currency, e.cost)) : null,
+      e.usedKwh > 0 ? stat('🔋 Efficiency', effSpan(e.usedKm, e.usedKwh)) : null,
+      stat('🛑 Stops', roadCharges ? `${roadCharges} charging` : String(stops.filter((v) => v.kind !== 'charging').length || stops.length)));
     let map = null;
     if (mc.enabled && x.routes.length) {
       const m = createMap(mc, { height: 340 });

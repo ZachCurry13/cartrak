@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.38.0
+
+### 🛑 Stops are stops on the road
+- **A charge at home is no longer counted as a stop.** The Day view's Stops tile and the numbered stops only count charging away from home, and the written summary says how many of the charges were at home ("7 times (6 fast and 1 slow; one at home)").
+
+### ✨ A livelier Trips list
+- Each drive is now a card with a **little picture of its route** (green where it began, red where it ended), a big distance, the time and place, a **battery bar** showing the level it ended at and the stretch it used, and an **efficiency badge** that turns green or red when the drive was clearly better or worse than the rest of the list. The category sits on the right with a round **Share** button, and a stripe down the left edge takes the category's colour. The Day view's tiles have icons too.
+
 ## 0.37.1
 
 ### 🔧 Fixes

@@ -1,6 +1,8 @@
 import { h, emptyState, stat, catChip, chip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
 import { categoryList, catLabel } from '../categories.js';
+import { tripCard } from '../tripcard.js';
+import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { monthsCard } from '../rangeband.js';
@@ -42,6 +44,9 @@ export default async function trips(root, _a, session) {
     const unlabelled = ts.filter((x) => !x.open && x.categorySource === 'default').length;
     review.replaceChildren(...(admin && unlabelled ? [h('a', { class: 'banner notice', href: '#/review', style: 'display:block' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to review. Tap to label them.`)] : []));
     paintList();
+    if (!isSaver()) { // the little route pictures arrive a moment later, so the list is there at once
+      api(`/api/trips/routes?${q()}&limit=100`).then((rs) => { thumbs = new Map(rs.map((r) => [r.id, r.points])); if (lastTs === ts) paintList(); }).catch(() => {});
+    }
     list.hidden = view === 'map';
     mapBox.hidden = view !== 'map';
     if (view === 'map') mapBox.replaceChildren(overview(await api(`/api/trips/routes?${q()}`)));
@@ -66,15 +71,9 @@ export default async function trips(root, _a, session) {
     m.show({ routes: routes.map((r) => ({ points: r.points, color: COLOR[r.category] || COLOR.personal, width: 4, opacity: 0.85, onClick: () => { location.hash = `#/trip/${r.id}`; } })) });
     return h('div', {}, m.el, h('p', { class: 'muted' }, h('span', { class: 'chip work' }, 'work'), ' ', h('span', { class: 'chip personal' }, 'personal'), '  Tap a route to open the trip.'));
   }
-  // ' · 2.44 mi/kWh' as a tappable piece, or nothing when the trip has no usable energy figure.
-  const effPart = (t) => { const e = effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''); return e.nodeType === 3 ? [] : [' · ', e]; };
-  const row = (t) => h('a', { class: 'card', href: sel.state.on ? '#' : `#/trip/${t.id}`, onclick: sel.state.on ? (e) => { e.preventDefault(); if (sel.eligible(t)) sel.toggle(t); } : null,
-    style: `display:block;color:inherit;text-decoration:none${sel.picked.has(t.id) ? ';border-color:var(--accent)' : sel.state.on && !sel.eligible(t) ? ';opacity:.5' : ''}` },
-    h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, sel.picked.has(t.id) ? '✓ ' : '', t.open ? 'In progress' : dist(t.distanceKm)), t.journeyId ? chip('work', 'journey') : null, ' ', catChip(t),
-      admin && !t.open && !sel.state.on ? h('button', { class: 'sec', type: 'button', style: 'min-height:36px;padding:2px 10px', 'aria-label': 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } }, 'Share') : null),
-    h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}`, ...effPart(t)),
-    t.startPlace || t.endPlace ? h('div', { class: 'muted' }, `${t.startPlace || '…'} → ${t.endPlace || '…'}`) : null,
-    t.notes ? h('div', { class: 'muted' }, t.notes) : null);
+  let thumbs = null;
+  const avgEfficiency = () => { let km = 0, kwh = 0; for (const x of lastTs) if (x.energyKwh > 0 && x.distanceKm > 1) { km += x.distanceKm; kwh += x.energyKwh; } return kwh > 0 ? km / kwh : null; };
+  const row = (x) => tripCard(x, { sel, admin, thumbs, avgKmPerKwh: avgEfficiency() });
   const selectRow = h('p');
   const review = h('div');
   const estBar = h('div');
