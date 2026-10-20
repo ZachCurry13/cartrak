@@ -6,6 +6,12 @@
 - A parked car is only asked every ten minutes, so a charge that began just after a reading was first seen part-way through, and its session started too late: too high a battery level, too little energy, too short. CarTrak now moves the start back to the last reading before it when the battery had clearly risen, and estimates the start time from the charge power. Use **Fix a day** to correct older sessions.
 - **kWh from the charger** now fills itself in when a session ends, from the car's own count of what the charger delivered, when that count fits what went into the battery. A figure you typed is never replaced.
 
+### 🧑‍🏫 A guided tour
+- The **?** at the top now starts a two-minute guided tour. Each step opens a page and lights up the part it explains (the Trips tab, a trip card, the More button, the search and inbox buttons), with a sheet showing the step, Back, Next and Skip. Administrators also get steps for Reports, Notifications and Cars. It is also under **More, How to use CarTrak**. The Help page (quick settings and a checklist) is still there, under **More, Help and quick settings**, and has a button to start the tour.
+
+### 🔋 A steadier battery capacity chart
+- The car's own capacity estimate moves a few percent with the battery temperature and the charge level. The chart on Health now shows the middle reading of each day instead of the average, so a few odd readings no longer pull the line around.
+
 ### 🧭 Trip places no longer cut off
 - On the Trips list, the start and end now sit on two lines that wrap, so a long township name is never cut off with "…". A trip that ended where it began shows the place once.
 

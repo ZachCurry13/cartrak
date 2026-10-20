@@ -22,7 +22,7 @@ Flags: the 12 V battery is marked **Check** below 11.9 V or 50 percent charge, a
 **The 12 V percentage is the car's estimate, not a test.** If a shop has tested the battery and it is fine, an admin can tap **It was tested and is fine** under the 12 V battery. That quiets its warnings and its push alert for 90 days (the numbers still show), and **Resume warnings** turns them back on.
 
 Honest limits:
-- **Battery health is an estimate.** Ford does not send a state-of-health figure. The estimated capacity is the car's own number; CarTrak charts it so you can watch for a steady fall over months. It needs a couple of days of readings before a trend appears.
+- **Battery health is an estimate.** Ford does not send a state-of-health figure. The estimated capacity is the car's own number; CarTrak charts it so you can watch for a steady fall over months. The car's figure moves a few percent with the battery temperature and the charge level, so the chart shows the middle reading of each day rather than the average, which a few odd readings would pull around. It needs a couple of days of readings before a trend appears.
 - **Trouble codes** appear only when Ford reports one. "None reported" means Ford reported none; it is not a full scan. Reading every code and live battery cell voltages needs an OBD-II adapter, which CarTrak does not use yet.
 - **Read only.** The Ford API CarTrak uses cannot send commands (start, lock, charge schedules). It can read them.
 

@@ -138,3 +138,17 @@ header h1{flex:0 0 auto}
 .mrow svg{width:24px;height:24px}
 
 .offbar{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);z-index:30;margin:0 16px;padding:8px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--warn);color:var(--text);font-size:.85rem;text-align:center}
+
+/* guided tour */
+.tour{position:fixed;inset:0;z-index:60}
+.tourdim{position:absolute;inset:0}
+.tourdim.solid{background:rgba(0,0,0,.55)}
+.tourspot{position:absolute;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.55);outline:2px solid var(--accent);pointer-events:none;transition:left .2s,top .2s,width .2s,height .2s}
+.toursheet{position:absolute;left:0;right:0;margin:0 auto;max-width:560px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(0,0,0,.35)}
+.toursheet.bottom{bottom:0}
+.toursheet.top{top:env(safe-area-inset-top,0px);border-radius:0 0 18px 18px;padding-top:14px;padding-bottom:14px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.tourtop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tourskip{background:none;border:0;color:var(--text);font-weight:700;padding:10px 4px;min-height:44px}
+.tourbody h2{margin:6px 0 6px;font-size:1.25rem}.tourbody p{margin:0 0 10px;line-height:1.5}
+.tourdots{display:flex;gap:4px;margin:8px 0 12px}.tourdots i{flex:1 1 0;height:5px;border-radius:3px;background:var(--line)}.tourdots i.on{background:var(--accent)}
+.tournav{display:flex;justify-content:space-between;gap:12px}.tournav button{min-width:96px;min-height:44px}

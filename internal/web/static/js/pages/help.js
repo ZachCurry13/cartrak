@@ -1,6 +1,7 @@
 import { h, chip, isMetric, setMetric, getTheme, setTheme, applyTheme } from '../ui.js';
 import { api } from '../api.js';
 import { MODES, getPref, setPref } from '../mode.js';
+import { startTour } from '../tourui.js';
 
 const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 
@@ -44,5 +45,6 @@ export default async function help(root, _a, session) {
       ['More', 'Settings, people, cars, backups and this help.']].map(([t, b]) => h('div', { class: 'row' }, h('b', {}, t), h('span', { class: 'muted grow', style: 'flex-basis:14em' }, b))),
     h('p', {}, h('a', { href: '#/guide' }, 'Everything CarTrak can do'), ' · ', h('a', { href: '#/status' }, 'Is everything working?'), ' · ', h('a', { href: '#/about' }, "What's new")));
 
-  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Help')), quick, checklist, tabs);
+  const tour = h('section', { class: 'card' }, h('h2', {}, 'Guided tour'), h('p', { class: 'muted' }, 'A two-minute walk through each part of CarTrak. Tap the ? at the top any time to run it again.'), h('p', {}, h('button', { type: 'button', onclick: () => startTour(session) }, 'Start the tour')));
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Help')), tour, quick, checklist, tabs);
 }

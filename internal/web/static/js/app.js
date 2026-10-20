@@ -4,6 +4,7 @@ import { api, AuthError } from './api.js';
 import { loginPage } from './pages/login.js';
 import { startRefresh, effective } from './mode.js';
 import { cached } from './offline.js';
+import { startTour } from './tourui.js';
 import { currentCar, setCar } from './car.js';
 import { routes } from './routes.js';
 import { loadCategories } from './categories.js';
@@ -65,6 +66,7 @@ async function loadCars() {
   session.me.role = session.me.siteRole === 'admin' || (here && here.level === 'owner') ? 'admin' : 'viewer';
   for (const id of ['srch', 'bell', 'help']) document.getElementById(id).hidden = !d.cars.length; // a person with no car yet still sees Help
   document.getElementById('srch').onclick = () => openSearch(session.me.role === 'admin');
+  document.getElementById('help').onclick = (e) => { e.preventDefault(); startTour(session); }; // the ? opens the guided tour; the Help page is in More
   refreshBell();
   const note = document.getElementById('carnote');
   note.hidden = !(here && here.theirs);

@@ -96,7 +96,7 @@ func traction(f map[string]any, t Trends) Section {
 	}
 	capKwh := num(f, "Estimated capacity", "kwh", "xevBatteryCapacity")
 	if capKwh != nil {
-		capKwh.Note = "The car's own estimate of what the battery can hold now. Watch it over months: a steady fall is normal ageing."
+		capKwh.Note = "The car's own estimate of what the battery can hold now. It moves a few percent with the temperature and the charge level, so the chart shows the middle reading of each day. Watch it over months: a steady fall is normal ageing."
 	}
 	status := text(f, "Battery status", "xevBatteryPerformanceStatus")
 	if status != nil {
@@ -111,7 +111,7 @@ func traction(f map[string]any, t Trends) Section {
 		num(f, "Voltage", "volts", "xevBatteryVoltage"), num(f, "Temperature", "tempC", "xevBatteryTemperature"),
 		num(f, "Current", "amps", "xevBatteryIoCurrent"), num(f, "Range now", "km", "xevBatteryRange"),
 		num(f, "Range when full", "km", "xevBatteryMaximumRange"), num(f, "Drive motor voltage", "volts", "xevTractionMotorVoltage")),
-		Series: series(t, "capacityKwh", "Estimated capacity, daily average", "kwh")}
+		Series: series(t, "capacityKwh", "Estimated capacity, middle reading of each day", "kwh")}
 }
 
 // engine is for cars that burn fuel: oil life, fuel and engine temperatures.

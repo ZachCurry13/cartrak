@@ -43,3 +43,29 @@ func TestDailySeriesAveragesPerDayAndKeepsNewColumns(t *testing.T) {
 		t.Fatalf("new columns did not round trip: %+v", x)
 	}
 }
+
+func TestDailyMedianIgnoresAFewOddReadings(t *testing.T) {
+	s := openTemp(t)
+	day := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
+	v := func(x float64) *float64 { return &x }
+	for i, kwh := range []float64{90.2, 90.4, 85.0, 90.3, 96.0} { // two odd readings among five
+		st := &ford.State{TS: day.Add(time.Duration(i) * time.Minute), CapacityKwh: v(kwh), Raw: []byte(`{}`)}
+		if _, err := s.SaveState("test", st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	st := &ford.State{TS: day.Add(24 * time.Hour), CapacityKwh: v(89), Raw: []byte(`{}`)}
+	if _, err := s.SaveState("test", st); err != nil {
+		t.Fatal(err)
+	}
+	days, err := s.DailyMedian("capacityKwh", 0)
+	if err != nil || len(days) != 2 {
+		t.Fatalf("days = %+v, %v", days, err)
+	}
+	if d := days[0]; d.Avg != 90.3 || d.Min != 85 || d.Max != 96 || d.N != 5 {
+		t.Fatalf("the middle reading, not the average: %+v", d)
+	}
+	if d := days[1]; d.Avg != 89 || d.N != 1 {
+		t.Fatalf("a day with one reading: %+v", d)
+	}
+}

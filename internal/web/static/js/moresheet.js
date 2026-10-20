@@ -1,5 +1,6 @@
 import { h } from './ui.js';
 import { api } from './api.js';
+import { startTour } from './tourui.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const icon = (d) => {
@@ -43,7 +44,8 @@ export function openMore(session) {
     h('div', { class: 'mhead' }, h('h2', {}, 'More'), h('button', { class: 'ico', type: 'button', 'aria-label': 'Close', onclick: close }, icon('M6 6l12 12M18 6L6 18'))),
     h('div', { class: 'mgrid' }, ...TILES.filter((t) => show(t[3])).map(tile)),
     h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0 6px' }),
-    row('o12,12,9|M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17.2v.1', 'How to use CarTrak', { href: '#/help', onclick: close }),
+    row('o12,12,9|M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17.2v.1', 'How to use CarTrak (guided tour)', { href: '#', onclick: (e) => { e.preventDefault(); close(); startTour(session); } }),
+    row('M4 6h16M4 12h16M4 18h10', 'Help and quick settings', { href: '#/help', onclick: close }),
     row('M4 6h16M4 12h16M4 18h10', 'Everything else in More', { href: '#/settings', onclick: close }),
     row('M8 8h8v6a4 4 0 01-8 0zM9 4l1.5 2M15 4l-1.5 2M4 12h4M16 12h4M5 19l3-2M19 19l-3-2', 'Report a problem or idea', { href: 'https://github.com/ZachCurry13/cartrak/issues/new', target: '_blank', rel: 'noopener', onclick: close }),
     row('M9 21H5V3h4M16 17l5-5-5-5M21 12H9', 'Sign out', { href: '#', onclick: async (e) => { e.preventDefault(); try { await api('/api/logout', { method: 'POST' }); } catch (err) { /* signed out anyway */ } location.hash = '#/'; location.reload(); } }));

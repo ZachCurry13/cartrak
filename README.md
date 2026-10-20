@@ -134,6 +134,9 @@ More detail in [docs/configuration.md](docs/configuration.md).
 - Maps: tiles are fetched by the CarTrak server and cached on disk, so browsers never contact the map provider; only signed-in people can load tiles. Switch maps off in Settings for no map requests at all.
 - Phone tracking tokens are stored only as a hash and can be removed at any time (More -> Phone tracking); phones can only send data, never read it.
 
+## Guided tour
+Tap the **?** at the top of the app (or **More, How to use CarTrak**) for a two-minute guided tour: each step opens a page and lights up the part it explains, with Back, Next and Skip. The Help page, under More, has quick settings and a checklist.
+
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
 [Configuration](docs/configuration.md) · [Road trips and charging](docs/road-trips-and-charging.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Car data](docs/car-data.md) · [Vehicle health](docs/vehicle-health.md) · [Several cars and people](docs/several-cars.md) · [Backup and security](docs/backup.md) · [Places and maintenance](docs/places-and-maintenance.md) · [Sharing](docs/sharing.md) · [Home Assistant](docs/home-assistant.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)

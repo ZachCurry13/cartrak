@@ -31,7 +31,11 @@ func (s *Server) vehicleHealth(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	trends := vhealth.Trends{}
 	for name, days := range map[string]int{"battery12v": 90, "capacityKwh": 365, "oilLifePct": 365} {
-		if d, err := s.S.DailySeries(name, now.AddDate(0, 0, -days).Unix()); err == nil {
+		daily := s.S.DailySeries
+		if name == "capacityKwh" {
+			daily = s.S.DailyMedian // the car's own estimate wanders, so show the middle reading of each day
+		}
+		if d, err := daily(name, now.AddDate(0, 0, -days).Unix()); err == nil {
 			trends[name] = d
 		}
 	}
