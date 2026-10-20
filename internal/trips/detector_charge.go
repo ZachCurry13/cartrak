@@ -33,6 +33,7 @@ func (d *Detector) charge(st *ford.State) error {
 			c.PeakKw = *st.ChargeKw
 		}
 		c.Station = stationOf(st)
+		d.backfillStart(c, st)
 		return d.S.CreateCharge(c)
 	}
 	if open == nil {
@@ -54,7 +55,13 @@ func (d *Detector) charge(st *ford.State) error {
 	if s := stationOf(st); s != "" {
 		open.Station = s
 	}
-	return d.S.UpdateCharge(open)
+	if err := d.S.UpdateCharge(open); err != nil {
+		return err
+	}
+	if !open.Open {
+		d.noteChargerKwh(open, st)
+	}
+	return nil
 }
 
 // Reclassify re-runs the rules over every trip that was not set by hand.

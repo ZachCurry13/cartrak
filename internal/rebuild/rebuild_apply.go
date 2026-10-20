@@ -41,7 +41,10 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 			}
 		}
 		if best != nil {
-			n.Kind, n.ChargerKwh, n.ActualCost = best.Kind, best.ChargerKwh, best.ActualCost
+			n.Kind, n.ActualCost = best.Kind, best.ActualCost
+			if best.ChargerKwh != nil { // a figure typed in beats the car's own count that the replay may have found
+				n.ChargerKwh = best.ChargerKwh
+			}
 			if n.Station == "" {
 				n.Station = best.Station
 			}

@@ -18,9 +18,12 @@ type Detector struct {
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
 	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
 
-	lastReading    int64   // time of the previous reading this detector saw
-	lastDisconnect int64   // the last time a reading showed the cable unplugged
-	lastKw         float64 // the charging power the previous reading reported
+	lastReading    int64    // time of the previous reading this detector saw
+	lastDisconnect int64    // the last time a reading showed the cable unplugged
+	lastKw         float64  // the charging power the previous reading reported
+	lastSoC        *float64 // the previous reading's battery level and energy, and whether it was charging
+	lastKwh        *float64
+	lastCharging   bool
 }
 
 // Driving reports whether a reading looks like the car is in use. A car that is taking charge and not moving is
@@ -40,6 +43,7 @@ func (d *Detector) Process(st *ford.State) error {
 	defer func() {
 		d.lastReading = st.TS.Unix()
 		d.lastKw = 0
+		d.lastSoC, d.lastKwh, d.lastCharging = st.SoCPct, st.EnergyKwh, charging(st)
 		if st.ChargeKw != nil {
 			d.lastKw = *st.ChargeKw
 		}

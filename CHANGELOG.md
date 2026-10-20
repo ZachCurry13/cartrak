@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.40.0
+
+### 🔌 Charges that start between two readings
+- A parked car is only asked every ten minutes, so a charge that began just after a reading was first seen part-way through, and its session started too late: too high a battery level, too little energy, too short. CarTrak now moves the start back to the last reading before it when the battery had clearly risen, and estimates the start time from the charge power. Use **Fix a day** to correct older sessions.
+- **kWh from the charger** now fills itself in when a session ends, from the car's own count of what the charger delivered, when that count fits what went into the battery. A figure you typed is never replaced.
+
+### 🧭 Trip places no longer cut off
+- On the Trips list, the start and end now sit on two lines that wrap, so a long township name is never cut off with "…". A trip that ended where it began shows the place once.
+
 ## 0.39.1
 
 ### 🕒 Old door reports are labelled as old

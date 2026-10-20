@@ -40,7 +40,7 @@ a.tcard:hover,a.tcard:focus-visible{background:var(--card2)}
 .tmain{min-width:0;display:flex;flex-direction:column;gap:3px}
 .tline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .tbig{font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
-.tplaces{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tplaces{display:flex;flex-direction:column;gap:1px;overflow-wrap:anywhere}
 .tside{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .sbar{position:relative;flex:1 1 80px;min-width:70px;height:9px;border-radius:5px;background:var(--line);overflow:hidden}
 .sbar i{position:absolute;top:0;bottom:0;display:block}

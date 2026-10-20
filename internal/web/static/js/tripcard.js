@@ -40,7 +40,9 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
   const picked = sel.picked.has(t.id);
   // where it began and ended: a place you named, otherwise the city
   const from = t.startPlace || t.startCity, to = t.endPlace || t.endCity;
-  const places = from || to ? `${from || '…'} → ${to || (t.open ? 'on the way' : '…')}` : '';
+  // two lines that wrap, so a long township name is never cut off; one line when it ended where it began
+  const end = to || (t.open ? 'on the way' : '');
+  const places = from && from === end ? [h('span', {}, from)] : from || end ? [h('span', {}, from || '…'), h('span', {}, `→ ${end || '…'}`)] : null;
   const share = admin && !t.open && !sel.state.on
     ? h('button', { class: 'ico sm', type: 'button', 'aria-label': 'Share this trip', title: 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } },
       (() => { const s = svgEl('svg', { viewBox: '0 0 24 24' }); s.append(svgEl('path', { d: 'M12 3v12M8 7l4-4 4 4M5 12v8h14v-8' })); return s; })()) : null;
@@ -51,7 +53,7 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
     h('div', { class: 'tline' }, h('span', { class: 'tbig' }, picked ? '✓ ' : '', t.open ? 'In progress' : dist(t.distanceKm)), h('span', { class: 'muted' }, duration(t.startTs, t.endTs)),
       t.distanceSrc ? chip('work', 'corrected') : null, t.journeyId ? chip('work', 'journey') : null),
     h('div', { class: 'muted' }, when(t.startTs, t.tz)),
-    places ? h('div', { class: 'muted tplaces' }, places) : null,
+    places ? h('div', { class: 'muted tplaces' }, ...places) : null,
     h('div', { class: 'tline' }, battery(t), kmPerKwh ? h('span', { class: `pill ${grade}` }, effText) : null),
     t.notes ? h('div', { class: 'muted' }, t.notes) : null),
   h('div', { class: 'tside' }, catChip(t), share));
