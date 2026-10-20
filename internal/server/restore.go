@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +17,7 @@ const maxRestoreBytes = 200 << 30
 // restoreInfo says what is waiting to be restored: an uploaded backup, and any .db files copied into the
 // restore folder by hand (for backups too big to upload).
 func (s *Server) restoreInfo(w http.ResponseWriter, r *http.Request) {
-	dir := store.RestoreDir(s.DataDir)
+	dir := s.restoreDir()
 	out := map[string]any{"folder": "restore", "files": []string{}}
 	if info, err := store.InspectBackup(filepath.Join(dir, store.PendingName)); err == nil {
 		out["pending"] = info
@@ -38,7 +39,7 @@ func (s *Server) restoreInfo(w http.ResponseWriter, r *http.Request) {
 // restoreUpload receives a backup (the file as the request body), checks it, and keeps it waiting. Nothing is
 // replaced yet. Admin only.
 func (s *Server) restoreUpload(w http.ResponseWriter, r *http.Request) {
-	dir := store.RestoreDir(s.DataDir)
+	dir := s.restoreDir()
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		fail(w, 500, "could not create the restore folder")
 		return
@@ -64,7 +65,7 @@ func (s *Server) restoreUseFile(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Name string `json:"name"`
 	}
-	dir := store.RestoreDir(s.DataDir)
+	dir := s.restoreDir()
 	if decode(r, &in) != nil || in.Name == "" || in.Name != filepath.Base(in.Name) || !strings.HasSuffix(in.Name, ".db") || in.Name == store.PendingName {
 		fail(w, 400, "choose a .db file from the restore folder")
 		return
@@ -96,7 +97,7 @@ func (s *Server) stagePending(w http.ResponseWriter, tmp string) {
 
 // restoreDiscard throws away the waiting backup. Admin only.
 func (s *Server) restoreDiscard(w http.ResponseWriter, r *http.Request) {
-	dir := store.RestoreDir(s.DataDir)
+	dir := s.restoreDir()
 	_ = os.Remove(filepath.Join(dir, store.ApplyFlag))
 	_ = os.Remove(filepath.Join(dir, store.PendingName))
 	ok(w, "discarded")
@@ -105,6 +106,10 @@ func (s *Server) restoreDiscard(w http.ResponseWriter, r *http.Request) {
 // restoreApply confirms the restore and stops CarTrak. On the next start the backup is swapped in and the
 // current data is kept beside it. It needs the owner to type RESTORE. Admin only.
 func (s *Server) restoreApply(w http.ResponseWriter, r *http.Request) {
+	if s.CarID != 0 && !siteAdmin(r) { // applying stops CarTrak for every car, so it is not for the owner of one of them
+		fail(w, 403, "applying a restore stops CarTrak for everyone; ask an administrator of the whole installation to apply it")
+		return
+	}
 	var in struct {
 		Confirm string `json:"confirm"`
 	}
@@ -112,7 +117,7 @@ func (s *Server) restoreApply(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "type RESTORE to confirm")
 		return
 	}
-	dir := store.RestoreDir(s.DataDir)
+	dir := s.restoreDir()
 	if _, err := store.InspectBackup(filepath.Join(dir, store.PendingName)); err != nil {
 		fail(w, 400, "there is no valid backup waiting: "+err.Error())
 		return
@@ -129,4 +134,13 @@ func (s *Server) restoreApply(w http.ResponseWriter, r *http.Request) {
 	if s.Exit != nil {
 		go func() { time.Sleep(700 * time.Millisecond); s.Exit() }()
 	}
+}
+
+// restoreDir is where this car's backup waits: the restore folder of the data folder for the first car, and a folder in
+// the car's own folder for the others, so a backup can only replace the car it was uploaded for.
+func (s *Server) restoreDir() string {
+	if s.CarID <= 1 {
+		return store.RestoreDir(s.DataDir)
+	}
+	return filepath.Join(s.DataDir, "cars", strconv.FormatInt(s.CarID, 10), "restore")
 }

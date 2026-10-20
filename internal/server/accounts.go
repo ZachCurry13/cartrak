@@ -102,7 +102,20 @@ func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, us)
+	type row struct {
+		store.User
+		SeesFirst bool `json:"seesFirst"` // may open the first car
+	}
+	cars, _ := s.core().ListCars()
+	out := make([]row, 0, len(us))
+	for _, u := range us {
+		x := row{User: u}
+		if len(cars) > 0 {
+			x.SeesFirst = s.core().Access(u.ID, cars[0].ID) != ""
+		}
+		out = append(out, x)
+	}
+	ok(w, out)
 }
 
 func (s *Server) addUser(w http.ResponseWriter, r *http.Request) {

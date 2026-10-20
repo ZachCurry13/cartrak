@@ -79,6 +79,10 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 			fail(w, 400, "unknown setting "+k)
 			return
 		}
+		if d.Group == "remote" && !siteAdmin(r) { // remote access belongs to the whole installation, not to one car
+			fail(w, 403, "only an administrator of the whole installation can change remote access")
+			return
+		}
 		if s.Cfg.Locked(k) {
 			locked = append(locked, d.Label)
 		}
@@ -86,6 +90,9 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 	for _, k := range b.Clear {
 		if d, known := settings.Known(k); !known {
 			fail(w, 400, "unknown setting "+k)
+			return
+		} else if d.Group == "remote" && !siteAdmin(r) {
+			fail(w, 403, "only an administrator of the whole installation can change remote access")
 			return
 		} else if s.Cfg.Locked(k) {
 			locked = append(locked, d.Label)

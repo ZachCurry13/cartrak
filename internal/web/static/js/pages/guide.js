@@ -28,6 +28,7 @@ export const GROUPS = [
   ['Alerts and sharing', [
     ['#/notifications', 'Notifications', 'Charging, plug-in reminders, trips, tires, service due, weekly summary and more, on this phone.'],
     ['#/trips', 'Share a trip', 'Open a trip or journey and use Share to make a public link you can turn off.'],
+    ['#/cars', 'Cars', 'Follow more than one car, switch between them, add a car of your own, and choose who can see each one.'],
     ['#/security', 'Security', 'Who is signed in, the sign-in log, and your shared links (admins).'],
   ]],
   ['Looking after CarTrak', [

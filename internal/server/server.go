@@ -110,6 +110,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/security", s.authSite(true, s.securityInfo))
 	m.HandleFunc("DELETE /api/security/sessions/{id}", s.authSite(true, s.revokeSession))
 	m.HandleFunc("GET /api/backup", s.auth(true, s.backupDownload))
+	m.HandleFunc("GET /api/backup/site", s.authSite(true, s.siteBackup))
 	m.HandleFunc("GET /api/storage", s.auth(true, s.storageInfo))
 	m.HandleFunc("POST /api/storage/trim", s.auth(true, s.storageTrim))
 	m.HandleFunc("GET /api/restore", s.auth(true, s.restoreInfo))

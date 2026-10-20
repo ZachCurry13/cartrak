@@ -120,3 +120,10 @@ sign-in and vehicle-consent pages, then redirects to your redirect address with 
 CarTrak exchanges the code for tokens at Ford's token address. The sign-in flow matches the one used by
 other FordConnect Query clients, such as the open-source
 [ha-fordconnect-query](https://github.com/marq24/ha-fordconnect-query) Home Assistant integration.
+
+## With several cars
+
+Every car you add uses the Ford app (client ID and secret) set on the first car, until a car has its own under
+**More, Settings**. Ford decides whether another person's Ford account may sign in to an app registered by someone else;
+if it refuses, the person registers their own app and enters its credentials on their car. See
+[several cars and people](several-cars.md).

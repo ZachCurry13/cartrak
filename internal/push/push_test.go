@@ -226,3 +226,25 @@ func TestEveryAlertIsReportedWithWhoItReached(t *testing.T) {
 		t.Fatalf("nobody asked for this one: %d %d", wanted, sent)
 	}
 }
+
+func TestNotifyTellsOnlyThePeopleWhoMaySeeTheCarAndNamesTheCar(t *testing.T) {
+	srv, got := fakeService(t, 201)
+	mine := device(t, 1, srv.URL, ChargeComplete)
+	mine.UserID = 7
+	theirs := device(t, 2, srv.URL, ChargeComplete)
+	theirs.UserID = 8
+	svc, _, _ := service(mine, theirs)
+	svc.Visible = func(uid int64) bool { return uid == 7 }
+	svc.CarName = func() string { return "Truck" }
+	var logged int
+	svc.Log = func(a Alert, devices, wanted, quiet, sent int) {
+		logged++
+		if a.Title != "Charging complete" || wanted != 1 || sent != 1 {
+			t.Errorf("the log keeps the plain title and counts only those who may see the car: %+v wanted=%d sent=%d", a, wanted, sent)
+		}
+	}
+	svc.Notify(context.Background(), Alert{Kind: ChargeComplete, Title: "Charging complete", Body: "80%"})
+	if got.hits != 1 || logged != 1 {
+		t.Fatalf("only one person may see this car: %d sends, %d logs", got.hits, logged)
+	}
+}

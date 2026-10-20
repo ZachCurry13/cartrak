@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.35.0
+
+### 🚗 Several cars and several people
+- **More, Cars.** CarTrak can follow more than one car (up to 6). Each car has its own database, settings, alerts and Ford link, so one car's history can never show up in another's. A selector at the top switches cars; each browser tab remembers its own.
+- **Each person sees only their cars.** Under **More, People** an administrator chooses, for each person, whether they see the first car and whether they may add a car of their own. A person who may add a car gives it a name and links it to their own Ford account. The owner of a car manages it (settings, Fix a day, backups, who can look) but not the people or remote access.
+- **Administrators can open any car** to help, and the owner of that car is told that an administrator looked, and when.
+- **Alerts go only to people who can see the car**, and name the car when you follow more than one.
+- **Backups.** A car's backup holds that car and no accounts, and a restore replaces only that car. Administrators can download a zip of everything. Applying a restore stops CarTrak for everyone, so only an administrator of the installation can confirm it.
+- **First start after updating.** CarTrak makes a shared database for the people, copies them in, and keeps a copy of your database from before, in the data folder under `backups`. Nothing else changes: you stay signed in and see the car you always did.
+- Details in [docs/several-cars.md](docs/several-cars.md).
+
+### 🛣️ Road estimates
+- When some trips could not be estimated, the message now says why (the routing service answered an error, no route, or the road found was a different length from the odometer).
+
 ## 0.34.0
 
 ### 🗺️ Day view opens details in place

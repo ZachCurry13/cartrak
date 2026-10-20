@@ -21,6 +21,7 @@ const EXTRA = [
   ['Home Assistant', 'More → Settings', '#/admin', 'A read-only feed of the car state for Home Assistant.', 'home assistant ha feed integration smart home sensor'],
   ['Cloudflare tunnel', 'More → Remote access', '#/remote', 'Reach CarTrak away from home.', 'cloudflare tunnel remote access away outside domain https'],
   ['Add family or a viewer', 'More → People', '#/people', 'Give family read-only accounts.', 'family viewer account user people password admin invite'],
+  ['Add or switch cars', 'More → Cars', '#/cars', 'Follow another car, switch between cars, and share a car.', 'car cars second vehicle switch add truck family another own'],
   ['Restore or download a backup', 'More → Backup', '#/backup', 'Save a copy of your data or put one back.', 'backup restore export download zip csv spreadsheet save copy'],
   ['Delete a bad trip', 'Trips → open the trip → Fix this trip', '#/trips', 'Delete a duplicate or close a trip that never ended.', 'delete remove bad trip duplicate close stuck'],
   ['Fix a day of trips', 'More → Fix a day', '#/repair', 'Redo a day of trips and charging from the stored readings.', 'fix rebuild repair day trips charging split road trip wrong'],

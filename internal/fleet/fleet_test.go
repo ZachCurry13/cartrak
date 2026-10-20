@@ -1,6 +1,8 @@
 package fleet
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -161,6 +163,12 @@ func TestEachCarSeesOnlyItsOwnDataAndPeopleSeeOnlyTheirCars(t *testing.T) {
 	if code, _ := cat.do("POST", "/api/poll", "", car("1")); code != 403 {
 		t.Fatalf("cat on car 1 = %d, want 403", code)
 	}
+	if code, _ := cat.do("PUT", "/api/admin/settings", `{"values":{"CARTRAK_TUNNEL_TOKEN":"stolen"}}`, car("3")); code != 403 {
+		t.Fatalf("an owner must not change remote access: %d", code)
+	}
+	if code, _ := cat.do("POST", "/api/restore/apply", `{"confirm":"RESTORE"}`, car("3")); code != 403 {
+		t.Fatalf("an owner must not stop CarTrak for everyone: %d", code)
+	}
 	if code, _ := cat.do("GET", "/api/users", "", nil); code != 403 {
 		t.Fatalf("an owner must not manage people: %d", code)
 	}
@@ -240,3 +248,95 @@ func TestCarCannotBeMadeBeyondTheLimitAndTheFirstCannotBeRemoved(t *testing.T) {
 }
 
 func itoa(n int64) string { b, _ := json.Marshal(n); return string(b) }
+
+func TestMigrationClearsTheOldAccountsAndBackupsCarryNone(t *testing.T) {
+	f, ts, _ := start(t)
+	if f.first.CountUsers() != 0 {
+		t.Fatal("the old copy of the accounts should be cleared once copied")
+	}
+	if f.Core.CountUsers() != 3 {
+		t.Fatalf("the core should hold the accounts: %d", f.Core.CountUsers())
+	}
+	ann := login(t, ts.URL, "ann")
+	if code, _ := ann.do("POST", "/api/cars", `{"name":"Truck"}`, nil); code != 200 {
+		t.Fatal("add car")
+	}
+	// a car's own backup has no accounts
+	req, _ := http.NewRequest("GET", ts.URL+"/api/backup", nil)
+	req.Header.Set("X-Car", "2")
+	resp, err := ann.c.Do(req)
+	if err != nil || resp.StatusCode != 200 {
+		t.Fatalf("backup: %v %v", err, resp)
+	}
+	b, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	p := filepath.Join(t.TempDir(), "b.db")
+	_ = os.WriteFile(p, b, 0o644)
+	info, err := store.InspectBackup(p)
+	if err != nil || len(info.Users) != 0 {
+		t.Fatalf("a car's backup must open and carry no accounts: %v %+v", err, info)
+	}
+	// the whole-installation zip has the core and every car
+	resp, err = ann.c.Get(ts.URL + "/api/backup/site")
+	if err != nil || resp.StatusCode != 200 {
+		t.Fatalf("site backup: %v %v", err, resp)
+	}
+	zb, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	zr, err := zip.NewReader(bytes.NewReader(zb), int64(len(zb)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	have := map[string]bool{}
+	for _, zf := range zr.File {
+		have[zf.Name] = true
+	}
+	for _, want := range []string{"core.db", "car-1.db", "car-2.db", "cars.json"} {
+		if !have[want] {
+			t.Fatalf("the zip is missing %s: %v", want, have)
+		}
+	}
+	// a person who is not a site administrator cannot take it
+	bob := login(t, ts.URL, "bob")
+	if code, _ := bob.do("GET", "/api/backup/site", "", nil); code != 403 {
+		t.Fatalf("site backup for a viewer = %d, want 403", code)
+	}
+}
+
+func TestEachCarsRestoreFolderIsItsOwn(t *testing.T) {
+	f, ts, dir := start(t)
+	ann := login(t, ts.URL, "ann")
+	if code, _ := ann.do("POST", "/api/cars", `{"name":"Truck"}`, nil); code != 200 {
+		t.Fatal("add car")
+	}
+	// put a backup of car 1 in car 2's restore folder and start the fleet again: it must be applied to car 2 only
+	cdir := filepath.Join(dir, "cars", "2")
+	if err := os.MkdirAll(filepath.Join(cdir, "restore"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	snap := filepath.Join(t.TempDir(), "snap.db")
+	if err := f.Runtime(1).S.BackupCar(snap, false); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(snap)
+	_ = os.WriteFile(filepath.Join(cdir, "restore", store.PendingName), data, 0o644)
+	_ = os.WriteFile(filepath.Join(cdir, "restore", store.ApplyFlag), []byte("1"), 0o644)
+	ts.Close()
+	f.Close()
+
+	cfg := f.Cfg
+	f2, err := New(cfg, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer func() { cancel(); f2.Close() }()
+	if err := f2.Run(ctx); err != nil {
+		t.Fatal(err)
+	}
+	t1, _ := f2.Runtime(1).S.ListTrips(store.TripFilter{Limit: 5})
+	t2, _ := f2.Runtime(2).S.ListTrips(store.TripFilter{Limit: 5})
+	if len(t1) != 1 || len(t2) != 1 {
+		t.Fatalf("car 2 should now hold the restored trip and car 1 keep its own: %d %d", len(t1), len(t2))
+	}
+}

@@ -1,3 +1,4 @@
+import { withCar } from './car.js';
 // Data mode: how much this device may use. Stored per device, so a phone on a
 // limited plan can use Data saver while the desktop stays on Normal or Live.
 //   normal : refresh every 30 s, full detail
@@ -34,7 +35,7 @@ export function startRefresh(load) {
   const open = () => {
     if (mode === 'live') {
       if (es || document.hidden) return;
-      es = new EventSource('/api/live');
+      es = new EventSource(withCar('/api/live'));
       es.addEventListener('reading', run);
       label('live');
     } else if (!timer) {

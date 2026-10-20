@@ -1,3 +1,4 @@
+import { withCar } from '../car.js';
 import { h, chip, nice, dist, speed, num, temp, ago, duration } from '../ui.js';
 import { api } from '../api.js';
 import { effective } from '../mode.js';
@@ -182,7 +183,7 @@ export default async function live(root, _a, session) {
   }
 
   function start() {
-    es = new EventSource('/api/live');
+    es = new EventSource(withCar('/api/live'));
     es.addEventListener('reading', (e) => { try { update(JSON.parse(e.data)); } catch (err) { /* ignore a bad frame */ } });
     es.onopen = () => { conn.className = 'chip ok'; conn.textContent = 'Live'; };
     es.onerror = () => { conn.className = 'chip bad'; conn.textContent = 'Reconnecting…'; };

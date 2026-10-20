@@ -21,6 +21,15 @@ const (
 
 type ctxKey struct{}
 
+type siteKey struct{}
+
+// siteAdmin says whether the signed-in person administers the whole installation, whatever their role for the car on
+// screen. A car's owner is an administrator of that car only.
+func siteAdmin(r *http.Request) bool {
+	v, _ := r.Context().Value(siteKey{}).(bool)
+	return v
+}
+
 func randToken() string {
 	b := make([]byte, 32)
 	_, _ = rand.Read(b)
@@ -88,6 +97,7 @@ func (s *Server) guard(admin, site bool, next http.HandlerFunc) http.HandlerFunc
 			fail(w, 401, "login required")
 			return
 		}
+		isSite := u.Role == "admin"
 		if !site {
 			role := s.carRole(u)
 			if role == "" {
@@ -110,7 +120,8 @@ func (s *Server) guard(admin, site bool, next http.HandlerFunc) http.HandlerFunc
 			fail(w, 403, "missing header")
 			return
 		}
-		next(w, r.WithContext(context.WithValue(r.Context(), ctxKey{}, u)))
+		ctx := context.WithValue(r.Context(), ctxKey{}, u)
+		next(w, r.WithContext(context.WithValue(ctx, siteKey{}, isSite)))
 	}
 }
 

@@ -4,6 +4,7 @@ import { api, AuthError } from './api.js';
 import { loginPage } from './pages/login.js';
 import { startRefresh, effective } from './mode.js';
 import { cached } from './offline.js';
+import { currentCar, setCar } from './car.js';
 
 const routes = {
   '': () => import('./pages/dashboard.js'),
@@ -48,12 +49,13 @@ const routes = {
   about: () => import('./pages/about.js'),
   status: () => import('./pages/status.js'),
   live: () => import('./pages/live.js'),
+  cars: () => import('./pages/cars.js'),
 };
 
 const view = document.getElementById('view');
 document.querySelector('.skip').addEventListener('click', (e) => { e.preventDefault(); view.focus(); });
 const tabs = document.getElementById('tabs');
-export const session = { me: null, about: null, vehicle: null, installPrompt: null };
+export const session = { me: null, about: null, vehicle: null, installPrompt: null, cars: [] };
 let stopRefresh = null;
 
 // Chrome/Android offers a one-tap install; keep the event for the Getting started page.
@@ -84,6 +86,27 @@ async function loadVehicle() {
   if (charging) charging.hidden = !!session.vehicle && !session.vehicle.plug;
 }
 
+// The cars this person can open. The one being looked at is remembered; if it is gone, the first is used. With more than one car
+// a switcher appears in the header, and an administrator looking at someone else's car is told so.
+async function loadCars() {
+  const d = await api('/api/cars');
+  session.cars = d.cars;
+  const ids = d.cars.map((c) => String(c.id));
+  if (ids.length && !ids.includes(currentCar())) setCar(ids[0]);
+  const sel = document.getElementById('carsel');
+  sel.hidden = d.cars.length < 2;
+  sel.replaceChildren(...d.cars.map((c) => h('option', { value: String(c.id), selected: String(c.id) === currentCar() }, c.name)));
+  sel.onchange = () => { setCar(sel.value); location.hash = '#/'; location.reload(); };
+  const here = d.cars.find((c) => String(c.id) === currentCar());
+  // The role that counts is the one for the car on screen: an owner manages their car, a viewer reads it. The role for the
+  // whole installation (people, remote access) stays as siteRole.
+  session.me.siteRole = session.me.siteRole || session.me.role;
+  session.me.role = session.me.siteRole === 'admin' || (here && here.level === 'owner') ? 'admin' : 'viewer';
+  const note = document.getElementById('carnote');
+  note.hidden = !(here && here.theirs);
+  note.textContent = here && here.theirs ? `You are looking at ${here.name} as an administrator. It is not your car, and its owner can see that you looked.` : '';
+}
+
 async function firstRunTour() {
   if (session.me.role !== 'admin' || store.get('welcomed')) return false;
   store.set('welcomed', '1');
@@ -101,11 +124,17 @@ async function render() {
   try {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));
-      await loadAbout();
-      await loadVehicle();
-      if (await firstRunTour()) return; // hashchange re-renders onto the tour
+      await loadCars();
+      if (!session.cars.length) { // a person who may bring a car but has none yet
+        tabs.hidden = true;
+        if (name !== 'cars') { location.hash = '#/cars'; return; }
+      } else {
+        await loadAbout();
+        await loadVehicle();
+        if (await firstRunTour()) return; // hashchange re-renders onto the tour
+      }
     }
-    tabs.hidden = false;
+    tabs.hidden = !session.cars.length;
     for (const a of tabs.querySelectorAll('a[href="#/health"], a[href="#/data"]')) a.hidden = session.me.role !== 'admin'; // viewers get the simple set of tabs
     const mod = await (routes[name] || routes[''])();
     view.replaceChildren();

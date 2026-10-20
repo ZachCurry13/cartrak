@@ -37,3 +37,9 @@ The address comes from the connection (or from Cloudflare when CarTrak is reache
 
 ## Export to spreadsheets
 **More, Backup, Export to spreadsheets** downloads one zip with every trip, every charging session, your named places and your service reminders as CSV files, with a short README. Open them in Excel or Sheets. It is for reading your data elsewhere, not a backup, and it cannot be restored. It shows where the car has been, so keep it private. Admins only.
+
+## With several cars
+
+A backup made on a car holds that car only, and no accounts (the people are kept in `core.db`, not in a car's database).
+Restoring replaces only that car. Administrators of the installation can also download a zip of the people and every car
+under **Backup, Download everything (all cars)**. See [several cars and people](several-cars.md).

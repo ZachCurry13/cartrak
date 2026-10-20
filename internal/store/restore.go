@@ -65,19 +65,15 @@ func InspectBackup(path string) (*BackupInfo, error) {
 		}
 	}
 	_ = db.QueryRow(`SELECT COALESCE(MIN(ts),0),COALESCE(MAX(ts),0) FROM samples`).Scan(&info.FirstReading, &info.LastReading)
-	rows, err := db.Query(`SELECT name FROM users ORDER BY id`)
-	if err != nil {
-		return nil, fmt.Errorf("that is not a CarTrak backup (no users table)")
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var n string
-		if rows.Scan(&n) == nil {
-			info.Users = append(info.Users, n)
+	// Backups from before several cars also list the accounts; newer ones keep the accounts in the core database instead.
+	if rows, err := db.Query(`SELECT name FROM users ORDER BY id`); err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var n string
+			if rows.Scan(&n) == nil {
+				info.Users = append(info.Users, n)
+			}
 		}
-	}
-	if len(info.Users) == 0 {
-		return nil, fmt.Errorf("that backup has no accounts, so nobody could sign in after restoring it")
 	}
 	return info, nil
 }
@@ -86,7 +82,12 @@ func InspectBackup(path string) (*BackupInfo, error) {
 // database being replaced is kept next to it as cartrak.db.before-restore-<time>. It reports whether a
 // restore happened.
 func ApplyPendingRestore(dataDir string) (bool, error) {
-	dir := RestoreDir(dataDir)
+	return ApplyPendingRestoreTo(RestoreDir(dataDir), filepath.Join(dataDir, "cartrak.db"))
+}
+
+// ApplyPendingRestoreTo does the same for one database file and the restore folder that belongs to it. Every car has
+// its own folder, so a backup of one car can only ever replace that car's database.
+func ApplyPendingRestoreTo(dir, live string) (bool, error) {
 	flag, pending := filepath.Join(dir, ApplyFlag), filepath.Join(dir, PendingName)
 	if _, err := os.Stat(flag); err != nil {
 		return false, nil
@@ -98,7 +99,6 @@ func ApplyPendingRestore(dataDir string) (bool, error) {
 	if _, err := InspectBackup(pending); err != nil {
 		return false, fmt.Errorf("the backup was not restored: %w", err)
 	}
-	live := filepath.Join(dataDir, "cartrak.db")
 	if _, err := os.Stat(live); err == nil {
 		keep := fmt.Sprintf("%s.before-restore-%d", live, time.Now().Unix())
 		if err := os.Rename(live, keep); err != nil {

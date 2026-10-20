@@ -38,3 +38,29 @@ func (s *Store) Backup(dest string, small bool) error {
 	_, err = db.Exec(`VACUUM`)
 	return err
 }
+
+// ClearIdentity removes the people, sign-ins and notification devices from a car's database. They live in the core
+// database now; this is used on the old copy left in the first car's database once it has been copied, and on backups of
+// a car, so that a car's backup never carries anyone's password.
+func (s *Store) ClearIdentity() error {
+	_, err := s.DB.Exec(`DELETE FROM sessions; DELETE FROM users; DELETE FROM signins; DELETE FROM push_subs;`)
+	return err
+}
+
+// BackupCar is Backup for one car of several: the copy carries no accounts.
+func (s *Store) BackupCar(dest string, small bool) error {
+	if err := s.Backup(dest, small); err != nil {
+		return err
+	}
+	db, err := sql.Open("sqlite", "file:"+filepath.ToSlash(dest))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	db.SetMaxOpenConns(1)
+	if _, err := db.Exec(`DELETE FROM users; DELETE FROM signins; DELETE FROM push_subs;`); err != nil {
+		return err
+	}
+	_, err = db.Exec(`VACUUM`)
+	return err
+}

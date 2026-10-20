@@ -4,7 +4,7 @@ import { sharesList } from '../sharecard.js';
 
 // Who has signed in, and which devices are signed in right now. A lost phone can be signed out here.
 export default async function security(root, _a, session) {
-  if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
+  if (session.me.siteRole !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   const box = h('div');
   const shares = h('div');
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Security')), box, shares);

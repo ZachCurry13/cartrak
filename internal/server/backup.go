@@ -28,7 +28,11 @@ func (s *Server) backupDownload(w http.ResponseWriter, r *http.Request) {
 	}
 	tmp := filepath.Join(dir, fmt.Sprintf("backup-%d.tmp", time.Now().UnixNano()))
 	defer os.Remove(tmp)
-	if err := s.S.Backup(tmp, small); err != nil {
+	backup := s.S.Backup
+	if s.Core != nil { // several cars: a car's backup carries no accounts
+		backup = s.S.BackupCar
+	}
+	if err := backup(tmp, small); err != nil {
 		fail(w, 500, "could not make the backup: "+err.Error())
 		return
 	}
@@ -39,6 +43,9 @@ func (s *Server) backupDownload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	name := "cartrak-backup-" + time.Now().Format("2006-01-02")
+	if s.CarID > 1 {
+		name += "-car" + strconv.FormatInt(s.CarID, 10)
+	}
 	if small {
 		name += "-small"
 	}
@@ -50,4 +57,23 @@ func (s *Server) backupDownload(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", fmt.Sprint(st.Size()))
 	}
 	_, _ = io.Copy(w, f)
+}
+
+// siteBackup streams a zip of the whole installation: the people and every car. Site administrators only.
+func (s *Server) siteBackup(w http.ResponseWriter, r *http.Request) {
+	if s.Cars == nil {
+		fail(w, 501, "only one car is followed here; use the ordinary backup")
+		return
+	}
+	dir := s.DataDir
+	if dir == "" {
+		dir = os.TempDir()
+	}
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", `attachment; filename="cartrak-all-cars-`+time.Now().Format("2006-01-02")+`.zip"`)
+	w.Header().Set("Cache-Control", "no-store")
+	if err := s.Cars.BackupAll(dir, w); err != nil {
+		// the answer has begun, so the best that can be done is to end it; the download will not open
+		return
+	}
 }

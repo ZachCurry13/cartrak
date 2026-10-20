@@ -13,7 +13,7 @@ import (
 // devices and the whole installation's settings. They use only the core database, and keeping them on one server keeps
 // one count of wrong passwords.
 var frontPaths = []string{"/api/login", "/api/setup", "/api/logout", "/api/me", "/api/users", "/api/security",
-	"/api/push/", "/api/cars", "/api/connector", "/api/changelog", "/api/settings/update-check", "/api/admin/remote", "/api/site/", "/healthz"}
+	"/api/push/", "/api/cars", "/api/connector", "/api/backup/site", "/api/changelog", "/api/settings/update-check", "/api/admin/remote", "/api/site/", "/healthz"}
 
 func isFront(path string) bool {
 	for _, p := range frontPaths {

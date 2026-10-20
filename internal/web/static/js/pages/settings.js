@@ -6,10 +6,11 @@ import { buildIndex, search } from '../searchindex.js';
 // The More page: a short, grouped menu. Each row opens its own page.
 export default async function settings(root, _a, session) {
   const admin = session.me.role === 'admin';
+  const site = session.me.siteRole === 'admin'; // the whole installation: people, sign-ins, remote access
   const [st, remote, users, health, phones] = await Promise.all([
     api('/api/status'),
-    admin ? api('/api/admin/remote').catch(() => null) : null,
-    admin ? api('/api/users').catch(() => []) : [],
+    site ? api('/api/admin/remote').catch(() => null) : null,
+    site ? api('/api/users').catch(() => []) : [],
     api('/api/health').catch(() => null),
     admin ? api('/api/devices').catch(() => null) : null,
   ]);
@@ -26,9 +27,10 @@ export default async function settings(root, _a, session) {
     finder(admin),
     h('div', { class: 'menu-cols' },
       h('div', {},
+        group('Cars', item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`, session.cars.length > 1 ? chip('work', 'Switch') : null)),
         admin ? group('Connections',
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),
-          admin ? item('#/remote', 'Remote access', remote && remote.connectorUpdate ? 'A newer Cloudflare connector is available' : 'Cloudflare tunnel for use away from home', remoteChip) : null,
+          site ? item('#/remote', 'Remote access', remote && remote.connectorUpdate ? 'A newer Cloudflare connector is available' : 'Cloudflare tunnel for use away from home', remoteChip) : null,
           admin ? item('#/phone', 'Phone tracking', 'Automatic trip start and a finer route from your phone', phones && phones.devices.length ? chip('ok', String(phones.devices.length)) : chip('work', 'Optional')) : null) : null,
         admin ? group('Trips', item('#/plan', 'Road-trip planner', 'How many charging stops a trip needs'), item('#/maintenance', 'Maintenance', 'Service reminders by distance or time'), item('#/places', 'Places', 'Name Home, the office and other places'), item('#/insights', 'Efficiency insights', 'What changes your miles per kWh'), item('#/year', 'Year in review', 'Miles, energy and charging for the year'), item('#/history', 'History', 'Driving, charging and parked time as one feed'), item('#/stats', 'Statistics', 'Bars by day, month and year, and where you charge'), item('#/time', 'Time', 'Parked, driving and charging, and where'), item('#/parkedwatch', 'Parked watch', 'Bumps and alarms on a parked car (experimental)'), item('#/rules', 'Trip rules', 'Label trips work or personal automatically'),
           admin ? item('#/mileage', 'Mileage log', 'Copy a business mileage log by week') : null) : group('Trips', item('#/plan', 'Road-trip planner', 'How many charging stops a trip needs'), item('#/insights', 'Efficiency insights', 'What changes your miles per kWh'), item('#/year', 'Year in review', 'Miles, energy and charging for the year'), item('#/history', 'History', 'Driving, charging and parked time as one feed'), item('#/stats', 'Statistics', 'Bars by day, month and year, and where you charge'), item('#/time', 'Time', 'Parked, driving and charging, and where')),
@@ -36,8 +38,8 @@ export default async function settings(root, _a, session) {
           item('#/notifications', 'Notifications', 'Alerts for charging, tires, trips and more'))),
       h('div', {},
         admin ? group('Admin',
-          item('#/people', 'People', `${users.length} ${users.length === 1 ? 'account' : 'accounts'}`),
-          item('#/security', 'Security', 'Sign-in log and signed-in devices'),
+          site ? item('#/people', 'People', `${users.length} ${users.length === 1 ? 'account' : 'accounts'}`) : null,
+          site ? item('#/security', 'Security', 'Sign-in log and signed-in devices') : null,
           item('#/repair', 'Fix a day', 'Redo the trips and charging of a day that was recorded wrongly'),
           item('#/debug', 'Debug report', 'Copy what the car reported, to send when something looks wrong'),
           item('#/backup', 'Backup', 'Download a copy of your data'),

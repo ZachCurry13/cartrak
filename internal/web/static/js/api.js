@@ -1,8 +1,12 @@
+import { currentCar } from './car.js';
+
 export class AuthError extends Error {}
 
 export async function api(path, opts = {}) {
   const init = { credentials: 'same-origin', headers: {}, method: opts.method || 'GET' };
   if (init.method !== 'GET') init.headers['X-Requested-With'] = 'cartrak';
+  const car = currentCar();
+  if (car) init.headers['X-Car'] = car;
   if (opts.body !== undefined) {
     init.headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(opts.body);

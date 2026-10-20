@@ -9,7 +9,7 @@ const STATE = {
 
 // Remote access: run the Cloudflare connector inside CarTrak.
 export default async function remote(root, _a, session) {
-  if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
+  if (session.me.siteRole !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   let v = await api('/api/admin/remote');
   const msg = h('p', { class: 'muted', role: 'status' });
   const statusBox = h('div');

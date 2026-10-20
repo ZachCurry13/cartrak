@@ -1,6 +1,9 @@
 // Remembers the last good answer on this device, so the app can still open and
 // show the last readings when there is no signal. Only used for read-only screens.
-const KEY = (k) => `cache:${k}`;
+import { currentCar } from './car.js';
+
+// Remembered answers are kept for each car separately.
+const KEY = (k) => `cache:${currentCar()}:${k}`;
 
 export function cacheSet(k, v) {
   try { localStorage.setItem(KEY(k), JSON.stringify({ t: Date.now(), v })); } catch (e) { /* storage full or blocked */ }
