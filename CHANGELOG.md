@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.31.1
+
+### 🔒 Security
+- **Go 1.27.2.** A scan of the project found 10 known vulnerabilities in the Go standard library (the web server and TLS code CarTrak is built on), all fixed in Go 1.27.2. CarTrak now builds with that version.
+- **Automatic security scans.** A new weekly (and on every push to the main branch) check runs Go's official vulnerability scanner and GitHub's CodeQL code scanner for Go and JavaScript. Both are free for public projects; results appear in the repository's Security tab.
 ## 0.31.0
 
 ### 🔎 Field watcher
