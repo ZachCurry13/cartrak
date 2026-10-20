@@ -1,5 +1,6 @@
 import { h, emptyState, stat, catChip, chip, dist, when, duration, pct } from '../ui.js';
 import { api } from '../api.js';
+import { categoryList, catLabel } from '../categories.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { monthsCard } from '../rangeband.js';
@@ -27,13 +28,15 @@ export default async function trips(root, _a, session) {
     el.replaceChildren(...items.map(([k, label]) => h('button', { class: get() === k ? 'on' : '', onclick: () => { set(k); draw(); } }, label)));
   }
   async function draw() {
-    seg(segCat, [['', 'All'], ['work', 'Work'], ['personal', 'Personal']], () => cat, (v) => { cat = v; });
+    seg(segCat, [['', 'All'], ...categoryList().map((c) => [c.key, c.label])], () => cat, (v) => { cat = v; });
     seg(segRange, [['week', '7 days'], ['month', '30 days'], ['year', 'Year'], ['all', 'All']], () => range, (v) => { range = v; });
     if (mc.enabled) seg(segView, [['list', 'List'], ['map', 'Map']], () => view, (v) => { view = v; });
-    const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=\w+&?/, '')}`)]);
-    sum.replaceChildren(h('div', { class: 'grid' }, stat('Work', dist(s.work.distanceKm, 0)), stat('Personal', dist(s.personal.distanceKm, 0)),
-      stat('Work trips', s.work.trips), stat('Personal trips', s.personal.trips),
-      ...(s.work.kwh + s.personal.kwh > 0 ? [stat('Energy used', kwhText(s.work.kwh + s.personal.kwh)), stat('Efficiency', effSpan(s.work.energyKm + s.personal.energyKm, s.work.kwh + s.personal.kwh))] : [])),
+    const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=[\w-]+&?/, '')}`)]);
+    const keys = categoryList().map((c) => c.key).filter((k) => k === 'work' || k === 'personal' || (s[k] && s[k].trips > 0));
+    const all = Object.values(s);
+    const kwh = all.reduce((n, x) => n + x.kwh, 0), energyKm = all.reduce((n, x) => n + x.energyKm, 0);
+    sum.replaceChildren(h('div', { class: 'grid' }, ...keys.map((k) => stat(catLabel(k), dist(s[k] ? s[k].distanceKm : 0, 0))), ...keys.map((k) => stat(`${catLabel(k)} trips`, s[k] ? s[k].trips : 0)),
+      ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(energyKm, kwh))] : [])),
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
     lastTs = ts;
     const unlabelled = ts.filter((x) => !x.open && x.categorySource === 'default').length;

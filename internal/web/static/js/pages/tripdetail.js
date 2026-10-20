@@ -4,6 +4,7 @@ import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
+import { categoryList } from '../categories.js';
 import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
@@ -113,7 +114,7 @@ export default async function tripDetail(root, [id, action], session) {
     admin && !t.open ? shareCard('trip', t.id) : null,
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),
-      h('p', { class: 'seg' }, h('button', { onclick: set('work') }, 'Work'), h('button', { onclick: set('personal') }, 'Personal')),
+      h('p', { class: 'seg' }, ...categoryList().map((c) => h('button', { class: c.key === t.category ? '' : 'sec', onclick: set(c.key) }, c.label))),
       h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null,
     admin ? tripFixCard(t) : null].filter(Boolean));
   if (action === 'share') { // opened from the Share button on Home: bring the share box into view

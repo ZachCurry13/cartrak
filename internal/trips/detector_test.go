@@ -414,3 +414,19 @@ func TestTheReportedPowerIsAddedUpAcrossASession(t *testing.T) {
 		t.Fatalf("a long silence must not be counted: %v", *cs[0].PowerKwh)
 	}
 }
+
+func TestAModeGivesEveryTripItsCategory(t *testing.T) {
+	s, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	day := time.Now().Format("2006-01-02")
+	_ = s.AddTimeOff(&store.TimeOff{From: day, To: day, Kind: "medical"})
+	cat, _, src := d.classify(time.Now().Unix(), nil, nil, time.Local)
+	if cat != "medical" || src != "mode" {
+		t.Fatalf("medical mode: %s %s", cat, src)
+	}
+	_ = s.AddTimeOff(&store.TimeOff{From: day, To: day, Kind: "vacation"})
+	if cat, _, src = d.classify(time.Now().Unix(), nil, nil, time.Local); cat != "personal" || src != "vacation" {
+		t.Fatalf("the newest mode wins: %s %s", cat, src)
+	}
+}

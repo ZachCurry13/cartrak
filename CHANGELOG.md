@@ -11,6 +11,10 @@
 - **Where home is.** CarTrak now treats a place you named **Home** (More, Places) as home, so charging there is priced at the home rate and counts as home in the statistics. Before, it only knew home once you marked a session as Home by hand. The page says whether CarTrak knows where home is, and how.
 - **A price for any place.** Under each place in More, Places, set what charging costs there (0 if it is free), or tick that it counts as home. A cabin, a relative's house or a workplace charger can have its own rate; every other place keeps the usual home or public price. A session you set to Home or Away by hand still uses that choice.
 
+### 🏷️ Trip categories and modes
+- **Medical, and categories of your own.** A trip can now be Personal, Work, **Medical**, or any category you add (More, Trip rules, Trip categories): a name, a colour and an optional mileage rate for each. Trip rules, the trip filter, the review list, the year in review and the Mileage log all use them. Removing one of your own makes its trips Personal again.
+- **Modes.** Vacation mode is now one of several: pick the days and a mode (Vacation, **Work trip**, **Medical**, or one of your categories) and every trip in them gets that label. If two modes cover the same day, the one you added last wins. Trips you set by hand keep what you chose.
+
 ### 🔗 Share a trip from more places
 - A **Share** button on every trip in the Trips list, and **Share this trip** in a drive opened in the Day view (admins). Both open the trip with its share box ready. The Home Last trip card already had it.
 

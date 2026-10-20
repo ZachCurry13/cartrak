@@ -58,11 +58,10 @@ func (s *Server) mileageReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cat := q.Get("category")
-	switch cat {
-	case "", "work":
+	switch {
+	case cat == "":
 		cat = "work"
-	case "personal":
-	default:
+	case cat == "all" || !s.S.CategoryExists(cat):
 		cat = "" // all trips
 	}
 	trips, err := s.S.ListTrips(store.TripFilter{From: start.Unix(), To: end.Unix(), Category: cat, Limit: 1000})
@@ -73,9 +72,16 @@ func (s *Server) mileageReport(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
 	defer cancel()
 	rep := mileage.Build(ctx, trips, s.places(), mileage.Options{Description: q.Get("description"), Default: loc, RoundUp: q.Get("rounding") != "nearest"})
-	var rate *float64 // a deduction only makes sense for work trips
-	if cat == "work" {
-		rate = s.mileageRate()
+	var rate *float64 // a deduction needs a category with a rate: the general mileage rate for work, or the category's own
+	if cats, _ := s.S.ListCategories(); cat != "" {
+		for _, c := range cats {
+			if c.Key == cat && c.Rate != nil {
+				rate = c.Rate
+			}
+		}
+		if rate == nil && cat == "work" {
+			rate = s.mileageRate()
+		}
 	}
 	ok(w, map[string]any{
 		"from": start.Format("2006-01-02"), "to": end.AddDate(0, 0, -1).Format("2006-01-02"),

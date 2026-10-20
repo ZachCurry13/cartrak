@@ -41,11 +41,12 @@ function reserveRow(latest) {
 
 // The last seven days at a glance. Tap the efficiency to change its unit.
 function weekCard(w) {
-  const km = w.work.distanceKm + w.personal.distanceKm;
-  const trips = w.work.trips + w.personal.trips;
-  const kwh = w.work.kwh + w.personal.kwh;
+  const all = Object.values(w);
+  const km = all.reduce((n, x) => n + x.distanceKm, 0);
+  const trips = all.reduce((n, x) => n + x.trips, 0);
+  const kwh = all.reduce((n, x) => n + x.kwh, 0);
   return card('Last 7 days', h('div', { class: 'grid' }, stat('Distance', dist(km, 0)), stat('Trips', trips),
-    ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(w.work.energyKm + w.personal.energyKm, kwh))] : [])),
+    ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(all.reduce((n, x) => n + x.energyKm, 0), kwh))] : [])),
     h('p', { style: 'margin:10px 0 0' }, h('a', { href: '#/trips' }, 'See all trips')));
 }
 
@@ -122,7 +123,7 @@ export default async function dashboard(root, _args, session) {
         unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null));
     }
     if (full) out.push(...await homeCards(maint)); // the day so far and the month: skipped in Data saver
-    if (week && week.work.trips + week.personal.trips > 0) out.push(weekCard(week));
+    if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));
     const lastTrip = trips[0];
     if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),
       h('p', { class: 'muted' }, `${lastTrip.startPlace || lastTrip.endPlace ? `${lastTrip.startPlace || '…'} → ${lastTrip.endPlace || '…'} · ` : ''}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`),

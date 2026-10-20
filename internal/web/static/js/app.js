@@ -6,6 +6,7 @@ import { startRefresh, effective } from './mode.js';
 import { cached } from './offline.js';
 import { currentCar, setCar } from './car.js';
 import { routes } from './routes.js';
+import { loadCategories } from './categories.js';
 import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
 
@@ -51,6 +52,7 @@ async function loadCars() {
   session.cars = d.cars;
   const ids = d.cars.map((c) => String(c.id));
   if (ids.length && !ids.includes(currentCar())) setCar(ids[0]);
+  if (ids.length) await loadCategories();
   const sel = document.getElementById('carsel');
   sel.hidden = d.cars.length < 2;
   sel.replaceChildren(...d.cars.map((c) => h('option', { value: String(c.id), selected: String(c.id) === currentCar() }, c.name)));

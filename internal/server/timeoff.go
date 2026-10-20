@@ -18,8 +18,8 @@ func (s *Server) listTimeOff(w http.ResponseWriter, r *http.Request) {
 	ok(w, map[string]any{"items": ts, "today": time.Now().In(s.defaultLoc()).Format("2006-01-02")})
 }
 
-// addTimeOff saves a vacation. Every trip that starts on those days (in the car's time zone) is Personal, and trips
-// already recorded in the stretch are relabelled at once. Admin only.
+// addTimeOff saves a vacation or a work trip. Every trip that starts on those days (in the car's time zone) is Personal (a
+// vacation) or Work (a work trip), and trips already recorded in the stretch are relabelled at once. Admin only.
 func (s *Server) addTimeOff(w http.ResponseWriter, r *http.Request) {
 	var in store.TimeOff
 	if decode(r, &in) != nil {
@@ -37,7 +37,7 @@ func (s *Server) addTimeOff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if b.Sub(a) > 366*24*time.Hour {
-		fail(w, 400, "a vacation can be at most a year")
+		fail(w, 400, "a stretch can be at most a year")
 		return
 	}
 	in.Label = strings.TrimSpace(in.Label)

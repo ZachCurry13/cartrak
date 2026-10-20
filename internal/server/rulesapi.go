@@ -33,7 +33,7 @@ func (s *Server) saveRule(w http.ResponseWriter, r *http.Request) {
 		ru.ID, _ = strconv.ParseInt(id, 10, 64)
 	}
 	ru.Name = strings.TrimSpace(ru.Name)
-	if ru.Name == "" || (ru.Category != "work" && ru.Category != "personal") ||
+	if ru.Name == "" || !s.S.CategoryExists(ru.Category) ||
 		ru.Days < 0 || ru.Days > 127 || ru.StartMin < 0 || ru.StartMin > 1440 || ru.EndMin < 0 || ru.EndMin > 1440 {
 		fail(w, 400, "invalid rule")
 		return

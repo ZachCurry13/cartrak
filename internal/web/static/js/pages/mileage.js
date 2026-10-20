@@ -1,5 +1,6 @@
 import { h, chip } from '../ui.js';
 import { api } from '../api.js';
+import { categoryList } from '../categories.js';
 import { copyButton } from '../phonehelp.js';
 import { checkCard } from '../mileagecheck.js';
 
@@ -37,7 +38,7 @@ export default async function mileage(root, _a, session) {
   const from = h('input', { id: 'mf', type: 'date' });
   const to = h('input', { id: 'mt', type: 'date' });
   const desc = h('input', { id: 'md', value: store.get('desc', 'Customer Visits'), maxlength: 60 });
-  const which = h('select', { id: 'mc' }, h('option', { value: 'work' }, 'Work trips only'), h('option', { value: 'all' }, 'All trips'), h('option', { value: 'personal' }, 'Personal trips only'));
+  const which = h('select', { id: 'mc' }, ...categoryList().map((c) => h('option', { value: c.key }, `${c.label} trips only`)), h('option', { value: 'all' }, 'All trips'));
   const rounding = h('select', { id: 'mr' }, h('option', { value: 'up' }, 'Round each trip up to the next mile'), h('option', { value: 'nearest' }, 'Round the day to the nearest mile'));
   rounding.value = store.get('rounding', 'up');
   const msg = h('p', { class: 'muted', role: 'status' });

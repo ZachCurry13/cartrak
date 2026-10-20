@@ -51,9 +51,6 @@ func tripFilter(r *http.Request) store.TripFilter {
 	f.From, _ = strconv.ParseInt(q.Get("from"), 10, 64)
 	f.To, _ = strconv.ParseInt(q.Get("to"), 10, 64)
 	f.Limit, _ = strconv.Atoi(q.Get("limit"))
-	if f.Category != "work" && f.Category != "personal" {
-		f.Category = ""
-	}
 	return f
 }
 
@@ -93,8 +90,8 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 func (s *Server) patchTrip(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	var b struct{ Category, Notes string }
-	if decode(r, &b) != nil || (b.Category != "work" && b.Category != "personal") {
-		fail(w, 400, "category must be work or personal")
+	if decode(r, &b) != nil || !s.S.CategoryExists(b.Category) {
+		fail(w, 400, "choose one of your trip categories")
 		return
 	}
 	if err := s.S.SetTripCategory(id, b.Category, b.Notes); err != nil {
@@ -123,9 +120,13 @@ func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 	capacity := s.capacityKwh()
 	out := map[string]*agg{"work": {}, "personal": {}}
 	for _, t := range ts {
-		a := out[t.Category]
-		if a == nil || t.Open {
+		if t.Open {
 			continue
+		}
+		a := out[t.Category]
+		if a == nil {
+			a = &agg{}
+			out[t.Category] = a
 		}
 		a.Trips++
 		a.DistanceKm += t.DistanceKm

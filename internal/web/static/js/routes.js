@@ -45,6 +45,7 @@ export const routes = {
   cars: () => import('./pages/cars.js'),
   inbox: () => import('./pages/inbox.js'),
   reports: () => import('./pages/reports.js'),
+  categories: () => import('./pages/categories.js'),
   'charging-settings': () => import('./pages/chargingsettings.js'),
   help: () => import('./pages/help.js'),
 };

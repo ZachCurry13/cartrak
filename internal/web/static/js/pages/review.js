@@ -1,5 +1,6 @@
 import { h, emptyState, dist, when, duration } from '../ui.js';
 import { api } from '../api.js';
+import { categoryList } from '../categories.js';
 
 // A quick pass over trips CarTrak could not label (no rule matched, and you have not chosen): tap Work or Personal.
 export default async function review(root, _a, session) {
@@ -17,7 +18,7 @@ export default async function review(root, _a, session) {
         return h('section', { class: 'card' },
           h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, dist(t.distanceKm)), h('a', { href: `#/trip/${t.id}` }, 'Open')),
           h('div', { class: 'muted' }, `${t.startPlace || t.endPlace ? `${t.startPlace || '…'} → ${t.endPlace || '…'} · ` : ''}${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)}`),
-          admin ? h('p', { class: 'seg', style: 'margin:8px 0 0' }, h('button', { onclick: set('work') }, 'Work'), h('button', { class: 'sec', onclick: set('personal') }, 'Personal')) : null);
+          admin ? h('p', { class: 'seg', style: 'margin:8px 0 0' }, ...categoryList().map((c, i) => h('button', { class: c.key === 'personal' ? 'sec' : '', onclick: set(c.key) }, c.label))) : null);
       }));
   }
   await load();

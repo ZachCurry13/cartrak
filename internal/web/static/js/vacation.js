@@ -1,38 +1,49 @@
 import { h } from './ui.js';
 import { api } from './api.js';
+import { categoryList, catLabel } from './categories.js';
 
 const fmt = (d) => new Date(`${d}T12:00:00`).toLocaleDateString([], { month: 'short', day: 'numeric' });
 const addDays = (day, n) => { const d = new Date(`${day}T12:00:00`); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
-// Vacation: trips on these days are Personal without changing each one by hand. Rules still apply the rest of the time.
+// What each kind of mode is called: Vacation makes trips Personal; every other category is a mode of its own, so Work trip mode
+// and Medical mode are there, and so is one for each category the owner adds.
+const MODE_NAME = { vacation: 'Vacation', work: 'Work trip', medical: 'Medical' };
+export const modeName = (kind) => MODE_NAME[kind] || catLabel(kind);
+const modeOptions = () => [['vacation', 'Vacation (trips are Personal)'], ...categoryList().filter((c) => c.key !== 'personal').map((c) => [c.key, `${modeName(c.key)} mode (trips are ${c.label})`])];
+const outcome = (kind) => (kind === 'vacation' ? 'Personal' : catLabel(kind));
+
+// Modes: for a stretch of days every trip gets the same label (Personal on vacation, Work on a work trip, Medical, or one of your
+// own), without changing each one by hand. Rules still apply the rest of the time, and trips you set by hand keep what you chose.
 export async function vacationCard(admin) {
   const box = h('section', { class: 'card' });
   async function draw() {
     const d = await api('/api/time-off');
+    const kind = h('select', { id: 'vk', 'aria-label': 'Mode' }, ...modeOptions().map(([v, t]) => h('option', { value: v }, t)));
     const from = h('input', { type: 'date', id: 'vf', value: d.today, 'aria-label': 'First day' });
     const to = h('input', { type: 'date', id: 'vt', value: addDays(d.today, 6), 'aria-label': 'Last day' });
-    const label = h('input', { id: 'vl', maxlength: 60, placeholder: 'Where (optional)', 'aria-label': 'Label' });
+    const label = h('input', { id: 'vl', maxlength: 60, placeholder: 'Where or why (optional)', 'aria-label': 'Label' });
     const msg = h('p', { class: 'muted', role: 'alert' });
     const now = d.items.find((x) => x.from <= d.today && x.to >= d.today);
     box.replaceChildren(...[
-      h('h2', {}, 'Vacation'),
-      h('p', { class: 'muted' }, 'On vacation, every trip counts as Personal, so you do not have to change them one by one. Trips you set by hand keep what you chose.'),
-      now ? h('p', { class: 'banner notice' }, `On vacation until ${fmt(now.to)}${now.label ? ` (${now.label})` : ''}.`) : null,
-      ...d.items.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, `${fmt(x.from)} to ${fmt(x.to)}`, x.label ? h('span', { class: 'muted' }, ` · ${x.label}`) : null),
+      h('h2', {}, 'Modes'),
+      h('p', { class: 'muted' }, 'Choose the days and every trip in them gets one label: Personal on vacation, Work on a work trip, Medical, or a category of your own. You do not have to change them one by one. Trips you set by hand keep what you chose.'),
+      now ? h('p', { class: 'banner notice' }, `${modeName(now.kind)} mode until ${fmt(now.to)}${now.label ? ` (${now.label})` : ''}.`) : null,
+      ...d.items.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, `${fmt(x.from)} to ${fmt(x.to)}`, h('span', { class: 'muted' }, ` · ${modeName(x.kind)}${x.label ? `, ${x.label}` : ''}`)),
         admin ? h('button', { class: 'sec', onclick: async () => { await api(`/api/time-off/${x.id}`, { method: 'DELETE' }); draw(); } }, x.from <= d.today && x.to >= d.today ? 'End now' : 'Remove') : null)),
-      admin ? h('div', {}, h('label', { for: 'vf' }, 'First day'), from, h('label', { for: 'vt' }, 'Last day'), to, label,
+      admin ? h('div', {}, h('label', { for: 'vk' }, 'Mode'), kind, h('label', { for: 'vf' }, 'First day'), from, h('label', { for: 'vt' }, 'Last day'), to, label,
         h('p', {}, h('button', { onclick: async () => {
-          try { await api('/api/time-off', { method: 'POST', body: { from: from.value, to: to.value, label: label.value } }); draw(); } catch (e) { msg.textContent = e.message; }
-        } }, 'Start vacation')), msg) : null,
+          try { await api('/api/time-off', { method: 'POST', body: { kind: kind.value, from: from.value, to: to.value, label: label.value } }); draw(); } catch (e) { msg.textContent = e.message; }
+        } }, 'Start mode')), msg,
+        h('p', { class: 'muted' }, 'If two modes cover the same day, the one you added last wins.')) : null,
     ].filter(Boolean));
   }
   await draw();
   return box;
 }
 
-// A short note for Home while on vacation, or null.
+// A short note for Home while a mode is on, or null.
 export async function vacationNote() {
   const d = await api('/api/time-off').catch(() => null);
   const now = d && d.items.find((x) => x.from <= d.today && x.to >= d.today);
-  return now ? h('a', { class: 'banner notice', href: '#/rules', style: 'display:block;color:inherit;text-decoration:none' }, `On vacation until ${fmt(now.to)}: trips count as Personal.`) : null;
+  return now ? h('a', { class: 'banner notice', href: '#/rules', style: 'display:block;color:inherit;text-decoration:none' }, `${modeName(now.kind)} mode until ${fmt(now.to)}: trips count as ${outcome(now.kind)}.`) : null;
 }

@@ -64,7 +64,15 @@ export const stat = (label, value) => h('div', { class: 'stat' }, h('div', { cla
 // emptyState is a friendly "nothing here yet" with what to do next (an optional button link).
 export const emptyState = (title, body, href, label) => h('div', { class: 'empty' }, h('b', {}, title), h('p', { class: 'muted' }, body), href ? h('a', { class: 'btn', href }, label) : null);
 export const chip = (cls, text) => h('span', { class: `chip ${cls}` }, text);
-export const catChip = (t) => chip(t.category, t.category + (t.categorySource === 'manual' ? ' ✎' : t.categorySource === 'rule' ? ' ⚙' : t.categorySource === 'vacation' ? ' · vacation' : ''));
+// The categories of this car, so a trip's label can use the owner's own name and colour.
+let cats = {};
+export function setCategories(list) { cats = Object.fromEntries(list.map((c) => [c.key, c])); }
+export const catChip = (t) => {
+  const c = cats[t.category];
+  const e = chip(t.category, (c ? c.label : t.category) + (t.categorySource === 'manual' ? ' ✎' : t.categorySource === 'rule' ? ' ⚙' : t.categorySource === 'vacation' ? ' · vacation' : t.categorySource === 'mode' ? ' · mode' : ''));
+  if (c && c.color) { e.style.color = c.color; e.style.borderColor = c.color; }
+  return e;
+};
 
 // ---- theme: auto follows the phone, or force light/dark ----
 export function getTheme() { try { return localStorage.getItem('theme') || 'auto'; } catch (e) { return 'auto'; } }

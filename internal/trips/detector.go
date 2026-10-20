@@ -80,10 +80,13 @@ func (d *Detector) tripZone(t *store.Trip) *time.Location {
 }
 
 func (d *Detector) classify(startTS int64, lat, lon *float64, loc *time.Location) (string, *int64, string) {
-	// Vacation wins over the rules: no manual relabelling of every trip for a week away. A trip the owner set by hand
-	// is never classified at all, so it still wins over this.
-	if d.S.OnTimeOff(time.Unix(startTS, 0).In(loc).Format("2006-01-02")) {
+	// A vacation or a work trip wins over the rules: no manual relabelling of every trip for a week away. A trip the owner
+	// set by hand is never classified at all, so it still wins over this.
+	switch kind := d.S.TimeOffKind(time.Unix(startTS, 0).In(loc).Format("2006-01-02")); {
+	case kind == store.KindVacation:
 		return Personal, nil, "vacation"
+	case kind != "" && d.S.CategoryExists(kind):
+		return kind, nil, "mode"
 	}
 	rules, err := d.S.ListRules()
 	if err == nil {

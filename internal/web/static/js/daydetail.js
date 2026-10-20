@@ -3,6 +3,7 @@ import { api } from './api.js';
 import { effSpan } from './energy.js';
 import { curveBox } from './curve.js';
 import { whyCard } from './tripwhy.js';
+import { catLabel } from './categories.js';
 
 const hm = (sec) => (sec < 3600 ? `${Math.max(1, Math.round(sec / 60))} min` : `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`);
 
@@ -19,7 +20,7 @@ async function tripPanel(e) {
     t.energyKwh != null && t.distanceKm > 0 ? stat('Efficiency', effSpan(t.distanceKm, t.energyKwh)) : null,
     stat('Battery', `${pct(t.startSoc)} to ${pct(t.endSoc)}`));
   const why = await whyCard(e.id).catch(() => null);
-  return [tiles, t.category ? h('p', { class: 'muted' }, `${t.category === 'work' ? 'Work' : 'Personal'}${t.notes ? `: ${t.notes}` : ''}`) : null, why, h('p', { class: 'seg' }, h('a', { class: 'btn sec', href: `#/trip/${e.id}` }, 'Open the whole trip'), h('a', { class: 'btn sec', href: `#/trip/${e.id}/share` }, 'Share this trip'))];
+  return [tiles, t.category ? h('p', { class: 'muted' }, `${catLabel(t.category)}${t.notes ? `: ${t.notes}` : ''}`) : null, why, h('p', { class: 'seg' }, h('a', { class: 'btn sec', href: `#/trip/${e.id}` }, 'Open the whole trip'), h('a', { class: 'btn sec', href: `#/trip/${e.id}/share` }, 'Share this trip'))];
 }
 
 // What a charging session adds: where, how much and what it cost, and the power curve.

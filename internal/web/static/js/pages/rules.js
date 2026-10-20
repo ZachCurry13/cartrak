@@ -1,6 +1,7 @@
 import { h, chip, fromMeters, toMeters, smallUnit } from '../ui.js';
 import { api } from '../api.js';
 import { vacationCard } from '../vacation.js';
+import { categoryList, catLabel } from '../categories.js';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const toTime = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
@@ -11,13 +12,14 @@ export default async function rules(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, 'Trip rules'),
-    h('p', { class: 'muted' }, 'A trip is labelled by the highest-priority rule that matches when it starts. Anything you set by hand on a trip always wins.'), box);
+    h('p', { class: 'muted' }, 'A trip is labelled by the highest-priority rule that matches when it starts. Anything you set by hand on a trip always wins.'),
+    h('p', {}, h('a', { class: 'btn sec', href: '#/categories' }, 'Trip categories (Work, Personal, Medical, your own)')), box);
   vacationCard(admin).then((c) => box.before(c)).catch(() => {});
 
   async function draw() {
     const rs = await api('/api/rules');
     box.replaceChildren(...rs.map((r) => h('section', { class: 'card' },
-      h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, r.name), chip(r.category, r.category)),
+      h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, r.name), chip(r.category, catLabel(r.category))),
       h('div', { class: 'muted' }, `${summary(r)} · priority ${r.priority}${r.enabled ? '' : ' · off'}`),
       admin ? h('p', { class: 'seg' }, h('button', { class: 'sec', onclick: () => edit(r) }, 'Edit'),
         h('button', { class: 'danger', onclick: async () => { if (confirm(`Delete "${r.name}"?`)) { await api(`/api/rules/${r.id}`, { method: 'DELETE' }); draw(); } } }, 'Delete')) : null)));
@@ -30,7 +32,7 @@ export default async function rules(root, _a, session) {
   function edit(r) {
     const v = r || { name: '', category: 'work', priority: 0, enabled: true, days: 62, startMin: 480, endMin: 1020 };
     const name = h('input', { value: v.name, maxlength: 60, placeholder: 'Weekday work hours' });
-    const cat = h('select', {}, h('option', { value: 'work' }, 'Work'), h('option', { value: 'personal' }, 'Personal'));
+    const cat = h('select', {}, ...categoryList().map((c) => h('option', { value: c.key }, c.label)));
     cat.value = v.category;
     const st = h('input', { type: 'time', value: toTime(v.startMin) }), en = h('input', { type: 'time', value: v.endMin === 1440 ? '23:59' : toTime(v.endMin) });
     const pri = h('input', { type: 'number', value: v.priority }), on = h('input', { type: 'checkbox' });

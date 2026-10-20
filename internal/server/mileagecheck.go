@@ -118,7 +118,7 @@ func (s *Server) addMissedTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch {
-	case in.Category != "work" && in.Category != "personal":
+	case !s.S.CategoryExists(in.Category):
 		fail(w, 400, "choose work or personal")
 		return
 	case in.StartTS <= 0 || in.EndTS <= in.StartTS || in.EndTS-in.StartTS > 14*86400:

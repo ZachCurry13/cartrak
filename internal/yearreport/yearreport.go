@@ -24,17 +24,18 @@ type Longest struct {
 
 // Report is the driving half of the yearly summary.
 type Report struct {
-	Trips       int      `json:"trips"`
-	Km          float64  `json:"km"`
-	WorkKm      float64  `json:"workKm"`
-	PersonalKm  float64  `json:"personalKm"`
-	EnergyKwh   float64  `json:"energyKwh"` // of the trips whose energy could be worked out
-	EnergyKm    float64  `json:"energyKm"`  // the distance those trips covered
-	EnergyTrips int      `json:"energyTrips"`
-	Estimated   bool     `json:"estimated"` // some of the energy comes from battery percentage
-	Longest     *Longest `json:"longest"`
-	Months      []Month  `json:"months"` // every month from the first with a trip, oldest first
-	BusiestKm   string   `json:"busiest"`
+	Trips       int                `json:"trips"`
+	Km          float64            `json:"km"`
+	WorkKm      float64            `json:"workKm"`
+	PersonalKm  float64            `json:"personalKm"`
+	OtherKm     map[string]float64 `json:"otherKm"`   // distance in every other category (medical, your own), by key
+	EnergyKwh   float64            `json:"energyKwh"` // of the trips whose energy could be worked out
+	EnergyKm    float64            `json:"energyKm"`  // the distance those trips covered
+	EnergyTrips int                `json:"energyTrips"`
+	Estimated   bool               `json:"estimated"` // some of the energy comes from battery percentage
+	Longest     *Longest           `json:"longest"`
+	Months      []Month            `json:"months"` // every month from the first with a trip, oldest first
+	BusiestKm   string             `json:"busiest"`
 }
 
 // Build totals the trips. capacityKwh may be nil.
@@ -45,10 +46,16 @@ func Build(ts []*store.Trip, capacityKwh *float64, loc *time.Location) Report {
 	for _, t := range ts {
 		r.Trips++
 		r.Km += t.DistanceKm
-		if t.Category == "work" {
+		switch t.Category {
+		case "work":
 			r.WorkKm += t.DistanceKm
-		} else {
+		case "personal", "":
 			r.PersonalKm += t.DistanceKm
+		default:
+			if r.OtherKm == nil {
+				r.OtherKm = map[string]float64{}
+			}
+			r.OtherKm[t.Category] += t.DistanceKm
 		}
 		if r.Longest == nil || t.DistanceKm > r.Longest.Km {
 			r.Longest = &Longest{ID: t.ID, Km: t.DistanceKm, TS: t.StartTS}
