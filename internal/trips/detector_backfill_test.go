@@ -30,6 +30,7 @@ func TestAChargeThatBeganBetweenTwoPollsStartsAtTheLastReadingBeforeIt(t *testin
 		energyReading(t0.Add(70*time.Minute), "COMPLETED", "CONNECTED", 100, 85.4, 0, map[string]any{"telemetry.metrics.xevBatteryChargerEnergyOutput.value": 57.6}),
 	}
 	for _, st := range steps {
+		st.StationType = "DC_FAST"
 		if err := d.Process(st); err != nil {
 			t.Fatal(err)
 		}
@@ -65,6 +66,7 @@ func TestACarsStaleChargerFigureIsNotBelieved(t *testing.T) {
 		energyReading(t0.Add(2*time.Hour), "COMPLETED", "CONNECTED", 100, 129.8, 0, stale),
 	}
 	for _, st := range steps {
+		st.StationType = "DC_FAST"
 		if err := d.Process(st); err != nil {
 			t.Fatal(err)
 		}
@@ -72,5 +74,58 @@ func TestACarsStaleChargerFigureIsNotBelieved(t *testing.T) {
 	cs, _ := s.ListCharges(10)
 	if len(cs) != 1 || cs[0].ChargerKwh != nil {
 		t.Fatalf("39.9 kWh cannot be what delivered 5 kWh to the battery: %+v", cs)
+	}
+}
+
+func TestAnAcChargersCountIsNotTakenAsWhatTheChargerDelivered(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Date(2026, 10, 20, 2, 0, 0, 0, time.UTC)
+	count := map[string]any{"telemetry.metrics.xevBatteryChargerEnergyOutput.value": 30.5}
+	for _, st := range []*ford.State{
+		energyReading(t0, "IN_PROGRESS", "CONNECTED", 40, 36, 7, count),
+		energyReading(t0.Add(5*time.Hour), "COMPLETED", "CONNECTED", 75, 66.5, 0, count),
+	} {
+		st.StationType = "AC_BASIC"
+		if err := d.Process(st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if cs, _ := s.ListCharges(10); len(cs) != 1 || cs[0].ChargerKwh != nil {
+		t.Fatalf("an on-board charger's figure must not stand in for the wall: %+v", cs)
+	}
+}
+
+func TestAPausedFastChargeGetsTheFinalChargerFigureNotTheOneFromThePause(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Now().Add(-3 * time.Hour)
+	at := func(min int) time.Time { return t0.Add(time.Duration(min) * time.Minute) }
+	cnt := func(v float64) map[string]any {
+		return map[string]any{"telemetry.metrics.xevBatteryChargerEnergyOutput.value": v}
+	}
+	for _, st := range []*ford.State{
+		energyReading(at(0), "IN_PROGRESS", "CONNECTED", 20, 18, 120, nil),
+		energyReading(at(20), "IN_PROGRESS", "CONNECTED", 50, 45, 100, nil),
+		energyReading(at(21), "NOT_READY", "CONNECTED", 50, 45, 0, cnt(28)), // a pause: the charger count so far
+		energyReading(at(23), "IN_PROGRESS", "CONNECTED", 52, 47, 90, nil),
+		energyReading(at(50), "COMPLETED", "CONNECTED", 80, 72, 0, cnt(56)),
+	} {
+		st.StationType = "DC_FAST"
+		if err := d.Process(st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cs, _ := s.ListCharges(10)
+	if len(cs) != 1 || cs[0].ChargerKwh == nil || *cs[0].ChargerKwh != 56 {
+		t.Fatalf("one session with the final count: %+v", cs)
 	}
 }

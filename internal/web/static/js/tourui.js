@@ -22,6 +22,7 @@ export function startTour(session) {
   const place = () => {
     if (!target || !document.contains(target)) { spot.hidden = true; dim.classList.add('solid'); sheet.className = 'toursheet bottom'; return; }
     const r = target.getBoundingClientRect(), pad = 6;
+    if (!r.width && !r.height) { target = null; place(); return; } // a hidden button has nothing to light up
     dim.classList.remove('solid');
     spot.hidden = false;
     Object.assign(spot.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px` });

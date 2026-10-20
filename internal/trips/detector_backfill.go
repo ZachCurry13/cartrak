@@ -2,6 +2,7 @@ package trips
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
@@ -26,12 +27,12 @@ func (d *Detector) backfillStart(c *store.Charge, st *ford.State) {
 		return // nothing came in that the first reading does not already show
 	}
 	start := d.lastReading
+	c.StartKwh = d.lastKwh // from the same reading as the level; unknown rather than mixed with the later one
 	if d.lastKwh != nil && st.EnergyKwh != nil {
 		gained := *st.EnergyKwh - *d.lastKwh
 		if gained < 1 {
 			return
 		}
-		c.StartKwh = d.lastKwh
 		if st.ChargeKw != nil && *st.ChargeKw > 1 {
 			if s := now - int64(gained / *st.ChargeKw * 3600); s > start {
 				start = s
@@ -49,7 +50,12 @@ func (d *Detector) backfillStart(c *store.Charge, st *ford.State) {
 // believed when it fits the energy that went into the battery (a charger delivers a little more than the pack gains), because a
 // car can keep an old figure from an earlier session. A figure the owner typed is never replaced.
 func (d *Detector) noteChargerKwh(c *store.Charge, st *ford.State) {
-	if c.ChargerKwh != nil || c.StartKwh == nil || c.EndKwh == nil {
+	// Only a fast charger: the count of an on-board (AC) charger may be the battery side, which would read as no loss at all and
+	// spoil the measured slow-charge efficiency. A figure that is not the one this method kept earlier was typed, so it stays.
+	if !strings.HasPrefix(c.Station, "DC") || c.StartKwh == nil || c.EndKwh == nil {
+		return
+	}
+	if kept, auto := d.autoKwh[c.ID]; c.ChargerKwh != nil && (!auto || *c.ChargerKwh != kept) {
 		return
 	}
 	gained := *c.EndKwh - *c.StartKwh
@@ -58,5 +64,9 @@ func (d *Detector) noteChargerKwh(c *store.Charge, st *ford.State) {
 		return
 	}
 	c.ChargerKwh = v
+	if d.autoKwh == nil {
+		d.autoKwh = map[int64]float64{}
+	}
+	d.autoKwh[c.ID] = *v // a paused session that resumes gets the final figure, not the one from the pause
 	_ = d.S.SetChargerKwh(c.ID, v)
 }

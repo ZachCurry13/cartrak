@@ -24,6 +24,7 @@ type Detector struct {
 	lastSoC        *float64 // the previous reading's battery level and energy, and whether it was charging
 	lastKwh        *float64
 	lastCharging   bool
+	autoKwh        map[int64]float64 // the charger kWh this detector filled in itself, by session
 }
 
 // Driving reports whether a reading looks like the car is in use. A car that is taking charge and not moving is

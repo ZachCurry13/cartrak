@@ -41,7 +41,7 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
   // where it began and ended: a place you named, otherwise the city
   const from = t.startPlace || t.startCity, to = t.endPlace || t.endCity;
   // two lines that wrap, so a long township name is never cut off; one line when it ended where it began
-  const end = to || (t.open ? 'on the way' : '');
+  const end = to || (from && t.open ? 'on the way' : '');
   const places = from && from === end ? [h('span', {}, from)] : from || end ? [h('span', {}, from || '…'), h('span', {}, `→ ${end || '…'}`)] : null;
   const share = admin && !t.open && !sel.state.on
     ? h('button', { class: 'ico sm', type: 'button', 'aria-label': 'Share this trip', title: 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } },
