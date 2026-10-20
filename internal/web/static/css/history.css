@@ -20,3 +20,9 @@ a.hcard:hover,a.hcard:focus-visible{background:var(--card2)}
 .dtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.5rem,1fr));gap:8px;margin-bottom:8px}
 .dtile{background:var(--card2);border-radius:12px;border-bottom:3px solid var(--line);padding:10px 8px;display:flex;flex-direction:column;gap:2px;text-align:center;min-width:0}.dtile b{font-size:1.05rem}.dtile .muted{font-size:.74rem}
 .seg{border-radius:14px;background:var(--card);padding:4px;border:0;gap:4px}.seg button{border-radius:11px}.seg button:not(.on){border:0;color:var(--muted)}
+
+.maptag{position:absolute;top:10px;right:10px;z-index:3;background:rgba(15,23,42,.78);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.03em;padding:4px 10px;border-radius:999px;pointer-events:none}
+.hico.num{border-radius:50%;background:currentColor}.hico.num{color:var(--text)}.hico.charging.num{background:var(--accent)}.hico.driving.num{background:#f5a524}.hico.parked.num{background:#6aa7ff}.hico.num{color:#fff;border-color:transparent}
+.hdaylink{margin-left:auto;font-size:.72rem;letter-spacing:0;text-transform:none;font-weight:600;color:var(--accent)}
+.dtiles.day{grid-template-columns:repeat(auto-fit,minmax(7rem,1fr))}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 0;font-size:.78rem;color:var(--muted)}.legend i{display:inline-block;width:18px;height:0;border-top:3px solid #1b5fc4;vertical-align:middle;margin-right:6px}.legend i.dot{border-top-style:dotted}

@@ -135,6 +135,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/parked-watch/reset", s.auth(true, s.parkedWatchReset))
 	m.HandleFunc("GET /api/time-use", s.auth(false, s.timeUse))
 	m.HandleFunc("GET /api/history", s.auth(false, s.historyFeed))
+	m.HandleFunc("GET /api/day", s.auth(false, s.dayView))
 	m.HandleFunc("GET /api/stats", s.auth(false, s.periodStats))
 	m.HandleFunc("GET /api/remote-starts", s.auth(false, s.remoteStarts))
 	m.HandleFunc("GET /api/fields", s.auth(false, s.fieldWatch))

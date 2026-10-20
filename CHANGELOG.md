@@ -2,6 +2,14 @@
 
 ## 0.33.0
 
+### 🗺️ Day view
+- **Trips → Day view** (and **Map of this day** on each day of the History feed, and **See the whole day** on a trip) shows a whole day on one map: every trip in its own colour, the stops between them as numbered markers that match the numbers in the list underneath, and the day's totals.
+- A written **Summary** says it in plain words: how long you drove over how many trips and how far, at what average and top speed; how many times you stopped and for how long in all (and the longest stop); how many times you charged (fast or slow), for how long, how many kWh were added, at what average and peak power, and what it cost. The cost says how much comes from receipts you entered and how much is worked out from a price, and sessions that could not be priced are called out. Below it: when you were out from and to, the battery at the start and the end, charging cost per mile, and the energy used driving.
+- Routes use phone GPS first, then a kept estimated road, then the car's own positions.
+
+### ✨ Estimated routes look better
+- The estimated road is now drawn as a fine dotted line with a small **Estimated route** tag on the map, instead of long dashes, with a shorter note under it.
+
 ### 🔌 A paused charge is one session
 - When a charger pauses and starts again (a fast charger handing over, or a hiccup), CarTrak used to close the session at the pause and start a new one, missing the energy that went in while it was between the two. A session that resumes within 20 minutes, at the same place, with the cable still plugged in, is now **one session**. Unplugging and plugging back in is still a new one. **Fix a day** applies this to older days.
 - **Fast chargers are read at the charging pace.** Ford reports no power at a DC fast charger, only the charge state, and CarTrak was only speeding up when it saw power. With the ignition off it read the car every ten minutes for a whole fast charge, which made charging curves coarse. It now speeds up on the charge state too, and keeps the faster pace for 20 minutes after a pause while the car is plugged in, so a restart is seen when it happens.

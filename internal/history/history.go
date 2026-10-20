@@ -36,6 +36,8 @@ type Event struct {
 	Place      string   `json:"place"`     // where it happened (the end, for a drive)
 	FromPlace  string   `json:"fromPlace"` // where a drive began, when it differs
 	Where      string   `json:"where"`     // charging: home, public or ""
+	Lat        *float64 `json:"lat"`       // where it happened (the end of a drive), for a map
+	Lon        *float64 `json:"lon"`
 }
 
 // minParked is the shortest gap worth showing as its own row.
@@ -57,11 +59,13 @@ func Build(trips []*store.Trip, charges []Charge, named []*store.NamedPlace, fro
 		if e.FromPlace == e.Place {
 			e.FromPlace = ""
 		}
+		e.Lat, e.Lon = t.EndLat, t.EndLon
 		all = append(all, span{e, t.EndLat, t.EndLon})
 	}
 	for _, c := range charges {
 		e := Event{Kind: "charging", ID: c.ID, Start: c.Start, End: c.End, StartSoC: c.StartSoC, EndSoC: c.EndSoC, AddedKwh: c.AddedKwh, Cost: c.Cost,
 			Place: places.Name(c.Lat, c.Lon, named), Where: c.Where}
+		e.Lat, e.Lon = c.Lat, c.Lon
 		all = append(all, span{e, c.Lat, c.Lon})
 	}
 	sort.SliceStable(all, func(i, j int) bool { return all[i].e.Start < all[j].e.Start })
@@ -106,7 +110,7 @@ func Build(trips []*store.Trip, charges []Charge, named []*store.NamedPlace, fro
 
 // parked is the gap after prev. until is 0 for a stretch that is still going.
 func parked(prev *span, from, until int64, nextSoC *float64, named []*store.NamedPlace) Event {
-	e := Event{Kind: "parked", Start: from, StartSoC: prev.e.EndSoC, EndSoC: nextSoC, Place: prev.e.Place}
+	e := Event{Kind: "parked", Start: from, StartSoC: prev.e.EndSoC, EndSoC: nextSoC, Place: prev.e.Place, Lat: prev.lat, Lon: prev.lon}
 	if e.Place == "" && prev.lat != nil {
 		e.Place = places.Name(prev.lat, prev.lon, named)
 	}

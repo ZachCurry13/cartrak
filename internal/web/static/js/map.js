@@ -76,11 +76,13 @@ export function createMap(cfg, { height = 260, interactive = true } = {}) {
       const pts = r.points.map(xy).join(' ');
       const hit = svgEl('polyline', { points: pts, fill: 'none', stroke: 'transparent', 'stroke-width': 16, class: 'map-hit' });
       if (r.onClick) { hit.style.cursor = 'pointer'; hit.addEventListener('click', r.onClick); }
-      svg.append(svgEl('polyline', { points: pts, fill: 'none', stroke: r.color || '#1b5fc4', 'stroke-width': r.width || 4, 'stroke-linejoin': 'round', 'stroke-linecap': r.dash ? 'butt' : 'round', 'stroke-dasharray': r.dash || null, opacity: r.opacity || 1 }), hit);
+      svg.append(svgEl('polyline', { points: pts, fill: 'none', stroke: r.color || '#1b5fc4', 'stroke-width': r.width || 4, 'stroke-linejoin': 'round', 'stroke-linecap': r.cap || (r.dash ? 'butt' : 'round'), 'stroke-dasharray': r.dash || null, opacity: r.opacity || 1 }), hit);
     }
     for (const m of markers) {
       const [x, y] = xy([m.lat, m.lon]).split(',');
-      svg.append(svgEl('circle', { cx: x, cy: y, r: 7, fill: m.color || '#dc2626', stroke: '#fff', 'stroke-width': 2.5 }));
+      const big = m.label != null ? 11 : 7;
+      svg.append(svgEl('circle', { cx: x, cy: y, r: big, fill: m.color || '#dc2626', stroke: '#fff', 'stroke-width': 2.5 }));
+      if (m.label != null) { const t = svgEl('text', { x, y: Number(y) + 4, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: '#fff' }); t.textContent = String(m.label); svg.append(t); }
     }
   }
 
@@ -132,7 +134,7 @@ export function createMap(cfg, { height = 260, interactive = true } = {}) {
     el.append(h('div', { class: 'map-ctl' }, btn('+', 'Zoom in', () => setZoom(zoom + 1)), btn('−', 'Zoom out', () => setZoom(zoom - 1))));
   }
 
-  new ResizeObserver(render).observe(el);
+  new ResizeObserver(() => { try { render(); } catch (e) { console.error("map render failed", e); } }).observe(el);
 
   return {
     el,

@@ -26,7 +26,8 @@ function levelBar(e) {
     h('i', { class: 'base', style: `width:${lo}%` }), h('i', { class: `chg ${e.kind}`, style: `width:${Math.max(1, hi - lo)}%` }));
 }
 
-function row(e, tz, cur) {
+// One row of the feed. stopNumber, when given, is the stop's number on the day map and replaces the little icon.
+export function eventRow(e, tz, cur, stopNumber) {
   const now = Date.now() / 1000;
   const end = e.end == null ? now : e.end;
   const delta = e.startSoc != null && e.endSoc != null ? Math.round(e.endSoc - e.startSoc) : null;
@@ -34,7 +35,7 @@ function row(e, tz, cur) {
   const right = e.kind === 'charging' ? (e.cost != null ? money(cur, e.cost) : e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '') : e.kind === 'driving' ? dist(e.distanceKm, 1) : '';
   const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '';
   const body = [
-    h('div', { class: 'hrow1' }, h('span', { class: `hico ${e.kind}`, 'aria-hidden': 'true' }, GLYPH[e.kind]),
+    h('div', { class: 'hrow1' }, h('span', { class: `hico ${e.kind}${stopNumber != null ? ' num' : ''}`, 'aria-hidden': 'true' }, stopNumber != null ? stopNumber : GLYPH[e.kind]),
       h('b', {}, `${clock(e.start, tz)} – ${e.end == null ? 'Now' : clock(e.end, tz)}`), h('span', { class: 'muted grow' }, span(end - e.start)),
       delta != null ? h('span', { class: 'hdelta' }, `${delta > 0 ? '+' : ''}${delta}%`) : null),
     levelBar(e),
@@ -71,7 +72,7 @@ export default async function history(root) {
         h('button', { class: 'sec', 'aria-label': 'Later month', disabled: month >= nowMonth, onclick: () => shift(1) }, '›')),
       h('div', { class: 'htotals' }, h('span', {}, '⚡ ', h('b', {}, num(t.kwh, 0, ' kWh'))), h('span', {}, '↗ ', h('b', {}, dist(t.km, 0))), h('span', {}, 'P ', h('b', {}, span(t.parkedSec))),
         t.cost > 0 ? h('span', {}, h('b', {}, money(d.currency, t.cost))) : null),
-      ...(days.length ? days.flatMap((g) => [h('div', { class: 'hday' }, dayHead(g.ts, d.tz)), ...g.list.map((e) => row(e, d.tz, d.currency))])
+      ...(days.length ? days.flatMap((g) => [h('div', { class: 'hday' }, dayHead(g.ts, d.tz), h('a', { class: 'hdaylink', href: `#/day/${g.k}` }, 'Map of this day')), ...g.list.map((e) => eventRow(e, d.tz, d.currency))])
         : [emptyState('Nothing here', 'No trips, charging or parked time were recorded for this selection.')])].filter(Boolean));
   }
   await load();

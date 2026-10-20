@@ -46,8 +46,9 @@ function routeFor(d, mc) {
   if (est && mc.enabled) {
     const line = est.points;
     const m = createMap(mc, { height: 300 });
-    m.show({ routes: [{ points: line, dash: '9 7', width: 4 }], markers: [{ lat: line[0][0], lon: line[0][1], color: '#059669' }, { lat: line[line.length - 1][0], lon: line[line.length - 1][1] }] });
-    return [m.el, h('p', { class: 'muted' }, 'Estimated road route (dashed). A routing service guessed the road between the positions the car recorded; it is not where the car really went. A phone GPS track would show the real path.')];
+    m.show({ routes: [{ points: line, dash: '0.1 9', cap: 'round', width: 5, opacity: 0.85 }], markers: [{ lat: line[0][0], lon: line[0][1], color: '#059669' }, { lat: line[line.length - 1][0], lon: line[line.length - 1][1] }] });
+    m.el.append(h('span', { class: 'maptag' }, 'Estimated route'));
+    return [m.el, h('p', { class: 'muted' }, 'Estimated by a routing service from the positions the car recorded, not where it really went. Phone GPS shows the real path.')];
   }
   if (pts.length < 2) return [h('p', { class: 'muted' }, 'No GPS route recorded for this trip.')];
   if (!mc.enabled) return [route(pts), note];
@@ -96,7 +97,7 @@ export default async function tripDetail(root, [id], session) {
   const avgKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
   const hasStart = t.startLat != null && t.startLon != null;
   const hasEnd = t.endLat != null && t.endLon != null && !t.open;
-  root.append(...[h('p', {}, h('a', { href: '#/trips' }, '← Trips')),
+  root.append(...[h('p', {}, h('a', { href: '#/trips' }, '← Trips'), ' · ', h('a', { href: `#/day/${new Date(t.startTs * 1000).toLocaleDateString('en-CA', t.tz ? { timeZone: t.tz } : {})}` }, 'See the whole day')),
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
       t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
