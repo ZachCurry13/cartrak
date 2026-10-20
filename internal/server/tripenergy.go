@@ -15,6 +15,8 @@ type tripOut struct {
 	EndPlace        string   `json:"endPlace"`
 	StartCity       string   `json:"startCity"` // the city it started or ended in, when CarTrak has looked it up
 	EndCity         string   `json:"endCity"`
+	EstCost         *float64 `json:"estCost"`            // a guess at what its energy cost, at your average price; only on the trip page
+	Currency        string   `json:"currency,omitempty"` // the symbol for EstCost
 }
 
 // capacityKwh is the battery's latest estimated capacity, used to estimate trips that were recorded

@@ -152,3 +152,9 @@ header h1{flex:0 0 auto}
 .tourbody h2{margin:6px 0 6px;font-size:1.25rem}.tourbody p{margin:0 0 10px;line-height:1.5}
 .tourdots{display:flex;gap:4px;margin:8px 0 12px}.tourdots i{flex:1 1 0;height:5px;border-radius:3px;background:var(--line)}.tourdots i.on{background:var(--accent)}
 .tournav{display:flex;justify-content:space-between;gap:12px}.tournav button{min-width:96px;min-height:44px}
+
+/* plan ahead */
+.planbars{display:flex;gap:6px;align-items:flex-end;margin:6px 0 10px}
+.planday{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.planday i{display:block;width:100%;border-radius:4px 4px 2px 2px;background:var(--accent)}
+.planday span{font-size:.75rem;color:var(--muted)}

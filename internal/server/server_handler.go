@@ -118,6 +118,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/export/charging.csv", s.auth(false, s.exportChargesCSV))
 	m.HandleFunc("GET /api/export/all.zip", s.auth(true, s.exportAll))
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
+	m.HandleFunc("GET /api/savings", s.auth(false, s.savingsView))
+	m.HandleFunc("GET /api/plan-ahead", s.auth(false, s.planAhead))
 	m.HandleFunc("GET /api/datacheck", s.auth(false, s.dataCheck))
 	m.HandleFunc("GET /api/reports/options", s.auth(false, s.reportOptions))
 	m.HandleFunc("GET /api/reports/trips.xlsx", s.auth(false, s.downloadReport))

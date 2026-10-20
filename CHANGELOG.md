@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.40.0
+## 0.41.0
+
+### 💰 Cost per mile, savings and CO2
+- **Home → This month** and the **Charging** page now show what charging cost **per mile (or km)**, for the month and the year so far. Each trip page shows an estimated energy cost at your recent average price.
+- In **Charging settings → Compared with a petrol car**, give the petrol price and your petrol car's economy (US gallons and mpg, or litres and L per 100 km) to see **what you saved** against it and the **CO2 avoided**. Nothing is compared until you set both.
+
+### 🗓️ Plan ahead
+- Once there are two weeks of driving, Home shows the **next seven days**: the distance you usually drive on each weekday, the energy it takes, and when the battery would fall below your low-battery level without charging ("plug in by Sunday").
 
 ### 🔌 Charges that start between two readings
 - A parked car is only asked every ten minutes, so a charge that began just after a reading was first seen part-way through, and its session started too late: too high a battery level, too little energy, too short. CarTrak now moves the start back to the last reading before it when the battery had clearly risen, and estimates the start time from the charge power. Use **Fix a day** to correct older sessions.

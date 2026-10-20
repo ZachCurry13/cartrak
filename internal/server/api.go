@@ -77,7 +77,9 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 		end = *t.EndTS
 	}
 	if r.URL.Query().Get("samples") == "0" { // data saver: skip the (large) list of route points
-		ok(w, map[string]any{"trip": s.placeNames(withEnergy(t, s.capacityKwh())), "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
+		one := s.placeNames(withEnergy(t, s.capacityKwh()))
+		s.withTripCost(&one)
+		ok(w, map[string]any{"trip": one, "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
 		return
 	}
 	ss, _ := s.S.TrackBetween(t.StartTS, end)
@@ -86,7 +88,9 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 	if len(phone) < 2 {
 		est = s.estimateFor(t, true)
 	}
-	ok(w, map[string]any{"trip": s.placeNames(withEnergy(t, s.capacityKwh())), "samples": ss, "phone": phone, "estimate": est})
+	one := s.placeNames(withEnergy(t, s.capacityKwh()))
+	s.withTripCost(&one)
+	ok(w, map[string]any{"trip": one, "samples": ss, "phone": phone, "estimate": est})
 }
 
 func (s *Server) patchTrip(w http.ResponseWriter, r *http.Request) {

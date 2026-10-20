@@ -1,4 +1,5 @@
-import { h, emptyState, chip, when, duration, pct, num, dist, isMetric } from '../ui.js';
+import { savingsCard, perDistance } from '../savingscard.js';
+import { h, emptyState, chip, when, duration, pct, num, dist } from '../ui.js';
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
 import { chargeNow } from '../chargenow.js';
@@ -7,10 +8,6 @@ import { curveBox, chargersCompared, recordsCard } from '../curve.js';
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
 const WHERE = { home: 'Home', public: 'Away from home' };
-
-function perDistance(cur, costPerKm) {
-  return `${money(cur, isMetric() ? costPerKm : costPerKm * 1.609344)} per ${isMetric() ? 'km' : 'mi'}`;
-}
 
 // What the charger reported and what you paid: type them in from the receipt to see this session's real efficiency and
 // cost, and to teach CarTrak yours.
@@ -62,9 +59,9 @@ export default async function charging(root, _a, session) {
   const now = chargeNow();
   root.append(h('h2', {}, 'Charging'), h('p', {}, h('a', { class: 'btn sec', href: '#/charging-settings' }, 'Charging settings'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics by day, month, year'), ' ', h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip')), now.el, forecastCard(), box);
   async function load() {
-    const [cs, sum] = await Promise.all([api('/api/charges'), api('/api/charges/summary')]);
+    const [cs, sum, savings] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin)]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
-    box.replaceChildren(...[summaryCard(sum), recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
+    box.replaceChildren(...[summaryCard(sum), savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
   }
   await load();
   return { cleanup: now.stop };

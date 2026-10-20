@@ -1,4 +1,4 @@
-import { h, stat, catChip, dist, speed, when, duration, pct, num } from '../ui.js';
+import { h, stat, catChip, dist, speed, when, duration, pct, num, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
@@ -104,7 +104,8 @@ export default async function tripDetail(root, [id, action], session) {
       t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
-        stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''))),
+        stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : '')),
+        t.estCost != null ? stat('Energy cost (estimate)', `≈ ${t.currency || '$'}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${t.currency || '$'}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null),
       avg),
     why,
     routeBox,
