@@ -66,3 +66,6 @@ Live fits the screen without scrolling, on a phone or a tablet on a car mount. T
 
 ## When did the car last report?
 "Car reported 6 min ago" at the top of the page, and on Live, is when the car itself last had something new to say, from Ford's update times for its values. It is not when CarTrak last asked Ford: CarTrak asks often, but a parked, sleeping car reports only when it wakes (for example for charging, unlocking or a trip). Press and hold the label (or hover on a computer) to see when CarTrak last checked Ford. If Ford has not answered for a quarter of an hour it adds "Ford not answering", which points to a connection problem rather than a sleeping car; the Status page has the details.
+
+## Remote start
+While the car runs from a remote start, Home and Live show how long is left, counted down from the car's own countdown as of its last report. If the car has not reported for a while the time can drift a little. CarTrak only reads this; it cannot start or stop the car.

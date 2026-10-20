@@ -1,3 +1,4 @@
+import { remoteChip } from '../remotestart.js';
 import { h, stat, chip, nice, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
@@ -103,7 +104,8 @@ export default async function dashboard(root, _args, session) {
       const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:-4px 0 12px' },
         chip(driving ? 'personal' : isCharging ? 'ok' : 'work', driving ? 'Driving' : isCharging ? 'Charging' : 'Parked'),
         plugged == null ? null : chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in'),
-        latest.locked == null ? null : chip(latest.locked ? 'ok' : 'work', latest.locked ? 'Locked' : 'Unlocked'));
+        latest.locked == null ? null : chip(latest.locked ? 'ok' : 'work', latest.locked ? 'Locked' : 'Unlocked'),
+        remoteChip(latest));
       out.push(card('Battery', ring.el, chips,
         h('div', { class: 'grid' }, stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE')))),

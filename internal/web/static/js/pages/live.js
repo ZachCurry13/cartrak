@@ -1,6 +1,7 @@
 import { h, chip, nice, dist, speed, num, temp, ago, duration } from '../ui.js';
 import { api } from '../api.js';
 import { effective } from '../mode.js';
+import { remoteChip } from '../remotestart.js';
 import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, clockAt, PRESETS } from '../charge.js';
 import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
@@ -29,6 +30,7 @@ export default async function live(root, _a, session) {
   };
   const conn = chip('work', 'Connecting…');
   const modeChip = chip('work', '');
+  const remoteBox = h('span');
   modeChip.hidden = true;
   const age = h('span', { class: 'muted' });
   const road = h('span', { class: 'muted', role: 'status' });
@@ -39,7 +41,7 @@ export default async function live(root, _a, session) {
   const gps = admin ? gpsCard() : null;
   const power = powerTile();
   const dock = h('div', { class: 'dock' },
-    h('div', { class: 'dock-top' }, conn, modeChip, age, h('span', { class: 'grow' }),
+    h('div', { class: 'dock-top' }, conn, modeChip, remoteBox, age, h('span', { class: 'grow' }),
       admin ? toggle : null,
       h('button', { class: 'sec', onclick: () => (document.fullscreenElement ? document.exitFullscreen() : root.requestFullscreen && root.requestFullscreen()) }, 'Full screen')),
     h('div', { class: 'tiles' }, hero,
@@ -96,6 +98,9 @@ export default async function live(root, _a, session) {
     const x = ev.sample;
     lastCharge = ev.charge || null;
     showMode(pickMode(ev));
+    const rc = remoteChip(x);
+    if (!rc) remoteBox.replaceChildren();
+    else if (!remoteBox.firstChild || remoteBox.dataset.ts !== String(x.remoteStartTs)) { remoteBox.replaceChildren(rc); remoteBox.dataset.ts = String(x.remoteStartTs); }
     if (x) {
       lastTs = x.ts;
       lastX = x;

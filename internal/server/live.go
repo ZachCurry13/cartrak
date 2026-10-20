@@ -44,6 +44,10 @@ type summary struct {
 	CoolantC      *float64 `json:"coolantC"`      // the coolant temperature the car reports
 	TimeToFullMin *float64 `json:"timeToFullMin"` // the car's own estimate while charging
 	ChargerKwh    *float64 `json:"chargerKwh"`    // energy the car measured going in this session
+	// A remote start in progress: seconds the car said were left when it said so, and the time it said it (unix seconds).
+	// Both are nil when no remote start is running. The page counts down from them.
+	RemoteStartSec *float64 `json:"remoteStartSec"`
+	RemoteStartTS  *int64   `json:"remoteStartTs"`
 }
 
 func summarize(x *store.Sample) *summary {
@@ -52,10 +56,18 @@ func summarize(x *store.Sample) *summary {
 	}
 	extra := map[string]any{}
 	_ = json.Unmarshal(x.Extra, &extra)
-	return &summary{BatteryTempC: ford.Number(extra, "xevBatteryTemperature"), PackVolts: x.HVVolts, Battery12V: x.Battery12V,
+	sum := &summary{BatteryTempC: ford.Number(extra, "xevBatteryTemperature"), PackVolts: x.HVVolts, Battery12V: x.Battery12V,
 		MotorVolts: ford.Number(extra, "xevTractionMotorVoltage"), MotorAmps: ford.Number(extra, "xevTractionMotorCurrent"), MotorTempC: motorTemp(extra), PackAmps: ford.Number(extra, "xevBatteryIoCurrent"), CoolantC: ford.Number(extra, "engineCoolantTemp"), TimeToFullMin: ford.Number(extra, "xevBatteryTimeToFullCharge"), ChargerKwh: ford.Number(extra, "xevBatteryChargerEnergyOutput"), TS: x.TS, SoCPct: x.SoCPct, RangeKm: x.RangeKm, SpeedKph: x.SpeedKph, Ignition: x.Ignition,
 		ChargeState: x.ChargeState, Plug: x.Plug, ChargeKw: x.ChargeKw, OutsideC: x.OutsideC,
 		OdometerKm: x.OdometerKm, Lat: x.Lat, Lon: x.Lon, Locked: x.Locked, FuelPct: x.FuelPct, OilLifePct: x.OilLifePct, EnergyKwh: x.EnergyKwh, CapacityKwh: x.CapacityKwh}
+	if left := ford.Number(extra, "remoteStartCountdownTimer"); left != nil && *left > 0 {
+		at := x.TS
+		if t, err := time.Parse(time.RFC3339, ford.Text(extra, "remoteStartCountdownTimer.updateTime")); err == nil && t.Unix() <= x.TS+120 {
+			at = t.Unix() // the time the car set the countdown, which can be older than the reading that carried it
+		}
+		sum.RemoteStartSec, sum.RemoteStartTS = left, &at
+	}
+	return sum
 }
 
 // liveEvent is pushed to every open live connection after each new reading.

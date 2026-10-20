@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.31.0
+
+### 🔥 Remote start, on screen
+- When the car is running from a **remote start**, **Home** and **Live** show a **Remote start · 12:30 left** chip that counts down each second, using the car's own countdown until it shuts itself off. It disappears when the countdown ends.
+- Press the chip's area (hover or long-press) to see how many remote starts CarTrak has seen since the car was last driven. The car only allows a couple in a row, so this is a quick way to know where you stand. It is CarTrak's own count from the readings it saw, so a start that began and ended between two readings is missed.
+- A remote start is still never recorded as a trip.
 ## 0.30.2
 
 ### 🐛 Fixes

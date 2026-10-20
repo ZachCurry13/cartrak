@@ -219,3 +219,22 @@ func TestTheLiveSummaryCarriesBatteryAndMotorReadingsAndFindsAMotorTemperatureWh
 		t.Fatalf("nothing is invented when the car does not send it: %+v", plain)
 	}
 }
+
+func TestTheLiveSummaryShowsARemoteStartOnlyWhileTheCountdownRuns(t *testing.T) {
+	x := &store.Sample{TS: 1792540500, Extra: json.RawMessage(`{"remoteStartCountdownTimer.value": 540, "remoteStartCountdownTimer.updateTime": "2026-10-21T00:00:00Z"}`)}
+	got := summarize(x)
+	if got.RemoteStartSec == nil || *got.RemoteStartSec != 540 || got.RemoteStartTS == nil {
+		t.Fatalf("a running countdown is carried: %+v", got)
+	}
+	if *got.RemoteStartTS != 1792540500 { // the car's update time is later than the reading, so the reading's time is used
+		t.Fatalf("time: %d", *got.RemoteStartTS)
+	}
+	old := summarize(&store.Sample{TS: 1792540860, Extra: json.RawMessage(`{"remoteStartCountdownTimer.value": 540, "remoteStartCountdownTimer.updateTime": "2026-10-20T23:59:00Z"}`)})
+	if old.RemoteStartTS == nil || *old.RemoteStartTS != 1792540740 {
+		t.Fatalf("the time the car set the countdown is used when it is earlier: %+v", old.RemoteStartTS)
+	}
+	none := summarize(&store.Sample{TS: 5, Extra: json.RawMessage(`{"remoteStartCountdownTimer.value": 0}`)})
+	if none.RemoteStartSec != nil || none.RemoteStartTS != nil {
+		t.Fatalf("zero means no remote start: %+v", none)
+	}
+}
