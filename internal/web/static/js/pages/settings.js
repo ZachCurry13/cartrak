@@ -1,5 +1,6 @@
 import { h, chip, ago, item, group } from '../ui.js';
 import { api } from '../api.js';
+import { forgetOffline } from '../offlinestore.js';
 import { notices } from '../notice.js';
 import { buildIndex, search } from '../searchindex.js';
 
@@ -51,7 +52,7 @@ export default async function settings(root, _a, session) {
           item('#/guide', 'What CarTrak can do', 'Everything, and where to find it'),
           admin ? item('#/start', 'Getting started', 'A short checklist') : null,
           item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
-    h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); session.me = null; location.hash = '#/'; location.reload(); } },
+    h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); await forgetOffline(); session.me = null; location.hash = '#/'; location.reload(); } },
       `Sign out ${session.me.name}`)));
 }
 

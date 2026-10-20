@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.39.0
+
+### 📴 Works with no signal
+- Every read-only screen (Trips, Day, Charging, Statistics, the mileage log, Health and the rest) now remembers its last answer on the device, so with no signal it opens with a small **"Offline. Showing what this device saved"** bar instead of an error. Home already did this.
+- Screens that show a "last 7 / 30 days" window find their saved answer again even though the exact time has moved on.
+- Map pictures you have looked at are kept on the device (up to 500), so a map you have seen before still draws offline.
+- Changes (editing a trip, settings) say "You are offline" rather than failing silently. Nothing is queued.
+- Screens with secrets or people (sharing, sign-in log, Ford link, backups, reports, the Debug report) are never kept. Everything saved on the device is wiped when you sign out.
+
 ## 0.38.3
 
 ### 🚪 Honest door names

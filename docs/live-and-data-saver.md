@@ -33,7 +33,7 @@ a phone on a limited plan can use Data saver while your desktop stays Live.
 | **Data saver** | Small summaries, refresh every 5 min, nothing in the background; the trip route and the All data page download only when you tap |
 
 Everything is also compressed (gzip) and uses "unchanged" replies, so a refresh with
-nothing new costs almost nothing. Nothing is cached offline except the app files.
+nothing new costs almost nothing. What the device keeps for offline use is described below.
 
 ## Layouts
 - **Phone:** one column, tabs along the bottom.
@@ -48,8 +48,13 @@ The normal intervals are in [Configuration](configuration.md).
 
 ## Offline
 Your server keeps collecting from Ford even when your phone has no signal, so nothing is lost: open the app
-again and the history is there. The app also remembers the last readings on each device, so Home opens with a
-clear "You are offline" banner instead of an error. Anything not yet saved on the device (other pages) needs a connection.
+again and the history is there. Each device also keeps the last answer of every read-only screen (Home, Trips, Day, Charging,
+Statistics, the mileage log and the rest), per car, in its own storage. With no signal those screens open with a small
+"Offline. Showing what this device saved" bar instead of an error. Two things are deliberately not kept: screens with
+secrets or people (sharing, the sign-in log, Ford link, backups, reports, the Debug report), and anything you change.
+Changes say "You are offline" and need a connection. Map pictures you have looked at are kept too (up to 500), so a map seen
+before still draws. Everything on the device is wiped when you sign out. Screens you never opened while online have nothing
+saved, so open the ones you want in a dead zone beforehand.
 
 ## Ford's request limit (why 30 seconds)
 Ford only allows an app roughly **one request per endpoint every 30 seconds**; asking sooner returns HTTP 429
