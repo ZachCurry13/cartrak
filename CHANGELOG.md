@@ -1,10 +1,16 @@
 # Changelog
 
-## 0.31.1
+## 0.32.0
+
+### 🗺️ Estimated roads for trips without phone GPS (optional, off by default)
+- A trip the car recorded with only its start and end is drawn as a straight line across the lake. Switch on **Road estimate for trips without phone GPS** in More, Settings and CarTrak asks a routing service for the likely road between the positions the car recorded, and draws it **dashed** with a note that it is an estimate. A phone GPS track always wins over it.
+- **Older trips:** on the Trips page, **Estimate their roads** works through the older straight-line trips a few at a time. The answers are kept, so the routing service is asked once per trip.
+- **Privacy:** it sends the start, the end and a few positions along the way to the routing service, which is why it is off by default. It uses the public OSRM demo server unless you give your own address (More, Settings, Routing service address), and a length check against the odometer drops any estimate that looks wrong.
 
 ### 🔒 Security
 - **Go 1.27.2.** A scan of the project found 10 known vulnerabilities in the Go standard library (the web server and TLS code CarTrak is built on), all fixed in Go 1.27.2. CarTrak now builds with that version.
 - **Automatic security scans.** A new weekly (and on every push to the main branch) check runs Go's official vulnerability scanner and GitHub's CodeQL code scanner for Go and JavaScript. Both are free for public projects; results appear in the repository's Security tab.
+
 ## 0.31.0
 
 ### 🔎 Field watcher

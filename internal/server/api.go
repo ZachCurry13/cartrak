@@ -82,7 +82,12 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ss, _ := s.S.TrackBetween(t.StartTS, end)
-	ok(w, map[string]any{"trip": s.placeNames(withEnergy(t, s.capacityKwh())), "samples": ss, "phone": s.phoneRoute(t.StartTS, end)})
+	phone := s.phoneRoute(t.StartTS, end)
+	var est *estimateOut
+	if len(phone) < 2 {
+		est = s.estimateFor(t, true)
+	}
+	ok(w, map[string]any{"trip": s.placeNames(withEnergy(t, s.capacityKwh())), "samples": ss, "phone": phone, "estimate": est})
 }
 
 func (s *Server) patchTrip(w http.ResponseWriter, r *http.Request) {

@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"io/fs"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/connector"
 	"github.com/ZachCurry13/cartrak/internal/poller"
 	"github.com/ZachCurry13/cartrak/internal/push"
+	"github.com/ZachCurry13/cartrak/internal/routeest"
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
@@ -39,10 +41,13 @@ type Server struct {
 	Conn        *connector.Manager // keeps the connector up to date (nil in some tests)
 	Port        string             // port the app listens on, for the setup steps
 	hub         hub
-	TrustProxy  bool             // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
-	SessionDays int              // "keep me signed in" length; 0 = 30
-	Upd         *updater.Checker // nil disables update checks
-	Weather     *weather.Client  // the optional wind lookup (nil uses the real service)
+	RouteEst    *routeest.Client // optional, for tests
+	routeMu     sync.Mutex
+	routeFail   map[int64]time.Time // trips whose road estimate failed lately
+	TrustProxy  bool                // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
+	SessionDays int                 // "keep me signed in" length; 0 = 30
+	Upd         *updater.Checker    // nil disables update checks
+	Weather     *weather.Client     // the optional wind lookup (nil uses the real service)
 	lim         limiter
 	devRate     rateWindow    // per-device call limit for the phone ingest API
 	TileDir     string        // where downloaded map tiles are kept; empty switches maps off
@@ -118,6 +123,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/live-mode", s.auth(true, s.setLiveMode))
 	m.HandleFunc("GET /api/trips", s.auth(false, s.listTrips))
 	m.HandleFunc("GET /api/trips/routes", s.auth(false, s.tripRoutes))
+	m.HandleFunc("GET /api/trips/estimate-routes", s.auth(true, s.estimateRoutes))
+	m.HandleFunc("POST /api/trips/estimate-routes", s.auth(true, s.estimateRoutes))
 	m.HandleFunc("GET /api/trips/{id}", s.auth(false, s.tripDetail))
 	m.HandleFunc("GET /api/trips/{id}/why", s.auth(false, s.tripWhy))
 	m.HandleFunc("GET /api/insights", s.auth(false, s.efficiencyInsights))

@@ -76,7 +76,7 @@ export function createMap(cfg, { height = 260, interactive = true } = {}) {
       const pts = r.points.map(xy).join(' ');
       const hit = svgEl('polyline', { points: pts, fill: 'none', stroke: 'transparent', 'stroke-width': 16, class: 'map-hit' });
       if (r.onClick) { hit.style.cursor = 'pointer'; hit.addEventListener('click', r.onClick); }
-      svg.append(svgEl('polyline', { points: pts, fill: 'none', stroke: r.color || '#1b5fc4', 'stroke-width': r.width || 4, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', opacity: r.opacity || 1 }), hit);
+      svg.append(svgEl('polyline', { points: pts, fill: 'none', stroke: r.color || '#1b5fc4', 'stroke-width': r.width || 4, 'stroke-linejoin': 'round', 'stroke-linecap': r.dash ? 'butt' : 'round', 'stroke-dasharray': r.dash || null, opacity: r.opacity || 1 }), hit);
     }
     for (const m of markers) {
       const [x, y] = xy([m.lat, m.lon]).split(',');

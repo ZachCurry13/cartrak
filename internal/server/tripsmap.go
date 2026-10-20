@@ -59,6 +59,9 @@ func (s *Server) routeOf(t *store.Trip) [][2]float64 {
 	}
 	if len(line) < 2 {
 		line = line[:0]
+		if est := s.estimateFor(t, false); est != nil { // an estimate kept earlier beats a straight line (never asks the service here)
+			return thinLine(est.Points, overviewPoints)
+		}
 		ss, _ := s.S.TrackBetween(t.StartTS, end)
 		for _, x := range ss {
 			if x.Lat != nil && x.Lon != nil {

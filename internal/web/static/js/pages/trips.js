@@ -4,6 +4,7 @@ import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { monthsCard } from '../rangeband.js';
 import { tripSelect } from '../tripselect.js';
+import { routeEstimateBar } from '../routeestimatebar.js';
 
 const RANGES = { week: 7, month: 30, year: 365, all: 0 };
 
@@ -72,7 +73,9 @@ export default async function trips(root, _a, session) {
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
   const selectRow = h('p');
   const review = h('div');
-  root.append(h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
+  const estBar = h('div');
+  if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
+  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

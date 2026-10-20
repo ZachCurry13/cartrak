@@ -82,6 +82,7 @@ func (s *Store) UpdateTrip(t *Trip) error {
 
 func (s *Store) DeleteTrip(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM trips WHERE id=?`, id)
+	s.DeleteRouteEstimate(id) // its estimated road goes with it
 	return err
 }
 

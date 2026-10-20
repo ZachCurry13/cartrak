@@ -42,6 +42,13 @@ function routeFor(d, mc) {
   const phone = (d.phone || []).filter((p) => p.lat != null && p.lon != null);
   const pts = phone.length >= 2 ? phone : (d.samples || []).filter((s) => s.lat != null && s.lon != null);
   const note = phone.length >= 2 ? h('p', { class: 'muted' }, `Drawn from your phone's GPS (${phone.length} points).`) : null;
+  const est = phone.length < 2 && d.estimate && d.estimate.points && d.estimate.points.length >= 2 ? d.estimate : null;
+  if (est && mc.enabled) {
+    const line = est.points;
+    const m = createMap(mc, { height: 300 });
+    m.show({ routes: [{ points: line, dash: '9 7', width: 4 }], markers: [{ lat: line[0][0], lon: line[0][1], color: '#059669' }, { lat: line[line.length - 1][0], lon: line[line.length - 1][1] }] });
+    return [m.el, h('p', { class: 'muted' }, 'Estimated road route (dashed). A routing service guessed the road between the positions the car recorded; it is not where the car really went. A phone GPS track would show the real path.')];
+  }
   if (pts.length < 2) return [h('p', { class: 'muted' }, 'No GPS route recorded for this trip.')];
   if (!mc.enabled) return [route(pts), note];
   const line = pts.map((p) => [p.lat, p.lon]);

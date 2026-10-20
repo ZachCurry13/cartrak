@@ -21,7 +21,14 @@ If you would rather not use maps at all, set **More, Settings, Maps** to Off. Ca
 |---|---|---|
 | Maps | `CARTRAK_MAP_ENABLED` | Empty is on; `off` turns maps off |
 | Map tile server (advanced) | `CARTRAK_MAP_TILE_URL` | Another provider's address, with `{z}`, `{x}` and `{y}` in it. Must be https (or http on localhost). Default: OpenStreetMap |
+| Road estimate for trips without phone GPS | `CARTRAK_ROUTE_LOOKUP` | Empty is off; `on` draws an estimated road for trips the car recorded with only a few positions, dashed, and never over a phone GPS track |
+| Routing service address (advanced) | `CARTRAK_ROUTE_URL` | An OSRM-compatible server. Empty uses the public demo server (light use only). Your own keeps the positions off the internet |
 | Map credit (advanced) | `CARTRAK_MAP_ATTRIBUTION` | The credit line shown on maps. Change it together with the tile server |
+
+## Estimated roads
+A car often reports only where a trip started and ended, so its route is a straight line across lakes and fields. With the road estimate switched on (More, Settings), CarTrak asks a routing service for the road between the positions the car did record (up to eight, so the estimate stays on the road you used), checks that its length is believable against the odometer, and draws it dashed on the trip. It is a guess at the likely road, not where the car went: only a phone GPS track shows that, and a phone track always wins. The answer is kept, so the service is asked once per trip.
+
+Older trips: open More, Trips and press **Estimate their roads** to do them a few at a time (the routing service is queried slowly on purpose). Switching the estimate off does not delete estimates already made.
 
 ## Good to know
 - OpenStreetMap's tile server is meant for light use and asks apps to identify themselves; CarTrak sends `CarTrak/<version>` with a link to its project page and keeps copies so each tile is downloaded rarely. For heavy or commercial use choose a provider that allows it and set it above.
