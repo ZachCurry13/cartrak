@@ -4,33 +4,32 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/charging"
 	"github.com/ZachCurry13/cartrak/internal/planahead"
 	"github.com/ZachCurry13/cartrak/internal/savings"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 // savingsFor is the charging cost, cost per distance and saving against the gas car for sessions that started in [from, to).
-func (s *Server) savingsFor(from, to time.Time) savings.Result {
+func (s *Server) savingsFor(ss []charging.Session, from, to time.Time) savings.Result {
 	in := savings.Input{GridKgPerKwh: 0.37}
 	if s.Cfg != nil {
 		p := s.Cfg.Gas()
 		in.LitresPerKm, in.PricePerLitre, in.GridKgPerKwh = p.LitresPerKm, p.PricePerLitre, s.Cfg.GridCO2()
 	}
-	if ss, _, err := s.chargeSessionsEff(1000); err == nil {
-		for _, c := range ss {
-			if c.Open || c.AddedKwh == nil || c.StartTS < from.Unix() || c.StartTS >= to.Unix() {
-				continue
-			}
-			in.Sessions++
-			if c.Cost != nil {
-				in.Priced++
-				in.ChargingCost += *c.Cost
-			}
-			if c.WallKwh != nil {
-				in.WallKwh += *c.WallKwh
-			} else {
-				in.WallKwh += *c.AddedKwh
-			}
+	for _, c := range ss {
+		if c.Open || c.AddedKwh == nil || c.StartTS < from.Unix() || c.StartTS >= to.Unix() {
+			continue
+		}
+		in.Sessions++
+		if c.Cost != nil {
+			in.Priced++
+			in.ChargingCost += *c.Cost
+		}
+		if c.WallKwh != nil {
+			in.WallKwh += *c.WallKwh
+		} else {
+			in.WallKwh += *c.AddedKwh
 		}
 	}
 	if pts, err := s.S.OdoBetween(from.Unix(), to.Unix()); err == nil && len(pts) > 1 {
@@ -48,7 +47,8 @@ func (s *Server) savingsView(w http.ResponseWriter, r *http.Request) {
 	yearStart := time.Date(local.Year(), 1, 1, 0, 0, 0, 0, loc)
 	end := now.Add(time.Hour)
 	gasSet := s.Cfg != nil && s.Cfg.Gas().Set()
-	out := map[string]any{"currency": s.currency(), "gasSet": gasSet, "month": s.savingsFor(monthStart, end), "year": s.savingsFor(yearStart, end)}
+	ss, _, _ := s.chargeSessionsEff(1000)
+	out := map[string]any{"currency": s.currency(), "gasSet": gasSet, "month": s.savingsFor(ss, monthStart, end), "year": s.savingsFor(ss, yearStart, end)}
 	ok(w, out)
 }
 

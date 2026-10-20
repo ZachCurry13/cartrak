@@ -12,6 +12,11 @@ import (
 // placeNames fills in the names of the places a trip started and ended at.
 func (s *Server) placeNames(o tripOut) tripOut {
 	all, _ := s.S.ListNamedPlaces()
+	return namedWith(o, all)
+}
+
+// namedWith is placeNames with the places already read, for a list of trips.
+func namedWith(o tripOut, all []*store.NamedPlace) tripOut {
 	if len(all) == 0 || o.Trip == nil {
 		return o
 	}

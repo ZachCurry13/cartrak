@@ -161,13 +161,27 @@ func (l *limiter) blocked(ip string) bool {
 	if l.fails == nil {
 		l.fails = map[string][]time.Time{}
 	}
-	l.fails[ip] = keep
+	if len(keep) == 0 {
+		delete(l.fails, ip)
+	} else {
+		l.fails[ip] = keep
+	}
+	if len(l.fails) > 1000 { // many addresses (a scan of share links): drop every one that has gone quiet
+		for k, ts := range l.fails {
+			if len(ts) == 0 || !ts[len(ts)-1].After(cut) {
+				delete(l.fails, k)
+			}
+		}
+	}
 	return len(keep) >= 5
 }
 
 func (l *limiter) fail(ip string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if l.fails == nil {
+		l.fails = map[string][]time.Time{}
+	}
 	l.fails[ip] = append(l.fails[ip], time.Now())
 }
 

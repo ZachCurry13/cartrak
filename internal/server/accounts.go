@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -22,7 +23,15 @@ func (s *Server) setupState(w http.ResponseWriter, r *http.Request) {
 }
 
 // setup creates the first admin. It only works while there are no users.
+// setupMu keeps first-time setup to one at a time.
+var setupMu sync.Mutex
+
+// dummyHash is compared against when the name is unknown. It is the hash of a random password nobody knows.
+var dummyHash, _ = hashPassword(randToken())
+
 func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
+	setupMu.Lock() // two first-time setups at once must not both make an administrator
+	defer setupMu.Unlock()
 	if s.core().CountUsers() != 0 {
 		fail(w, 403, "already set up")
 		return
@@ -74,7 +83,11 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u, _ := s.core().UserByName(strings.TrimSpace(c.Name))
-	if u == nil || checkPassword(u.Hash, c.Password) != nil {
+	hash := dummyHash // an unknown name takes as long as a wrong password, so the answer does not say which names exist
+	if u != nil {
+		hash = u.Hash
+	}
+	if checkPassword(hash, c.Password) != nil || u == nil {
 		s.lim.fail(ip)
 		s.logSignin(r, strings.TrimSpace(c.Name), false)
 		fail(w, 401, "wrong name or password")

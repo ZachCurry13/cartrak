@@ -6,7 +6,7 @@ import { showOffline, hideOffline } from './offlinebar.js';
 export class AuthError extends Error {}
 
 // Screens that read secrets, tokens, people or downloads are never kept on the device.
-const NEVER_KEPT = /^\/api\/(share|shares|reports|debug|export|backup|restore|security|ford|login|logout|setup|users|people|push|devices|admin|connector|ha|remote|tiles|cars\/[^/]+\/(access|backup))/;
+const NEVER_KEPT = /^\/api\/(share|shares|reports|debug|export|backup|restore|security|ford|login|logout|setup|users|people|push|devices|admin|connector|ha|remote|tiles|cars\/[^/]+\/(access|backup))(\/|\?|$)/;
 
 export async function api(path, opts = {}) {
   const init = { credentials: 'same-origin', headers: {}, method: opts.method || 'GET' };

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.41.1
+
+### 🧹 A tidy-up after a review of the whole app
+- **What's new** shows **bold** text as bold instead of with asterisks around it.
+- Checkbox rows (Notifications, Reports) are taller, so they are easier to tap on a phone.
+- With no signal, the **Status** page now opens from what the device saved too (a pattern meant for other pages was catching it).
+- The Trips list and the savings figures load faster: place names are read once per list instead of once per trip, and charging sessions are worked through once.
+
+### 🔒 Safer sign-in
+- Signing in with a name that does not exist now takes as long as a wrong password, so the answer does not reveal which names exist.
+- The sign-in lockout forgets addresses that have gone quiet, so a flood of wrong share links cannot make it grow without end.
+- First-time setup can only create one administrator, even if two people try at the same moment.
+
 ## 0.41.0
 
 ### 💰 Cost per mile, savings and CO2

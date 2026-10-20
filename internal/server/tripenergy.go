@@ -42,9 +42,10 @@ func withEnergy(t *store.Trip, capacity *float64) tripOut {
 
 func (s *Server) tripsWithEnergy(ts []*store.Trip) []tripOut {
 	capacity := s.capacityKwh()
+	all, _ := s.S.ListNamedPlaces()
 	out := make([]tripOut, 0, len(ts))
 	for _, t := range ts {
-		out = append(out, s.placeNames(withEnergy(t, capacity)))
+		out = append(out, namedWith(withEnergy(t, capacity), all))
 	}
 	return out
 }

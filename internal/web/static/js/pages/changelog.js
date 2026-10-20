@@ -1,5 +1,8 @@
 import { h } from '../ui.js';
 
+// **bold** inside a line, as text nodes and <b> elements: never HTML.
+const inline = (text) => text.split('**').map((part, i) => (i % 2 ? h('b', {}, part) : part)).filter((x) => x !== '');
+
 // Minimal markdown for our own CHANGELOG.md: ## version, ### group, - bullet. Text only, never HTML.
 function render(md, current) {
   const out = [];
@@ -15,10 +18,10 @@ function render(md, current) {
       out.push(h('h3', { style: 'margin:12px 0 4px;font-size:1rem' }, line.slice(4).trim()));
     } else if (line.startsWith('- ')) {
       if (!list) { list = h('ul', { style: 'margin:0 0 8px;padding-left:20px' }); out.push(list); }
-      list.append(h('li', {}, line.slice(2).trim()));
+      list.append(h('li', {}, ...inline(line.slice(2).trim())));
     } else if (line.trim()) {
       list = null;
-      out.push(h('p', {}, line.trim()));
+      out.push(h('p', {}, ...inline(line.trim())));
     }
   }
   return out;
