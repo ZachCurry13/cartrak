@@ -24,3 +24,7 @@ You see the link **once**, when you make it, and can copy it then. CarTrak keeps
 
 ## Using it from outside your home
 The link only works where CarTrak can be reached. To share with people outside your home, set up **Remote access** first (see [Cloudflare](cloudflare.md)); then the link uses your public address. If you protect the address with Cloudflare Access, add a rule that lets the paths starting with `/s/` through without signing in, or the people you share with will be asked to log in. Do not open anything else.
+
+## Sharing a whole day
+
+Open a day in the **Day view** and use **Share this day** (or the Share box at the bottom of the page). The link shows the day's trips together: distance, driving time, number of trips and stops, and the routes if you choose to include them, with the same choices as a trip (route trimmed at both ends, the whole route, or numbers only; whether to show the cities and the times; when it stops working). It never says which categories the trips have, so a medical trip in the day is not labelled as one. A day with a trip still in progress cannot be shared yet.

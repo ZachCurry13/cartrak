@@ -28,6 +28,7 @@
 - **Modes.** Vacation mode is now one of several: pick the days and a mode (Vacation, **Work trip**, **Medical**, or one of your categories) and every trip in them gets that label. If two modes cover the same day, the one you added last wins. Trips you set by hand keep what you chose.
 
 ### 🔗 Share a trip from more places
+- **Share a whole day.** The Day view has a **Share this day** button: one public link for all of the day's trips, with the same choices as a trip (route trimmed or whole, or numbers only, cities, times, expiry). It never shows the trips' categories.
 - A **Share** button on every trip in the Trips list, and **Share this trip** in a drive opened in the Day view (admins). Both open the trip with its share box ready. The Home Last trip card already had it.
 
 ## 0.36.0

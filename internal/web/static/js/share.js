@@ -37,8 +37,8 @@ async function main() {
     return root.replaceChildren(h('p', { class: 'muted' }, 'This link does not exist, has expired, or was turned off by its owner.'));
   }
   const d = await r.json();
-  const journey = d.kind === 'journey';
-  const title = d.title || (journey ? 'A journey' : 'A trip');
+  const journey = d.kind === 'journey' || d.kind === 'day';
+  const title = d.title || (d.kind === 'day' ? 'A day of driving' : journey ? 'A journey' : 'A trip');
   document.title = title;
   document.getElementById('title').textContent = title;
   const when = d.start ? `${new Date(d.start * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', timeZone: d.tz || undefined })} to ${new Date(d.end * 1000).toLocaleTimeString([], { timeStyle: 'short', timeZone: d.tz || undefined })}` : '';
@@ -49,6 +49,7 @@ async function main() {
       d.origin || d.dest ? h('p', {}, h('b', {}, [d.origin, d.dest].filter(Boolean).join(' → '))) : null,
       when ? h('p', { class: 'muted' }, when) : null,
       h('div', { class: 'grid' }, tile('Distance', fmtDist(d.distanceKm, d.units)), tile('Driving time', fmtTime(d.durationSec)),
+        ...(d.kind === 'day' ? [tile('Trips', String(d.legs))] : []),
         ...(journey ? [tile('Elapsed', d.elapsedSec != null ? fmtTime(d.elapsedSec) : '—'), tile('Stops', String(d.stops))] : []),
         ...(d.energyKwh != null ? [tile('Energy used', `${d.energyEstimated ? '≈ ' : ''}${d.energyKwh.toFixed(1)} kWh`), eff ? tile('Efficiency', eff) : null] : []).filter(Boolean))),
     d.routeHidden ? h('p', { class: 'muted' }, 'The route is hidden because the trip is too short to show without revealing where it started or ended.') : null,

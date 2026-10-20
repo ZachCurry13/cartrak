@@ -31,8 +31,25 @@ func (s *Server) shareRoutes(sh *store.Share, ts []*store.Trip) [][][2]float64 {
 	return out
 }
 
-// shareTrips is the trips a link covers: one trip, or all the legs of a journey.
+// validDay says whether a number is a date written YYYYMMDD, which is how a day is named in a link.
+func validDay(id int64) bool {
+	y, m, d := int(id/10000), int(id/100%100), int(id%100)
+	if y < 2000 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31 {
+		return false
+	}
+	return time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC).Day() == d
+}
+
+// shareTrips is the trips a link covers: one trip, all the legs of a journey, or every trip of one day.
 func (s *Server) shareTrips(kind string, id int64) []*store.Trip {
+	if kind == "day" {
+		if !validDay(id) {
+			return nil
+		}
+		start := time.Date(int(id/10000), time.Month(id/100%100), int(id%100), 0, 0, 0, 0, s.defaultLoc())
+		ts, _ := s.S.TripsBetween(start.Unix(), start.AddDate(0, 0, 1).Unix())
+		return ts
+	}
 	if kind == "journey" {
 		ts, _ := s.S.JourneyTrips(id)
 		return ts
@@ -57,7 +74,7 @@ type shareIn struct {
 // createShare makes a public link and returns it once; only a hash of its secret is kept. Admin only.
 func (s *Server) createShare(w http.ResponseWriter, r *http.Request) {
 	var in shareIn
-	if decode(r, &in) != nil || (in.Kind != "trip" && in.Kind != "journey") || (in.Mode != "stats" && in.Mode != "trimmed" && in.Mode != "full") || in.ExpiresDays < 0 || in.ExpiresDays > 365 {
+	if decode(r, &in) != nil || (in.Kind != "trip" && in.Kind != "journey" && in.Kind != "day") || (in.Mode != "stats" && in.Mode != "trimmed" && in.Mode != "full") || in.ExpiresDays < 0 || in.ExpiresDays > 365 {
 		fail(w, 400, "choose what to share, how much of the route, and a valid expiry")
 		return
 	}
@@ -145,7 +162,7 @@ func (s *Server) shareData(sh *store.Share) map[string]any {
 	}
 	sum := journey.Summarize(ts, s.capacityKwh(), nil, nil)
 	out["distanceKm"], out["durationSec"], out["energyKwh"], out["energyEstimated"], out["kmPerKwh"] = sum.DistanceKm, sum.MovingSec, sum.KwhUsed, sum.KwhEstimated, sum.KmPerKwh
-	if sh.Kind == "journey" {
+	if sh.Kind == "journey" || sh.Kind == "day" {
 		out["stops"], out["elapsedSec"] = len(sum.Stops), sum.ElapsedSec
 	}
 	if sh.ShowTime && len(ts) > 0 {

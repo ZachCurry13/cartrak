@@ -116,3 +116,46 @@ func TestAPublicLinkShowsOnlyWhatWasChosenAndCanBeTurnedOff(t *testing.T) {
 		t.Fatalf("anonymous cannot create links: %d", c)
 	}
 }
+
+func TestAWholeDayCanBeSharedAndOnlyARealDay(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	loc := srv.defaultLoc()
+	day := time.Now().In(loc).AddDate(0, 0, -2)
+	noon := time.Date(day.Year(), day.Month(), day.Day(), 12, 0, 0, 0, loc)
+	for i, km := range []float64{4, 6} {
+		start := noon.Add(time.Duration(i) * 2 * time.Hour)
+		end := start.Add(20 * time.Minute).Unix()
+		a, b := 100.0+float64(i)*10, 100.0+float64(i)*10+km
+		if err := srv.S.AddManualTrip(&store.Trip{StartTS: start.Unix(), EndTS: &end, DistanceKm: km, StartOdo: &a, EndOdo: &b, Category: "medical", TZ: loc.String()}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	id := day.Year()*10000 + int(day.Month())*100 + day.Day()
+	code, out := do(t, admin, "POST", ts.URL+"/api/shares", fmt.Sprintf(`{"kind":"day","id":%d,"mode":"stats","title":"My day"}`, id), xh)
+	var r struct{ Path string }
+	_ = json.Unmarshal([]byte(out), &r)
+	if code != 200 || !strings.HasPrefix(r.Path, "/s/sh_") {
+		t.Fatalf("share a day: %d %s", code, out)
+	}
+	_, data := do(t, &http.Client{}, "GET", ts.URL+r.Path+"/data", "", nil)
+	var d struct {
+		Kind       string
+		Legs       int
+		DistanceKm float64
+	}
+	if json.Unmarshal([]byte(data), &d) != nil || d.Kind != "day" || d.Legs != 2 || d.DistanceKm != 10 {
+		t.Fatalf("both trips of the day, 10 km: %s", data)
+	}
+	if strings.Contains(data, "medical") {
+		t.Fatalf("a link must not name the categories: %s", data)
+	}
+	for _, bad := range []string{"20261340", "19990101", "0"} {
+		if code, _ := do(t, admin, "POST", ts.URL+"/api/shares", `{"kind":"day","id":`+bad+`,"mode":"stats"}`, xh); code == 200 {
+			t.Fatalf("%s is not a day", bad)
+		}
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/shares", `{"kind":"day","id":20200101,"mode":"stats"}`, xh); code != 404 {
+		t.Fatalf("a day with no trips: %d", code)
+	}
+}

@@ -4,6 +4,7 @@ import { createMap, mapConfig } from '../map.js';
 import { effSpan } from '../energy.js';
 import { eventRow } from './history.js';
 import { expandable } from '../daydetail.js';
+import { shareCard } from '../sharecard.js';
 
 const COLORS = ['#1b5fc4', '#d97706', '#7c3aed', '#0d9488', '#be185d', '#475569'];
 const STOP_COLOR = { charging: '#16a34a', parked: '#64748b' };
@@ -36,7 +37,8 @@ function summaryCard(x) {
 }
 
 // A whole day on one map: every trip's route, the stops between them numbered to match the list underneath, and the day's totals.
-export default async function day(root, [date]) {
+export default async function day(root, [date, action], session) {
+  const admin = session && session.me.role === 'admin';
   const mc = await mapConfig();
   const box = h('div');
   root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')), h('div', { class: 'page-title' }, h('h2', {}, 'Day view')), box);
@@ -71,7 +73,11 @@ export default async function day(root, [date]) {
       map = h('div', {}, m.el, x.routes.some((r) => r.kind === 'estimate') ? h('div', { class: 'legend' }, h('span', {}, h('i'), 'recorded route'), h('span', {}, h('i', { class: 'dot' }), 'estimated road')) : null);
     } else if (x.routes.length) map = h('p', { class: 'muted' }, 'Maps are switched off, so only the list is shown.');
     const list = x.events.length ? x.events.flatMap((v) => expandable(eventRow(v, x.tz, x.currency, stopNo.get(v)), v, x.currency)) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
-    box.replaceChildren(nav, h('p', {}, picker), summaryCard(x), tiles, map, h('h3', { style: 'margin:16px 0 6px' }, 'The day, in order'), ...list);
+    const finished = x.events.some((v) => v.kind === 'driving') && !x.events.some((v) => v.kind === 'driving' && v.end == null);
+    const share = admin && finished ? shareCard('day', x.date.replace(/-/g, ''), label) : null;
+    const goShare = () => { const t = share && share.querySelector('#sht'); if (t) { share.scrollIntoView({ block: 'start' }); t.focus(); } };
+    box.replaceChildren(...[nav, h('p', { class: 'seg' }, picker, share ? h('button', { class: 'sec', onclick: goShare }, 'Share this day') : null), summaryCard(x), tiles, map, h('h3', { style: 'margin:16px 0 6px' }, 'The day, in order'), ...list, share].filter(Boolean));
+    if (action === 'share') setTimeout(goShare, 80);
   }
   await load(date);
 }

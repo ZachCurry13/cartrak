@@ -49,7 +49,7 @@ export async function sharesList() {
       ...(xs.length ? xs.map((x) => {
         const dead = x.revoked || (x.expires && x.expires < now);
         const how = x.mode === 'stats' ? 'numbers only' : x.mode === 'trimmed' ? 'route, ends trimmed' : 'whole route';
-        return h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, x.title || (x.kind === 'journey' ? 'A journey' : 'A trip')), ' ', dead ? chip('bad', x.revoked ? 'turned off' : 'expired') : chip('ok', 'on'),
+        return h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, x.title || (x.kind === 'day' ? 'A day' : x.kind === 'journey' ? 'A journey' : 'A trip')), ' ', dead ? chip('bad', x.revoked ? 'turned off' : 'expired') : chip('ok', 'on'),
           h('div', { class: 'muted' }, `${how} · made ${when(x.created)} · ${x.expires ? `until ${when(x.expires)}` : 'no expiry'} · ${x.views} view${x.views === 1 ? '' : 's'}`)),
           dead ? null : h('button', { class: 'sec', onclick: async () => { await api(`/api/shares/${x.id}`, { method: 'DELETE' }); load(); } }, 'Turn off'));
       }) : [h('p', { class: 'muted' }, 'No links yet. Open a trip or journey and use Share.')])]);
