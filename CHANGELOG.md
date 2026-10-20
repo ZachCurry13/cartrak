@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.37.0
+
+### 📊 Reports and insights
+- **More, Reports.** One page for everything that adds your driving and charging up: Year in review, Statistics, History, Time, Efficiency insights, Compare two trips, Day view, the road-trip planner, Charging cost and the Mileage log, each with a line of what it shows (and the year's distance, this month's charging). The spreadsheets (trips, charging, everything) are at the bottom. A **Reports** button is also on the Trips page.
+- **Did you know (Home).** One thing worth knowing about how you drive, taken from your own history and changing each day: what cold weather costs you, your best month, your most efficient trip, or what driving fast used over the last 60 days. Tap it for all the efficiency insights.
+
+### 🔗 Share a trip from more places
+- A **Share** button on every trip in the Trips list, and **Share this trip** in a drive opened in the Day view (admins). Both open the trip with its share box ready. The Home Last trip card already had it.
+
 ## 0.36.0
 
 ### 🔔 A bell, a search and a help button in the header

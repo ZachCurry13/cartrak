@@ -1,5 +1,6 @@
 import { h, dist, num } from './ui.js';
 import { api } from './api.js';
+import { insightCard } from './insightcard.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const hm = (sec) => (sec < 3600 ? `${Math.max(1, Math.round(sec / 60))} min` : `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`);
@@ -34,6 +35,6 @@ async function monthCard(maint) {
 }
 
 export async function homeCards(maint) {
-  const out = await Promise.all([todayCard(), monthCard(maint)]);
+  const out = await Promise.all([todayCard(), monthCard(maint), insightCard()]);
   return out.filter(Boolean);
 }

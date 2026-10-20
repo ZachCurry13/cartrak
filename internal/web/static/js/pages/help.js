@@ -40,7 +40,7 @@ export default async function help(root, _a, session) {
 
   const tabs = h('section', { class: 'card' }, h('h2', {}, 'What each part is for'),
     ...[['Home', 'Battery, range, what the car is doing, the day so far and the month.'], ['Trips', 'Every drive, a day-by-day view, and trip labels.'], ['Live', 'A dock screen that follows driving, charging and parking.'],
-      ['Charging', 'Sessions, cost, speed and charging by place.'], ['Health', 'Tires, the 12 V battery and anything the car reports as wrong.'], ['Data', 'Everything the car sends, in plain words.'],
+      ['Charging', 'Sessions, cost, speed and charging by place.'], ['Reports', 'More, Reports: the year, statistics, efficiency insights, mileage and exports.'], ['Health', 'Tires, the 12 V battery and anything the car reports as wrong.'], ['Data', 'Everything the car sends, in plain words.'],
       ['More', 'Settings, people, cars, backups and this help.']].map(([t, b]) => h('div', { class: 'row' }, h('b', {}, t), h('span', { class: 'muted grow', style: 'flex-basis:14em' }, b))),
     h('p', {}, h('a', { href: '#/guide' }, 'Everything CarTrak can do'), ' · ', h('a', { href: '#/status' }, 'Is everything working?'), ' · ', h('a', { href: '#/about' }, "What's new")));
 

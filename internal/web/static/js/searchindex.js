@@ -21,6 +21,7 @@ const EXTRA = [
   ['Home Assistant', 'More → Settings', '#/admin', 'A read-only feed of the car state for Home Assistant.', 'home assistant ha feed integration smart home sensor'],
   ['Cloudflare tunnel', 'More → Remote access', '#/remote', 'Reach CarTrak away from home.', 'cloudflare tunnel remote access away outside domain https'],
   ['Add family or a viewer', 'More → People', '#/people', 'Give family read-only accounts.', 'family viewer account user people password admin invite'],
+  ['Reports and insights', 'More → Reports', '#/reports', 'Year in review, statistics, efficiency insights, mileage and spreadsheets in one place.', 'reports report year review statistics insights efficiency mileage export csv spreadsheet summary'],
   ['Add or switch cars', 'More → Cars', '#/cars', 'Follow another car, switch between cars, and share a car.', 'car cars second vehicle switch add truck family another own'],
   ['See recent alerts (the bell)', 'Header → bell', '#/inbox', 'Every alert about your cars, newest first, even with push off.', 'inbox notifications alerts bell history unread messages'],
   ['Help and quick settings', 'Header → ?', '#/help', 'Units, theme, data use and a getting-started checklist.', 'help getting started quick settings units theme data install home screen'],

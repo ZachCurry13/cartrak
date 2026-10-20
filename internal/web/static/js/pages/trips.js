@@ -67,7 +67,8 @@ export default async function trips(root, _a, session) {
   const effPart = (t) => { const e = effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : ''); return e.nodeType === 3 ? [] : [' · ', e]; };
   const row = (t) => h('a', { class: 'card', href: sel.state.on ? '#' : `#/trip/${t.id}`, onclick: sel.state.on ? (e) => { e.preventDefault(); if (sel.eligible(t)) sel.toggle(t); } : null,
     style: `display:block;color:inherit;text-decoration:none${sel.picked.has(t.id) ? ';border-color:var(--accent)' : sel.state.on && !sel.eligible(t) ? ';opacity:.5' : ''}` },
-    h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, sel.picked.has(t.id) ? '✓ ' : '', t.open ? 'In progress' : dist(t.distanceKm)), t.journeyId ? chip('work', 'journey') : null, ' ', catChip(t)),
+    h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, sel.picked.has(t.id) ? '✓ ' : '', t.open ? 'In progress' : dist(t.distanceKm)), t.journeyId ? chip('work', 'journey') : null, ' ', catChip(t),
+      admin && !t.open && !sel.state.on ? h('button', { class: 'sec', type: 'button', style: 'min-height:36px;padding:2px 10px', 'aria-label': 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } }, 'Share') : null),
     h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)} · ${pct(t.startSoc)} → ${pct(t.endSoc)}`, ...effPart(t)),
     t.startPlace || t.endPlace ? h('div', { class: 'muted' }, `${t.startPlace || '…'} → ${t.endPlace || '…'}`) : null,
     t.notes ? h('div', { class: 'muted' }, t.notes) : null);
@@ -75,7 +76,7 @@ export default async function trips(root, _a, session) {
   const review = h('div');
   const estBar = h('div');
   if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
-  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/reports' }, 'Reports'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip · 70 vs 75')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

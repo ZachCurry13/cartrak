@@ -44,5 +44,6 @@ export const routes = {
   live: () => import('./pages/live.js'),
   cars: () => import('./pages/cars.js'),
   inbox: () => import('./pages/inbox.js'),
+  reports: () => import('./pages/reports.js'),
   help: () => import('./pages/help.js'),
 };
