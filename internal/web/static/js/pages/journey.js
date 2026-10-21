@@ -37,7 +37,7 @@ export default async function journey(root, args, session) {
           const stop = i > 0 ? s.stops.find((x) => x.toTs === t.startTs) : null;
           return [
             stop ? h('div', { class: 'muted', style: 'padding:6px 0' }, `Parked ${hm(stop.seconds)}${stop.charging ? ` and charged${stop.addedKwh ? ` ${num(stop.addedKwh, 1, ' kWh')}` : ''}` : ''}`) : null,
-            h('a', { class: 'row', href: `#/trip/${t.id}`, style: 'color:inherit;text-decoration:none' },
+            h('a', { class: 'row', href: `#/trip/${t.id}` },
               h('div', { class: 'grow' }, h('b', {}, dist(t.distanceKm)), ' ', catChip(t), h('div', { class: 'muted' }, `${when(t.startTs, t.tz)} · ${duration(t.startTs, t.endTs)}`)),
               admin ? h('button', { class: 'sec', onclick: async (e) => { e.preventDefault(); await api(`/api/journeys/${id}`, { method: 'PATCH', body: { remove: [t.id] } }); load(); } }, 'Remove') : null),
           ];

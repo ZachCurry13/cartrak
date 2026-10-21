@@ -27,7 +27,7 @@ export default async function year(root, [y]) {
     ...d.years.slice().reverse().map((x) => h('option', { value: x, selected: x === d.year }, String(x))));
   const msg = h('span', { class: 'muted', role: 'status' });
   const copy = async () => { try { await navigator.clipboard.writeText(summaryText(d)); msg.textContent = 'Copied'; } catch (e) { msg.textContent = 'Could not copy'; } };
-  root.append(...[h('h2', {}, `${d.year} in review`), h('p', {}, pick),
+  root.append(...[h('div', { class: 'page-title' }, h('h2', {}, `${d.year} in review`)), h('p', {}, pick),
     d.partial ? h('p', { class: 'muted' }, 'This year is not over yet, so these are the totals so far.') : null,
     !v.trips && !c.sessions ? h('p', { class: 'muted' }, 'Nothing was recorded this year.')
       : h('div', {},

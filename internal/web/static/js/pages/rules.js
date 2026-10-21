@@ -11,7 +11,7 @@ const summary = (r) => `${DAYS.filter((_, i) => r.days & (1 << i)).join(', ') ||
 export default async function rules(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, 'Trip rules'),
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Trip rules')),
     h('p', { class: 'muted' }, 'A trip is labeled by the highest-priority rule that matches when it starts. Anything you set by hand on a trip always wins.'),
     h('p', {}, h('a', { class: 'btn sec', href: '#/categories' }, 'Trip categories (Work, Personal, Medical, your own)')), box);
   vacationCard(admin).then((c) => box.before(c)).catch(() => {});

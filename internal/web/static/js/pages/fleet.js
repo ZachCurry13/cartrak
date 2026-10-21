@@ -59,7 +59,7 @@ async function trips(body, cars) {
   const lists = await Promise.all(cars.map((c) => api('/api/trips?limit=60', { car: c.id }).then((ts) => ts.map((t) => ({ ...t, car: c }))).catch(() => [])));
   const all = lists.flat().sort((a, b) => b.startTs - a.startTs).slice(0, 120);
   const color = new Map(cars.map((c, i) => [c.id, COLORS[i % COLORS.length]]));
-  body.replaceChildren(h('section', { class: 'card' }, ...all.map((t) => h('a', { class: 'row', href: '#', style: 'color:inherit;text-decoration:none;align-items:flex-start', onclick: (e) => { e.preventDefault(); open(t.car.id, `#/trip/${t.id}`); } },
+  body.replaceChildren(h('section', { class: 'card' }, ...all.map((t) => h('a', { class: 'row', href: '#', style: 'align-items:flex-start', onclick: (e) => { e.preventDefault(); open(t.car.id, `#/trip/${t.id}`); } },
     h('i', { class: 'sw', style: `background:${color.get(t.car.id)};margin-top:6px` }),
     h('span', { class: 'grow', style: 'flex-basis:12em' }, h('b', {}, dist(t.distanceKm)), ' ', h('span', { class: 'muted' }, t.car.name),
       h('div', { class: 'muted' }, `${when(t.startTs, t.tz)}${t.startPlace || t.endPlace ? ` · ${t.startPlace || '…'} → ${t.endPlace || '…'}` : ''}`))))));

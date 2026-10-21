@@ -70,7 +70,7 @@ func (s *Server) analyticsTrips(from int64) ([]analytics.Trip, error) {
 	var out []analytics.Trip
 	for _, o := range done {
 		t := o.Trip
-		a := analytics.Trip{ID: t.ID, Start: t.StartTS, End: *t.EndTS, Km: t.DistanceKm, MaxKph: t.MaxSpeedKph, Category: t.Category}
+		a := analytics.Trip{ID: t.ID, Start: t.StartTS, End: *t.EndTS, Km: t.DistanceKm, MaxKph: t.MaxSpeedKph, Category: t.Category, Corrected: t.DistanceSrc != ""}
 		if e, ok := trips.EnergyUsed(t, capacity); ok {
 			a.Kwh = e.Kwh
 		}

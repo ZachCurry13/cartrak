@@ -186,6 +186,6 @@ func (s *Server) DebugText(hours int, metric bool) (string, int, error) {
 	}
 	text := debugreport.Build(debugreport.Input{Version: s.Version, Now: now, Loc: s.defaultLoc(), From: from, Vehicle: s.vehicleInfo().Label,
 		MaxLines: min(6000, max(1100, hours*30)), Metric: metric, Linked: st.Linked, LastOK: lastOK, LastErr: st.LastError, Rows: rows, Locks: locks, Fields: fields, Trips: trips, Points: points, Charges: recent, Alerts: alerts,
-		Polls: toPollInfo(s.P.RecentPolls(from)), Decisions: s.S.RecentDecisions(from.Unix()), Settings: s.debugSettings(), Curves: s.chargeCurves(recent), CostFrom: s.chargeCostFrom(from), Days: s.awayDays(from, now), Fuel: s.fuelDebug(from), ServerErrors: RecentServerErrors()})
+		Polls: toPollInfo(s.P.RecentPolls(from)), Decisions: s.S.RecentDecisions(from.Unix()), Settings: s.debugSettings(), Curves: s.chargeCurves(recent), CostFrom: s.chargeCostFrom(from), Days: s.awayDays(from, now), Fuel: s.fuelDebug(from), Slowest: SlowestRequests(), ServerErrors: RecentServerErrors()})
 	return text, len(rows), nil
 }

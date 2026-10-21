@@ -111,7 +111,7 @@ func Badges(ts []Trip, cs []Charge, towns map[string]int64, loc *time.Location) 
 		if st.Hour() < 5 {
 			early.see(1, t.Start)
 		}
-		if t.Kwh > 0 && t.Km >= 16 && t.Km/t.Kwh < ceiling {
+		if t.Kwh > 0 && t.Km >= 16 && !t.Corrected && t.Km/t.Kwh < ceiling {
 			hyper.see(t.Km/t.Kwh, t.End)
 		}
 		if t.TempC != nil && t.Km >= 2 {

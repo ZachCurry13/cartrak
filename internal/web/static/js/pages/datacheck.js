@@ -15,7 +15,7 @@ export default async function datacheck(root, _a, session) {
       await api('/api/trips-empty', { method: 'POST', body: { confirm: 'DELETE' } });
       location.reload();
     } }, `Delete ${empty.count} empty trip${empty.count === 1 ? '' : 's'}`))) : null;
-  root.append(...[h('h2', {}, 'Data check'), clean,
+  root.append(...[h('div', { class: 'page-title' }, h('h2', {}, 'Data check')), clean,
     h('p', {}, h('a', { href: '#/repair' }, 'Something wrong with a whole day? Fix a day')),
     h('p', { class: 'muted' }, `CarTrak looked through the last ${d.days} days (${d.readings} odometer readings and ${d.trips} trips) for things that seem wrong. It only looks; it never changes your data. Gaps are usually just the car sleeping.`),
     ...(d.findings.length ? [h('section', { class: 'card' }, ...d.findings.map((f) => h('div', { class: 'row' },

@@ -18,7 +18,7 @@ export default async function insights(root) {
   const tripRow = (t) => {
     const tags = h('div', { class: 'tags' }); // the reasons arrive a moment later
     fillTags(tags, t.id);
-    return h('a', { class: 'row', href: `#/trip/${t.id}`, style: 'color:inherit;text-decoration:none' },
+    return h('a', { class: 'row', href: `#/trip/${t.id}` },
       h('div', { class: 'grow' }, h('b', {}, effSpan(t.km, t.km / t.kmPerKwh)), h('div', { class: 'muted' }, `${dist(t.km, 1)} · ${when(t.startTs)}${t.tempC != null ? ` · ${temp(t.tempC)}` : ''}`), tags));
   };
   root.append(...[

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.53.0
+
+### ⚡ Home loads much faster
+- Home used to ask for its pieces one after another (the battery, status, trips, the week, service, fuel, today, setup…), so a slow connection paid for each one in turn. It now asks for them all at once, and the page's code loads while the first answers travel. Over a slow connection it appears in about the time of two requests instead of a dozen.
+- The debug report has a new **Slowest requests** section, so if a page is still slow the next report says which request is behind it.
+
+### 🧹 Consistency
+- Every page now has its title in the same place and style, and the link rows on Home, Insights, journeys and the guide share one style instead of copies of the same inline settings.
+
+### 🐛 Fixes
+- A trip whose distance was corrected (by hand or from the estimated road) no longer counts toward **Most efficient drive**, the Hypermiler badge or the fuel economy record: its energy is real but the corrected distance is not the odometer's, which had doubled one drive to 6.27 mi/kWh.
+
 ## 0.52.0
 
 ### ⛽ Gas and hybrid cars, properly

@@ -32,7 +32,7 @@ export default async function changelog(root, _a, session) {
   const text = await r.text();
   try { localStorage.setItem('seenVersion', session.about.version); } catch (e) { /* ignore */ }
   session.about.justUpdated = false;
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, "What's new"),
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, "What's new")),
     h('p', { class: 'muted' }, `You are on v${session.about.version}.`),
     h('section', { class: 'card' }, ...renderChangelog(text, session.about.version)));
 }

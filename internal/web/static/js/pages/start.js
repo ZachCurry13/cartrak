@@ -52,7 +52,7 @@ export default async function start(root, _a, session) {
       h('a', { class: 'btn', href: '#/display' }, 'Set your birthday')),
   ];
 
-  root.append(h('h2', {}, 'Getting started'),
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Getting started')),
     h('p', { class: 'muted' }, 'A few quick steps, then some optional ones to get more from CarTrak. You can come back to this any time from More.'), ...steps,
     admin ? h('p', { class: 'seg' }, h('button', { onclick: async () => { await api('/api/onboarding/dismiss', { method: 'POST' }); location.hash = '#/'; } }, 'Finish and go Home')) : h('p', {}, h('a', { class: 'btn', href: '#/' }, 'Go Home')));
 }

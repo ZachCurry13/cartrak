@@ -110,7 +110,7 @@ func FuelRecords(ts []Trip, fills []fuel.Fill) []Record {
 	ceiling := kmPerGalCeiling(ts)
 	var best *Record
 	for _, t := range ts {
-		if t.Gal < 0.3 || t.Km < 16 {
+		if t.Gal < 0.3 || t.Km < 16 || t.Corrected {
 			continue
 		}
 		if e := t.Km / t.Gal; e < ceiling && (best == nil || e > best.Value) {

@@ -30,6 +30,7 @@ type Input struct {
 	Settings     []string         // the settings that shape behavior, without secrets or positions
 	Curves       map[int64]string // by charging session id: the power at 20, 40, 60 and 80 percent
 	CostFrom     map[int64]string // by charging session id: where its cost came from and the price per kWh
+	Slowest      []string         // the kinds of request with the longest answers since CarTrak started, to trace a slow page
 	Fuel         []string         // the tank: its learned size, the fill-ups and how each trip's gauge moved; empty for an electric car
 	Days         []string         // trip-away stretches and how each day's base was settled, no positions
 	ServerErrors []string         // requests that hit a bug since CarTrak started, with where in the code

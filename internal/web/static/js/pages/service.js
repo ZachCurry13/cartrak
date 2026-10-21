@@ -29,12 +29,12 @@ export default async function service(root, args, session) {
   const spent = thisYear.reduce((a, v) => a + (v.cost || 0), 0);
   const form = h('div', { hidden: true });
   root.append(...[
-    pending.length ? h('section', { class: 'card' }, h('h2', {}, 'Waiting for an answer'), ...pending.map((v) => h('a', { class: 'row', href: `#/service/${v.id}`, style: 'color:inherit;text-decoration:none' },
+    pending.length ? h('section', { class: 'card' }, h('h2', {}, 'Waiting for an answer'), ...pending.map((v) => h('a', { class: 'row', href: `#/service/${v.id}` },
       h('span', { class: 'grow' }, h('b', {}, v.placeName), h('div', { class: 'muted' }, `${day(v.start)} · there ${stay(v)}`)), chip('work', 'was it serviced?')))) : null,
     h('section', { class: 'card' }, h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, String(thisYear.length)), h('span', {}, `visits in ${year}`)), h('div', {}, h('b', {}, money(spent)), h('span', {}, `spent in ${year}`))),
       admin ? h('p', { class: 'seg', style: 'margin-top:12px' }, h('button', { type: 'button', class: 'on', onclick: () => { form.hidden = !form.hidden; } }, '+ Log a service')) : null,
       form),
-    logged.length ? h('section', { class: 'card' }, h('h2', {}, 'Every visit'), ...logged.map((v) => h(admin ? 'a' : 'div', { class: 'row', ...(admin ? { href: `#/service/${v.id}` } : {}), style: 'color:inherit;text-decoration:none;align-items:flex-start' },
+    logged.length ? h('section', { class: 'card' }, h('h2', {}, 'Every visit'), ...logged.map((v) => h(admin ? 'a' : 'div', { class: 'row', ...(admin ? { href: `#/service/${v.id}` } : {}), style: 'align-items:flex-start' },
       h('span', { class: 'grow', style: 'flex-basis:12em' }, h('b', {}, v.items.join(', ')), h('div', { class: 'muted' }, [day(v.start), v.placeName || KIND[v.kind], v.odoKm ? dist(v.odoKm, 0) : null].filter(Boolean).join(' · ')), v.notes ? h('div', { class: 'muted' }, v.notes) : null),
       v.cost != null ? h('b', {}, money(v.cost)) : null)))
       : emptyState('No service logged yet', 'Mark your dealership, tire shop or repair shop under More, Places, and CarTrak asks after a long stop there. Or log one here.'),

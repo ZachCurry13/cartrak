@@ -7,7 +7,7 @@ import { api } from '../api.js';
 export default async function connect(root, _a, session) {
   const admin = session.me.role === 'admin';
   const st = await api('/api/status');
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, 'Connect Ford'));
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Connect Ford')));
   if (!admin) return root.append(h('p', { class: 'muted' }, 'Ask the admin to connect the Ford account.'));
   if (!st.configured) {
     return root.append(h('div', { class: 'banner' }, 'Enter your Ford client ID and secret first. ', h('a', { class: 'btn', href: '#/admin', style: 'margin-top:8px' }, 'Open Admin settings')));

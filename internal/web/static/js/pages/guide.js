@@ -47,5 +47,5 @@ export default async function guide(root) {
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'What CarTrak can do')),
     h('p', { class: 'muted' }, 'Everything in one place. Tap a name to open it. Tap an efficiency number anywhere to change its unit, and tap the ? beside a value on the Data page to see what it means.'),
     ...GROUPS.map(([title, items]) => h('section', { class: 'card' }, h('h2', {}, title),
-      ...items.map(([href, name, text]) => h('a', { class: 'row', href, style: 'color:inherit;text-decoration:none' }, h('div', { class: 'grow' }, h('b', {}, name), h('div', { class: 'muted' }, text)))))));
+      ...items.map(([href, name, text]) => h('a', { class: 'row', href }, h('div', { class: 'grow' }, h('b', {}, name), h('div', { class: 'muted' }, text)))))));
 }

@@ -74,23 +74,35 @@ function kv(rows) {
 }
 
 export default async function dashboard(root, _args, session) {
-  const mc = await mapConfig();
+  const mcP = mapConfig(); // asked for together with everything else on this page, not before it
   const box = h('div', { class: 'dash' });
   root.append(box);
   let cache = null; // status, last trip, checklist: refetched every time only in Normal mode
   let full = !isSaver(); // Data saver starts with the small summary until asked for more
+  const admin = session.me.role === 'admin';
+  // Everything Home shows besides the latest reading, asked for at once. They used to be asked for one after another, which is
+  // why Home took so long over a slow connection: each answer had to arrive before the next question was sent.
+  const sideData = async () => {
+    const [status, trips, ob, health, week, maint, fuelInfo, recent] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
+      admin ? api('/api/onboarding') : null, api('/api/health').catch(() => null),
+      api(`/api/summary?from=${Math.floor(Date.now() / 1000) - 7 * 86400}`).catch(() => null), api('/api/maintenance').catch(() => null),
+      isFuelCar(session) ? api('/api/fuel').catch(() => null) : null, // fill-ups found, waiting for the gallons and price
+      admin ? api('/api/trips?limit=200').catch(() => []) : []]);
+    return { status, trips, ob, health, week, maint, fuelPending: (fuelInfo || {}).pending || 0, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length,
+      short: recent.filter((x) => x.startTs > Date.now() / 1000 - 30 * 86400 && shortOdometer(x)) };
+  };
   async function load() {
+    const fresh = !cache || effective() === 'normal';
+    const sideP = fresh ? sideData() : null;
+    sideP && sideP.catch(() => null); // when offline the answer is not used; this keeps it from being reported as unhandled
+    // the small cards under it, asked for at the same time too (each one is its own request)
+    const vacP = vacationNote().catch(() => null);
+    const careP = Promise.all([serviceCards(session), setupCards(session)]).catch(() => [[], []]);
+    const homeP = full ? (sideP ? sideP.then((d) => homeCards(d.maint)) : homeCards(cache && cache.maint)).catch(() => []) : null;
+    homeP && homeP.catch(() => null);
     const { value: latest, staleSince } = await cachedEx(`latest${full ? '' : '-s'}`, () => api(`/api/latest${full ? '' : '?summary=1'}`));
     if (staleSince) cache = cache || { status: { poller: { linked: true }, canLink: false }, trips: [], ob: null }; // offline: nothing to refetch
-    else if (!cache || effective() === 'normal') {
-      const [status, trips, ob, health] = await Promise.all([api('/api/status'), api('/api/trips?limit=1'),
-        session.me.role === 'admin' ? api('/api/onboarding') : null, api('/api/health').catch(() => null)]);
-      const week = await api(`/api/summary?from=${Math.floor(Date.now() / 1000) - 7 * 86400}`).catch(() => null);
-      const maint = await api('/api/maintenance').catch(() => null);
-      const fuelPending = isFuelCar(session) ? ((await api('/api/fuel').catch(() => null)) || {}).pending || 0 : 0; // fill-ups found, waiting for the gallons and price
-      const recent = session.me.role === 'admin' ? await api('/api/trips?limit=200').catch(() => []) : [];
-      cache = { status, trips, ob, health, week, maint, fuelPending, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length, short: recent.filter((x) => x.startTs > Date.now() / 1000 - 30 * 86400 && shortOdometer(x)) };
-    }
+    else if (sideP) cache = await sideP;
     const { status, trips, ob, health, week, maint, unlabelled, short = [], fuelPending = 0 } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
@@ -101,7 +113,7 @@ export default async function dashboard(root, _args, session) {
     if (hi) out.push(h('p', { class: 'greeting' }, hi));
     const strip = healthStrip(health, session.me.role === 'admin');
     if (strip) out.push(strip);
-    const vac = await vacationNote();
+    const vac = await vacP;
     if (vac) out.push(vac);
     if (!latest) {
       out.push(h('p', { class: 'muted' }, 'No readings yet. Data appears after the first successful sync.'));
@@ -139,14 +151,14 @@ export default async function dashboard(root, _args, session) {
     const due = ((maint && maint.items) || []).filter((m) => m.state !== 'ok');
     if (due.length || unlabelled || short.length || fuelPending) {
       out.push(card('Needs attention',
-        ...due.map((m) => h('a', { class: 'row', href: '#/maintenance', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, m.name), chip(m.state === 'overdue' ? 'bad' : 'work', m.state === 'overdue' ? 'service due' : 'due soon'))),
-        fuelPending ? h('a', { class: 'row', href: '#/fuel', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${fuelPending} fill-up${fuelPending === 1 ? '' : 's'} to complete`), chip('work', 'add gallons')) : null,
-        unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null,
-        ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}`, style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
+        ...due.map((m) => h('a', { class: 'row', href: '#/maintenance' }, h('span', { class: 'grow' }, m.name), chip(m.state === 'overdue' ? 'bad' : 'work', m.state === 'overdue' ? 'service due' : 'due soon'))),
+        fuelPending ? h('a', { class: 'row', href: '#/fuel' }, h('span', { class: 'grow' }, `${fuelPending} fill-up${fuelPending === 1 ? '' : 's'} to complete`), chip('work', 'add gallons')) : null,
+        unlabelled ? h('a', { class: 'row', href: '#/review' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null,
+        ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}` }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
     }
-    if (!staleSince) out.push(...await serviceCards(session), ...await setupCards(session));
+    if (!staleSince) out.push(...(await careP).flat());
     if (!staleSince && new Date().getDate() <= 7) out.push(wrappedTeaser()); // the first week of a month: last month's Wrapped
-    if (full) out.push(...await homeCards(maint)); // the day so far and the month: skipped in Data saver
+    if (full) out.push(...await homeP); // the day so far and the month: skipped in Data saver
     if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));
     const lastTrip = trips[0];
     if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),
@@ -175,6 +187,7 @@ export default async function dashboard(root, _args, session) {
     if (latest.lat != null && latest.lon != null) {
       // A small fixed map of where the car is. One map is kept and moved, so a refresh does not reload the tiles.
       let here = null;
+      const mc = await mcP;
       if (mc.enabled && effective() !== 'saver') {
         homeMap = homeMap || createMap(mc, { height: 170, interactive: false });
         const d = 0.004; // about half a kilometer around the car

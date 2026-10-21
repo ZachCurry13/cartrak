@@ -142,3 +142,17 @@ func TestBatteryTimeAtEachLevel(t *testing.T) {
 		t.Fatal("empty")
 	}
 }
+
+func TestATripWithACorrectedDistanceIsNotTheEfficiencyRecord(t *testing.T) {
+	var ts []Trip
+	for i := int64(1); i <= 6; i++ {
+		ts = append(ts, Trip{ID: i, Start: i * 86400, Km: 28, Kwh: 5})
+	}
+	// the odometer said 9 km on 1.9 kWh; the distance was later corrected to 18 km, which doubles the efficiency
+	ts = append(ts, Trip{ID: 7, Start: 7 * 86400, Km: 18, Kwh: 1.9, Corrected: true})
+	for _, r := range Records(ts, nil, time.UTC) {
+		if r.Key == "efficient" && r.TripID == 7 {
+			t.Fatalf("a corrected distance is not the odometer's: %+v", r)
+		}
+	}
+}

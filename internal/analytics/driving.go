@@ -7,15 +7,16 @@ import (
 
 // Trip is one finished drive as the server sees it.
 type Trip struct {
-	ID       int64    `json:"id"`
-	Start    int64    `json:"start"`
-	End      int64    `json:"end"`
-	Km       float64  `json:"km"`
-	Kwh      float64  `json:"kwh"`             // energy used, 0 when unknown
-	Gal      float64  `json:"gal,omitempty"`   // fuel burned, gallons, 0 when unknown (gas and hybrid cars)
-	TempC    *float64 `json:"tempC,omitempty"` // average outside temperature, when known
-	MaxKph   float64  `json:"maxKph"`
-	Category string   `json:"category"`
+	ID        int64    `json:"id"`
+	Start     int64    `json:"start"`
+	End       int64    `json:"end"`
+	Km        float64  `json:"km"`
+	Kwh       float64  `json:"kwh"`                 // energy used, 0 when unknown
+	Corrected bool     `json:"corrected,omitempty"` // its distance was adjusted by hand or from the estimated road, so it is not the odometer's own
+	Gal       float64  `json:"gal,omitempty"`       // fuel burned, gallons, 0 when unknown (gas and hybrid cars)
+	TempC     *float64 `json:"tempC,omitempty"`     // average outside temperature, when known
+	MaxKph    float64  `json:"maxKph"`
+	Category  string   `json:"category"`
 }
 
 // Point is one trip on the temperature chart.

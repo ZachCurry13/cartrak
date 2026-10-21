@@ -53,7 +53,7 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 		if t.MaxKph > 0 {
 			fastest(t.MaxKph, t.Start, t.ID, 0)
 		}
-		if t.Kwh > 0 && t.Km >= 16 {
+		if t.Kwh > 0 && t.Km >= 16 && !t.Corrected {
 			if e := t.Km / t.Kwh; e < ceiling {
 				efficient(e, t.Start, t.ID, 0)
 			}
@@ -94,7 +94,7 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 func EffCeiling(ts []Trip) float64 {
 	var effs []float64
 	for _, t := range ts {
-		if t.Kwh > 0 && t.Km >= 16 {
+		if t.Kwh > 0 && t.Km >= 16 && !t.Corrected {
 			effs = append(effs, t.Km/t.Kwh)
 		}
 	}

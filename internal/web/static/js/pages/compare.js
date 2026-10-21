@@ -16,7 +16,7 @@ function row(label, a, b, text, better) {
 
 export default async function compare(root, [ids]) {
   const [ia, ib] = String(ids || '').split(',').map((x) => encodeURIComponent(x));
-  root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')), h('h2', {}, 'Compare trips'));
+  root.append(h('p', {}, h('a', { href: '#/trips' }, '← Trips')), h('div', { class: 'page-title' }, h('h2', {}, 'Compare trips')));
   if (!ia || !ib) return root.append(h('p', { class: 'muted' }, 'Pick two trips on the Trips page (Select trips, tap two, then Compare).'));
   const [a, b] = (await Promise.all([ia, ib].map((i) => api(`/api/trips/${i}?samples=0`)))).map((r) => r.trip);
   const x = (t, v) => ({ t, v });

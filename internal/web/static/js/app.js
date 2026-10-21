@@ -110,6 +110,8 @@ async function render() {
   noteVisit(name);
   const carsel = document.getElementById('carsel');
   if (carsel && !carsel.hidden) carsel.value = name === 'fleet' ? 'all' : currentCar(); // All cars shows in the picker while it is open
+  const modP = (routes[name] || routes[''])(); // the page's code loads while the first answers are on their way
+  modP.catch(() => null);
   try {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));
@@ -121,8 +123,7 @@ async function render() {
         tabs.hidden = true;
         if (name !== 'cars') { location.hash = '#/cars'; return; }
       } else {
-        await loadAbout();
-        await loadVehicle();
+        await Promise.all([loadAbout(), loadVehicle()]); // independent of each other
         await loadLayout(session);
         applyBar(tabs, session);
         showWhatsNew(session); // after an update: what changed, once
@@ -131,7 +132,7 @@ async function render() {
     }
     tabs.hidden = !session.cars.length;
     for (const a of tabs.querySelectorAll('a[href="#/health"], a[href="#/data"]')) a.hidden = session.me.role !== 'admin'; // viewers get the simple set of tabs
-    const mod = await (routes[name] || routes[''])();
+    const mod = await modP;
     view.replaceChildren();
     const refresh = await mod.default(view, args, session);
     if (name === '') seasonOnHome();

@@ -40,7 +40,7 @@ export function charging(body) {
       card('Where the energy came from', ...d.places.map((p) => h('div', { class: 'row' }, h('span', { class: 'grow', style: 'min-width:0' }, p.name, h('div', { class: 'bar', style: 'margin-top:4px' }, h('i', { style: `width:${(p.kwh / d.places[0].kwh) * 100}%;background:var(--${p.where === 'home' ? 'ok' : 'personal'})` }))),
         h('span', { style: 'text-align:right' }, h('b', {}, num(p.kwh, 0, ' kWh')), h('div', { class: 'muted' }, p.cost > 0 ? money(p.cost) : `${p.sessions} sessions`))))),
       card('When you plug in', heatGrid(WEEK, HOURS, d.plugIn, { text: (r, c, v) => `${WEEK[r]} ${hourText(c)}: ${v} session${v === 1 ? '' : 's'} started`, summary: plugTop && plugTop[0] ? `Most often ${WEEK[plugTop[1]]}s around ${hourText(plugTop[2])}` : '' })),
-      d.fastest.length ? card('Your fastest charges', h('p', { class: 'muted' }, 'Tap one to see its charging curve.'), ...d.fastest.map((f) => h('a', { class: 'row', href: '#/charging', style: 'color:inherit;text-decoration:none' },
+      d.fastest.length ? card('Your fastest charges', h('p', { class: 'muted' }, 'Tap one to see its charging curve.'), ...d.fastest.map((f) => h('a', { class: 'row', href: '#/charging' },
         h('span', { class: 'grow' }, h('b', {}, num(f.peakKw, 0, ' kW')), h('div', { class: 'muted' }, `${new Date(f.start * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} · ${f.place}`)), h('span', {}, num(f.kwh, 1, ' kWh'))))) : null);
   });
   body.append(out);

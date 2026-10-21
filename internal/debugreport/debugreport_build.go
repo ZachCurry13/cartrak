@@ -133,6 +133,13 @@ func Build(in Input) string {
 		}
 	}
 
+	if len(in.Slowest) > 0 {
+		b.WriteString("\nSLOWEST REQUESTS (average and slowest answer since CarTrak last started; a slow page is slow because of one of these)\n")
+		for _, l := range in.Slowest {
+			b.WriteString("    " + l + "\n")
+		}
+	}
+
 	b.WriteString("\nSERVER ERRORS (requests that hit a bug since CarTrak last started)\n")
 	if len(in.ServerErrors) == 0 {
 		b.WriteString("(none)\n")
