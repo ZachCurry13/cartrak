@@ -108,18 +108,24 @@ export default async function dashboard(root, _args, session) {
     const x = latest.extra || {};
     const soc = latest.socPct;
     const veh = session.vehicle || { battery: true, plug: true, engine: true }; // unknown type: show everything the car reports
-    if (veh.battery) {
+    // A hybrid that reports no battery level (most do not) leads with its fuel tank instead of an empty battery ring.
+    const fuelFirst = veh.engine && latest.fuelPct != null && (!veh.battery || soc == null);
+    const t0 = trips[0];
+    const driving = (t0 && t0.open) || latest.speedKph > 1;
+    const isChargingNow = isCharging(latest);
+    const plugged = veh.plug && latest.plug ? /^connected$/i.test(latest.plug) : null;
+    const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:-4px 0 12px' },
+      chip(driving ? 'personal' : isChargingNow ? 'ok' : 'work', driving ? 'Driving' : isChargingNow ? 'Charging' : 'Parked'),
+      plugged == null ? null : chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in'),
+      latest.locked == null ? null : chip(latest.locked ? 'ok' : 'work', latest.locked ? 'Locked' : 'Unlocked'),
+      remoteChip(latest));
+    if (fuelFirst) {
+      const ring = batteryRing('Fuel');
+      ring.set(latest.fuelPct, pick(x, 'fuelRange') != null ? `${dist(pick(x, 'fuelRange'), 0)} range` : '');
+      out.push(card('Fuel', ring.el, chips, h('div', { class: 'grid' }, stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—'))));
+    } else if (veh.battery) {
       const ring = batteryRing();
       ring.set(soc, latest.rangeKm != null ? `${dist(latest.rangeKm, 0)} range` : '');
-      const t0 = trips[0];
-      const driving = (t0 && t0.open) || latest.speedKph > 1;
-      const isChargingNow = isCharging(latest);
-      const plugged = latest.plug ? /^connected$/i.test(latest.plug) : null;
-      const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:-4px 0 12px' },
-        chip(driving ? 'personal' : isChargingNow ? 'ok' : 'work', driving ? 'Driving' : isChargingNow ? 'Charging' : 'Parked'),
-        plugged == null ? null : chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in'),
-        latest.locked == null ? null : chip(latest.locked ? 'ok' : 'work', latest.locked ? 'Locked' : 'Unlocked'),
-        remoteChip(latest));
       out.push(card('Battery', ring.el, chips,
         h('div', { class: 'grid' }, stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE'))),
@@ -143,7 +149,7 @@ export default async function dashboard(root, _args, session) {
     if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),
       h('p', { class: 'muted' }, `${lastTrip.startPlace || lastTrip.endPlace ? `${lastTrip.startPlace || '…'} → ${lastTrip.endPlace || '…'} · ` : ''}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`),
       session.me.role === 'admin' && !lastTrip.open ? h('p', {}, h('a', { class: 'btn sec', href: `#/trip/${lastTrip.id}/share` }, 'Share this trip')) : null));
-    if (veh.engine && latest.fuelPct != null) {
+    if (veh.engine && latest.fuelPct != null && !fuelFirst) {
       out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
         stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—')),
         h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, latest.fuelPct))}%` }))));

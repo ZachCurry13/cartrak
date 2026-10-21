@@ -7,14 +7,15 @@ const el = (tag, attrs, text) => {
 };
 
 // The battery as a ring with the percentage inside. It turns amber at 20% or less and red at 10% or less.
-// Use ring.el in the page and call ring.set(percent, "194 mi range") whenever a new reading arrives.
-export function batteryRing() {
+// Use ring.el in the page and call ring.set(percent, "194 mi range") whenever a new reading arrives. A gas or hybrid car
+// shows its fuel tank in the same ring (what = 'Fuel').
+export function batteryRing(what = 'Battery') {
   const C = 2 * Math.PI * 62;
   const trk = el('circle', { class: 'trk', cx: 75, cy: 75, r: 62, fill: 'none', 'stroke-width': 12 });
   const arc = el('circle', { class: 'arc', cx: 75, cy: 75, r: 62, fill: 'none', 'stroke-width': 12, 'stroke-linecap': 'round', 'stroke-dasharray': `0 ${C}`, transform: 'rotate(-90 75 75)' });
   const big = el('text', { x: 75, y: 82, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 600 }, '—');
   const sub = el('text', { class: 'sub', x: 75, y: 102, 'text-anchor': 'middle', 'font-size': 12 }, '');
-  const svg = el('svg', { viewBox: '0 0 150 150', class: 'ring', role: 'img', 'aria-label': 'Battery' }, null);
+  const svg = el('svg', { viewBox: '0 0 150 150', class: 'ring', role: 'img', 'aria-label': what }, null);
   // in a seasonal theme the arc runs between the season's two colors (css/look.css picks it up only then)
   const defs = el('defs', {}, null), grad = el('linearGradient', { id: 'seasonring', x1: 0, y1: 0, x2: 1, y2: 1 }, null);
   grad.append(el('stop', { offset: 0, style: 'stop-color:var(--season1, var(--accent))' }, null), el('stop', { offset: 1, style: 'stop-color:var(--season2, var(--accent))' }, null));
@@ -29,7 +30,7 @@ export function batteryRing() {
       sub.textContent = subText || '';
       svg.classList.toggle('low', pct != null && p <= 20 && p > 10);
       svg.classList.toggle('crit', pct != null && p <= 10);
-      svg.setAttribute('aria-label', pct == null ? 'Battery unknown' : `Battery ${Math.round(p)} percent${subText ? `, ${subText}` : ''}`);
+      svg.setAttribute('aria-label', pct == null ? `${what} unknown` : `${what} ${Math.round(p)} percent${subText ? `, ${subText}` : ''}`);
     },
   };
 }

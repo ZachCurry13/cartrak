@@ -63,7 +63,6 @@ type Engine struct {
 	lowSent      bool
 	openFrom     time.Time
 	openSent     bool
-	openKey      string // what the last Left open alert was about, so the same old report never alerts twice
 }
 
 func (e *Engine) now() time.Time {
@@ -113,7 +112,7 @@ func (e *Engine) plugAndCharge(prev, st *ford.State) {
 		e.send(push.Alert{Kind: push.PlugOut, Title: "Unplugged", Body: "Charging cable removed." + charge(st), URL: "#/charging"})
 	}
 	if charging(prev) && !charging(st) {
-		e.chargeSpeed()
+		e.chargeSpeed(st.SoCPct)
 	}
 	if charging(prev) && !charging(st) && nowKnown && now { // stopped while still plugged in
 		soc := "?"
@@ -183,6 +182,12 @@ func (e *Engine) unlocked(st *ford.State) {
 	}
 	if !e.unlockedSent && st.TS.Sub(e.unlockedFrom) >= unlockedAfter {
 		e.unlockedSent = true
-		e.send(push.Alert{Kind: push.Unlocked, Title: "Car left unlocked", Body: "Parked and unlocked for over 10 minutes.", URL: "#/"})
+		body := "Parked and unlocked for over 10 minutes."
+		if stamp := lockStamp(st.Extra); stamp != "" {
+			if t, err := time.Parse(time.RFC3339, stamp); err == nil && st.TS.Sub(t) > 30*time.Minute { // a sleeping car repeats its last report
+				body = fmt.Sprintf("The car says it is unlocked. It last reported this at %s, so it may have been locked since.", e.reportedAt(stamp))
+			}
+		}
+		e.send(push.Alert{Kind: push.Unlocked, Title: "Car left unlocked", Body: body, URL: "#/"})
 	}
 }

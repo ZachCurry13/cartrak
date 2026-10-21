@@ -17,7 +17,8 @@ type fakeFord2 struct {
 	telemetryHit int32
 	garageStatus int
 	limited      bool
-	telemetryErr int // when set, /telemetry answers with this HTTP status and a message
+	telemetryErr int    // when set, /telemetry answers with this HTTP status and a message
+	telemetry    string // when set, /telemetry answers this instead of telemetrySample
 }
 
 const telemetrySample = `{"vehicles":[{"vin":"1FMTK1234ABCD5678","metrics":[
@@ -56,6 +57,10 @@ func newFake2(t *testing.T) *fakeFord2 {
 		if f.limited {
 			w.Header().Set("Retry-After", "42")
 			w.WriteHeader(429)
+			return
+		}
+		if f.telemetry != "" {
+			w.Write([]byte(f.telemetry))
 			return
 		}
 		w.Write([]byte(telemetrySample))

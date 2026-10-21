@@ -386,6 +386,42 @@ func TestAnOpenDoorOnAParkedCarIsAlertedOnceAfterTenMinutes(t *testing.T) {
 	}
 }
 
+func TestASleepingCarsOldOpenDoorIsToldOnce(t *testing.T) {
+	e, r, _ := setup(t)
+	old := func(s *ford.State) { // the car went to sleep at 8 pm with the passenger door shown open, and repeats it
+		s.Extra["telemetry.metrics.doorStatus[0].value"] = "AJAR"
+		s.Extra["telemetry.metrics.doorStatus[0].vehicleDoor"] = "UNSPECIFIED_FRONT"
+		s.Extra["telemetry.metrics.doorStatus[0].vehicleSide"] = "PASSENGER"
+		s.Extra["telemetry.metrics.doorStatus[0].updateTime"] = "2026-10-21T01:00:00Z"
+	}
+	for night := 0; night < 6; night++ { // now and then Ford's answer comes without the doors at all
+		for i := 0; i < 5; i++ {
+			e.Handle(reading(night*60+i*4, old))
+		}
+		e.Handle(reading(night*60+30, func(*ford.State) {}))
+	}
+	if r.kinds() != "left_open" {
+		t.Fatalf("one alert for one old report: %s", r.kinds())
+	}
+}
+
+func TestAnUnlockedAlertFromAnOldReportSaysWhen(t *testing.T) {
+	e, r, _ := setup(t)
+	old := func(s *ford.State) {
+		f := false
+		s.Locked = &f
+		s.Extra["telemetry.metrics.doorLockStatus[0].value"] = "UNLOCKED"
+		s.Extra["telemetry.metrics.doorLockStatus[0].vehicleDoor"] = "ALL_DOORS"
+		s.Extra["telemetry.metrics.doorLockStatus[0].updateTime"] = t0.Add(-48 * time.Hour).UTC().Format(time.RFC3339)
+	}
+	for i := 0; i < 5; i++ {
+		e.Handle(reading(i*4, old))
+	}
+	if r.kinds() != "unlocked" || !strings.Contains(r.got[0].Body, "last reported this at") {
+		t.Fatalf("says the report is old: %s %+v", r.kinds(), r.got)
+	}
+}
+
 func TestParkingMovesAreNotBumps(t *testing.T) {
 	e, r, _ := setup(t)
 	e.BumpLevel = func() float64 { return 1.0 }

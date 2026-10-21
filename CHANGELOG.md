@@ -7,11 +7,16 @@
 
 ### 🚙 Two vehicles on one Ford account, sorted out
 - A car added for a Ford account that shares several vehicles now follows one that no other car already follows. Before, it followed the first vehicle on the account (so a new Escape could quietly record the F-150's readings and show up as electric). A vehicle you pick on the **Ford connection** page still wins, and the car added first keeps its vehicle.
-- When a car changes which vehicle it follows, it forgets the vehicle type it learned and learns it again, so a hybrid is no longer shown as electric.
+- A car keeps following its vehicle when Ford lists the account's vehicles in a different order. Before, one reading could come from the other vehicle, with its alerts (an arrival, a low 12 V battery) sent under the wrong car.
+- When a car changes which vehicle it follows, it forgets the vehicle type it learned and learns it again.
+- A hybrid or gas car that reports no battery level opens Home on its **fuel tank** (level, range, oil life) instead of an empty battery ring.
 
 ### 🐛 Smaller fixes
 - **Most efficient drive** (and the Hypermiler badge) now only counts drives up to 1.6 times what your car usually gets, so a drive with a stale battery reading at the end no longer shows an impossible figure.
 - Percent charts, like **Battery level, day by day**, no longer run their axis up to 120%.
+- **Left open** tells you about the same open door at most once every 12 hours, until the car reports it closed. A sleeping car that keeps repeating its last report no longer sends it again and again overnight.
+- **Car left unlocked** says when the car last reported its locks if that was a while ago (a car in battery saver mode stops reporting), like Left open already does.
+- **Slow fast charge** never judges a session whose end level is not known yet, so a charge that ran to 100% is not called slow.
 - The birthday picker only offers days the chosen month has.
 
 ## 0.50.0

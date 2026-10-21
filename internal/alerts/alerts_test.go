@@ -305,18 +305,18 @@ func TestASlowFastChargeIsFlaggedAgainstYourUsual(t *testing.T) {
 		}
 	}
 	base := t0.Unix()
-	e.chargeSpeed()
+	e.chargeSpeed(nil)
 	for i := 0; i < 3; i++ {
 		add(base+int64(i)*86400, 30) // 60 kW each
 	}
 	add(base+3*86400, 30)
-	e.chargeSpeed()
+	e.chargeSpeed(nil)
 	if len(r.got) != 0 {
 		t.Fatalf("a normal session is not flagged: %s", r.kinds())
 	}
 	add(base+4*86400, 12) // 24 kW
-	e.chargeSpeed()
-	e.chargeSpeed()
+	e.chargeSpeed(nil)
+	e.chargeSpeed(nil)
 	if r.kinds() != "charge_slow" || !strings.Contains(r.got[0].Body, "24 kW") {
 		t.Fatalf("one alert for the slow session: %s %+v", r.kinds(), r.got)
 	}
@@ -341,8 +341,19 @@ func TestAChargeToFullIsNotCalledSlowForTapering(t *testing.T) {
 		add(base+int64(i)*86400, 80, 30, 30) // 60 kW to 80%
 	}
 	add(base+3*86400, 100, 45, 80) // 34 kW, but all the way to 100%
-	e.chargeSpeed()
+	e.chargeSpeed(nil)
 	if len(r.got) != 0 {
 		t.Fatalf("a charge to full tapers, so it is not judged: %s", r.kinds())
+	}
+	// the session just closed without its end level saved yet: the level now (100%) says it ran to full
+	c := &store.Charge{StartTS: base + 4*86400, StartSoC: f(36), StartKwh: f(30), PeakKw: 88}
+	_ = s.CreateCharge(c)
+	end := c.StartTS + 78*60
+	c.EndTS, c.EndKwh, c.Open = &end, f(85), false
+	_ = s.UpdateCharge(c)
+	e.chargeSpeed(f(100))
+	e.chargeSpeed(nil)
+	if len(r.got) != 0 {
+		t.Fatalf("no end level, or an end at full, is never judged: %s", r.kinds())
 	}
 }

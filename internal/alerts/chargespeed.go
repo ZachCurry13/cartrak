@@ -33,20 +33,25 @@ func fastAvg(c *store.Charge) (kw float64, ok bool) {
 }
 
 // judgeable is whether a fast session can be compared by its average power: it began low enough to be at full speed and ended
-// before the taper near full. A charge to 100% always averages less than one to 80%, however good the charger is.
-func judgeable(c *store.Charge) bool {
-	return c.StartSoC != nil && *c.StartSoC <= slowMaxFrom && (c.EndSoC == nil || *c.EndSoC <= slowMaxEnd)
+// before the taper near full. A charge to 100% always averages less than one to 80%, however good the charger is. endNow is
+// the battery level now, used when the session has no end level yet; without either it is not judged.
+func judgeable(c *store.Charge, endNow *float64) bool {
+	end := c.EndSoC
+	if end == nil {
+		end = endNow
+	}
+	return c.StartSoC != nil && *c.StartSoC <= slowMaxFrom && end != nil && *end <= slowMaxEnd
 }
 
 // chargeSpeed tells you when a fast charge that has just ended gave much less than your fast charges usually do.
-func (e *Engine) chargeSpeed() {
+func (e *Engine) chargeSpeed(socNow *float64) {
 	cs, err := e.S.ListCharges(40)
 	if err != nil || len(cs) == 0 {
 		return
 	}
 	cur := cs[0] // newest first
 	kw, ok := fastAvg(cur)
-	if !ok || !judgeable(cur) {
+	if !ok || !judgeable(cur, socNow) {
 		return
 	}
 	if e.S.GetKV(kvSlow) == strconv.FormatInt(cur.ID, 10) {
@@ -54,7 +59,7 @@ func (e *Engine) chargeSpeed() {
 	}
 	var prev []float64
 	for _, c := range cs[1:] {
-		if v, ok := fastAvg(c); ok && judgeable(c) {
+		if v, ok := fastAvg(c); ok && judgeable(c, nil) {
 			prev = append(prev, v)
 		}
 	}

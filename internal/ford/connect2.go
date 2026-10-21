@@ -105,11 +105,14 @@ func (c *Connect2) Fetch(ctx context.Context) (*State, error) {
 		return nil, err
 	}
 	o := c.opts()
-	var taken []string
-	if o.VIN == "" && o.Taken != nil {
+	want, taken := o.VIN, []string(nil)
+	if want == "" && o.Taken != nil {
 		taken = o.Taken()
 	}
-	tel, list, chosen := pickVehicle(tel, o.VIN, taken) // one vehicle per car, never a mix
+	if seen := c.store.GetKV(SeenVINKey); want == "" && seen != "" && !hasVIN(taken, seen) {
+		want = seen // not chosen: keep the vehicle it already follows (Ford's order changes), unless another car has it
+	}
+	tel, list, chosen := pickVehicle(tel, want, taken) // one vehicle per car, never a mix
 	c.noteVehicles(list, chosen)
 	doc := map[string]any{"telemetry": asJSON(tel)}
 
