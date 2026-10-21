@@ -79,5 +79,6 @@ export default async function reports(root, _a, session) {
     group('Quick downloads',
       downloadTile('/api/export/charging.csv', 'Charging (spreadsheet)', 'Every session with energy, cost and charger type'),
       downloadTile('/api/export/service.csv', 'Service history (spreadsheet)', 'Every service visit with what was done and what it cost'),
-      admin ? downloadTile('/api/export/all.zip', 'Everything (zip)', 'Trips, charging, places and service reminders') : null));
+      admin ? downloadTile('/api/export/all.zip', 'Everything (zip)', 'Trips, charging, places and service reminders') : null,
+      admin ? downloadTile('/api/export/fields.zip?days=7', 'Car fields over time (zip)', 'Every field the car sends and every change, last 7 days') : null));
 }

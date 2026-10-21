@@ -57,3 +57,25 @@ func (s *Store) TripReadings(from, to int64) ([]struct {
 	}
 	return out, rows.Err()
 }
+
+// EachExtra calls fn with the time and raw fields (JSON) of every reading from `from` to `to`, oldest first, one at a time: the raw
+// fields are large (about 50 KB a reading), so a long stretch is never held in memory. Readings whose detail was removed to save
+// space are skipped. fn stops the walk by returning an error.
+func (s *Store) EachExtra(from, to int64, fn func(ts int64, extra []byte) error) error {
+	rows, err := s.DB.Query(`SELECT ts,extra FROM samples WHERE ts BETWEEN ? AND ? AND extra IS NOT NULL AND length(extra)>2 ORDER BY ts`, from, to)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var ts int64
+		var extra []byte
+		if err := rows.Scan(&ts, &extra); err != nil {
+			return err
+		}
+		if err := fn(ts, extra); err != nil {
+			return err
+		}
+	}
+	return rows.Err()
+}

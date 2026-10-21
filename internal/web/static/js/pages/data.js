@@ -12,8 +12,22 @@ const timeOf = (ts) => { const d = new Date(ts * 1000); return `${pad(d.getHours
 const dayRange = (ts) => { const d = new Date(ts * 1000); d.setHours(0, 0, 0, 0); const a = Math.floor(d.getTime() / 1000); return [a, a + 86399]; };
 const stamp = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
+// Every field, and every moment one changed, as spreadsheets in a zip. Admins only: it is the raw data.
+function exportCard() {
+  const days = h('select', { id: 'xd' }, ...[['1', 'Last 24 hours'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['90', 'Last 90 days']].map(([v, t]) => h('option', { value: v }, t)));
+  days.value = '7';
+  const priv = h('input', { type: 'checkbox', id: 'xp' });
+  const link = h('a', { class: 'btn', href: '/api/export/fields.zip?days=7' }, 'Download the zip');
+  const set = () => { link.href = `/api/export/fields.zip?days=${days.value}${priv.checked ? '&private=1' : ''}`; };
+  days.addEventListener('change', set); priv.addEventListener('change', set);
+  return h('section', { class: 'card' }, h('h2', {}, 'Export every field over time'),
+    h('p', { class: 'muted' }, 'A zip of spreadsheets: every field of the newest reading, the fields that never changed, and a table with a row each time anything changed. Nothing is cut off, unlike printing this page.'),
+    h('label', { for: 'xd' }, 'How far back'), days,
+    h('p', {}, h('label', { for: 'xp' }, priv, ' Include positions and the VIN (they are left out otherwise, so the file is safe to send)')), h('p', {}, link));
+}
+
 // The car in plain words, in tabs, for any moment in its history.
-export default async function data(root) {
+export default async function data(root, _a, session) {
   let d = null;
   let tab = keep.get() || 'summary';
   const head = h('div');
@@ -78,7 +92,7 @@ export default async function data(root) {
         list.replaceChildren(...(rows.length ? rows.map(([k, v]) => h('div', { class: 'row' }, h('span', { class: 'grow muted' }, k), h('b', {}, String(v)))) : [h('p', { class: 'muted' }, 'No matches.')]));
       };
       find.addEventListener('input', draw);
-      body.replaceChildren(h('p', { class: 'muted' }, 'The raw list exactly as Ford sent it, for reference. The other tabs explain these in plain words.'), find, h('div', { style: 'height:8px' }), list);
+      body.replaceChildren(session && session.me.role === 'admin' ? exportCard() : null, h('p', { class: 'muted' }, 'The raw list exactly as Ford sent it, for reference. The other tabs explain these in plain words.'), find, h('div', { style: 'height:8px' }), list);
       draw();
     };
     if (isSaver()) {

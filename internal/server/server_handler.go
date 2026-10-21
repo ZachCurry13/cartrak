@@ -145,6 +145,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/export/charging.csv", s.auth(false, s.exportChargesCSV))
 	m.HandleFunc("GET /api/export/service.csv", s.auth(false, s.exportServiceCSV))
 	m.HandleFunc("GET /api/export/all.zip", s.auth(true, s.exportAll))
+	m.HandleFunc("GET /api/export/fields.zip", s.auth(true, s.exportFields))
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
 	m.HandleFunc("GET /api/savings", s.auth(false, s.savingsView))
 	m.HandleFunc("GET /api/plan-ahead", s.auth(false, s.planAhead))

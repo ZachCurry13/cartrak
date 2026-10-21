@@ -27,3 +27,12 @@ CarTrak keeps every reading, so the page can show the car as it was at any earli
 - **Latest** returns to now.
 
 Nothing is deleted as it ages, so this works for as long as CarTrak has been running. Readings from before an update that added a value may not have that value.
+
+## Exporting every field
+**All fields** on the Car data page (admins) has **Export every field over time**: a zip of spreadsheets for the last 24 hours, 7, 30 or 90 days.
+
+- `latest-reading.csv`: every field of the newest reading, as the car sent it.
+- `unchanged.csv`: the fields that never changed in the stretch.
+- `changes.csv`: a row each time anything changed, with the time (UTC and local) and a column for every field that changed. A parked car is a few rows and a drive is many.
+
+The car's own `updateTime` and `oemCorrelationId` stamps are left out of the last two (the newest ones are in `latest-reading.csv`). Positions, the VIN and vehicle ids are left out unless you tick the box, so the file is safe to send when something looks wrong. A reading whose full detail was removed to save space (see Backup, Free up space) cannot be exported. The same download is a tile under Reports.

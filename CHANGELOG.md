@@ -11,6 +11,9 @@
 - Insights drops the Charging and Battery tabs, the energy flow and the charging achievements for a car that cannot plug in. Liters and a price per liter, for devices set to kilometers.
 - The debug report gets a **FUEL** section.
 
+### 📤 Export every car field
+- **More, Data, All fields** has **Export every field over time**: a zip of spreadsheets with every field of the newest reading, the fields that never changed, and a table with a row each time anything changed (24 hours, 7, 30 or 90 days). Nothing is cut off, unlike printing the page. Positions and the VIN are left out unless you tick the box, so the file is safe to send. It is also under **Reports** (admins).
+
 ### 🧭 A half-circle gauge
 - The battery ring on **Home** and **Live** is now a **half-circle gauge** (and the fuel tank is the same gauge for a gas or hybrid car). It takes about 40 px less height, so the chips and Needs attention rise up the screen. **Live** shows the tank, not an empty Charge gauge, for a car with no battery level.
 

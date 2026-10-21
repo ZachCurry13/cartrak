@@ -178,6 +178,9 @@ func Age(ts, now int64) string {
 
 // private says whether a metric holds where the car is or who it is. Its activity is listed, its value never is: the
 // Car data page makes the same promise, and this page may be seen by viewers.
+// Private is private for other packages: the Car data export leaves these out unless asked.
+func Private(metric string) bool { return private(metric) }
+
 func private(metric string) bool {
 	m := strings.ToLower(metric)
 	for _, w := range []string{"position", "location", "latitude", "longitude", "gps", "vin", "vehicleid", "geo", "address"} {
