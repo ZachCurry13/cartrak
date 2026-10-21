@@ -1,6 +1,7 @@
 import { savingsCard, perDistance } from '../savingscard.js';
 import { h, emptyState, num, dist } from '../ui.js';
 import { sessionCard } from '../chargesession.js';
+import { coachCard } from '../coachcard.js';
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
 import { chargeNow } from '../chargenow.js';
@@ -28,9 +29,9 @@ export default async function charging(root, _a, session) {
   const now = chargeNow();
   root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Charging')), h('nav', { class: 'linkrow', 'aria-label': 'More about charging' }, h('a', { href: '#/charging-settings' }, 'Settings'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/plan' }, 'Plan a trip')), now.el, forecastCard(), box);
   async function load() {
-    const [cs, sum, savings] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin)]);
+    const [cs, sum, savings, tips] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin), coachCard()]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
-    box.replaceChildren(...[summaryCard(sum), savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
+    box.replaceChildren(...[summaryCard(sum), tips, savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
   }
   await load();
   return { cleanup: now.stop };

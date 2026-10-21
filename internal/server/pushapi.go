@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -113,7 +114,10 @@ func (s *Server) pushPrefs(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, msg)
 		return
 	}
-	if err := s.core().SetPushPrefs(userFrom(r).ID, in.Endpoint, in.Events, in.Quiet); err != nil {
+	if err := s.core().SetPushPrefs(userFrom(r).ID, in.Endpoint, in.Events, in.Quiet); errors.Is(err, store.ErrNoDevice) {
+		fail(w, 404, "this device is not registered for alerts any more: turn alerts on here again")
+		return
+	} else if err != nil {
 		fail(w, 500, "could not save")
 		return
 	}

@@ -147,9 +147,28 @@ func (s *Server) analyticsBattery(w http.ResponseWriter, r *http.Request) {
 	}
 	capacity, _ := s.S.DailyMedian("capacityKwh", from)
 	twelve, _ := s.S.DailySeries("battery12v", from)
+	// remote starts: how many, the energy they took and how long the car ran
+	type remoteSum struct {
+		Count   int     `json:"count"`
+		Kwh     float64 `json:"kwh"`
+		Minutes float64 `json:"minutes"`
+	}
+	var rsum remoteSum
+	if list, err := s.S.RemoteStartsBetween(from, time.Now().Unix()); err == nil {
+		for _, x := range list {
+			rsum.Count++
+			if u := x.UsedKwh(); u != nil {
+				rsum.Kwh += *u
+			}
+			if x.End > x.Start {
+				rsum.Minutes += float64(x.End-x.Start) / 60
+			}
+		}
+	}
 	ok(w, struct {
 		analytics.BatteryReport
 		Capacity []store.Day `json:"capacity"`
 		Volts12  []store.Day `json:"volts12"`
-	}{analytics.Battery(rs, s.defaultLoc()), capacity, twelve})
+		Remote   remoteSum   `json:"remote"`
+	}{analytics.Battery(rs, s.defaultLoc()), capacity, twelve, rsum})
 }

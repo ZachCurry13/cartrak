@@ -5,25 +5,24 @@ import { efficiency } from './energy.js';
 // kind of number written the way people say it.
 
 const KM_PER_MI = 1.609344;
-// [km, how to say one of them]; the comparisons are general on purpose, nothing about where anyone lives
+// [km, how to say one, how to say several]; the comparisons are general on purpose, nothing about where anyone lives
 const DISTANCES = [
-  [384400, 'the way to the Moon'],
-  [40075, 'the way around the Earth'],
-  [4500, 'a drive across the USA, coast to coast'],
-  [3940, 'Route 66, end to end'],
-  [1400, 'the length of Florida and back'],
-  [42.195, 'a marathon'],
+  [384400, 'the way to the Moon', 'trips to the Moon'],
+  [40075, 'the way around the Earth', 'times around the Earth'],
+  [4500, 'a drive across the USA, coast to coast', 'drives across the USA, coast to coast'],
+  [3940, 'Route 66, end to end', 'times Route 66, end to end'],
+  [1400, 'the length of Florida and back', 'times the length of Florida and back'],
+  [42.195, 'a marathon', 'marathons'],
 ];
 
 // "about half of Route 66, end to end", "2.3 times around the Earth"
 export function compareDistance(km) {
-  for (const [d, what] of DISTANCES) {
+  for (const [d, one, many] of DISTANCES) {
     const r = km / d;
     if (r < 0.4) continue;
-    if (r < 0.9) return `${r < 0.6 ? 'about half of' : `${Math.round(r * 10) * 10}% of`} ${what}`;
-    if (r < 1.15) return `about ${what}`;
-    if (d === 42.195) return `${Math.round(r)} marathons`;
-    return `${r < 10 ? r.toFixed(1) : Math.round(r)} times ${what.replace(/^the way /, '').replace(/^a /, '')}`;
+    if (r < 0.9) return `${r < 0.6 ? 'about half of' : `${Math.round(r * 10) * 10}% of`} ${one}`;
+    if (r < 1.15) return `about ${one}`;
+    return `${r < 10 ? Math.round(r * 10) / 10 : Math.round(r)} ${many}`;
   }
   return `${Math.max(1, Math.round(km / 42.195))} marathon${km >= 63 ? 's' : ''}`;
 }

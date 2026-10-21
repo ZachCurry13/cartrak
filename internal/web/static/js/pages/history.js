@@ -2,7 +2,7 @@ import { h, emptyState, dist, num } from '../ui.js';
 import { eventRow, money, span } from '../eventrow.js';
 import { api } from '../api.js';
 
-const KINDS = [['all', 'All'], ['charging', 'Charging'], ['driving', 'Driving'], ['parked', 'Parked']];
+const KINDS = [['all', 'All'], ['charging', 'Charging'], ['driving', 'Driving'], ['parked', 'Parked'], ['remote', 'Remote starts']];
 const dayKey = (ts, tz) => new Date(ts * 1000).toLocaleDateString('en-CA', { timeZone: tz });
 const dayHead = (ts, tz) => new Date(ts * 1000).toLocaleDateString([], { weekday: 'short', day: 'numeric', timeZone: tz });
 

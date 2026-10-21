@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"strings"
 	"time"
 )
@@ -75,9 +76,18 @@ func (s *Store) GetPushSub(userID int64, endpoint string) (*PushSub, error) {
 }
 
 // SetPushPrefs changes which alerts a device gets and its quiet hours.
+// ErrNoDevice is a device the server does not know (any more).
+var ErrNoDevice = errors.New("no such device")
+
 func (s *Store) SetPushPrefs(userID int64, endpoint string, events []string, quiet string) error {
-	_, err := s.DB.Exec(`UPDATE push_subs SET events=?, quiet=? WHERE user_id=? AND endpoint=?`, strings.Join(events, ","), quiet, userID, endpoint)
-	return err
+	r, err := s.DB.Exec(`UPDATE push_subs SET events=?, quiet=? WHERE user_id=? AND endpoint=?`, strings.Join(events, ","), quiet, userID, endpoint)
+	if err != nil {
+		return err
+	}
+	if n, _ := r.RowsAffected(); n == 0 {
+		return ErrNoDevice
+	}
+	return nil
 }
 
 func (s *Store) DeletePushSub(userID int64, endpoint string) error {

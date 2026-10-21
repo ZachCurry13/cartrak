@@ -23,7 +23,8 @@ async function refreshApp(btn, msg) {
   btn.disabled = true;
   msg.textContent = 'Clearing saved app files…';
   try {
-    if ('serviceWorker' in navigator) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+    // the service worker is updated, not removed: removing it would also drop this device's notifications
+    if ('serviceWorker' in navigator) for (const r of await navigator.serviceWorker.getRegistrations()) await r.update().catch(() => {});
     if (window.caches) for (const k of await caches.keys()) await caches.delete(k);
   } catch (e) { /* carry on: the reload below still fetches fresh files */ }
   location.replace(`/?fresh=${Date.now()}#/display`);

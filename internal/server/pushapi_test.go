@@ -129,7 +129,9 @@ func TestDevicesBelongToTheirOwner(t *testing.T) {
 		t.Fatalf("a viewer must not send to someone else's device: %d", code)
 	}
 	do(t, v, "POST", ts.URL+"/api/push/unsubscribe", `{"endpoint":"`+svc+`/p/mine"}`, xh)
-	do(t, v, "POST", ts.URL+"/api/push/prefs", `{"endpoint":"`+svc+`/p/mine","events":["trip_end"]}`, xh)
+	if code, _ := do(t, v, "POST", ts.URL+"/api/push/prefs", `{"endpoint":"`+svc+`/p/mine","events":["trip_end"]}`, xh); code != 404 {
+		t.Fatalf("saving choices for a device the person does not have says so: %d", code)
+	}
 	_, mine := do(t, admin, "GET", ts.URL+"/api/push/config", "", nil)
 	if !strings.Contains(mine, "/p/mine") || !strings.Contains(mine, `"events":["charge_complete","low_tire","low_12v"]`) {
 		t.Fatalf("someone else's changes must not touch the device: %s", mine)

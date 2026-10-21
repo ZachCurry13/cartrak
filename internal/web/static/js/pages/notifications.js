@@ -12,6 +12,12 @@ export default async function notifications(root, _a, session) {
   const why = unsupported();
   let here = why ? null : await current();
   let mine = () => cfg.devices.find((d) => d.endpoint === here);
+  // The phone still has its push address but the server lost it (a reinstall, or a device removed elsewhere): register it
+  // again with the alerts it had, so choices made here are saved.
+  let rejoined = false;
+  if (here && !mine() && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try { cfg = await enable(cfg.publicKey, guessLabel(), cfg.defaults, ''); here = await current(); rejoined = true; } catch (e) { /* shown as off below */ }
+  }
   const chosen = new Set((mine() || { events: cfg.defaults }).events);
   const q0 = ((mine() || {}).quiet || '').split('-');
   const label = h('input', { id: 'nl', value: (mine() || {}).label || guessLabel(), maxlength: 40 });
@@ -27,7 +33,7 @@ export default async function notifications(root, _a, session) {
     try { say(''); await f(); } catch (e) { say(e.message); }
   }
   async function save() {
-    if (!mine()) return;
+    if (!mine()) { say('Turn on alerts on this device first (above); your choices are used when you do.'); return; }
     cfg = await api('/api/push/prefs', { method: 'POST', body: { endpoint: here, events: [...chosen], quiet: quiet() } });
     say('Saved.');
   }
@@ -83,4 +89,5 @@ export default async function notifications(root, _a, session) {
   root.append(h('p', { class: 'muted' }, 'Get a notification on this phone or computer when something happens. Alerts say things like "Charging complete" and never include a location. They are encrypted so only your device can read them, but the push service of the phone maker (Google or Apple) can see that one was sent.'), box);
   root.append(log);
   draw();
+  if (rejoined) say('This device was registered again, so its alerts are saved here. Check the ones you want.');
 }

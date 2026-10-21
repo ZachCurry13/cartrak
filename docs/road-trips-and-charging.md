@@ -130,3 +130,10 @@ On a trip, **Why this efficiency?** also says whether it was driven firmer or sm
 For a home or level 2 charge, CarTrak takes the larger of two figures: the rise in the battery divided by the charging efficiency, and the power the car reported while plugged in, added up and divided by the same efficiency. The second one also sees energy the car used itself while plugged in, such as warming the battery before you leave. If you enter what the charger delivered, that number is used instead. Fast charging is unchanged.
 
 A fast charge that stops and is plugged back in within 5 minutes at the same place, with the battery no lower, continues the same session.
+
+## Remote starts
+When the car is started remotely (from the FordPass app or the key fob), it counts down until it shuts off by itself. CarTrak
+notices that countdown and records each remote start: when it ran and for how long, the battery before and after, the energy it
+took and the outside temperature. They appear as rows in the Day view and History (which can show only remote starts), the day's
+summary mentions them, and Insights, Battery adds them up. Home and Live show a chip while one is running, with the number of
+remote starts since the car was last driven. The car reports only every few minutes while parked, so times are close, not exact.

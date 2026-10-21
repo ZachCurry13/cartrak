@@ -109,7 +109,8 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 	}
 	named, _ := s.S.ListNamedPlaces()
 	now := time.Now().Unix()
-	events := history.Build(list, charges, named, from.Unix(), to.Unix()-1, now)
+	base := history.Build(list, charges, named, from.Unix(), to.Unix()-1, now)
+	events := history.WithRemote(base, s.remoteFor(from.Unix(), to.Unix()-1), now) // the rows; the summary counts stops from base
 	bases := s.baseFinder(s.cityNamer())
 	s.placeEvents(events, list, named, bases)
 	bases.cities.lookupLater()
@@ -144,10 +145,10 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 		}
 		keep = append(keep, e)
 	}
-	sum.finish(list, events, min(dayEnd, now))
+	sum.finish(list, base, min(dayEnd, now))
 	trip := s.dayCosts(&sum, from, used, usedKm, bases)
 	ok(w, map[string]any{"date": from.Format("2006-01-02"), "summary": sum, "tz": loc.String(), "events": keep, "routes": routes, "currency": s.currency(),
-		"totals": history.Sum(events, from.Unix(), to.Unix()-1, now),
+		"totals": history.Sum(base, from.Unix(), to.Unix()-1, now),
 		"energy": map[string]any{"usedKwh": used, "usedKm": usedKm, "addedKwh": kwhAdded, "cost": costSum}, "trip": trip})
 }
 

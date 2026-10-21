@@ -57,6 +57,9 @@ export function battery(body) {
         h('p', { class: 'muted' }, `On average ${Math.round(d.avgPct)}%. ${Math.round(d.highShare * 100)}% of the time at 90% or more and ${Math.round(d.lowShare * 100)}% under 20%. Most of the time in the middle is easiest on the battery.`)) : null,
       cap.length >= 2 ? card('Usable capacity', lineChart({ points: cap.map((x) => ({ x: x.ts, y: x.avg })), xFmt: ago, yFmt: (y, axis) => (axis ? y.toFixed(1) : `${y.toFixed(1)} kWh`), yMin: Math.floor(Math.min(...cap.map((x) => x.avg)) - 1),
         summary: `${cap[0].avg.toFixed(1)} → ${cap[cap.length - 1].avg.toFixed(1)} kWh in this stretch`, yTitle: 'kWh' })) : null,
+      d.remote && d.remote.count ? card('Remote starts', h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, String(d.remote.count)), h('span', {}, 'remote starts')),
+        h('div', {}, h('b', {}, num(d.remote.kwh, 1, ' kWh')), h('span', {}, 'taken from the battery')), h('div', {}, h('b', {}, `${Math.round(d.remote.minutes)} min`), h('span', {}, 'of the car running'))),
+        h('p', { class: 'muted' }, 'Warming or cooling the car while it is plugged in takes the energy from the wall instead of the battery.')) : null,
       v12.length >= 2 ? card('12 V battery', lineChart({ points: v12.map((x) => ({ x: x.ts, y: x.avg })), xFmt: ago, yFmt: (y, axis) => (axis ? y.toFixed(1) : `${y.toFixed(2)} V`), yMin: 11.5, summary: 'Daily average; the car charges it while it runs', yTitle: 'V' })) : null);
     if (!out.children.length) out.append(h('p', { class: 'muted' }, 'Not enough readings yet.'));
   });

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/history"
 	"github.com/ZachCurry13/cartrak/internal/remotestart"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -45,4 +46,17 @@ func (s *Server) remoteStarts(w http.ResponseWriter, r *http.Request) {
 		pts = append(pts, remotestart.Point{TS: x.TS, Left: left})
 	}
 	ok(w, map[string]any{"sinceDrive": remotestart.Count(pts), "since": from, "lastDrive": lastDrive})
+}
+
+// remoteFor is the remote starts that overlap from..to, ready for the feed.
+func (s *Server) remoteFor(from, to int64) []history.Remote {
+	list, err := s.S.RemoteStartsBetween(from, to)
+	if err != nil {
+		return nil
+	}
+	out := make([]history.Remote, 0, len(list))
+	for _, x := range list {
+		out = append(out, history.Remote{ID: x.ID, Start: x.Start, End: x.End, StartSoC: x.StartSoC, EndSoC: x.EndSoC, UsedKwh: x.UsedKwh(), TempC: x.TempC, Restarts: x.Restarts})
+	}
+	return out
 }

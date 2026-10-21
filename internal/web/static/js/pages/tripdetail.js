@@ -6,6 +6,8 @@ import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
 import { categoryList } from '../categories.js';
 import { tripDistanceCard, shortOdometer } from '../tripdistance.js';
+import { replayCard } from '../replay.js';
+import { catColor } from '../categories.js';
 import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
@@ -112,6 +114,7 @@ export default async function tripDetail(root, [id, action], session) {
     admin && shortOdometer(t) ? tripDistanceCard(t) : null, // drastically short: up here, where it is seen
     why,
     routeBox,
+    !t.open && !saver ? replayCard(t, catColor(t.category)) : null,
     hasStart || hasEnd ? h('section', { class: 'card' }, h('h2', {}, 'Open in maps'),
       hasStart ? h('div', {}, h('b', {}, t.startPlace || 'Where it started'), mapButtons(t.startLat, t.startLon, 'where it started')) : null,
       hasEnd ? h('div', {}, h('b', {}, t.endPlace || 'Where it ended'), mapButtons(t.endLat, t.endLon, 'where it ended')) : null) : null,

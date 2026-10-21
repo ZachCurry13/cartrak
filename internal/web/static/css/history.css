@@ -78,3 +78,4 @@ button.sm,.btn.sm{padding:6px 14px;min-height:40px;font-size:.9rem;box-sizing:bo
 /* a row of links under a page title, scrolling sideways on a phone instead of stacking */
 .linkrow{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin:0 0 4px;scrollbar-width:none}.linkrow::-webkit-scrollbar{display:none}
 .linkrow a{flex:0 0 auto;white-space:nowrap;padding:8px 14px;border-radius:999px;background:var(--card2);color:var(--text);text-decoration:none;font-size:.9rem;min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}
+.hcard.remote{--hc:var(--personal)}.hico.remote{color:var(--personal)}.hbar .chg.remote{background:var(--personal)}

@@ -58,7 +58,7 @@ function chargePanel(e, cur, admin) {
 
 // Turns a row of the day into one that opens its details just below it, so nothing takes you off the day.
 export function expandable(row, e, cur, admin) {
-  if (e.kind === 'parked') return [row];
+  if (e.kind === 'parked' || e.kind === 'remote') return [row];
   row.removeAttribute('href');
   row.setAttribute('role', 'button');
   row.setAttribute('tabindex', '0');

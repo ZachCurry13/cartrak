@@ -51,7 +51,7 @@ func (s *Server) historyFeed(w http.ResponseWriter, r *http.Request) {
 	}
 	named, _ := s.S.ListNamedPlaces()
 	now := time.Now().Unix()
-	events := history.Build(trips, charges, named, from.Unix(), to.Unix(), now)
+	events := history.WithRemote(history.Build(trips, charges, named, from.Unix(), to.Unix(), now), s.remoteFor(from.Unix(), to.Unix()), now)
 	bases := s.baseFinder(s.cityNamer())
 	s.placeEvents(events, trips, named, bases)
 	bases.cities.lookupLater()

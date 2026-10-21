@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.48.0
+
+### 🔔 Notifications that stay saved
+- Choosing alerts sometimes did nothing: after **Refresh the app** (or reinstalling), the phone lost its notification registration, and the Notifications page then quietly ignored every tick. Refresh now keeps the registration, the page registers the phone again by itself when it finds this, and it says so when a choice cannot be saved.
+
+### ⏻ Remote starts in the feed
+- Remote starts now have rows in the **Day view** and **History**, like charges: when the car ran, for how long, the battery before and after, the energy it took and the temperature outside. The day's summary mentions them, History can show only remote starts, and Insights (Battery) adds them up.
+- Remote starts from before this update are found in the stored readings, gently, in the background.
+
+### ▶️ Trip replay
+- Open a trip and press **Replay this trip**: a dot drives the route on the map while the clock, speed, battery and distance follow it. Drag the slider to jump, and play at 10×, 30×, 60× or 120×. A phone GPS track gives the smoothest replay.
+
+### 💡 Tips from your charging
+- The Charging page can show a few tips from your last two months, only when the numbers clearly back them up: charging to 100% for short daily driving, what the night rate would have saved, a fast charger that is slow for you, arriving at chargers very low, and what public charging costs on top of home.
+
+### 🧭 Skip a suggestion
+- Swipe a **Suggested setup** item to the left, or tap ×, to skip it. It leaves the Home card and shows as skipped under More, Setup checklist, with **Undo**.
+
+### ✨ Wrapped
+- The infographic lays itself out so nothing overlaps the footer, frames where most of your driving is, and draws a few trips brighter. Comparisons read properly ("2 drives across the USA, coast to coast").
+
 ## 0.47.0
 
 ### ✨ Insights

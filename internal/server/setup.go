@@ -12,11 +12,23 @@ import (
 // The setup checklist: suggested next steps, none of them required. What the server can tell is done comes from here;
 // installing the app and taking the tour are known only on the phone. Each person hides the Home card for themselves.
 
-func setupHiddenKey(uid int64) string { return fmt.Sprintf("setup_hidden:%d", uid) }
+func setupHiddenKey(uid int64) string  { return fmt.Sprintf("setup_hidden:%d", uid) }
+func setupSkippedKey(uid int64) string { return fmt.Sprintf("setup_skipped:%d", uid) }
+
+// skippedOf is the suggestions a person skipped, by key.
+func (s *Server) skippedOf(uid int64) []string {
+	out := []string{}
+	for _, k := range strings.Split(s.core().GetKV(setupSkippedKey(uid)), ",") {
+		if k != "" {
+			out = append(out, k)
+		}
+	}
+	return out
+}
 
 func (s *Server) setupChecklist(w http.ResponseWriter, r *http.Request) {
 	u := userFrom(r)
-	out := map[string]any{"hidden": s.core().GetKV(setupHiddenKey(u.ID)) == "1"}
+	out := map[string]any{"hidden": s.core().GetKV(setupHiddenKey(u.ID)) == "1", "skipped": s.skippedOf(u.ID)}
 	alerts := 0
 	if subs, err := s.core().ListPushSubs(u.ID); err == nil {
 		alerts = len(subs)
@@ -76,4 +88,25 @@ func (s *Server) redetectOffer() bool {
 func (s *Server) redetectSeen(w http.ResponseWriter, r *http.Request) {
 	_ = s.S.SetKV(kvDetectionSeen, strconv.Itoa(trips.DetectionVersion))
 	ok(w, "seen")
+}
+
+// skipSetup skips one suggestion for this person, or brings it back with undo=1. POST /api/checklist/skip?key=gas
+func (s *Server) skipSetup(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("key")
+	if len(key) == 0 || len(key) > 20 || strings.Trim(key, "abcdefghijklmnopqrstuvwxyz") != "" {
+		fail(w, 400, "unknown suggestion")
+		return
+	}
+	uid := userFrom(r).ID
+	var keep []string
+	for _, k := range s.skippedOf(uid) {
+		if k != key {
+			keep = append(keep, k)
+		}
+	}
+	if r.URL.Query().Get("undo") != "1" {
+		keep = append(keep, key)
+	}
+	_ = s.core().SetKV(setupSkippedKey(uid), strings.Join(keep, ","))
+	ok(w, map[string]any{"skipped": keep})
 }

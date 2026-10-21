@@ -34,7 +34,7 @@ The tabs under Highlights hold the detailed charts, each for the last 90 days, 1
 - **Driving**: efficiency against the outside temperature with your own trend line, a calendar of distance per day, efficiency by
   average speed, how long your trips are and when you drive.
 - **Records**: a recap card for any month (with **Play it as Wrapped**) and your personal bests, each opening its trip.
-- **Battery**: the battery level day by day, the share of time spent at each level, usable capacity and the 12 V battery.
+- **Battery**: the battery level day by day, the share of time spent at each level, remote starts (how many, the energy they took and how long the car ran), usable capacity and the 12 V battery.
 
 Tap a bar, a square or a dot on any chart to read it; drag along a line chart.
 
@@ -44,3 +44,15 @@ A personality is picked from how the car was used in the month or year: **The Ni
 **The Fast-Charge Fan** (much of the energy from fast chargers), **The Commuter** (weekday rush hours), **The Road Tripper** (much of
 the distance on drives of 50 miles or more), **The Weekend Wanderer**, **The Local Hero** (mostly short trips) and **The Hypermiler**.
 The one the car fits best wins, and the runner-up is named too.
+
+## Tips from your charging
+
+The Charging page can show **Tips from your charging**, worked out from the last 60 days. Each appears only when the numbers clearly
+back it up, and the card is not shown at all when there is nothing worth saying:
+
+- **Charging to 100% most nights**: most home charges went to 95% or more, but the driving after them used little of the battery.
+- **What the night rate would save**: when a cheaper night rate is set under Charging settings, the energy charged at home outside
+  those hours, priced at the difference.
+- **A fast charger that is slow for you**: a place where your fast charges averaged well under your usual fast-charging speed.
+- **Under 10% at the charger**: when that happened three times or more.
+- **What public charging costs on top**: when public charging cost at least twice your home price per kWh.

@@ -13,8 +13,8 @@ export default async function setup(root, _a, session) {
     toggle.textContent = st.hidden ? 'Show the card on Home' : 'Hide the card on Home';
   } }, st.hidden ? 'Show the card on Home' : 'Hide the card on Home');
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Setup checklist')),
-    h('p', { class: 'muted' }, `Suggestions to get more from CarTrak, none of them required. ${done} of ${items.length} done.`),
-    h('section', { class: 'card' }, ...items.map((x) => setupRow(x))),
+    h('p', { class: 'muted' }, `Suggestions to get more from CarTrak, none of them required. ${done} of ${items.length} done. Swipe one left, or tap ×, to skip it.`),
+    h('section', { class: 'card' }, ...items.map((x) => setupRow(x, false, () => dispatchEvent(new Event('hashchange'))))),
     session.me.role === 'admin' ? h('p', { class: 'muted' }, 'Connecting Ford and remote access are under ', h('a', { href: '#/start' }, 'Getting started'), '.') : null,
     h('p', { class: 'seg' }, toggle));
 }

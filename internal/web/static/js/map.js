@@ -164,5 +164,7 @@ export function createMap(cfg, { height = 260, interactive = true, glow = false 
       render();
     },
     update(m) { markers = m; render(); },
+    // Changes what is drawn without moving the map (a replay redraws many times a second).
+    redraw({ routes: r = routes, markers: m = markers }) { routes = r; markers = m; render(); },
   };
 }

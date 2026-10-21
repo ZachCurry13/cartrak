@@ -31,6 +31,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/onboarding/dismiss", s.auth(true, s.dismissOnboarding))
 	m.HandleFunc("GET /api/checklist", s.auth(false, s.setupChecklist))
 	m.HandleFunc("POST /api/checklist/hide", s.auth(false, s.hideSetup))
+	m.HandleFunc("POST /api/checklist/skip", s.auth(false, s.skipSetup))
 
 	m.HandleFunc("GET /api/health", s.auth(false, s.health))
 	m.HandleFunc("GET /api/vehicle", s.auth(false, s.vehicle))
@@ -87,6 +88,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/analytics/badges", s.auth(false, s.badgesState))
 	m.HandleFunc("GET /api/analytics/everywhere", s.auth(false, s.everywhere))
 	m.HandleFunc("GET /api/analytics/life", s.auth(false, s.life))
+	m.HandleFunc("GET /api/analytics/coach", s.auth(false, s.chargingTips))
 	m.HandleFunc("GET /api/speed-efficiency", s.auth(false, s.speedEfficiency))
 	m.HandleFunc("GET /api/efficiency-reasons", s.auth(false, s.efficiencyReasons))
 	m.HandleFunc("GET /api/alerts/log", s.auth(true, s.alertLog))
@@ -119,6 +121,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("PATCH /api/journeys/{id}", s.auth(true, s.patchJourney))
 	m.HandleFunc("DELETE /api/journeys/{id}", s.auth(true, s.deleteJourney))
 	m.HandleFunc("GET /api/trips/{id}/road", s.auth(true, s.tripRoad))
+	m.HandleFunc("GET /api/trips/{id}/replay", s.auth(false, s.tripReplay))
 	m.HandleFunc("POST /api/trips/{id}/distance", s.auth(true, s.setTripDistance))
 	m.HandleFunc("PATCH /api/trips/{id}", s.auth(true, s.patchTrip))
 	m.HandleFunc("DELETE /api/trips/{id}", s.auth(true, s.deleteTrip))

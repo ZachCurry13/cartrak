@@ -1,7 +1,7 @@
-import { h, dist, num, speed, pct } from './ui.js';
+import { h, dist, num, speed, pct, temp } from './ui.js';
 import { effSpan } from './energy.js';
 
-const GLYPH = { charging: '⚡', driving: '↗', parked: 'P' };
+const GLYPH = { charging: '⚡', driving: '↗', parked: 'P', remote: '⏻' };
 const WHERE = { home: 'Home', public: 'Public' };
 export const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 
@@ -35,6 +35,7 @@ function levels(e) {
 // Where it happened: a drive from → to, a charge as home or public and its place (once, when they are the same word).
 function placeOf(e) {
   if (e.kind === 'driving') return [e.fromPlace, e.place].filter(Boolean).join(' → ');
+  if (e.kind === 'remote') return 'Remote start';
   if (e.kind !== 'charging') return e.place;
   const kind = WHERE[e.where] || 'Charging';
   return e.place && e.place.toLowerCase() !== kind.toLowerCase() ? `${kind} · ${e.place}` : kind;
@@ -59,6 +60,11 @@ export function eventRow(e, tz, cur, stopNumber, extra = {}) {
   if (e.kind === 'driving') {
     if (extra.leftNote) detail.push(extra.leftNote);
     if (e.end != null && e.distanceKm >= 0.5 && secs > 60) detail.push(speed((e.distanceKm / secs) * 3600) + ' average', e.energyKwh > 0.2 ? effSpan(e.distanceKm, e.energyKwh) : null);
+  } else if (e.kind === 'remote') {
+    // the car warming or cooling itself before a drive: how long, what it took, and the weather that called for it
+    if (e.place) detail.push(e.place);
+    if (e.tempC != null) detail.push(`${temp(e.tempC)} outside`);
+    if (e.restarts) detail.push(`started again ${e.restarts === 1 ? 'once' : `${e.restarts} times`}`);
   } else if (e.kind === 'charging') {
     detail.push(power(e, secs));
     if (extra.stopSec > secs + 300) detail.push(`stopped ${span(extra.stopSec)} in all`);
@@ -67,7 +73,8 @@ export function eventRow(e, tz, cur, stopNumber, extra = {}) {
     if (e.cost != null && kwh > 0.5) detail.push(`${money(cur, e.cost / kwh)}/kWh ${e.costActual ? '(receipt)' : '(estimate)'}`);
   }
   const shown = detail.filter(Boolean);
-  const right = e.kind === 'charging' ? (e.cost != null ? money(cur, e.cost) : e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '') : e.kind === 'driving' ? dist(e.distanceKm, 1) : '';
+  const used = e.kind === 'remote' && e.energyKwh > 0 ? num(e.energyKwh, 1, ' kWh') : '';
+  const right = e.kind === 'remote' ? used : e.kind === 'charging' ? (e.cost != null ? money(cur, e.cost) : e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '') : e.kind === 'driving' ? dist(e.distanceKm, 1) : '';
   const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '';
   const lv = levels(e);
   const body = [

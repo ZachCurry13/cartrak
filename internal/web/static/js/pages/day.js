@@ -23,6 +23,8 @@ function summaryCard(x, road) {
   if (!s.trips && !s.sessions) return null;
   const lines = [];
   if (s.trips) lines.push(`You drove ${hm(t.drivingSec)} over ${plural(s.trips, 'trip')}, ${dist(t.km, 0)}, at an average of ${speed(s.avgMovingKph)} (top speed ${speed(s.topKph)}).`);
+  const remote = x.events.filter((v) => v.kind === 'remote');
+  if (remote.length) { const kwh = remote.reduce((n, v) => n + (v.energyKwh || 0), 0); lines.push(`The car was remote started ${remote.length === 1 ? 'once' : plural(remote.length, 'time')}${kwh >= 0.1 ? `, using ${kwh.toFixed(1)} kWh` : ''}.`); }
   if (s.stops) lines.push(`You stopped ${plural(s.stops, 'time')} for ${hm(s.stoppedSec)} in all${s.longestStopSec >= 1800 ? `; the longest was ${hm(s.longestStopSec)}${s.longestStopAt ? ` at ${s.longestStopAt}` : ''}` : ''}.`);
   if (s.sessions) {
     const kind = s.fastSessions ? `${s.fastSessions} fast${s.sessions - s.fastSessions ? ` and ${s.sessions - s.fastSessions} slow` : ''}` : 'slow';
@@ -59,12 +61,12 @@ export default async function day(root, [date, action], session) {
       h('h3', {}, label), h('button', { class: 'sec', 'aria-label': 'Next day', onclick: () => { location.hash = `#/day/${shift(x.date, 1)}`; } }, '›'));
     const picker = h('input', { type: 'date', value: x.date, 'aria-label': 'Pick a day', style: 'max-width:12em' });
     picker.addEventListener('change', () => { if (picker.value) location.hash = `#/day/${picker.value}`; });
-    const stops = x.events.filter((v) => v.kind !== 'driving' && !v.base); // time at the base of a trip away is not a stop
+    const stops = x.events.filter((v) => v.kind !== 'driving' && v.kind !== 'remote' && !v.base && !v.cont); // time at the base of a trip away is not a stop; a remote start is not one either
     const roadCharges = stops.filter((v) => v.kind === 'charging' && v.where !== 'home').length; // charging stops away from home; a charge at home is not a stop
     const road = roadDay(x.events, x.tz);
     const stopNo = new Map();
     let n = 0;
-    for (const v of x.events) if (v.kind !== 'driving' && !v.base && !road.hidden.has(v) && v.lat != null && v.lon != null) stopNo.set(v, ++n);
+    for (const v of x.events) if (v.kind !== 'driving' && v.kind !== 'remote' && !v.base && !v.cont && !road.hidden.has(v) && v.lat != null && v.lon != null) stopNo.set(v, ++n);
     const tiles = h('div', { class: 'dtiles day' },
       stat('🛣️ Distance', dist(t.km, 0)), stat('⏱️ Driving', hm(t.drivingSec)),
       e.addedKwh > 0 ? stat('⚡ Charged', `${num(e.addedKwh, 0, ' kWh')} · ${hm(t.chargingSec)}`) : null,

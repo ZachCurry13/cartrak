@@ -36,6 +36,7 @@ func (s *Store) SaveState(provider string, st *ford.State) (int64, error) {
 		return 0, err
 	}
 	_ = s.saveTrend(id, st) // the charted numbers, kept apart from the big row
+	s.noteRemote(st)        // a remote start running, starting or ending
 	s.noteCarReport(ford.LastReported(st.Extra))
 	return id, nil
 }

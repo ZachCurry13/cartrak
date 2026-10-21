@@ -41,14 +41,18 @@ function glowMap(g, routes, x, y, w, hgt) {
   g.fillStyle = '#04070d'; g.fillRect(x, y, w, hgt);
   const pts = routes.flat();
   if (pts.length > 1) {
-    const lats = pts.map((p) => p[0]), lons = pts.map((p) => p[1]);
-    const la0 = Math.min(...lats), la1 = Math.max(...lats), lo0 = Math.min(...lons), lo1 = Math.max(...lons);
+    // frame where most of the driving is (the middle 90% each way), so one long trip does not shrink the rest to a dot
+    const lats = pts.map((p) => p[0]).sort((a, b) => a - b), lons = pts.map((p) => p[1]).sort((a, b) => a - b);
+    const q = (arr, f) => arr[Math.floor(f * (arr.length - 1))];
+    const few = pts.length < 40;
+    const la0 = few ? lats[0] : q(lats, 0.05), la1 = few ? lats[lats.length - 1] : q(lats, 0.95), lo0 = few ? lons[0] : q(lons, 0.05), lo1 = few ? lons[lons.length - 1] : q(lons, 0.95);
     const k = Math.cos(((la0 + la1) / 2) * Math.PI / 180);
     const sc = Math.min((w - 80) / ((lo1 - lo0) * k || 1e-6), (hgt - 80) / ((la1 - la0) || 1e-6));
     const ox = x + (w - (lo1 - lo0) * k * sc) / 2, oy = y + (hgt - (la1 - la0) * sc) / 2;
     g.globalCompositeOperation = 'lighter';
     g.lineJoin = g.lineCap = 'round';
-    for (const [width, alpha] of [[10, 0.035], [3, 0.16]]) {
+    const boost = Math.min(5, Math.max(1, 60 / routes.length)); // a few trips are drawn brighter, many add up on their own
+    for (const [width, alpha] of [[10, 0.035 * boost], [3, Math.min(0.9, 0.16 * boost)]]) {
       g.lineWidth = width;
       g.strokeStyle = `rgba(94,234,212,${alpha})`;
       for (const r of routes) {
@@ -72,15 +76,21 @@ function energyBar(g, f, x, y, width) {
   g.save(); g.beginPath(); g.roundRect(x, y + 48, width, 44, 14); g.clip();
   for (const [, v, col] of parts) { const pw = (v / total) * width; g.fillStyle = col; g.fillRect(px, y + 48, pw, 44); px += pw; }
   g.restore();
-  let kx = x;
+  let kx = x, ky = y + 116;
+  g.font = `600 26px ${FONT}`;
   for (const [name, v, col] of parts) {
-    g.fillStyle = col; g.fillRect(kx, y + 116, 22, 22);
     const label = `${name} ${Math.round((v / total) * 100)}%`;
-    text(g, label, kx + 32, y + 136, 26, { alpha: 0.85 });
+    const lw = 32 + g.measureText(label).width + 30;
+    if (kx > x && kx + lw - 30 > x + width) { kx = x; ky += 44; } // wrap the key rather than run off the edge
+    g.fillStyle = col; g.fillRect(kx, ky, 22, 22);
+    text(g, label, kx + 32, ky + 20, 26, { alpha: 0.85 });
     g.font = `600 26px ${FONT}`;
-    kx += 32 + g.measureText(label).width + 30;
+    kx += lw;
   }
 }
+
+// how tall the energy block is: its title, the bar and one or two lines of key
+const ENERGY_H = 200;
 
 export function drawInfographic(w, routes) {
   const c = document.createElement('canvas');
@@ -108,24 +118,27 @@ export function drawInfographic(w, routes) {
   tile(g, PAD, y + 188, tw, 160, valueText('kwh', r.kwhCharged), `charged · ${Math.round(r.homeShare * 100)}% at home`);
   tile(g, PAD + tw + 28, y + 188, tw, 160, r.saved != null ? `${cur}${Math.round(r.saved)} saved` : `${cur}${r.cost.toFixed(0)}`, r.saved != null ? 'against a gas car' : 'charging cost');
   y += 188 * 2 + 30;
-  glowMap(g, routes, PAD, y, W - PAD * 2, 470);
-  text(g, w.towns ? `${w.towns} towns` : 'Everywhere you went', PAD + 32, y + 60, 34, { weight: 700 });
-  y += 470 + 80;
+  // the parts under the map have their own heights; the map takes what is left, so nothing runs into the footer
   const p = (w.personalities || [])[0];
+  const badges = (w.badges || []).slice(0, 6);
+  const below = (p ? 190 : 0) + (badges.length ? 110 : 0) + (w.flow ? ENERGY_H : 0) + 70;
+  const mapH = Math.max(260, H - y - below - 60);
+  glowMap(g, routes, PAD, y, W - PAD * 2, mapH);
+  text(g, w.towns ? `${w.towns} towns` : 'Everywhere you went', PAD + 32, y + 60, 34, { weight: 700 });
+  y += mapH + 80;
   if (p) {
     text(g, p.emoji, PAD, y + 40, 96, {});
     text(g, p.name, PAD + 130, y, 52, { weight: 800 });
     y = wrap(g, personalityLine(p), PAD + 130, y + 56, 32, W - PAD * 2 - 130, 42, { alpha: 0.8 });
     y += 30;
   }
-  const badges = (w.badges || []).slice(0, 6);
   if (badges.length) {
     text(g, 'Earned', PAD, y + 20, 30, { alpha: 0.7, weight: 700 });
     badges.forEach((b, i) => text(g, b.emoji, PAD + 150 + i * 110, y + 34, 72, {}));
     y += 110;
   }
   energyBar(g, w.flow, PAD, y + 10, W - PAD * 2);
-  text(g, 'Made with CarTrak', W / 2, H - 70, 28, { alpha: 0.55, align: 'center' });
+  text(g, 'Made with CarTrak', W / 2, H - 40, 28, { alpha: 0.55, align: 'center' });
   return c;
 }
 

@@ -39,3 +39,19 @@ func TestShortGapsAreNotShownAndAnOpenDriveHasNoParkedAfterIt(t *testing.T) {
 		t.Fatalf("two drives and no parked: %+v", ev)
 	}
 }
+
+func TestARemoteStartSplitsTheParkedTimeAroundIt(t *testing.T) {
+	end := int64(10000)
+	ev := []Event{{Kind: "driving", ID: 2, Start: 10000, End: &[]int64{11000}[0]}, {Kind: "parked", Start: 1000, End: &end, Place: "Home"}}
+	used := 1.2
+	out := WithRemote(ev, []Remote{{ID: 7, Start: 9000, End: 9600, UsedKwh: &used}}, 20000)
+	if len(out) != 4 || out[0].Kind != "driving" || out[1].Kind != "parked" || out[2].Kind != "remote" || out[3].Kind != "parked" {
+		t.Fatalf("drive, parked, remote start, parked: %+v", out)
+	}
+	if out[2].Place != "Home" || *out[2].EnergyKwh != 1.2 || *out[3].End != 9000 || out[1].Start != 9600 || !out[1].Cont || out[3].Cont || out[1].StartSoC != nil {
+		t.Fatalf("split: %+v", out)
+	}
+	if got := WithRemote(ev, nil, 20000); len(got) != 2 {
+		t.Fatal("nothing to add")
+	}
+}

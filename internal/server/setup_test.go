@@ -36,6 +36,15 @@ func TestSetupChecklistIsPerPersonAndCanBeHidden(t *testing.T) {
 	if code, _ := do(t, admin, "POST", ts.URL+"/api/checklist/hide?show=1", "", xh); code != 200 || get()["hidden"] != false {
 		t.Fatal("shown again")
 	}
+	do(t, admin, "POST", ts.URL+"/api/checklist/skip?key=gas", "", xh)
+	do(t, admin, "POST", ts.URL+"/api/checklist/skip?key=tour", "", xh)
+	do(t, admin, "POST", ts.URL+"/api/checklist/skip?key=gas&undo=1", "", xh)
+	if sk, _ := get()["skipped"].([]any); len(sk) != 1 || sk[0] != "tour" {
+		t.Fatalf("skipped, and one brought back: %v", get()["skipped"])
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/checklist/skip?key=../x", "", xh); code != 400 {
+		t.Fatal("only plain keys")
+	}
 	// after an update that finds trips differently, the offer appears until it is put away
 	_ = srv.S.SetKV(kvDetectionSeen, strconv.Itoa(trips.DetectionVersion-1))
 	if get()["redetect"] != true {
