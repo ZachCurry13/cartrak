@@ -1,0 +1,22 @@
+/* Printing and "Save as PDF": the page on its own, on white, without the app around it (header, bottom tabs, buttons), and with each
+   card kept whole instead of cut across two pages. */
+@page { margin: 14mm 12mm; }
+@media print {
+  :root { color-scheme: light; }
+  html, body { background: #fff !important; color: #111 !important; }
+  #top, #carnote, #tabs, #upd, .updbar, #offbar, .offbar, .tour, .toast { display: none !important; }
+  main#view { max-width: none !important; padding: 0 !important; margin: 0 !important; }
+  main#view::before { content: "CarTrak"; display: block; font-weight: 700; color: #555; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 12px; }
+  /* what only works on a screen: buttons, pickers, the way back */
+  main button, main select, main .btn, main .seg, main input, main textarea, main .ico, main > p:first-child:has(> a[href^="#/"]) { display: none !important; }
+  .card, section.card, .tcard, .row, .badge, .trow, .stat, .tile { break-inside: avoid; page-break-inside: avoid; }
+  .card, section.card { box-shadow: none !important; background: #fff !important; border: 1px solid #bbb !important; margin-bottom: 10px; }
+  h1, h2, h3 { color: #000 !important; break-after: avoid; page-break-after: avoid; }
+  .muted, .ts, .tl { color: #555 !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+  .banner { border: 1px solid #bbb !important; background: #fff !important; color: #111 !important; }
+  .chip, .pill { border: 1px solid #999 !important; background: #fff !important; color: #111 !important; }
+  .bar, .socbar, .sbar { border: 1px solid #bbb; background: #eee !important; }
+  svg { max-width: 100%; }
+  * { animation: none !important; transition: none !important; }
+}

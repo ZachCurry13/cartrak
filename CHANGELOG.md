@@ -5,6 +5,9 @@
 ### 🏆 Trophies that explain themselves
 - On the Trophies page every trophy is now a row that says **what it asks for** ("Drive 100 miles in all"), and **where you stand**: the date it was earned, or how far along you are and about when you will get it. Before, an earned one showed only a date and a locked one only a number.
 
+### 🖨️ Printing and Save as PDF look clean
+- Printing a page (or saving it as a PDF) now gives just the page on white: no header, no bottom tab bar repeating on every sheet, no buttons or pickers, and each card is kept whole instead of being cut across two pages.
+
 ### ⚖️ Better balanced Home and Live
 - **Home**: the battery card's empty slot now holds **Until 20%** (how far you can go before the reserve) as a tile, instead of a loose line of text under it.
 - **Live**, parked: the **Range** tile, which repeated the figure under the gauge, is replaced by **To reserve**.
