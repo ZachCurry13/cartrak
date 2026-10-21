@@ -6,6 +6,9 @@
 - Home used to ask for its pieces one after another (the battery, status, trips, the week, service, fuel, today, setup…), so a slow connection paid for each one in turn. It now asks for them all at once, and the page's code loads while the first answers travel. Over a slow connection it appears in about the time of two requests instead of a dozen.
 - The debug report has a new **Slowest requests** section, so if a page is still slow the next report says which request is behind it.
 
+### 🔎 The debug report shows what was changed by hand
+- Each trip says when its distance was **corrected** (by hand, from the road or as the straight line) and what the odometer said. Corrections, category changes, deletions and closing a stuck trip are now logged as they happen, in the report's decisions section.
+
 ### 🧹 Consistency
 - Every page now has its title in the same place and style, and the link rows on Home, Insights, journeys and the guide share one style instead of copies of the same inline settings.
 

@@ -31,12 +31,16 @@ What we work through together to make CarTrak better. Tick items as they are don
 - [ ] Hybrid and gas: economy against temperature and speed, 12 V battery trend
 - [ ] Cost per mile for every car, side by side in All cars
 - [ ] Fuel columns in the trips CSV and reports
+- [ ] Charging loss from real receipts: measured loss by charger type (fast, public AC, home) with how many receipts back it, suggestions on the setting, home cost from the wall kWh, odd sessions flagged (cold battery or a charger fault), and loss against outside temperature
+- [ ] Home charging loss: enter the wall kWh from the home charger or meter for a few sessions, so home is measured on its own
 
 ## More debug (me)
 - [ ] Alert decisions and skipped alerts, with why
 - [ ] Readings dropped because they came from another vehicle
 - [ ] Trip energy check in the debug report
 - [ ] Recent setting changes (no secrets)
+- [x] Trips say when their distance was corrected and what the odometer said; manual trip changes are logged (done in 0.53)
+- [x] Slowest requests (done in 0.53)
 - [ ] Short and full report sizes
 
 ## Later

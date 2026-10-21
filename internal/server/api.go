@@ -105,6 +105,7 @@ func (s *Server) patchTrip(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
+	s.S.LogDecision("trip_category", fmt.Sprintf("trip %d: category set by hand to %s", id, b.Category))
 	t, _ := s.S.GetTrip(id)
 	ok(w, t)
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -106,9 +107,18 @@ func (s *Server) setTripDistance(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "choose the road, an odometer distance, or enter a distance")
 		return
 	}
+	before := t.DistanceKm
 	if err := s.S.SetTripDistance(id, km, src); err != nil {
 		fail(w, 500, "db error")
 		return
 	}
+	odo := ""
+	if t.StartOdo != nil && t.EndOdo != nil && *t.EndOdo >= *t.StartOdo {
+		odo = fmt.Sprintf(", the odometer said %.1f km", *t.EndOdo-*t.StartOdo)
+	}
+	if src == "" {
+		src = "odometer"
+	}
+	s.S.LogDecision("trip_distance", fmt.Sprintf("trip %d: distance changed by hand from %.1f km to %.1f km (%s%s)", id, before, km, src, odo))
 	ok(w, map[string]any{"distanceKm": km, "distanceSrc": src})
 }

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,6 +27,7 @@ func (s *Server) deleteTrip(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
+	s.S.LogDecision("trip_deleted", fmt.Sprintf("trip %d deleted by hand (%.1f km on %s)", id, t.DistanceKm, time.Unix(t.StartTS, 0).UTC().Format("2006-01-02 15:04 UTC")))
 	ok(w, map[string]any{"deleted": id})
 }
 
@@ -53,6 +55,7 @@ func (s *Server) closeTrip(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
+	s.S.LogDecision("trip_closed", fmt.Sprintf("trip %d that never ended was closed by hand", id))
 	ok(w, map[string]any{"closed": id})
 }
 

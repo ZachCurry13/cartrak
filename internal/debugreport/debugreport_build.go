@@ -2,6 +2,7 @@ package debugreport
 
 import (
 	"fmt"
+	"github.com/ZachCurry13/cartrak/internal/store"
 	"sort"
 	"strings"
 	"time"
@@ -96,7 +97,7 @@ func Build(in Input) string {
 		if t.EndTS != nil {
 			end = at(*t.EndTS)
 		}
-		fmt.Fprintf(&b, "%d | %s | %s | %.1f | %s>%s | %s>%s | %v | %s\n", t.ID, at(t.StartTS), end, t.DistanceKm*per, fp(t.StartSoC, "%.0f"), fp(t.EndSoC, "%.0f"), fp(t.StartKwh, "%.1f"), fp(t.EndKwh, "%.1f"), t.Open, t.Category)
+		fmt.Fprintf(&b, "%d | %s | %s | %.1f | %s>%s | %s>%s | %v | %s%s\n", t.ID, at(t.StartTS), end, t.DistanceKm*per, fp(t.StartSoC, "%.0f"), fp(t.EndSoC, "%.0f"), fp(t.StartKwh, "%.1f"), fp(t.EndKwh, "%.1f"), t.Open, t.Category, distanceNote(t, per, dunit))
 		if p, ok := in.Points[t.ID]; ok {
 			fmt.Fprintf(&b, "    positions: %d readings, %d different car positions (the car repeats its last one), %d phone GPS points\n", p[0], p[1], p[2])
 		}
@@ -163,7 +164,7 @@ func Build(in Input) string {
 	b.WriteString("\nPOLLING (how often CarTrak asked Ford, since it last started)\n")
 	b.WriteString(pollSummary(in.Polls, at))
 
-	b.WriteString("\nDECISIONS CARTRAK MADE THAT LEAVE NO TRACE (time | kind | what)\n")
+	b.WriteString("\nDECISIONS CARTRAK MADE, AND CHANGES MADE BY HAND, THAT LEAVE NO OTHER TRACE (time | kind | what)\n")
 	anyDecision := false
 	for _, d := range in.Decisions {
 		if time.Unix(d.TS, 0).Before(in.From) {
@@ -184,4 +185,24 @@ func Build(in Input) string {
 		fmt.Fprintf(&b, "%s | %s | %s | %s\n", at(a.TS), a.Kind, a.Title, a.Body)
 	}
 	return b.String()
+}
+
+// distanceNote says where a trip's distance came from when it is not the odometer's own: corrected by hand, from the estimated road,
+// or as the straight line, with what the odometer said. A trip nobody touched adds nothing.
+func distanceNote(t *store.Trip, per float64, unit string) string {
+	odo := ""
+	if t.StartOdo != nil && t.EndOdo != nil && *t.EndOdo >= *t.StartOdo {
+		if d := *t.EndOdo - *t.StartOdo; d-t.DistanceKm > 0.1 || t.DistanceKm-d > 0.1 {
+			odo = fmt.Sprintf("the odometer said %.1f %s", d*per, unit)
+		}
+	}
+	switch {
+	case t.DistanceSrc != "" && odo != "":
+		return fmt.Sprintf(" | distance corrected (%s): %s", t.DistanceSrc, odo)
+	case t.DistanceSrc != "":
+		return fmt.Sprintf(" | distance corrected (%s)", t.DistanceSrc)
+	case odo != "":
+		return " | " + odo + ", not corrected"
+	}
+	return ""
 }

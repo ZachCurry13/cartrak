@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -110,5 +111,24 @@ func TestTheDebugReportShowsFastChargerPowerPollingSettingsAndDecisions(t *testi
 	}
 	if strings.Contains(out.Text, "lat") && strings.Contains(strings.ToLower(out.Text), "latitude =") {
 		t.Fatal("no positions")
+	}
+}
+
+func TestTheDebugReportShowsACorrectedDistanceAndWhoChangedIt(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	now := time.Now().Add(-30 * time.Minute).Unix()
+	o1, o2 := 88235.0, 88240.0
+	end := now + 600
+	tr := &store.Trip{StartTS: now, StartOdo: &o1, Category: "personal", CategorySource: "default"}
+	_ = srv.S.CreateTrip(tr)
+	tr.EndTS, tr.EndOdo, tr.DistanceKm, tr.Open = &end, &o2, 5, false
+	_ = srv.S.UpdateTrip(tr)
+	if code, _ := do(t, admin, "POST", fmt.Sprintf("%s/api/trips/%d/distance", ts.URL, tr.ID), `{"km":11}`, xh); code != 200 {
+		t.Fatal("correct the distance by hand")
+	}
+	_, b := do(t, admin, "GET", ts.URL+"/api/debug-report?hours=2", "", nil)
+	if !strings.Contains(b, "distance corrected (manual): the odometer said") || !strings.Contains(b, "trip_distance") || !strings.Contains(b, "distance changed by hand from 5.0 km to 11.0 km (manual, the odometer said 5.0 km)") {
+		t.Fatalf("the trip says it was corrected and what the odometer said, and the change is logged:\n%.1500s", b)
 	}
 }
