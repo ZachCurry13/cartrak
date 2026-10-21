@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/config"
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -399,5 +400,28 @@ func TestTheDebugReportCanCoverThisCarOrEveryCarAndNamesNoCar(t *testing.T) {
 	}
 	if code, _ := cat.do("GET", "/api/debug-report?hours=6", "", car("3")); code != 200 {
 		t.Fatalf("an owner gets her own car's report: %d", code)
+	}
+}
+
+func TestCarsOnOneFordAccountFollowDifferentVehicles(t *testing.T) {
+	f, ts, _ := start(t)
+	ann := login(t, ts.URL, "ann")
+	for _, name := range []string{"Truck", "SUV"} {
+		if code, body := ann.do("POST", "/api/cars", `{"name":"`+name+`"}`, nil); code != 200 {
+			t.Fatalf("add %s: %d %s", name, code, body)
+		}
+	}
+	first, second, third := f.Runtime(1), f.Runtime(2), f.Runtime(3)
+	_ = first.S.SetKV(ford.SeenVINKey, "VIN-TRUCK")
+	if got := f.takenVINs(second.S); len(got) != 1 || got[0] != "VIN-TRUCK" {
+		t.Fatalf("a later car leaves the earlier car's vehicle: %v", got)
+	}
+	_ = second.S.SetKV(ford.SeenVINKey, "VIN-TRUCK") // it followed the first vehicle before this fix
+	if got := f.takenVINs(first.S); len(got) != 0 {
+		t.Fatalf("the earlier car keeps its vehicle: %v", got)
+	}
+	_ = third.Cfgs.Set("FORD_VIN", "VIN-SUV")
+	if got := f.takenVINs(first.S); len(got) != 1 || got[0] != "VIN-SUV" {
+		t.Fatalf("a vehicle chosen for any other car is left to it: %v", got)
 	}
 }

@@ -38,9 +38,10 @@ var slowEndpoints = []struct{ Key, Path string }{
 
 type Connect2Opts struct {
 	ClientID, ClientSecret, RedirectURL, AuthURL string
-	VIN                                          string // the vehicle this car follows when the account authorized several; "" is the first
-	CheckURL                                     string // address used to test redirect addresses (tests override it)
-	APIBase, TokenURL                            string // overridden in tests
+	VIN                                          string          // the vehicle this car follows when the account authorized several; "" lets it choose
+	Taken                                        func() []string // vehicles other cars follow, so one left unchosen takes another
+	CheckURL                                     string          // address used to test redirect addresses (tests override it)
+	APIBase, TokenURL                            string          // overridden in tests
 }
 
 type Connect2 struct {
@@ -103,7 +104,12 @@ func (c *Connect2) Fetch(ctx context.Context) (*State, error) {
 	if err != nil {
 		return nil, err
 	}
-	tel, list, chosen := pickVehicle(tel, c.opts().VIN) // one vehicle per car, never a mix
+	o := c.opts()
+	var taken []string
+	if o.VIN == "" && o.Taken != nil {
+		taken = o.Taken()
+	}
+	tel, list, chosen := pickVehicle(tel, o.VIN, taken) // one vehicle per car, never a mix
 	c.noteVehicles(list, chosen)
 	doc := map[string]any{"telemetry": asJSON(tel)}
 

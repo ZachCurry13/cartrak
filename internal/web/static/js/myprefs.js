@@ -24,6 +24,13 @@ export async function birthdayCard(session) {
   const day = h('select', { id: 'bd' }, ...Array.from({ length: 31 }, (_, i) => h('option', { value: String(i + 1).padStart(2, '0') }, String(i + 1))));
   month.value = m0 || '';
   day.value = d0 || '01';
+  const fit = () => { // only the days the month has (February keeps the 29th)
+    const n = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][(Number(month.value) || 1) - 1];
+    [...day.options].forEach((o, i) => { o.hidden = o.disabled = i >= n; });
+    if (day.selectedIndex >= n) day.selectedIndex = n - 1;
+  };
+  month.addEventListener('change', fit);
+  fit();
   const msg = h('p', { class: 'muted', role: 'status' });
   const save = h('button', { type: 'button', onclick: async () => {
     try {

@@ -80,6 +80,7 @@ func Badges(ts []Trip, cs []Charge, towns map[string]int64, loc *time.Location) 
 	months, days := map[string]float64{}, map[string]float64{}
 	var run float64
 	var lastDay time.Time
+	ceiling := EffCeiling(ts)
 	for _, t := range ts {
 		if t.Km < 0.3 {
 			continue
@@ -110,7 +111,7 @@ func Badges(ts []Trip, cs []Charge, towns map[string]int64, loc *time.Location) 
 		if st.Hour() < 5 {
 			early.see(1, t.Start)
 		}
-		if t.Kwh > 0 && t.Km >= 16 && t.Km/t.Kwh < 15 {
+		if t.Kwh > 0 && t.Km >= 16 && t.Km/t.Kwh < ceiling {
 			hyper.see(t.Km/t.Kwh, t.End)
 		}
 		if t.TempC != nil && t.Km >= 2 {

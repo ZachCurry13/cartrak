@@ -50,7 +50,7 @@ export function battery(body) {
     const level = d.days.map((x) => ({ x: fromDay(x.date), y: x.end }));
     const cap = d.capacity || [], v12 = d.volts12 || [];
     out.replaceChildren(
-      level.length >= 2 ? card('Battery level, day by day', lineChart({ points: level, xFmt: ago, yFmt: (y) => `${Math.round(y)}%`, summary: 'The level at the end of each day', yTitle: '%' })) : null,
+      level.length >= 2 ? card('Battery level, day by day', lineChart({ points: level, xFmt: ago, yFmt: (y) => `${Math.round(y)}%`, summary: 'The level at the end of each day', yTitle: '%', yCap: 100 })) : null,
       d.bands && d.bands.length ? card('Where the battery spends its time',
         h('div', { class: 'socbar' }, ...d.bands.map((b, i) => h('i', { style: `width:${b.share * 100}%;background:var(--${BANDS[i]})`, title: `${b.from}–${b.to}%` }))),
         ...d.bands.map((b, i) => h('div', { class: 'row' }, h('span', { class: 'grow' }, h('i', { class: 'sw', style: `background:var(--${BANDS[i]})` }), `${b.from}–${b.to}%`), h('b', {}, `${Math.round(b.share * 100)}%`))),

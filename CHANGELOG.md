@@ -5,6 +5,15 @@
 ### ▶️ Trip replay follows the road
 - **Replay this trip** now follows the likely road the trip's map shows, instead of cutting straight across between the car's few reported positions. The car's own positions still set the pace, so it speeds up, slows down and waits where the car really did. Trips with a phone GPS track already played back along the real route and are unchanged.
 
+### 🚙 Two vehicles on one Ford account, sorted out
+- A car added for a Ford account that shares several vehicles now follows one that no other car already follows. Before, it followed the first vehicle on the account (so a new Escape could quietly record the F-150's readings and show up as electric). A vehicle you pick on the **Ford connection** page still wins, and the car added first keeps its vehicle.
+- When a car changes which vehicle it follows, it forgets the vehicle type it learned and learns it again, so a hybrid is no longer shown as electric.
+
+### 🐛 Smaller fixes
+- **Most efficient drive** (and the Hypermiler badge) now only counts drives up to 1.6 times what your car usually gets, so a drive with a stale battery reading at the end no longer shows an impossible figure.
+- Percent charts, like **Battery level, day by day**, no longer run their axis up to 120%.
+- The birthday picker only offers days the chosen month has.
+
 ## 0.50.0
 
 ### 🚙 Several vehicles on one Ford account

@@ -145,6 +145,31 @@ func (f *Fleet) AllDebugReports(hours int, metric bool) (string, int) {
 	return b.String(), total
 }
 
+// takenVINs is the vehicles a car (whose database is st) should leave to others when it has not been told which is its own:
+// those chosen for other cars, and those followed by cars added before it. The earlier car keeps the vehicle, so two cars
+// on one Ford account never trade places.
+func (f *Fleet) takenVINs(st *store.Store) []string {
+	var self int64 = -1
+	all := f.all()
+	for _, r := range all {
+		if r.S == st {
+			self = r.Car.ID
+		}
+	}
+	var out []string
+	for _, r := range all {
+		if r.S == st {
+			continue
+		}
+		if v := r.Cfgs.Value("FORD_VIN"); v != "" {
+			out = append(out, v)
+		} else if v := r.S.GetKV(ford.SeenVINKey); v != "" && (self < 0 || r.Car.ID < self) {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
 // VehicleOwners is which car follows each vehicle, by VIN, as each car last saw it.
 func (f *Fleet) VehicleOwners() map[string][]server.CarRef {
 	out := map[string][]server.CarRef{}

@@ -69,6 +69,9 @@ func (s *Server) chooseVehicle(w http.ResponseWriter, r *http.Request) {
 				fail(w, 500, "could not save")
 				return
 			}
+			if prev := s.S.GetKV(ford.SeenVINKey); !strings.EqualFold(prev, v.VIN) {
+				ford.ForgetVehicleType(s.S) // learned again from this vehicle
+			}
 			_ = s.S.SetKV(ford.SeenVINKey, v.VIN)
 			ok(w, map[string]string{"label": v.Label})
 			return

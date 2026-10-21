@@ -76,7 +76,7 @@ func TestBadgesAreEarnedWhenTheGoalIsReached(t *testing.T) {
 	var ts []Trip
 	for i := int64(0); i < 31; i++ { // 31 days in a row, 60 km a day, the last one a long, cold, efficient drive
 		s := at("2026-10-01 08:00") + i*86400
-		ts = append(ts, Trip{ID: i + 1, Start: s, End: s + 3600, Km: 60, Kwh: 12})
+		ts = append(ts, Trip{ID: i + 1, Start: s, End: s + 3600, Km: 60, Kwh: 10}) // 6 km/kWh, so 9.4 on the last is believable
 	}
 	ts[30].Km, ts[30].Kwh, ts[30].TempC = 170, 18, fp(-20)
 	cs := []Charge{{Start: at("2026-10-02 23:00"), End: at("2026-10-03 01:00"), Kwh: 60, PeakKw: 155}}

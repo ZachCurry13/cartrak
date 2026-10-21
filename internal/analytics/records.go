@@ -44,6 +44,7 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 	biggest := best("bigCharge", "Most energy in one charge", "kwh", more)
 	cheapest := best("cheapest", "Cheapest public charge (paid, 5 kWh or more)", "price", less)
 	days := map[string]float64{}
+	ceiling := EffCeiling(ts)
 	for _, t := range ts {
 		if t.Km < 0.3 {
 			continue
@@ -53,7 +54,7 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 			fastest(t.MaxKph, t.Start, t.ID, 0)
 		}
 		if t.Kwh > 0 && t.Km >= 16 {
-			if e := t.Km / t.Kwh; e < 15 {
+			if e := t.Km / t.Kwh; e < ceiling {
 				efficient(e, t.Start, t.ID, 0)
 			}
 		}
@@ -85,6 +86,23 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 		out = append(out, Record{Key: "streak", Title: "Most days in a row with driving", Kind: "days", Value: float64(n), Date: d})
 	}
 	return out
+}
+
+// EffCeiling is the most a drive of 10 mi or more may get per kWh and still count as a best: 1.6 times what this car usually
+// gets on such drives. One stale "energy left" reading at the end of a trip makes it look nearly free, and that must not
+// become the record. With fewer than five such drives to judge by, a fixed 15 km/kWh stands.
+func EffCeiling(ts []Trip) float64 {
+	var effs []float64
+	for _, t := range ts {
+		if t.Kwh > 0 && t.Km >= 16 {
+			effs = append(effs, t.Km/t.Kwh)
+		}
+	}
+	if len(effs) < 5 {
+		return 15
+	}
+	sort.Float64s(effs)
+	return min(15, 1.6*effs[len(effs)/2])
 }
 
 func biggestDay(days map[string]float64) (string, float64) {

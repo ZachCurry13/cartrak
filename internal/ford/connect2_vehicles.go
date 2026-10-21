@@ -39,9 +39,9 @@ func labelOf(v map[string]any) string {
 	return ""
 }
 
-// pickVehicle keeps one vehicle of a telemetry answer: the one with VIN want, or the first. It returns the answer to read, every
-// vehicle in it, and the VIN followed.
-func pickVehicle(tel []byte, want string) ([]byte, []VehicleChoice, string) {
+// pickVehicle keeps one vehicle of a telemetry answer: the one with VIN want, else the first no other car follows (taken),
+// else the first. It returns the answer to read, every vehicle in it, and the VIN followed.
+func pickVehicle(tel []byte, want string, taken []string) ([]byte, []VehicleChoice, string) {
 	var doc map[string]any
 	if json.Unmarshal(tel, &doc) != nil {
 		return tel, nil, ""
@@ -51,7 +51,7 @@ func pickVehicle(tel []byte, want string) ([]byte, []VehicleChoice, string) {
 		return tel, nil, ""
 	}
 	list := make([]VehicleChoice, 0, len(vs))
-	pick := 0
+	pick, free := -1, -1
 	for i, x := range vs {
 		v, _ := x.(map[string]any)
 		vin, _ := v["vin"].(string)
@@ -63,6 +63,12 @@ func pickVehicle(tel []byte, want string) ([]byte, []VehicleChoice, string) {
 		if want != "" && strings.EqualFold(vin, want) {
 			pick = i
 		}
+		if free < 0 && !hasVIN(taken, vin) {
+			free = i
+		}
+	}
+	if pick < 0 {
+		pick = max(free, 0)
 	}
 	if len(vs) == 1 {
 		return tel, list, list[0].VIN
@@ -73,6 +79,23 @@ func pickVehicle(tel []byte, want string) ([]byte, []VehicleChoice, string) {
 		return tel, list, list[pick].VIN
 	}
 	return out, list, list[pick].VIN
+}
+
+func hasVIN(list []string, vin string) bool {
+	for _, x := range list {
+		if strings.EqualFold(x, vin) {
+			return true
+		}
+	}
+	return false
+}
+
+// ForgetVehicleType clears what was learned about the vehicle's type (its garage engine type and the kinds of data seen),
+// so it is learned again from the vehicle the car follows now. Kinds of data seen only ever grow, so another vehicle's
+// would otherwise stay mixed in.
+func ForgetVehicleType(kv interface{ SetKV(k, v string) error }) {
+	_ = kv.SetKV(CapsKV, "")
+	_ = kv.SetKV(EngineKV, "")
 }
 
 // Vehicles is every vehicle the linked account authorized, as last seen.
@@ -87,7 +110,10 @@ func (c *Connect2) noteVehicles(list []VehicleChoice, chosen string) {
 	c.mu.Lock()
 	c.vehicles = list
 	c.mu.Unlock()
-	if chosen != "" && c.store.GetKV(SeenVINKey) != chosen {
+	if prev := c.store.GetKV(SeenVINKey); chosen != "" && prev != chosen {
+		if prev != "" { // it followed another vehicle before: learn the type again
+			ForgetVehicleType(c.store)
+		}
 		_ = c.store.SetKV(SeenVINKey, chosen)
 	}
 }

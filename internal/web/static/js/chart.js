@@ -15,14 +15,16 @@ const mk = (tag, attrs, text) => {
 //   xTicks   optional [x, ...] where to label the x axis
 //   summary  the line shown before anything is touched
 //   xTitle/yTitle  words under and beside the axes
-export function lineChart({ points, xFmt, yFmt, xTicks, summary, xTitle, yTitle, yMin = 0, height = 190, color = 'var(--accent)' }) {
+//   yCap     the most the axis may show (100 for a percent, which can never be more)
+export function lineChart({ points, xFmt, yFmt, xTicks, summary, xTitle, yTitle, yMin = 0, yCap, height = 190, color = 'var(--accent)' }) {
   if (!points || points.length < 2) return h('p', { class: 'muted' }, 'Not enough readings for a chart yet.');
   const W = 320, H = height, L = 40, R = 10, T = 22, B = 34; // room at the top for the y title above the highest label
   const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
   const x0 = Math.min(...xs), x1 = Math.max(...xs);
   const yMax = Math.max(...ys), yLo = Math.min(yMin, ...ys);
   const span = yMax - yLo || 1;
-  const top = yLo + Math.ceil((span * 1.08) / niceStep(span)) * niceStep(span);
+  const roomy = yLo + Math.ceil((span * 1.08) / niceStep(span)) * niceStep(span);
+  const top = yCap != null && yMax <= yCap ? Math.min(roomy, yCap) : roomy;
   const sx = (x) => L + ((x - x0) / (x1 - x0 || 1)) * (W - L - R);
   const sy = (y) => T + (1 - (y - yLo) / (top - yLo || 1)) * (H - T - B);
 

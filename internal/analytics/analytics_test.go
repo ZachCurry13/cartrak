@@ -69,6 +69,20 @@ func TestDrivingFindsTheTemperatureLineAndPatterns(t *testing.T) {
 	}
 }
 
+func TestAnUnbelievableDriveIsNotTheEfficiencyRecord(t *testing.T) {
+	var ts []Trip
+	for i := int64(1); i <= 6; i++ { // a car that gets about 5.6 km/kWh (3.5 mi/kWh)
+		ts = append(ts, Trip{ID: i, Start: i * 86400, Km: 28, Kwh: 5})
+	}
+	ts = append(ts, Trip{ID: 7, Start: 7 * 86400, Km: 30, Kwh: 2.9}) // 10.3 km/kWh: a stale end reading
+	ts = append(ts, Trip{ID: 8, Start: 8 * 86400, Km: 30, Kwh: 4.2}) // 7.1 km/kWh: a good, believable drive
+	for _, r := range Records(ts, nil, time.UTC) {
+		if r.Key == "efficient" && r.TripID != 8 {
+			t.Fatalf("the best believable drive wins: %+v", r)
+		}
+	}
+}
+
 func TestRecordsAndStreak(t *testing.T) {
 	ts := []Trip{
 		{ID: 1, Start: at("2026-10-01 08:00"), End: at("2026-10-01 09:00"), Km: 80, Kwh: 20, TempC: fp(-3), MaxKph: 120},
