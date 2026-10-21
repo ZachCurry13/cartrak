@@ -13,7 +13,7 @@ import (
 // EVOnly are the trophies about charging and battery efficiency; FuelOnly are about the tank. A car that cannot plug in is not shown
 // the first, an electric car is not shown the second.
 var (
-	EVOnly   = map[string]bool{"kw150": true, "mwh1": true, "mwh10": true, "night50": true, "hyper": true, "gentle": true, "winter": true, "lowslow": true, "quick": true, "detective": true, "plugstreak": true, "skipper": true}
+	EVOnly   = map[string]bool{"kw150": true, "mwh1": true, "mwh10": true, "night50": true, "hyper": true, "gentle": true, "winter": true, "lowslow": true, "quick": true, "detective": true, "plugstreak": true, "skipper": true, "mwh100": true}
 	FuelOnly = map[string]bool{"muncher": true, "thrifty": true}
 )
 
@@ -208,7 +208,40 @@ func MoreBadges(in []Trip, cs []Charge, fills []fuel.Fill, loc *time.Location) [
 			}
 		}
 	}
-	out := []*tracker{marathon, night, lowslow, winter, sunrise, weekend, regular, triple, round, holiday, odo50, odo100, odo150}
+	// the next rungs of ladders that already have a first rung (see js/pages/trophies.js)
+	streak7 := newBadge("streak7", "7-day streak", "📆", "Drive 7 days in a row", "days", 7)
+	streak100 := newBadge("streak100", "100-day streak", "🔥", "Drive 100 days in a row", "days", 100)
+	trips5000 := newBadge("trips5000", "5,000 trips", "🏅", "Make 5,000 trips", "count", 5000)
+	regular50 := newBadge("regular50", "Regular, 50 visits", "📌", "Visit the same named place 50 times", "count", 50)
+	regular100 := newBadge("regular100", "Regular, 100 visits", "📍", "Visit the same named place 100 times", "count", 100)
+	var tripN float64
+	runVisits := map[string]int{}
+	var dayInts []int
+	seenDays := map[int]bool{}
+	for i := range ts {
+		t := &ts[i]
+		if t.Km < 0.3 {
+			continue
+		}
+		tripN++
+		trips5000.see(tripN, t.End)
+		if t.To != "" && t.To != "Home" {
+			runVisits[t.To]++
+			regular50.see(float64(runVisits[t.To]), t.End)
+			regular100.see(float64(runVisits[t.To]), t.End)
+		}
+		d := time.Unix(t.Start, 0).In(loc)
+		n := int(time.Date(d.Year(), d.Month(), d.Day(), 12, 0, 0, 0, loc).Unix() / 86400)
+		if !seenDays[n] {
+			seenDays[n] = true
+			dayInts = append(dayInts, n)
+			sort.Ints(dayInts)
+			run := float64(runOf(dayInts))
+			streak7.see(run, t.End)
+			streak100.see(run, t.End)
+		}
+	}
+	out := []*tracker{streak7, streak100, trips5000, regular50, regular100, marathon, night, lowslow, winter, sunrise, weekend, regular, triple, round, holiday, odo50, odo100, odo150}
 
 	// a month more efficient than the months before it, and a busy month with no public charging
 	gentle := newBadge("gentle", "Gentle month", "🌿", "Drive a month 10% more efficiently than the months before it", "count", 1)
@@ -272,6 +305,13 @@ func MoreBadges(in []Trip, cs []Charge, fills []fuel.Fill, loc *time.Location) [
 		}
 	}
 	out = append(out, quick, detective, plug)
+	mwh100 := newBadge("mwh100", "100 MWh", "🏭", "Charge 100,000 kWh in all", "kwh", 100000)
+	var kwhTotal float64
+	for _, c := range sorted {
+		kwhTotal += c.Kwh
+		mwh100.see(kwhTotal, c.End)
+	}
+	out = append(out, mwh100)
 
 	// fuel
 	muncher := newBadge("muncher", "Mile muncher", "⛽", "Drive 400 miles between two fill-ups", "km", 400*kmPerMile)

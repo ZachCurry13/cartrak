@@ -122,3 +122,18 @@ func TestOdometerTrophiesAlreadyPassedSayAndTheNextOneHasAnEstimate(t *testing.T
 		t.Fatal("under a week of driving is too little to estimate from")
 	}
 }
+
+func TestTheNextRungsAreEarnedWhenTheirCountIsReached(t *testing.T) {
+	var ts []Trip
+	for d := 0; d < 50; d++ { // a trip to the gym every day for 50 days
+		s := tm("2026-03-01 18:00") + int64(d)*86400
+		ts = append(ts, Trip{ID: int64(d + 1), Start: s, End: s + 1200, Km: 5, From: "Home", To: "Gym"})
+	}
+	got := byKey(MoreBadges(ts, nil, nil, time.UTC))
+	if got["streak7"].Earned != ts[6].End || got["streak100"].Earned != 0 || got["streak100"].Value != 50 {
+		t.Fatalf("7 days in a row on the 7th trip, not 100 yet: %+v %+v", got["streak7"], got["streak100"])
+	}
+	if got["regular"].Earned != ts[19].End || got["regular50"].Earned != ts[49].End || got["regular100"].Earned != 0 {
+		t.Fatalf("20th and 50th visit, dated when they happened: %+v %+v", got["regular"], got["regular50"])
+	}
+}

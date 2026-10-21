@@ -15,9 +15,10 @@ type Badge struct {
 	Kind   string  `json:"kind"`
 	Value  float64 `json:"value"`
 	Goal   float64 `json:"goal"`
-	Earned int64   `json:"earned"`         // when it was earned, 0 when not yet
-	Note   string  `json:"note,omitempty"` // said instead of the date, when it was already reached before CarTrak began
-	Eta    int64   `json:"eta,omitempty"`  // about when it will be earned at the pace of the recent driving, 0 when it cannot be told
+	Earned int64   `json:"earned"`          // when it was earned, 0 when not yet
+	Where  string  `json:"where,omitempty"` // the place it was earned: one you named, else the town; "" when not known
+	Note   string  `json:"note,omitempty"`  // said instead of the date, when it was already reached before CarTrak began
+	Eta    int64   `json:"eta,omitempty"`   // about when it will be earned at the pace of the recent driving, 0 when it cannot be told
 }
 
 // Progress is how far along a badge is, 0 to 1.
