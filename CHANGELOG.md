@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.51.0
+
+### ▶️ Trip replay follows the road
+- **Replay this trip** now follows the likely road the trip's map shows, instead of cutting straight across between the car's few reported positions. The car's own positions still set the pace, so it speeds up, slows down and waits where the car really did. Trips with a phone GPS track already played back along the real route and are unchanged.
+
 ## 0.50.0
 
 ### 🚙 Several vehicles on one Ford account

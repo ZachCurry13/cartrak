@@ -47,6 +47,13 @@ func (s *Server) tripReplay(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	if source == "car" { // follow the road the trip's map shows, not straight lines between the car's few positions
+		if est := s.estimateFor(t, true); est != nil {
+			if road := onRoad(est.Points, pts, t.StartTS, *t.EndTS); len(road) >= 2 {
+				pts, source = road, "estimate"
+			}
+		}
+	}
 	if len(pts) < 2 {
 		fail(w, 409, "this trip has too few positions to play back")
 		return

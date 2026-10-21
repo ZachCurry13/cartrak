@@ -39,6 +39,20 @@ func TestATripPlaysBackWithBatteryAndDistance(t *testing.T) {
 	if *d.Points[0].SoC != 80 || *last.SoC != 70 || last.Km < 10.99 || last.Km > 11.01 || d.Points[5].Km < 5.4 || d.Points[5].Km > 5.6 {
 		t.Fatalf("battery and distance along the way: %+v", d.Points)
 	}
+
+	// with an estimated road (the line the trip's map shows), the replay follows the road instead of the car's positions
+	road := make([][2]float64, 0, 41)
+	for i := 0; i <= 40; i++ {
+		road = append(road, [2]float64{40 + float64(i)*0.0025, -75.001})
+	}
+	_ = srv.S.SaveRouteEstimate(tr.ID, road, 11)
+	code, body = do(t, admin, "GET", fmt.Sprintf("%s/api/trips/%d/replay", ts.URL, tr.ID), "", nil)
+	if code != 200 || json.Unmarshal([]byte(body), &d) != nil || len(d.Points) != 41 || d.Source != "estimate" {
+		t.Fatalf("replay along the road: %d %.300s", code, body)
+	}
+	if d.Points[0].TS != t0 || d.Points[40].TS != end || d.Points[20].TS < t0+290 || d.Points[20].TS > t0+310 || *d.Points[40].SoC != 70 {
+		t.Fatalf("the road timed by the car: %+v", d.Points)
+	}
 }
 
 func TestARemoteStartShowsInTheDayView(t *testing.T) {

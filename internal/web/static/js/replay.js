@@ -74,7 +74,7 @@ export function replayCard(t, color) {
     drawRates();
     box.append(map.el, h('div', { class: 'bigfig', style: 'margin:10px 0' }, stat('time', clock), stat('speed', spd), stat('battery', soc), stat('so far', km)),
       slider, h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px' }, play, rates),
-      h('p', { class: 'muted', style: 'margin-top:8px' }, d.source === 'phone' ? `${pts.length} positions from the phone's GPS.` : `${pts.length} positions from the car, which reports only now and then; between them the dot moves in a straight line.`));
+      h('p', { class: 'muted', style: 'margin-top:8px' }, d.source === 'phone' ? `${pts.length} positions from the phone's GPS.` : d.source === 'estimate' ? "Along the likely road shown on the map, timed by the car's own positions, so it moves at the pace the car went." : `${pts.length} positions from the car, which reports only now and then; between them the dot moves in a straight line.`));
     draw();
   }
   return card;
