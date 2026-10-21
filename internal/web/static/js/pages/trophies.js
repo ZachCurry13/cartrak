@@ -1,6 +1,6 @@
 import { h } from '../ui.js';
 import { api } from '../api.js';
-import { badge } from '../funcharts.js';
+import { badgeRow } from '../funcharts.js';
 
 // Your trophy collection: every trophy this car can earn. The ones not yet earned are grayed out with how far along they are, so
 // you can see what is coming. Trophies that cannot apply to this car (charging ones for a gas car, the tank ones for an electric
@@ -25,11 +25,11 @@ export default async function trophies(root) {
   root.append(
     h('section', { class: 'card' }, h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${earned} of ${list.length}`), h('span', {}, 'earned'))),
       h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.round((earned / list.length) * 100)}%` }))),
-    next.length ? h('section', { class: 'card' }, h('h2', {}, 'Next up'), h('div', { class: 'badges' }, ...next.map((b) => badge(b, list.indexOf(b), '$')))) : null,
+    next.length ? h('section', { class: 'card' }, h('h2', {}, 'Next up'), ...next.map((b) => badgeRow(b, list.indexOf(b), '$'))) : null,
     ...groups.map(([title, keys]) => {
       const items = keys.map((k) => list.find((b) => b.key === k)).filter(Boolean).sort((a, b) => (b.earned > 0) - (a.earned > 0) || b.earned - a.earned || b.progress - a.progress);
       if (!items.length) return null;
-      return h('section', { class: 'card' }, h('h2', {}, `${title} · ${items.filter((b) => b.earned).length} of ${items.length}`), h('div', { class: 'badges' }, ...items.map((b) => badge(b, list.indexOf(b), '$'))));
+      return h('section', { class: 'card' }, h('h2', {}, `${title} · ${items.filter((b) => b.earned).length} of ${items.length}`), ...items.map((b) => badgeRow(b, list.indexOf(b), '$')));
     }),
-    h('p', { class: 'muted' }, 'Tap a trophy to see what it asks for. Efficiency trophies use the odometer’s own distances, so a trip whose distance was corrected never counts toward them.'));
+    h('p', { class: 'muted' }, 'Each trophy says what it asks for and where you stand. Efficiency trophies use the odometer’s own distances, so a trip whose distance was corrected never counts toward them.'));
 }

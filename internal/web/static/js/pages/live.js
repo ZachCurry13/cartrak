@@ -15,7 +15,7 @@ import { isCharging } from '../chargestate.js';
 const MODES = {
   driving: ['speed', 'trip', 'tripTime', 'reserve', 'range', 'today'],
   charging: ['power', 'eta', 'added', 'range', 'energy', 'outside'],
-  parked: ['range', 'energy', 'lock', 'today', 'outside', 'odo'],
+  parked: ['reserve', 'energy', 'lock', 'today', 'outside', 'odo'], // the range is already under the gauge
 };
 const MODE_LABEL = { driving: 'Driving', charging: 'Charging', parked: 'Parked' };
 

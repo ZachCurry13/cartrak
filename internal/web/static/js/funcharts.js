@@ -90,6 +90,16 @@ export function badge(b, i, cur) {
   return h('div', { class: `badge${b.earned ? '' : ' locked'}`, title: b.about }, h('div', { class: 'bring' }, ring, h('span', {}, b.emoji)), h('b', {}, b.name), h('span', { class: 'muted' }, b.earned && b.note ? b.note : sub), eta ? h('span', { class: 'muted' }, eta) : null);
 }
 
+// One trophy as a row that explains itself: what it asks for, and where you stand (the date it was earned, or how far along you are
+// and about when you will get it). The ring and the grayed emoji are the same as in the grid.
+export function badgeRow(b, i, cur) {
+  const ring = badge(b, i, cur).querySelector('.bring');
+  const when = (ts) => new Date(ts * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  const status = b.earned ? (b.note || `Earned ${when(b.earned)}`)
+    : [b.kind === 'tempC' ? null : `${valueText(b.kind, b.value, cur)} so far, of ${valueText(b.kind, b.goal, cur)}`, b.eta ? `about ${when(b.eta)}` : null].filter(Boolean).join(' · ') || 'Not yet';
+  return h('div', { class: `trow${b.earned ? '' : ' locked'}` }, ring, h('div', { class: 'grow', style: 'min-width:0' }, h('b', {}, b.name), h('div', {}, `${b.about}.`), h('div', { class: 'muted' }, status)));
+}
+
 // Earned badges first (newest first), then the ones closest to done.
 export function badgeGrid(list, cur, limit = 0) {
   const sorted = [...list].sort((a, b) => (b.earned > 0) - (a.earned > 0) || (b.earned - a.earned) || (b.progress - a.progress));

@@ -37,13 +37,6 @@ export function pick(extra, ...names) {
   return null;
 }
 
-
-// How far the car can go before the battery falls to this device's reserve percent.
-function reserveRow(latest) {
-  const km = reserveKm(latest);
-  return km == null ? null : h('p', { style: 'margin:10px 0 0' }, h('span', { class: 'muted' }, `Until ${getReserve()}%: `), h('b', {}, km > 0 ? dist(km, 0) : 'already below'));
-}
-
 // The last seven days at a glance. Tap the efficiency to change its unit.
 function weekCard(w) {
   const all = Object.values(w);
@@ -143,8 +136,8 @@ export default async function dashboard(root, _args, session) {
       out.push(card('Battery', ring.el, chips,
         h('div', { class: 'grid' }, stat('Energy left', num(pick(x, 'XEV_BATTERY_ENERGY_REMAINING'), 1, ' kWh')),
           stat('Battery temp', temp(pick(x, 'XEV_BATTERY_TEMPERATURE'))),
-          pick(x, 'xevBatteryMaximumRange') != null ? stat('Range at 100%', dist(pick(x, 'xevBatteryMaximumRange'), 0)) : null),
-        reserveRow(latest),
+          pick(x, 'xevBatteryMaximumRange') != null ? stat('Range at 100%', dist(pick(x, 'xevBatteryMaximumRange'), 0)) : null,
+          reserveKm(latest) != null ? stat(`Until ${getReserve()}%`, reserveKm(latest) > 0 ? dist(reserveKm(latest), 0) : 'already below') : null),
         bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
