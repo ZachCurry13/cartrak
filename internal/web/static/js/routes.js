@@ -15,6 +15,7 @@ export const routes = {
   settings: () => import('./pages/settings.js'),
   rules: () => import('./pages/rules.js'),
   start: () => import('./pages/start.js'),
+  setup: () => import('./pages/setup.js'),
   changelog: () => import('./pages/changelog.js'),
   admin: () => import('./pages/admin.js'),
   connect: () => import('./pages/connect.js'),

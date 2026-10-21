@@ -4,6 +4,10 @@ import { api, AuthError } from './api.js';
 import { loginPage } from './pages/login.js';
 import { startRefresh, effective } from './mode.js';
 import { cached } from './offline.js';
+import { setCarReserve } from './charge.js';
+import { watchErrors } from './errlog.js';
+
+watchErrors();
 import { startTour } from './tourui.js';
 import { currentCar, setCar } from './car.js';
 import { routes } from './routes.js';
@@ -90,6 +94,7 @@ async function render() {
   try {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));
+      setCarReserve(session.me.reservePct);
       await loadCars();
       if (!session.cars.length) { // a person who may bring a car but has none yet
         tabs.hidden = true;

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/charging"
 	"github.com/ZachCurry13/cartrak/internal/routeest"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -31,6 +32,27 @@ func (f routeFailure) text(metric bool) string {
 		return fmt.Sprintf("the road found was %s but the odometer says %s", distText(f.RoadKm, metric, 1), distText(f.OdoKm, metric, 1))
 	}
 	return f.Msg
+}
+
+// straightKm is the straight line from a trip's start to its end, 0 when either is unknown.
+func straightKm(t *store.Trip) float64 {
+	if t.StartLat == nil || t.StartLon == nil || t.EndLat == nil || t.EndLon == nil {
+		return 0
+	}
+	return charging.DistanceM(charging.Point{Lat: *t.StartLat, Lon: *t.StartLon}, charging.Point{Lat: *t.EndLat, Lon: *t.EndLon}) / 1000
+}
+
+// retryGiveUpsOnce forgets, once, the trips whose road was given up on before the check also allowed for a short odometer,
+// so they are asked about again under the new rule.
+func (s *Server) retryGiveUpsOnce() {
+	if s.routeRetried.Load() {
+		return
+	}
+	s.routeRetried.Store(true)
+	if s.S.GetKV("route_retry") != "1" {
+		s.S.ForgetNoRoutes()
+		_ = s.S.SetKV("route_retry", "1")
+	}
 }
 
 func (s *Server) routeLookupOn() bool { return s.Cfg != nil && s.Cfg.RouteLookup() }
@@ -83,6 +105,7 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 	if pts, km := s.S.RouteEstimate(t.ID); pts != nil {
 		return &estimateOut{Points: pts, Km: km}
 	}
+	s.retryGiveUpsOnce()
 	if s.S.RouteGaveUp(t.ID) {
 		return nil
 	}
@@ -113,7 +136,7 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 	if err != nil {
 		return fail(routeFailure{Msg: err.Error()})
 	}
-	if !routeest.Plausible(km, t.DistanceKm) {
+	if !routeest.Plausible(km, t.DistanceKm, straightKm(t)) {
 		_ = s.S.SaveNoRoute(t.ID) // asking again would give the same road
 		return fail(routeFailure{RoadKm: km, OdoKm: t.DistanceKm})
 	}

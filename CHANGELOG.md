@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.46.0
+
+### ✨ A fresher, more consistent look
+- **Charging sessions look like trips**: a battery picture filled from where the charge started to where it ended, what it added and how long, where, the battery bar, peak and average power, and the cost with where it came from (**receipt**, **place price**, **home price**, **public price**). Editing where it was, the charger's kWh and what you paid sits behind an **Edit** button.
+- One colour language everywhere: green is energy going in (charging), amber is energy going out (driving), grey is parked. Rows on the Day view and History now have the same coloured edge as trip and charging cards.
+- On a phone, trip cards give the town names the full width, with the label and share button underneath.
+- The links at the top of Trips and Charging are a single row of small buttons instead of a stack.
+- Fix: Home said **Charging** whenever the car was not driving. It now says Parked unless the car is really charging.
+
+### 🧭 Suggested setup
+- New people get a **Suggested setup** card on Home: install the app, take the tour, turn on alerts, and for admins name Home, set prices, compare with a gas car, price your usual chargers, phone tracking, a service reminder and a backup. Nothing is required. **Hide** takes the card away for you; the whole list stays under **More, Setup checklist**.
+
+### 🛣️ Roads and distances
+- Trips whose odometer reading was short now get their road drawn: the road is judged against the straight line from start to end, not only the odometer. Trips given up on before are tried once more.
+- The Trips list finds a few missing roads in the background, and a share link finds the roads of its trips before it is made. A dashed thumbnail means the line only joins the few places the car reported.
+- When a trip's distance is **drastically** short, its page says so near the top and offers the road through the recorded positions or the drive straight from start to end, or you can type the real distance. Such trips also appear under **Needs attention** on Home. Small differences are left alone, and nothing changes until you choose.
+
+### 🧹 Clearer settings
+- **One battery reserve per car** (More, Charging settings, 20% unless chosen). Home, Live, Plan ahead, the road-trip planner and the Low battery alert all use it; the separate per-phone road-trip reserve is gone.
+- **City names for trips and reports** says what it really does: towns on Trips, the Day view, History and the mileage log, looked up a few at a time and remembered.
+- Rarely changed service addresses fold into an **Advanced** section in Settings.
+- **More** is tidier: Help has Status, Setup checklist, Help and tour, Data check and About.
+- **Fix a day** is out of sight until it is needed: Home offers it once after an update that finds trips or charging differently, and Data check links to it.
+
+### 🐞 Better debug reports
+- Each charge says where its cost came from and the price per kWh.
+- A **Time away** section lists modes and how each day's base was settled (chosen, or found from the nights), without positions.
+- Fix a day runs are logged with what was replaced and what was left alone.
+- The report adds the app version this phone loaded and its last few app errors.
+
 ## 0.45.0
 
 ### 🛣️ More for road-trip days

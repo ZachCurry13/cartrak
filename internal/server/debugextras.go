@@ -90,7 +90,7 @@ func (s *Server) debugSettings() []string {
 			return fmt.Sprintf("%s%.3f", s.Cfg.Currency(), *p)
 		}
 		add("prices per kWh: home %s, public %s; slow-charge efficiency %.0f%%", price(s.Cfg.PriceHome()), price(s.Cfg.PricePublic()), s.Cfg.ChargeEfficiency()*100)
-		add("alerts: low battery %.0f%% (0 is off), bump level %.1f (0 is off), plug-in reminder %q below %.0f%%", s.Cfg.LowBatteryLevel(), s.Cfg.BumpThreshold(), s.Cfg.PlugReminderTime(), s.Cfg.PlugReminderBelow())
+		add("alerts: battery reserve %.0f%%, bump level %.1f (0 is off), plug-in reminder %q below %.0f%%", s.Cfg.LowBatteryLevel(), s.Cfg.BumpThreshold(), s.Cfg.PlugReminderTime(), s.Cfg.PlugReminderBelow())
 		add("lookups: wind %s, road estimate %s, maps %s, city names %s", onOff(s.Cfg.WeatherLookup()), onOff(s.Cfg.RouteLookup()), onOff(s.Cfg.MapEnabled()), onOff(s.Cfg.GeocodeEnabled()))
 		add("time zone: %s", s.Cfg.Location())
 	}
@@ -181,4 +181,64 @@ func (s *Server) debugInstallation() string {
 		}
 	}
 	return fmt.Sprintf("installation: car %d of %d (%s)", pos, len(cars), owner)
+}
+
+// chargeCostFrom says, for each recent charge, where its cost came from and what a kWh cost, for the debug report.
+func (s *Server) chargeCostFrom(from time.Time) map[int64]string {
+	out := map[int64]string{}
+	sessions, err := s.chargeSessions(300)
+	if err != nil {
+		return out
+	}
+	for _, c := range sessions {
+		if c.EndTS != nil && *c.EndTS < from.Unix() {
+			continue
+		}
+		switch {
+		case c.Cost == nil:
+			out[c.ID] = "not priced (no price set for " + dashIf(c.Where) + ")"
+		case c.WallKwh != nil && *c.WallKwh > 0.5:
+			out[c.ID] = fmt.Sprintf("%s, %.2f a kWh delivered (%.1f kWh at the charger), %s", c.PriceFrom, *c.Cost / *c.WallKwh, *c.WallKwh, dashIf(c.Where))
+		default:
+			out[c.ID] = fmt.Sprintf("%s, %.2f in all, %s", c.PriceFrom, *c.Cost, dashIf(c.Where))
+		}
+	}
+	return out
+}
+
+func dashIf(s string) string {
+	if s == "" {
+		return "place unknown"
+	}
+	return s
+}
+
+// awayDays lists the time-away stretches that touch the report and, for each day, how its base was settled: chosen, found from
+// where the car slept, or none (at home, or not yet known). No positions or place names.
+func (s *Server) awayDays(from, now time.Time) []string {
+	loc := s.defaultLoc()
+	bases := s.baseFinder(nil)
+	var out []string
+	seen := map[int64]bool{}
+	for d := from.In(loc); !d.After(now); d = d.AddDate(0, 0, 1) {
+		day := d.Format("2006-01-02")
+		st := s.S.StretchOn(day)
+		if st == nil {
+			continue
+		}
+		if !seen[st.ID] {
+			seen[st.ID] = true
+			out = append(out, fmt.Sprintf("stretch %d: %s to %s, %s, base %s", st.ID, st.From, st.To, st.Kind, map[bool]string{true: "chosen by you", false: "found from the nights"}[st.BaseID != nil]))
+		}
+		b := bases.forDay(day)
+		how := "no base (the car slept at home, or no night position yet)"
+		if b != nil {
+			how = "base found"
+			if b.Name != "" {
+				how = "base found, named"
+			}
+		}
+		out = append(out, "  "+day+": "+how)
+	}
+	return out
 }

@@ -29,6 +29,9 @@ type Input struct {
 	Decisions []store.LogEntry // blips thrown away, charges picked up again, alerts held back, and why
 	Settings  []string         // the settings that shape behaviour, without secrets or positions
 	Curves    map[int64]string // by charging session id: the power at 20, 40, 60 and 80 percent
+	CostFrom  map[int64]string // by charging session id: where its cost came from and the price per kWh
+	Days      []string         // trip-away stretches and how each day's base was settled, no positions
+	ClientApp []string         // the phone's loaded app version and its recent errors, added by the page
 	Points    map[int64][3]int // by trip id: readings the car sent, how many had a position, and phone GPS points
 	Charges   []*store.Charge
 	Alerts    []store.AlertLogEntry

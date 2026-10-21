@@ -96,12 +96,12 @@ func TestWhatYouPaidReplacesTheCostWorkedOutFromAPrice(t *testing.T) {
 	price := 0.30
 	c := &store.Charge{StartTS: 1000, EndTS: func() *int64 { v := int64(2000); return &v }(), StartKwh: f(10), EndKwh: f(50), PeakKw: 120, Kind: "public"}
 	got := Enrich(c, f(88), nil, Prices{Public: &price})
-	if got.CostActual || got.Cost == nil {
+	if got.CostActual || got.Cost == nil || got.PriceFrom != "public" {
 		t.Fatalf("a worked-out cost first: %+v", got)
 	}
 	c.ActualCost = f(13.06)
 	got = Enrich(c, f(88), nil, Prices{Public: &price})
-	if !got.CostActual || got.Cost == nil || *got.Cost != 13.06 {
+	if !got.CostActual || got.Cost == nil || *got.Cost != 13.06 || got.PriceFrom != "receipt" {
 		t.Fatalf("the receipt wins: %+v", got.Cost)
 	}
 }

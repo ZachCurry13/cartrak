@@ -1,30 +1,13 @@
 import { savingsCard, perDistance } from '../savingscard.js';
-import { h, emptyState, chip, when, duration, pct, num, dist } from '../ui.js';
+import { h, emptyState, num, dist } from '../ui.js';
+import { sessionCard } from '../chargesession.js';
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
 import { chargeNow } from '../chargenow.js';
-import { curveBox, chargersCompared, recordsCard } from '../curve.js';
+import { chargersCompared, recordsCard } from '../curve.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
-const WHERE = { home: 'Home', public: 'Away from home' };
-
-// What the charger reported and what you paid: type them in from the receipt to see this session's real efficiency and
-// cost, and to teach CarTrak yours.
-function chargerBox(c, cur, reload) {
-  if (c.open || c.addedKwh == null) return null;
-  const input = h('input', { type: 'number', step: '0.1', min: 0, inputmode: 'decimal', placeholder: 'kWh from the charger', 'aria-label': 'kWh the charger reported', value: c.chargerKwh != null ? c.chargerKwh : '', style: 'max-width:11em' });
-  const paid = h('input', { type: 'number', step: '0.01', min: 0, inputmode: 'decimal', placeholder: `${cur || '$'} paid`, 'aria-label': 'What you paid', value: c.costActual && c.cost != null ? c.cost.toFixed(2) : '', style: 'max-width:8em' });
-  const msg = h('span', { class: 'muted', role: 'status' });
-  const save = async () => {
-    const body = input.value ? { chargerKwh: Number(input.value) } : { clearCharger: true };
-    if (paid.value) body.cost = Number(paid.value); else if (c.costActual) body.clearCost = true;
-    try { await api(`/api/charges/${c.id}`, { method: 'PATCH', body }); reload(); } catch (e) { msg.textContent = e.message; }
-  };
-  return h('div', { style: 'margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, input, paid, h('button', { class: 'sec', onclick: save }, 'Save'),
-    c.measured && c.efficiency != null ? chip('ok', `${Math.round(c.efficiency * 100)}% reached the battery`) : null,
-    c.costActual ? chip('ok', 'cost from your receipt') : null, msg);
-}
 
 function summaryCard(sum) {
   const cur = sum.currency;
@@ -39,25 +22,11 @@ function summaryCard(sum) {
     ...rows);
 }
 
-function sessionCard(c, cur, admin, reload) {
-  const added = c.addedKwh != null ? `${num(c.addedKwh, 1, ' kWh')}${c.estimated ? ' (estimate)' : ''} added` : 'energy not known';
-  const where = admin
-    ? h('select', { 'aria-label': 'Where it was charged', onchange: async (e) => { await api(`/api/charges/${c.id}`, { method: 'PATCH', body: { kind: e.target.value } }); reload(); } },
-      ...[['', c.where && !c.kind ? `Automatic (${(WHERE[c.where] || '').toLowerCase()})` : 'Automatic'], ['home', 'Home'], ['public', 'Away from home']].map(([v, t]) => h('option', { value: v, selected: v === (c.kind || '') }, t)))
-    : (c.where ? chip('work', WHERE[c.where]) : null);
-  return h('section', { class: 'card' },
-    h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, when(c.startTs)), c.open ? chip('ok', 'charging') : null, c.cost != null ? h('b', {}, money(cur, c.cost)) : null),
-    h('div', { class: 'muted' }, `${pct(c.startSoc)} → ${pct(c.endSoc)} · ${added} · ${duration(c.startTs, c.endTs)} · peak ${num(c.peakKw, 1, ' kW')}`),
-    where ? h('div', { style: 'margin-top:8px' }, where) : null,
-    c.open ? null : curveBox(c.id),
-    admin ? chargerBox(c, cur, reload) : null);
-}
-
 export default async function charging(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
   const now = chargeNow();
-  root.append(h('h2', {}, 'Charging'), h('p', {}, h('a', { class: 'btn sec', href: '#/charging-settings' }, 'Charging settings'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics by day, month, year'), ' ', h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip')), now.el, forecastCard(), box);
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Charging')), h('nav', { class: 'linkrow', 'aria-label': 'More about charging' }, h('a', { href: '#/charging-settings' }, 'Settings'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/plan' }, 'Plan a trip')), now.el, forecastCard(), box);
   async function load() {
     const [cs, sum, savings] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin)]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));

@@ -5,7 +5,7 @@ import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
 import { categoryList } from '../categories.js';
-import { tripDistanceCard } from '../tripdistance.js';
+import { tripDistanceCard, shortOdometer } from '../tripdistance.js';
 import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
@@ -109,6 +109,7 @@ export default async function tripDetail(root, [id, action], session) {
         t.estCost != null ? stat('Energy cost (estimate)', `≈ ${t.currency || '$'}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${t.currency || '$'}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null),
       battery(t) ? h('div', { style: 'margin-top:10px' }, battery(t), h('p', { class: 'muted', style: 'margin:4px 0 0' }, 'Green: battery left after the drive. Amber: what the drive used.')) : null,
       avg),
+    admin && shortOdometer(t) ? tripDistanceCard(t) : null, // drastically short: up here, where it is seen
     why,
     routeBox,
     hasStart || hasEnd ? h('section', { class: 'card' }, h('h2', {}, 'Open in maps'),
@@ -120,7 +121,7 @@ export default async function tripDetail(root, [id, action], session) {
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),
       h('p', { class: 'seg' }, ...categoryList().map((c) => h('button', { class: c.key === t.category ? '' : 'sec', onclick: set(c.key) }, c.label))),
       h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null,
-    admin ? tripDistanceCard(t) : null,
+    admin && !shortOdometer(t) ? tripDistanceCard(t) : null,
     admin ? tripFixCard(t) : null].filter(Boolean));
   if (action === 'share') { // opened from the Share button on Home: bring the share box into view
     setTimeout(() => { const el = root.querySelector('#sht'); if (el) { el.closest('section').scrollIntoView({ block: 'start' }); el.focus(); } }, 60);

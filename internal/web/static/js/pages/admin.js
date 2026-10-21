@@ -23,7 +23,8 @@ export default async function admin(root, _a, session) {
 
   function draw() {
     const inputs = {};
-    const rows = data.settings.map((s) => {
+    const advanced = (s) => s.label.endsWith(' (advanced)');
+    const row = (s) => {
       const el = s.options ? choice(s) : h('input', {
         id: `f-${s.key}`, type: s.secret ? 'password' : 'text', autocomplete: 'off', autocapitalize: 'none', spellcheck: 'false',
         value: s.secret ? '' : s.value, disabled: s.locked,
@@ -31,15 +32,19 @@ export default async function admin(root, _a, session) {
       });
       inputs[s.key] = el;
       return h('div', {},
-        h('label', { for: `f-${s.key}` }, s.label, ' ', s.locked ? chip('work', `locked: ${SOURCE[s.source]}`) : s.options ? null : s.isSet ? chip('ok', s.source === 'default' ? 'default' : 'saved') : chip('bad', 'not set')),
+        h('label', { for: `f-${s.key}` }, s.label.replace(' (advanced)', ''), ' ', s.locked ? chip('work', `locked: ${SOURCE[s.source]}`) : s.options ? null : s.isSet ? chip('ok', s.source === 'default' ? 'default' : 'saved') : chip('bad', 'not set')),
         el, h('div', { class: 'muted', style: 'margin-top:4px' }, s.help),
         s.key === 'FORD_REDIRECT_URL' && !s.locked ? h('p', { class: 'seg', style: 'margin-top:6px' },
           h('button', { class: 'sec', onclick: () => { el.value = 'http://localhost'; } }, 'Use http://localhost'),
           h('button', { class: 'sec', onclick: () => { el.value = data.suggestedRedirect; } }, 'Use this site + /ford/callback'),
           h('button', { class: 'sec', onclick: () => { el.value = data.suggestedRedirect.replace('/ford/callback', ''); } }, 'Use this site only (no path)')) : null,
         s.secret && s.isSet && !s.locked ? h('button', { class: 'sec', style: 'margin-top:6px', onclick: () => clearSecret(s.key) }, 'Remove saved secret') : null);
-    });
+    };
+    const rows = data.settings.filter((s) => !advanced(s)).map(row);
+    // other services' addresses, which most installations never change, fold away
+    const more = data.settings.filter(advanced).map(row);
     box.replaceChildren(h('section', { class: 'card' }, ...rows,
+      more.length ? h('details', { class: 'advanced', style: 'margin-top:14px' }, h('summary', {}, h('b', {}, 'Advanced'), h('span', { class: 'muted' }, " · other services' addresses, which most people leave alone")), ...more) : null,
       h('p', { class: 'seg', style: 'margin-top:14px' }, h('button', { onclick: () => save(inputs) }, 'Save'),
         ready() ? h('a', { class: 'btn sec', href: '#/connect' }, 'Connect Ford') : null)));
   }

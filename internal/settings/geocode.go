@@ -16,8 +16,8 @@ const (
 
 func init() {
 	Defs = append(Defs,
-		Def{Key: GeocodeEnabledKey, Label: "City lookup for the mileage report", Options: []Option{{"", "On (OpenStreetMap)"}, {"off", "Off: never send locations anywhere"}},
-			Help: "The mileage report names the city where each trip ended. CarTrak asks OpenStreetMap's Nominatim service from your server, only when an admin builds a report, with locations rounded to about 100 m, and remembers every answer. Turn off to make no such requests (cities then appear only for places already remembered)."},
+		Def{Key: GeocodeEnabledKey, Label: "City names for trips and reports", Options: []Option{{"", "On (OpenStreetMap)"}, {"off", "Off: never send locations anywhere"}},
+			Help: "Trips, the Day view, History and the mileage report show the town where each trip started and ended. CarTrak asks OpenStreetMap's Nominatim service from your server, a few places at a time in the background, with locations rounded to about 100 m, and remembers every answer so a place is only asked about once. Turn off to make no such requests; places you named still show."},
 		Def{Key: GeocodeURLKey, Label: "City lookup service (advanced)", Placeholder: DefaultGeocodeURL,
 			Help: "Only to use your own Nominatim server or another compatible service. Must be an https address (or http on localhost)."})
 	validators[GeocodeEnabledKey] = func(val string) error {

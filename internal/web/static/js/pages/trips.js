@@ -45,7 +45,7 @@ export default async function trips(root, _a, session) {
     review.replaceChildren(...(admin && unlabelled ? [h('a', { class: 'banner notice', href: '#/review', style: 'display:block' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to review. Tap to label them.`)] : []));
     paintList();
     if (!isSaver()) { // the little route pictures arrive a moment later, so the list is there at once
-      api(`/api/trips/routes?${q()}&limit=100`).then((rs) => { thumbs = new Map(rs.map((r) => [r.id, r.points])); if (lastTs === ts) paintList(); }).catch(() => {});
+      api(`/api/trips/routes?${q()}&limit=100`).then((rs) => { thumbs = new Map(rs.map((r) => [r.id, r])); if (lastTs === ts) paintList(); }).catch(() => {});
     }
     list.hidden = view === 'map';
     mapBox.hidden = view !== 'map';
@@ -78,7 +78,7 @@ export default async function trips(root, _a, session) {
   const review = h('div');
   const estBar = h('div');
   if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
-  root.append(estBar, h('p', {}, h('a', { class: 'btn sec', href: '#/history' }, 'History feed'), ' ', h('a', { class: 'btn sec', href: '#/stats' }, 'Statistics'), ' ', h('a', { class: 'btn sec', href: '#/day' }, 'Day view'), ' ', h('a', { class: 'btn sec', href: '#/reports' }, 'Reports'), ' ', h('a', { class: 'btn sec', href: '#/plan' }, 'Plan a trip')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, colourKey(), selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(estBar, h('nav', { class: 'linkrow', 'aria-label': 'More about trips' }, h('a', { href: '#/day' }, 'Day view'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/reports' }, 'Reports'), h('a', { href: '#/plan' }, 'Plan a trip')), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, colourKey(), selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

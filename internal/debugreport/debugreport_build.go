@@ -118,9 +118,19 @@ func Build(in Input) string {
 		if cv, ok := in.Curves[c.ID]; ok {
 			fmt.Fprintf(&b, "    power: %s\n", cv)
 		}
+		if cf, ok := in.CostFrom[c.ID]; ok {
+			fmt.Fprintf(&b, "    cost: %s\n", cf)
+		}
 	}
 	if len(in.Charges) == 0 {
 		b.WriteString("(none)\n")
+	}
+
+	if len(in.Days) > 0 {
+		b.WriteString("\nTIME AWAY (stretches and each day's base; no positions)\n")
+		for _, l := range in.Days {
+			b.WriteString("    " + l + "\n")
+		}
 	}
 
 	b.WriteString("\nSETTINGS THAT SHAPE BEHAVIOUR (no secrets, no positions)\n")

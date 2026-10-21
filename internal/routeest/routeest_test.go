@@ -31,8 +31,11 @@ func TestABadAnswerIsAnErrorAndImplausibleLengthsAreRejected(t *testing.T) {
 	if _, _, err := (&Client{BaseURL: srv.URL}).Route(context.Background(), []Point{{1, 1}, {2, 2}}); err == nil {
 		t.Fatal("no route is an error")
 	}
-	if !Plausible(21, 20) || Plausible(50, 20) || Plausible(5, 20) || Plausible(10, 0.2) {
+	if !Plausible(21, 20, 15) || Plausible(50, 20, 15) || Plausible(5, 20, 4) || Plausible(10, 0.2, 5) {
 		t.Fatal("length check")
+	}
+	if Plausible(18, 9, 2) || !Plausible(18, 9, 13) { // an odometer short of the straight line is judged by the straight line
+		t.Fatal("short odometer")
 	}
 	v := Via([]Point{{0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}}, 3)
 	if len(v) != 3 || v[0] != (Point{0, 0}) || v[2] != (Point{5, 5}) {

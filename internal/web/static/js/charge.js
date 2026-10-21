@@ -1,13 +1,14 @@
 // Estimates for road trips and charging. They are only estimates from the latest reading.
-// The reserve and charging target are choices for this device, kept in the browser.
+// The charging target is a choice for this device, kept in the browser; the reserve is the car's, from its Charging settings.
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const read = (k, d) => { try { const v = localStorage.getItem(`cartrak.${k}`); return v == null ? d : Number(v) || d; } catch (e) { return d; } };
 const write = (k, v) => { try { localStorage.setItem(`cartrak.${k}`, String(v)); } catch (e) { /* storage blocked */ } };
 
 export const PRESETS = [80, 90, 100];
-export const getReserve = () => clamp(read('reserve', 20), 1, 90);
-export const setReserve = (v) => write('reserve', clamp(Math.round(v), 1, 90));
+let reserve = 20;
+export const setCarReserve = (v) => { if (v > 0 && v < 100) reserve = v; };
+export const getReserve = () => reserve;
 export const getTarget = () => clamp(read('etaTarget', 80), 20, 100);
 export const setTarget = (v) => write('etaTarget', clamp(Math.round(v), 20, 100));
 

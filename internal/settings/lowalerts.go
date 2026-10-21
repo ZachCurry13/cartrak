@@ -12,12 +12,12 @@ const (
 	ChargeBudgetKey = "CARTRAK_CHARGE_BUDGET"
 )
 
-var lowBatteryLevels = []Option{{"", "Off"}, {"10", "10%"}, {"15", "15%"}, {"20", "20%"}, {"25", "25%"}, {"30", "30%"}}
+var lowBatteryLevels = []Option{{"", "Default (20%)"}, {"10", "10%"}, {"15", "15%"}, {"20", "20%"}, {"25", "25%"}, {"30", "30%"}}
 
 func init() {
 	Defs = append(Defs,
-		Def{Key: LowBatteryKey, Label: "Low battery alert level", Options: lowBatteryLevels,
-			Help: "Devices that turned on the Low battery alert are told once when the battery falls to this level while the car is not charging. It resets after the battery is five points higher or the car charges."},
+		Def{Key: LowBatteryKey, Label: "Battery reserve", Options: lowBatteryLevels,
+			Help: "The level you like to keep in hand. Home and Live show how far you can go before it, Plan ahead and the road-trip planner keep above it, and phones that turned on the Low battery alert are told when the battery falls to it while the car is not charging."},
 		Def{Key: ChargeBudgetKey, Label: "Monthly charging budget", Placeholder: "for example 60",
 			Help: "Devices that turned on the Charging budget alert are told once a month when the month's charging cost passes this amount, in the currency set under prices. Needs your price per kWh. Leave empty for no budget."})
 	validators[LowBatteryKey] = func(v string) error {
@@ -39,10 +39,12 @@ func init() {
 	}
 }
 
-// LowBatteryLevel is the percent at which to warn, or 0 for off.
+// LowBatteryLevel is the car's battery reserve, 20% unless chosen.
 func (s *Settings) LowBatteryLevel() float64 {
-	n, _ := strconv.ParseFloat(s.Value(LowBatteryKey), 64)
-	return n
+	if n, err := strconv.ParseFloat(s.Value(LowBatteryKey), 64); err == nil && n > 0 {
+		return n
+	}
+	return 20 // the reserve is always set; whether a phone is told is its own Low battery alert choice
 }
 
 // ChargeBudget is the monthly charging budget, or 0 for none.

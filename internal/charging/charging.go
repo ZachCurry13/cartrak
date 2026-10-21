@@ -61,6 +61,7 @@ type Session struct {
 	Place      string   `json:"place"`     // the named place it was at, when that place sets its own price or counts as home
 	Cost       *float64 `json:"cost"`
 	CostActual bool     `json:"costActual"` // the cost is what the owner paid, not worked out from a price
+	PriceFrom  string   `json:"priceFrom"`  // where the cost came from: receipt, place, home, home+night, public, or "" when unpriced
 	Efficiency *float64 `json:"efficiency"` // added / delivered, only when the charger's number was entered
 	Measured   bool     `json:"measured"`
 }
@@ -81,7 +82,7 @@ func Enrich(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Sessio
 	s := enrichBase(c, capacityKwh, home, p)
 	if c.ActualCost != nil { // what was really paid beats any price per kWh
 		v := *c.ActualCost
-		s.Cost, s.CostActual = &v, true
+		s.Cost, s.CostActual, s.PriceFrom = &v, true, "receipt"
 	}
 	return s
 }
@@ -139,12 +140,13 @@ func enrichBase(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Se
 			rate = nil
 		}
 	}
-	price := p.Home // unknown place: the home price, the usual single-price case
+	price, from := p.Home, "home" // unknown place: the home price, the usual single-price case
 	if rate != nil && rate.Price != nil {
-		price = rate.Price
+		price, from = rate.Price, "place"
 	} else if s.Where == "public" {
-		price = p.Public
+		price, from = p.Public, "public"
 	} else if price != nil && p.OffPeak != nil && p.Window != nil && p.Loc != nil {
+		from = "home+night"
 		end := c.StartTS
 		if c.EndTS != nil {
 			end = *c.EndTS
@@ -155,7 +157,7 @@ func enrichBase(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Se
 	}
 	if price != nil {
 		cost := wall * *price
-		s.Cost = &cost
+		s.Cost, s.PriceFrom = &cost, from
 	}
 	return s
 }

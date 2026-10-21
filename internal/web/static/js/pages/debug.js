@@ -1,5 +1,6 @@
 import { h } from '../ui.js';
 import { api } from '../api.js';
+import { phoneSection } from '../errlog.js';
 
 // A plain-text report to copy and send when something looks wrong. It has no positions, sign-ins, keys or VIN.
 export default async function debug(root, _a, session) {
@@ -20,8 +21,9 @@ export default async function debug(root, _a, session) {
     msg.textContent = 'Building the report…';
     try {
       const d = await api(`/api/debug-report?hours=${encodeURIComponent(hours.value)}${which.value === 'all' ? '&all=1' : which.value ? `&car=${which.value.slice(4)}` : ''}`);
-      box.value = d.text; copy.disabled = false;
-      save.href = URL.createObjectURL(new Blob([d.text], { type: 'text/plain' })); save.hidden = false;
+      const text = d.text + phoneSection();
+      box.value = text; copy.disabled = false;
+      save.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); save.hidden = false;
       msg.textContent = `${d.readings} readings. Read it before you send it, and delete anything you would rather not share.`;
     } catch (e) { msg.textContent = e.message; }
   }

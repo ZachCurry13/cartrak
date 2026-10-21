@@ -11,6 +11,8 @@ import { createMap, mapConfig } from '../map.js';
 import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
 import { vacationNote } from '../vacation.js';
+import { setupCards } from '../setup.js';
+import { shortOdometer } from '../tripdistance.js';
 import { isCharging } from '../chargestate.js';
 import { bandRow } from '../rangeband.js';
 import { batteryRing } from '../ring.js';
@@ -77,9 +79,9 @@ export default async function dashboard(root, _args, session) {
       const week = await api(`/api/summary?from=${Math.floor(Date.now() / 1000) - 7 * 86400}`).catch(() => null);
       const maint = await api('/api/maintenance').catch(() => null);
       const recent = session.me.role === 'admin' ? await api('/api/trips?limit=200').catch(() => []) : [];
-      cache = { status, trips, ob, health, week, maint, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length };
+      cache = { status, trips, ob, health, week, maint, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length, short: recent.filter((x) => x.startTs > Date.now() / 1000 - 30 * 86400 && shortOdometer(x)) };
     }
-    const { status, trips, ob, health, week, maint, unlabelled } = cache;
+    const { status, trips, ob, health, week, maint, unlabelled, short = [] } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
       // Only while the one essential step (linking Ford) is missing. The optional steps stay on the Getting started page.
@@ -104,7 +106,7 @@ export default async function dashboard(root, _args, session) {
       const isChargingNow = isCharging(latest);
       const plugged = latest.plug ? /^connected$/i.test(latest.plug) : null;
       const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:-4px 0 12px' },
-        chip(driving ? 'personal' : isCharging ? 'ok' : 'work', driving ? 'Driving' : isCharging ? 'Charging' : 'Parked'),
+        chip(driving ? 'personal' : isChargingNow ? 'ok' : 'work', driving ? 'Driving' : isChargingNow ? 'Charging' : 'Parked'),
         plugged == null ? null : chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in'),
         latest.locked == null ? null : chip(latest.locked ? 'ok' : 'work', latest.locked ? 'Locked' : 'Unlocked'),
         remoteChip(latest));
@@ -117,11 +119,13 @@ export default async function dashboard(root, _args, session) {
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
     const due = ((maint && maint.items) || []).filter((m) => m.state !== 'ok');
-    if (due.length || unlabelled) {
+    if (due.length || unlabelled || short.length) {
       out.push(card('Needs attention',
         ...due.map((m) => h('a', { class: 'row', href: '#/maintenance', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, m.name), chip(m.state === 'overdue' ? 'bad' : 'work', m.state === 'overdue' ? 'service due' : 'due soon'))),
-        unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null));
+        unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null,
+        ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}`, style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
     }
+    if (!staleSince) out.push(...await setupCards(session));
     if (full) out.push(...await homeCards(maint)); // the day so far and the month: skipped in Data saver
     if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));
     const lastTrip = trips[0];

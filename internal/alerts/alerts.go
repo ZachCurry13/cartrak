@@ -42,7 +42,7 @@ type Engine struct {
 	ReminderTime    func() string
 	ReminderBelow   func() float64
 	DiskSpace       func() (free, total uint64, ok bool) // room on the data disk; nil skips the check
-	LowBatteryLevel func() float64                       // percent to warn at; 0 or nil is off
+	LowBatteryLevel func() float64                       // the battery reserve, warned about on devices that turned the alert on; 0 or nil is off
 	ChargeBudget    func() float64                       // monthly charging budget; 0 or nil is none
 	MonthCost       func() (float64, bool)               // what this month's charging has cost, when it can be told
 	BumpLevel       func() float64                       // the motion level that counts as a bump while parked; 0 or nil is off

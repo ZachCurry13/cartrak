@@ -6,7 +6,9 @@ const NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
 
 // A small picture of where the drive went: the route in the category's colour, a green dot where it began and a red one where it ended.
-function thumb(points, color) {
+// A line drawn only between the car's few reported positions (no GPS track or road yet) is dashed: it is not the road.
+function thumb(route, color) {
+  const points = route && route.points;
   const box = h('div', { class: 'tthumb', 'aria-hidden': 'true' });
   if (!points || points.length < 2) { box.textContent = '🚗'; box.classList.add('empty'); return box; }
   const lats = points.map((p) => p[0]), lons = points.map((p) => p[1]);
@@ -17,7 +19,7 @@ function thumb(points, color) {
   const W = w * sc + pad * 2, H = ht * sc + pad * 2;
   const xy = (p) => [pad + (p[1] - minLon) * k * sc, pad + (maxLat - p[0]) * sc];
   const svg = svgEl('svg', { viewBox: `0 0 ${W.toFixed(1)} ${H.toFixed(1)}`, preserveAspectRatio: 'xMidYMid meet' });
-  svg.append(svgEl('polyline', { points: points.map((p) => xy(p).map((n) => n.toFixed(1)).join(',')).join(' '), fill: 'none', stroke: color, 'stroke-width': 2.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+  svg.append(svgEl('polyline', { points: points.map((p) => xy(p).map((n) => n.toFixed(1)).join(',')).join(' '), fill: 'none', stroke: color, 'stroke-width': 2.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', ...(route.kind === 'car' ? { 'stroke-dasharray': '4 4' } : {}) }));
   const [sx, sy] = xy(points[0]), [ex, ey] = xy(points[points.length - 1]);
   svg.append(svgEl('circle', { cx: sx, cy: sy, r: 3.2, fill: '#16a34a' }), svgEl('circle', { cx: ex, cy: ey, r: 3.2, fill: '#dc2626' }));
   box.append(svg);
@@ -37,7 +39,7 @@ export function colourKey() {
   return h('details', { class: 'tkey' }, h('summary', {}, 'What the colours mean'),
     h('p', {}, sw('left'), ' Green bar: battery left after the drive. ', sw('used'), ' Amber: the part the drive used.'),
     h('p', {}, sw('good'), ' Green badge: more efficient than your average drive. ', sw('bad'), ' Red: less efficient. No colour: about average.'),
-    h('p', {}, sw('start'), ' Green dot: where it started. ', sw('end'), ' Red dot: where it ended.'),
+    h('p', {}, sw('start'), ' Green dot: where it started. ', sw('end'), ' Red dot: where it ended. A dashed line joins the few places the car reported, until the road is found.'),
     h('p', {}, 'The stripe down the left is the trip\'s category colour (Personal, Work and your own).'));
 }
 

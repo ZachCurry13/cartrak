@@ -7,7 +7,7 @@ nav#tabs a{font-size:.78rem;padding:14px 2px}
   .dash>.card,.dash>section.card{margin:0}
   .dash>.banner,.dash>a.card,.dash>p,.dash>.notice{grid-column:1/-1;margin:0}
   .cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
-  .cols>.card{margin:0}
+  .cols>.card,.cols>.tcard{margin:0}
   .login{margin-top:8vh}
 }
 @media (min-width:1100px){

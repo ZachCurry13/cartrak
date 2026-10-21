@@ -96,3 +96,10 @@ func (s *Store) CountCorrectedTrips() int {
 	_ = s.DB.QueryRow(`SELECT COUNT(*) FROM trips WHERE distance_src!=''`).Scan(&n)
 	return n
 }
+
+// ForgetNoRoutes forgets every trip whose road was given up on, so each is asked about once more.
+func (s *Store) ForgetNoRoutes() {
+	if _, err := s.DB.Exec(routeCacheDDL); err == nil {
+		_, _ = s.DB.Exec(`DELETE FROM route_cache WHERE points='[]'`)
+	}
+}

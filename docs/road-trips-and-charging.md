@@ -4,7 +4,7 @@
 The **Live** page has an **Energy left** tile in kWh (and about how much the battery holds when full), and Home shows the same in the Battery card. It is the car's own reading, so it changes only when Ford sends a new one, not every second.
 
 ## Miles until your reserve
-If you do not like to go below a certain level on a road trip, set it once under **More, Display and data, Road-trip reserve (%)** (default 20, kept on this device). Home (Battery card) and Live then show how far you can still go before the battery reaches it, for example "Until 20%: 142 mi".
+The **Battery reserve** is the level you like to keep in hand. An admin sets it once for the car under **More, Charging settings** (default 20%). Home (Battery card), Live, Plan ahead and the road-trip planner all use it, and phones that turned on the **Low battery** alert are told when the battery falls to it. Home and Live show how far you can still go before the battery reaches it, for example "Until 20%: 142 mi".
 
 How it is worked out: the car's own range estimate, scaled to the part of the battery above your reserve (range x (charge - reserve) / charge). So it follows how the car expects to be driven right now. A hard climb, headwind or cold weather can use the battery faster than the estimate.
 

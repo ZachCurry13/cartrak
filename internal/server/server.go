@@ -27,42 +27,44 @@ type Linker interface {
 }
 
 type Server struct {
-	S           *store.Store
-	Core        *store.Store // the people, sign-ins and the list of cars; nil means this one database holds them (single car, tests)
-	CarID       int64        // which car this server answers for; 0 when there is only one
-	P           *poller.Poller
-	D           *trips.Detector
-	Link        Linker // nil when the provider needs no account link
-	Version     string
-	Cfg         *settings.Settings // admin-panel settings (nil in some tests)
-	Prober      Prober             // optional: Ford diagnostics
-	Redirects   RedirectChecker    // optional: ask Ford which redirect addresses are registered
-	Tunnel      *tunnel.Supervisor // in-app Cloudflare connector (nil in some tests)
-	Conn        *connector.Manager // keeps the connector up to date (nil in some tests)
-	Port        string             // port the app listens on, for the setup steps
-	hub         hub
-	RouteEst    *routeest.Client // optional, for tests
-	routeMu     sync.Mutex
-	routeFail   map[int64]routeFailure // trips whose road estimate failed lately
-	TrustProxy  bool                   // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
-	SessionDays int                    // "keep me signed in" length; 0 = 30
-	Upd         *updater.Checker       // nil disables update checks
-	Weather     *weather.Client        // the optional wind lookup (nil uses the real service)
-	lim         limiter
-	devRate     rateWindow    // per-device call limit for the phone ingest API
-	TileDir     string        // where downloaded map tiles are kept; empty switches maps off
-	DataDir     string        // the data folder: backups are written here while they are made
-	Exit        func()        // stops CarTrak so a confirmed restore can be applied at the next start (nil in tests)
-	TileClient  *http.Client  // optional, for tests
-	Push        *push.Service // Web Push alerts (nil in some tests)
-	GeoGap      time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
-	geo         geoState
-	CityLookups bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
-	cityBusy    atomic.Bool // such a lookup is running
-	tiles       tileFlight
-	trim        trimState
-	Cars        CarManager // adds, renames and removes cars (nil with a single car)
-	cc          carCaches  // answers kept for a while, for this car only
+	S            *store.Store
+	Core         *store.Store // the people, sign-ins and the list of cars; nil means this one database holds them (single car, tests)
+	CarID        int64        // which car this server answers for; 0 when there is only one
+	P            *poller.Poller
+	D            *trips.Detector
+	Link         Linker // nil when the provider needs no account link
+	Version      string
+	Cfg          *settings.Settings // admin-panel settings (nil in some tests)
+	Prober       Prober             // optional: Ford diagnostics
+	Redirects    RedirectChecker    // optional: ask Ford which redirect addresses are registered
+	Tunnel       *tunnel.Supervisor // in-app Cloudflare connector (nil in some tests)
+	Conn         *connector.Manager // keeps the connector up to date (nil in some tests)
+	Port         string             // port the app listens on, for the setup steps
+	hub          hub
+	RouteEst     *routeest.Client // optional, for tests
+	routeMu      sync.Mutex
+	routeFail    map[int64]routeFailure // trips whose road estimate failed lately
+	routeBusy    atomic.Bool            // background road estimates are running
+	routeRetried atomic.Bool            // old give-ups were forgotten once this run
+	TrustProxy   bool                   // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
+	SessionDays  int                    // "keep me signed in" length; 0 = 30
+	Upd          *updater.Checker       // nil disables update checks
+	Weather      *weather.Client        // the optional wind lookup (nil uses the real service)
+	lim          limiter
+	devRate      rateWindow    // per-device call limit for the phone ingest API
+	TileDir      string        // where downloaded map tiles are kept; empty switches maps off
+	DataDir      string        // the data folder: backups are written here while they are made
+	Exit         func()        // stops CarTrak so a confirmed restore can be applied at the next start (nil in tests)
+	TileClient   *http.Client  // optional, for tests
+	Push         *push.Service // Web Push alerts (nil in some tests)
+	GeoGap       time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
+	geo          geoState
+	CityLookups  bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
+	cityBusy     atomic.Bool // such a lookup is running
+	tiles        tileFlight
+	trim         trimState
+	Cars         CarManager // adds, renames and removes cars (nil with a single car)
+	cc           carCaches  // answers kept for a while, for this car only
 }
 
 // core is the database of people and sign-ins: the shared core database, or the one database when there is a single car.

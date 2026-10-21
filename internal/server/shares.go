@@ -101,6 +101,14 @@ func (s *Server) createShare(w http.ResponseWriter, r *http.Request) {
 	if in.ExpiresDays > 0 {
 		sh.Expires = time.Now().AddDate(0, 0, in.ExpiresDays).Unix()
 	}
+	if sh.Mode != "stats" && len(ts) <= 12 {
+		for i, t := range ts {
+			if i > 0 {
+				time.Sleep(300 * time.Millisecond)
+			}
+			s.estimateFor(t, true) // nothing is asked when a road is kept, a phone track exists, or lookups are off
+		}
+	}
 	sh.BBox = share.BBox(s.shareRoutes(sh, ts)...)
 	if in.ShowCities {
 		ctx, cancel := context.WithTimeout(r.Context(), 25*time.Second)

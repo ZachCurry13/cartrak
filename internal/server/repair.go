@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -59,5 +60,8 @@ func (s *Server) repairApply(w http.ResponseWriter, r *http.Request) {
 		fail(w, 409, err.Error())
 		return
 	}
+	loc := s.defaultLoc()
+	s.S.LogDecision("fix a day", fmt.Sprintf("%s to %s: %d trips and %d charges replaced by %d and %d; %d trips and %d charges left alone (unchanged)",
+		time.Unix(in.From, 0).In(loc).Format("Jan 2 15:04"), time.Unix(in.To, 0).In(loc).Format("Jan 2 15:04"), len(p.OldTrips), len(p.OldCharges), len(p.NewTrips), len(p.NewCharges), p.UnchangedTrips, p.UnchangedCharges))
 	ok(w, map[string]any{"trips": len(p.NewTrips), "charges": len(p.NewCharges), "replacedTrips": len(p.OldTrips), "replacedCharges": len(p.OldCharges), "unchangedTrips": p.UnchangedTrips, "unchangedCharges": p.UnchangedCharges})
 }

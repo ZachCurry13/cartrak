@@ -99,12 +99,14 @@ func Via(pts []Point, max int) []Point {
 }
 
 // Plausible says whether a route's length is believable for the trip it is meant to describe, judged against the
-// distance the odometer recorded. A route far longer or shorter would mislead, so it is not drawn.
-func Plausible(routeKm, tripKm float64) bool {
+// distance the odometer recorded, or against the straight line from start to end when the odometer is plainly short
+// (it sometimes updates late, and a road is always longer than the straight line). A route far longer or shorter would
+// mislead, so it is not drawn.
+func Plausible(routeKm, tripKm, straightKm float64) bool {
 	if tripKm < 0.5 || routeKm <= 0 {
 		return false
 	}
-	r := routeKm / tripKm
+	r := routeKm / math.Max(tripKm, straightKm*1.3)
 	return r >= 0.6 && r <= 1.6 && !math.IsNaN(r)
 }
 

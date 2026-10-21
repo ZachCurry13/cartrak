@@ -3,8 +3,6 @@ import { api } from '../api.js';
 import { MODES, getPref, setPref } from '../mode.js';
 import { startTour } from '../tourui.js';
 
-const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-
 // A row of buttons where one is chosen.
 function pick(label, options, value, onpick) {
   const seg = h('div', { class: 'seg', role: 'group', 'aria-label': label });
@@ -22,7 +20,6 @@ function step(done, title, body, action) {
 // Help for everyone: the settings people reach for most, a short checklist, and what each part of the app is for.
 export default async function help(root, _a, session) {
   const admin = session.me.role === 'admin';
-  const notifOn = typeof Notification !== 'undefined' && Notification.permission === 'granted';
   let linked = true;
   if (admin) { const st = await api('/api/status').catch(() => null); linked = !st || st.poller.linked; }
 
@@ -33,11 +30,10 @@ export default async function help(root, _a, session) {
     pick('Data use', Object.entries(MODES), getPref(), (v) => setPref(v)),
     h('p', {}, h('a', { href: '#/display' }, 'More display settings')));
 
-  const checklist = h('section', { class: 'card' }, h('h2', {}, 'Getting started'),
-    admin ? step(linked, 'Connect your car', 'CarTrak reads your car from Ford. Until it is connected there is nothing to show.', h('a', { class: 'btn', href: '#/ford' }, 'Open')) : null,
-    step(standalone(), 'Put CarTrak on your home screen', 'It opens like an app and keeps you signed in. In the browser menu choose Install app or Add to Home screen.'),
-    step(notifOn, 'Turn on notifications', 'Get told when a charge finishes, a trip ends or a tire is low. Everything also appears under the bell.', h('a', { class: 'btn sec', href: '#/notifications' }, 'Choose')),
-    admin ? step(false, 'The full checklist', 'Remote access, phone tracking, family accounts and more.', h('a', { class: 'btn sec', href: '#/start' }, 'Open')) : null);
+  const checklist = h('section', { class: 'card' }, h('h2', {}, 'Getting set up'),
+    admin ? step(linked, 'Connect your car', 'CarTrak reads your car from Ford. Until it is connected there is nothing to show.', h('a', { class: 'btn', href: linked ? '#/ford' : '#/start' }, 'Open')) : null,
+    h('div', { class: 'row', style: 'align-items:flex-start' }, h('div', { class: 'grow', style: 'flex-basis:14em' }, h('b', {}, 'Setup checklist'), h('div', { class: 'muted' }, 'Suggested next steps, all optional: install, alerts, places, prices and more.')),
+      h('a', { class: 'btn sec', href: '#/setup' }, 'Open')));
 
   const tabs = h('section', { class: 'card' }, h('h2', {}, 'What each part is for'),
     ...[['Home', 'Battery, range, what the car is doing, the day so far and the month.'], ['Trips', 'Every drive, a day-by-day view, and trip labels.'], ['Live', 'A dock screen that follows driving, charging and parking.'],

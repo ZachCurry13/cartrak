@@ -34,10 +34,20 @@ func (s *Server) tripRoad(w http.ResponseWriter, r *http.Request) {
 		fail(w, 502, "the routing service gave no road: "+err.Error())
 		return
 	}
-	ok(w, map[string]any{"roadKm": km, "distanceKm": t.DistanceKm, "distanceSrc": t.DistanceSrc})
+	// the drive straight from where it started to where it ended, as a navigation app would plan it
+	directKm := 0.0
+	if len(recorded) > 2 {
+		if _, dk, err := s.routeClient().Route(ctx, []routeest.Point{recorded[0], recorded[len(recorded)-1]}); err == nil {
+			directKm = dk
+		}
+	} else {
+		directKm = km
+	}
+	ok(w, map[string]any{"roadKm": km, "directKm": directKm, "straightKm": straightKm(t), "distanceKm": t.DistanceKm, "distanceSrc": t.DistanceSrc})
 }
 
-// setTripDistance: POST /api/trips/{id}/distance with {"use":"road"}, {"km":18.4} or {"use":"odometer"}. It corrects the distance of a
+// setTripDistance: POST /api/trips/{id}/distance with {"use":"road"} (through the recorded positions), {"use":"direct"} (the drive
+// straight from start to end), {"km":18.4} or {"use":"odometer"}. It corrects the distance of a
 // finished trip that the odometer under- or over-counted, and remembers where the figure came from. Admin only.
 func (s *Server) setTripDistance(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
@@ -59,7 +69,7 @@ func (s *Server) setTripDistance(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		km = *t.EndOdo - *t.StartOdo
-	case in.Use == "road":
+	case in.Use == "road" || in.Use == "direct":
 		if !s.routeLookupOn() {
 			fail(w, 409, "switch on the road estimate in More, Settings first")
 			return
@@ -71,7 +81,11 @@ func (s *Server) setTripDistance(w http.ResponseWriter, r *http.Request) {
 		}
 		ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 		defer cancel()
-		line, roadKm, err := s.routeClient().Route(ctx, routeest.Via(recorded, 8))
+		via := routeest.Via(recorded, 8)
+		if in.Use == "direct" {
+			via = []routeest.Point{recorded[0], recorded[len(recorded)-1]}
+		}
+		line, roadKm, err := s.routeClient().Route(ctx, via)
 		if err != nil {
 			fail(w, 502, "the routing service gave no road: "+err.Error())
 			return
@@ -81,7 +95,7 @@ func (s *Server) setTripDistance(w http.ResponseWriter, r *http.Request) {
 			pts = append(pts, [2]float64(p))
 		}
 		_ = s.S.SaveRouteEstimate(id, pts, roadKm) // so the road is drawn on the trip too
-		km, src = roadKm, "road"
+		km, src = roadKm, in.Use
 	case in.Km != nil:
 		if *in.Km < 0.1 || *in.Km > 1500 {
 			fail(w, 400, "the distance must be between 0.1 and 1500 km")

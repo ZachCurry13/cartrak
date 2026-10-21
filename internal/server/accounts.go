@@ -181,3 +181,15 @@ func (s *Server) SeedAdmin(name, pass string, reset bool) {
 		_ = s.makeUser(name, pass, "admin")
 	}
 }
+
+// me is who is signed in, with the reserve of the car on screen, which Home, Live and the planners on the phone use.
+func (s *Server) me(w http.ResponseWriter, r *http.Request) {
+	reserve := 20.0
+	if s.Cfg != nil {
+		reserve = s.Cfg.LowBatteryLevel()
+	}
+	ok(w, struct {
+		*store.User
+		ReservePct float64 `json:"reservePct"`
+	}{userFrom(r), reserve})
+}

@@ -13,7 +13,7 @@ CarTrak can send a notification to your phone or computer when something happens
 | Car alarm | The car reports its alarm or panic alarm is going off. Off by default |
 | Left open | The parked car has a door, the tailgate, the hood or a window open for ten minutes. Off by default |
 | Backup reminder | No backup has been downloaded in the last month. At most once a month, and only after CarTrak has been recording for two weeks |
-| Low battery | The battery fell to the level an admin chose under More, Settings, while the car was not charging. Once, then again after it has recovered five points. Off until a level is chosen |
+| Low battery | The battery fell to the car's **Battery reserve** (More, Charging settings; 20% unless chosen) while the car was not charging. Once, then again after it has recovered five points |
 | Charging budget | This month's charging cost passed the budget an admin set under More, Settings. Once a month. Needs your price per kWh |
 | Low disk space | The disk CarTrak stores its data on is nearly full (under 5 GB or 8 percent free). At most once every three days. Off by default |
 | Weekly summary | On Sunday evening (6 pm, car time zone): distance, trips, charging and efficiency for the last seven days. Off by default |

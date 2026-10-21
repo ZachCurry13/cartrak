@@ -69,7 +69,7 @@ func TestATripWithOnlyTwoCarPositionsGetsAnEstimatedRoadOnceAndOnlyWhenSwitchedO
 
 func TestADriveTheOdometerCountedShortCanUseTheRoadsLengthOrBeTyped(t *testing.T) {
 	osrm := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{"code":"Ok","routes":[{"distance":18000,"geometry":{"coordinates":[[-85.60,44.76],[-85.55,44.80],[-85.50,44.85]]}}]}`))
+		w.Write([]byte(`{"code":"Ok","routes":[{"distance":30000,"geometry":{"coordinates":[[-85.60,44.76],[-85.55,44.80],[-85.50,44.85]]}}]}`))
 	}))
 	defer osrm.Close()
 	ts, srv := healthServer(t, fakeProv{}, false, false)
@@ -87,9 +87,9 @@ func TestADriveTheOdometerCountedShortCanUseTheRoadsLengthOrBeTyped(t *testing.T
 	if err := srv.S.UpdateTrip(tr); err != nil {
 		t.Fatal(err)
 	}
-	// the batch finds a road twice as long as the odometer and says so, so the owner can choose it
+	// the batch finds a road far longer than the odometer and even the straight line allow, and says so, so the owner can choose it
 	code, body := do(t, admin, "POST", ts.URL+"/api/trips/estimate-routes", "", xh)
-	if code != 200 || !strings.Contains(body, `"roadKm":18`) || !strings.Contains(body, `"odoKm":9`) {
+	if code != 200 || !strings.Contains(body, `"roadKm":30`) || !strings.Contains(body, `"odoKm":9`) {
 		t.Fatalf("the failure carries both lengths: %d %s", code, body)
 	}
 	url := fmt.Sprintf("%s/api/trips/%d/distance", ts.URL, tr.ID)
@@ -97,11 +97,21 @@ func TestADriveTheOdometerCountedShortCanUseTheRoadsLengthOrBeTyped(t *testing.T
 		t.Fatalf("use the road: %d", code)
 	}
 	got, _ := srv.S.GetTrip(tr.ID)
-	if got.DistanceKm != 18 || got.DistanceSrc != "road" {
+	if got.DistanceKm != 30 || got.DistanceSrc != "road" {
 		t.Fatalf("corrected to the road: %+v", got)
 	}
 	if pts, _ := srv.S.RouteEstimate(tr.ID); len(pts) < 2 {
 		t.Fatal("the road is kept so it can be drawn")
+	}
+	// the drive straight from start to end, offered beside the road through the recorded positions
+	if code, body := do(t, admin, "GET", fmt.Sprintf("%s/api/trips/%d/road", ts.URL, tr.ID), "", xh); code != 200 || !strings.Contains(body, `"directKm":30`) || !strings.Contains(body, `"straightKm":`) {
+		t.Fatalf("road and direct: %d %s", code, body)
+	}
+	if code, _ := do(t, admin, "POST", url, `{"use":"direct"}`, xh); code != 200 {
+		t.Fatal("use the direct drive")
+	}
+	if got, _ = srv.S.GetTrip(tr.ID); got.DistanceSrc != "direct" {
+		t.Fatalf("direct: %+v", got)
 	}
 	if code, _ := do(t, admin, "POST", url, `{"km":16.5}`, xh); code != 200 {
 		t.Fatal("type a distance")

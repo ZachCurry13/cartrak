@@ -16,7 +16,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("POST /api/setup", s.setup)
 	m.HandleFunc("POST /api/login", s.login)
 	m.HandleFunc("POST /api/logout", s.authSite(false, s.logout))
-	m.HandleFunc("GET /api/me", s.authSite(false, func(w http.ResponseWriter, r *http.Request) { ok(w, userFrom(r)) }))
+	m.HandleFunc("GET /api/me", s.authSite(false, s.me))
 
 	m.HandleFunc("GET /api/admin/settings", s.auth(true, s.getSettings))
 	m.HandleFunc("PUT /api/admin/settings", s.auth(true, s.saveSettings))
@@ -29,6 +29,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/changelog", s.auth(false, s.changelog))
 	m.HandleFunc("GET /api/onboarding", s.auth(false, s.onboarding))
 	m.HandleFunc("POST /api/onboarding/dismiss", s.auth(true, s.dismissOnboarding))
+	m.HandleFunc("GET /api/checklist", s.auth(false, s.setupChecklist))
+	m.HandleFunc("POST /api/checklist/hide", s.auth(false, s.hideSetup))
 
 	m.HandleFunc("GET /api/health", s.auth(false, s.health))
 	m.HandleFunc("GET /api/vehicle", s.auth(false, s.vehicle))
@@ -137,6 +139,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("PATCH /api/time-off/{id}", s.auth(true, s.setTimeOffBase))
 	m.HandleFunc("POST /api/repair/preview", s.auth(true, s.repairPreview))
 	m.HandleFunc("POST /api/repair/apply", s.auth(true, s.repairApply))
+	m.HandleFunc("POST /api/repair/seen", s.auth(true, s.redetectSeen))
 	m.HandleFunc("GET /api/debug-report", s.auth(true, s.debugReport))
 	m.HandleFunc("GET /api/battery-health", s.auth(false, s.batteryHealth))
 	m.HandleFunc("GET /api/battery-truth", s.auth(false, s.batteryTruth))
