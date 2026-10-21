@@ -1,5 +1,6 @@
 import { h, chip, ago, item } from '../ui.js';
 import { api } from '../api.js';
+import { vehiclePickCard } from '../vehiclepick.js';
 
 export default async function ford(root, _a, session) {
   const admin = session.me.role === 'admin';
@@ -16,4 +17,5 @@ export default async function ford(root, _a, session) {
     admin ? h('section', { class: 'group' }, h('div', { class: 'menu' },
       item('#/admin', 'Ford settings', 'Client ID, secret, redirect address, time zone'),
       item('#/connect', 'Connect and address check', 'Sign in at Ford and check the redirect'))) : null);
+  if (admin && p.linked) { const pick = await vehiclePickCard(); if (pick) root.querySelector('.card').after(pick); }
 }

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/server"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -142,4 +143,15 @@ func (f *Fleet) AllDebugReports(hours int, metric bool) (string, int) {
 		total += n
 	}
 	return b.String(), total
+}
+
+// VehicleOwners is which car follows each vehicle, by VIN, as each car last saw it.
+func (f *Fleet) VehicleOwners() map[string][]server.CarRef {
+	out := map[string][]server.CarRef{}
+	for _, r := range f.all() {
+		if vin := r.S.GetKV(ford.SeenVINKey); vin != "" {
+			out[strings.ToUpper(vin)] = append(out[strings.ToUpper(vin)], server.CarRef{ID: r.Car.ID, Name: f.labelFor(r.Car.ID)})
+		}
+	}
+	return out
 }

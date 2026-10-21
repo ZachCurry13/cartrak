@@ -203,6 +203,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /ford/connect", s.auth(true, s.fordConnect))
 	m.HandleFunc("GET /ford/callback", s.callbackPage)
 	m.HandleFunc("POST /api/ford/complete", s.auth(true, s.fordComplete))
+	m.HandleFunc("GET /api/ford/vehicles", s.auth(true, s.fordVehicles))
+	m.HandleFunc("POST /api/ford/vehicle", s.auth(true, s.chooseVehicle))
 	m.HandleFunc("POST /api/poll", s.auth(true, func(w http.ResponseWriter, r *http.Request) { s.P.Now(); ok(w, "queued") }))
 
 	static, _ := fs.Sub(web.Files, "static")

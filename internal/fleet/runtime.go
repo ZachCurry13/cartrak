@@ -23,7 +23,7 @@ func (f *Fleet) provider(cfgs *settings.Settings, st *store.Store) (ford.Provide
 	case "fordconnect": // FordConnect 2.0 (current)
 		c := ford.NewConnect2(func() ford.Connect2Opts {
 			return ford.Connect2Opts{ClientID: cfgs.Value("FORD_CLIENT_ID"), ClientSecret: cfgs.Value("FORD_CLIENT_SECRET"),
-				RedirectURL: cfgs.Value("FORD_REDIRECT_URL"), AuthURL: cfgs.Value("FORD_AUTH_URL")}
+				RedirectURL: cfgs.Value("FORD_REDIRECT_URL"), AuthURL: cfgs.Value("FORD_AUTH_URL"), VIN: cfgs.Value("FORD_VIN")}
 		}, st)
 		return c, c, c, c, nil
 	case "fordconnect1": // older FordConnect 1 API, kept for apps registered for it

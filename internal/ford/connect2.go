@@ -38,6 +38,7 @@ var slowEndpoints = []struct{ Key, Path string }{
 
 type Connect2Opts struct {
 	ClientID, ClientSecret, RedirectURL, AuthURL string
+	VIN                                          string // the vehicle this car follows when the account authorized several; "" is the first
 	CheckURL                                     string // address used to test redirect addresses (tests override it)
 	APIBase, TokenURL                            string // overridden in tests
 }
@@ -57,6 +58,7 @@ type Connect2 struct {
 	cache     map[string]cachedAnswer // recent good answers, served instead of asking Ford again too soon
 	holdUntil time.Time               // Ford asked us to wait: nothing is sent before this
 	minGap    time.Duration           // tests shorten it; zero means the default
+	vehicles  []VehicleChoice         // every vehicle the linked account authorized, from the latest answer
 }
 
 func NewConnect2(fn func() Connect2Opts, st TokenStore) *Connect2 {
@@ -101,6 +103,8 @@ func (c *Connect2) Fetch(ctx context.Context) (*State, error) {
 	if err != nil {
 		return nil, err
 	}
+	tel, list, chosen := pickVehicle(tel, c.opts().VIN) // one vehicle per car, never a mix
+	c.noteVehicles(list, chosen)
 	doc := map[string]any{"telemetry": asJSON(tel)}
 
 	// At most ONE slow endpoint per reading (the most overdue), so a burst of requests
