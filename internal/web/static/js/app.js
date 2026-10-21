@@ -66,8 +66,9 @@ async function loadCars() {
   if (ids.length) await loadCategories();
   const sel = document.getElementById('carsel');
   sel.hidden = d.cars.length < 2;
-  sel.replaceChildren(...d.cars.map((c) => h('option', { value: String(c.id), selected: String(c.id) === currentCar() }, c.name)));
-  sel.onchange = () => { setCar(sel.value); location.hash = '#/'; location.reload(); };
+  sel.replaceChildren(...d.cars.map((c) => h('option', { value: String(c.id), selected: String(c.id) === currentCar() }, c.name)),
+    ...(d.cars.length > 1 ? [h('option', { value: 'all', selected: location.hash.startsWith('#/fleet') }, 'All cars')] : []));
+  sel.onchange = () => { if (sel.value === 'all') { location.hash = '#/fleet'; return; } setCar(sel.value); location.hash = '#/'; location.reload(); };
   const here = d.cars.find((c) => String(c.id) === currentCar());
   // The role that counts is the one for the car on screen: an owner manages their car, a viewer reads it. The role for the
   // whole installation (people, remote access) stays as siteRole.
@@ -107,6 +108,8 @@ async function render() {
   const exact = [...tabs.querySelectorAll('a')].find((a) => a.getAttribute('href') === `#/${name}`); // a page put in the bar lights up itself
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', exact ? a === exact : a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   noteVisit(name);
+  const carsel = document.getElementById('carsel');
+  if (carsel && !carsel.hidden) carsel.value = name === 'fleet' ? 'all' : currentCar(); // All cars shows in the picker while it is open
   try {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));

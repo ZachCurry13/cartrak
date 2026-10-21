@@ -14,7 +14,7 @@ export async function api(path, opts = {}) {
   let units = 'imperial';
   try { if (localStorage.getItem('units') === 'metric') units = 'metric'; } catch (e) { /* storage blocked */ }
   init.headers['X-Units'] = units; // the server writes messages in the units this device uses
-  const car = currentCar();
+  const car = opts.car != null ? String(opts.car) : currentCar(); // opts.car asks about another car (All cars)
   if (car) init.headers['X-Car'] = car;
   if (opts.body !== undefined) {
     init.headers['Content-Type'] = 'application/json';

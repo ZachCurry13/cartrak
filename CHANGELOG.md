@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.50.0
+
+### 🚙 Several vehicles on one Ford account
+- When the Ford account linked to a car shares more than one vehicle (an F-150 and an Escape, say), the car's **Ford connection** page asks **Which vehicle is this?** and lists them, naming any another car already follows. Each car now follows exactly one vehicle; before, two vehicles on one account could have their readings mixed.
+- To add the second vehicle: **More, Cars, Add a car**, link the same Ford account, and pick it.
+
+### 🚗🚙 All cars
+- With two or more cars, the car picker at the top has **All cars**: every car side by side (battery or fuel, range, what it is doing, the last trip) and the month or the year **together**, with each car's share and how much of the driving was electric. **Trips** lists every car's trips in one list. Tap a car or a trip to open it.
+
+### 🎃 Smaller fixes
+- On a narrow phone with the car picker showing, the seasonal ornament steps aside so the header stays on one line.
+
 ## 0.49.0
 
 ### 🔧 Service visits

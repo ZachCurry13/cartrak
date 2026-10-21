@@ -218,3 +218,7 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .wnew{max-height:58vh;overflow-y:auto}.wnew h2{font-size:1.05rem}
 .chipbtn{min-height:40px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:.88rem}.chipbtn.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 textarea{font:inherit;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.fleetcar{display:block;color:inherit;text-decoration:none;border-left:5px solid var(--cc)}
+#top h1{flex:0 0 auto}#ornament{margin-left:4px;font-size:1rem}
+.fleetcar + .fleetcar{margin-top:0}
+@media (max-width:390px){#top:has(#carsel:not([hidden])) #ornament{display:none}} /* a narrow phone with the car picker: keep the header on one line */

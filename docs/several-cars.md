@@ -58,3 +58,16 @@ CarTrak follows up to **6 cars**, because each one is polled from Ford on its ow
 
 A phone sends its position with a device token that belongs to one car, so it needs no change. Public share links
 likewise belong to the car they were made on.
+
+## Two vehicles on one Ford account
+Add a car for each vehicle (**More, Cars, Add a car**) and link the same Ford account to each. On Ford's page, choose the vehicle
+for that car. If the account shares more than one vehicle with a car anyway, that car's **Ford connection** page shows **Which
+vehicle is this?**: tap **Follow this one** on the right vehicle. A vehicle another car already follows is named, so the same one
+is not followed twice. Until you choose, a car follows the first vehicle Ford lists, and never mixes two.
+
+## All cars
+With two or more cars, the car picker at the top has **All cars**. **Overview** shows every car side by side (battery or fuel,
+range, whether it is driving, charging or parked, and its last trip) and this month together: the distance and trips of all of
+them, how much of the driving was electric, the charging cost and each car's share. **This year** is the same for the year, and
+**Trips** lists every car's recent trips in one list, each marked with its car. Tap a car or a trip to open it. A person sees only
+the cars they were given.

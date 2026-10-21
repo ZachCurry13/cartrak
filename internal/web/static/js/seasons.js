@@ -91,7 +91,7 @@ export function applySeason() {
   const h1 = document.querySelector('#top h1');
   let orn = document.getElementById('ornament');
   if (h1 && t) {
-    if (!orn) { orn = document.createElement('span'); orn.id = 'ornament'; orn.setAttribute('aria-hidden', 'true'); h1.after(orn); }
+    if (!orn) { orn = document.createElement('span'); orn.id = 'ornament'; orn.setAttribute('aria-hidden', 'true'); h1.append(orn); } // inside the title, so the header row stays one line
     orn.textContent = THEMES[t.key][1];
     orn.title = THEMES[t.key][0];
   } else if (orn) orn.remove();
