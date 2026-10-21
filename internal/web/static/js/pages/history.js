@@ -1,56 +1,10 @@
-import { h, emptyState, dist, num, speed } from '../ui.js';
-import { effSpan } from '../energy.js';
+import { h, emptyState, dist, num } from '../ui.js';
+import { eventRow, money, span } from '../eventrow.js';
 import { api } from '../api.js';
 
 const KINDS = [['all', 'All'], ['charging', 'Charging'], ['driving', 'Driving'], ['parked', 'Parked']];
-const GLYPH = { charging: '⚡', driving: '↗', parked: 'P' };
-const money = (cur, v) => `${cur}${v.toFixed(2)}`;
-const WHERE = { home: 'Home', public: 'Public' };
-
-function span(sec) {
-  const m = Math.round(sec / 60);
-  if (m < 60) return `${m} min`;
-  if (m < 2880) return `${Math.floor(m / 60)} h ${m % 60} min`;
-  return `${Math.floor(m / 1440)} d ${Math.floor((m % 1440) / 60)} h`;
-}
-
-const clock = (ts, tz) => new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
 const dayKey = (ts, tz) => new Date(ts * 1000).toLocaleDateString('en-CA', { timeZone: tz });
 const dayHead = (ts, tz) => new Date(ts * 1000).toLocaleDateString([], { weekday: 'short', day: 'numeric', timeZone: tz });
-
-// A thin bar of the battery level: what was left in a quiet colour and the part that changed in the event's own colour.
-function levelBar(e) {
-  const a = e.startSoc, b = e.endSoc;
-  if (a == null && b == null) return null;
-  const lo = Math.min(a == null ? b : a, b == null ? a : b), hi = Math.max(a == null ? b : a, b == null ? a : b);
-  return h('div', { class: 'hbar', role: 'img', 'aria-label': `Battery ${Math.round(a == null ? b : a)}% to ${Math.round(b == null ? a : b)}%` },
-    h('i', { class: 'base', style: `width:${lo}%` }), h('i', { class: `chg ${e.kind}`, style: `width:${Math.max(1, hi - lo)}%` }));
-}
-
-// One row of the feed. stopNumber, when given, is the stop's number on the day map and replaces the little icon.
-export function eventRow(e, tz, cur, stopNumber) {
-  const now = Date.now() / 1000;
-  const end = e.end == null ? now : e.end;
-  const delta = e.startSoc != null && e.endSoc != null ? Math.round(e.endSoc - e.startSoc) : null;
-  // where it happened: a drive from → to, a charge as home or public and its place
-  const place = e.kind === 'driving' ? [e.fromPlace, e.place].filter(Boolean).join(' → ') : e.kind === 'charging' ? [WHERE[e.where] || 'Charging', e.place].filter(Boolean).join(' · ') : e.place;
-  // one more line of what it was like: a drive's average speed and efficiency, a charge's average power
-  const secs = end - e.start;
-  const detail = e.kind === 'driving' && e.end != null && e.distanceKm >= 0.5 && secs > 60
-    ? [speed((e.distanceKm / secs) * 3600) + ' average', e.energyKwh > 0.2 ? effSpan(e.distanceKm, e.energyKwh) : null]
-    : e.kind === 'charging' && e.addedKwh > 0 && secs > 300 ? [`about ${num((e.addedKwh / secs) * 3600, 0, ' kW')} on average`] : [];
-  const right = e.kind === 'charging' ? (e.cost != null ? money(cur, e.cost) : e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '') : e.kind === 'driving' ? dist(e.distanceKm, 1) : '';
-  const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '';
-  const body = [
-    h('div', { class: 'hrow1' }, h('span', { class: `hico ${e.kind}${stopNumber != null ? ' num' : ''}`, 'aria-hidden': 'true' }, stopNumber != null ? stopNumber : GLYPH[e.kind]),
-      h('b', {}, `${clock(e.start, tz)} – ${e.end == null ? 'Now' : clock(e.end, tz)}`), h('span', { class: 'muted grow' }, span(end - e.start)),
-      delta != null ? h('span', { class: 'hdelta' }, `${delta > 0 ? '+' : ''}${delta}%`) : null),
-    levelBar(e),
-    h('div', { class: 'hrow2' }, h('span', { class: 'hplace' }, h('span', {}, place || (e.kind === 'parked' ? 'Parked' : 'Drive')), e.kind === 'parked' && place ? h('div', { class: 'muted' }, 'Parked') : null,
-      detail.filter(Boolean).length ? h('div', { class: 'muted' }, ...detail.filter(Boolean).flatMap((x, i) => (i ? [' · ', x] : [x]))) : null), h('span', { class: 'hright' }, right, sub ? h('div', { class: 'muted' }, sub) : null))];
-  const href = e.kind === 'driving' ? `#/trip/${e.id}` : e.kind === 'charging' ? '#/charging' : null;
-  return h(href ? 'a' : 'div', { class: `hcard ${e.kind}`, ...(href ? { href } : {}) }, ...body.filter(Boolean));
-}
 
 // Everything that happened in a month, newest first: charging, driving and parked time in one feed.
 export default async function history(root) {

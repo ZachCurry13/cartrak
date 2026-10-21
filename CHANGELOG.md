@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.44.0
+
+### 🛣️ Road-trip days read better
+- Each row of **Day view** and **History** shows the battery at its start and end (**98 → 51%**) instead of only the change: on a road trip, what you arrive with is what matters.
+- Charges show **what a kWh cost**, marked **(receipt)** or **(estimate)**, so you can see which ones still need a receipt.
+- A charge says how long the **whole stop** was when you stayed longer than it charged.
+- When several drives come between two charges, a **Leg** line sums them up: how far, how long, and what you arrived with.
+- The car finishing its charge at home just before you leave no longer has a row of its own: the first drive says **Left home at 98%**.
+- Fixes: a home charge no longer reads **Home · Home**, a tiny top-up says **Top-up** instead of **about 0 kW**, slow charging shows a decimal (7.4 kW), and long durations no longer get cut off.
+
 ## 0.43.0
 
 ### 🏨 Trips away have a base

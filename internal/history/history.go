@@ -20,6 +20,9 @@ type Charge struct {
 	AddedKwh *float64
 	Cost     *float64
 	Where    string // "home", "public" or ""
+	// CostActual says the cost is what was paid (a receipt), not worked out from a price; WallKwh is what the charger delivered.
+	CostActual bool
+	WallKwh    *float64
 }
 
 // Event is one row of the feed.
@@ -38,8 +41,10 @@ type Event struct {
 	Where      string   `json:"where"`     // charging: home, public or ""
 	Lat        *float64 `json:"lat"`       // where it happened (the end of a drive), for a map
 	Lon        *float64 `json:"lon"`
-	EnergyKwh  *float64 `json:"energyKwh,omitempty"` // a drive's energy use, for its efficiency
-	Base       bool     `json:"base,omitempty"`      // at the base of a trip away: not counted as a stop
+	EnergyKwh  *float64 `json:"energyKwh,omitempty"`  // a drive's energy use, for its efficiency
+	Base       bool     `json:"base,omitempty"`       // at the base of a trip away: not counted as a stop
+	CostActual bool     `json:"costActual,omitempty"` // a charge's cost is from a receipt
+	WallKwh    *float64 `json:"wallKwh,omitempty"`    // what the charger delivered, for the price per kWh
 }
 
 // minParked is the shortest gap worth showing as its own row.
@@ -66,7 +71,7 @@ func Build(trips []*store.Trip, charges []Charge, named []*store.NamedPlace, fro
 	}
 	for _, c := range charges {
 		e := Event{Kind: "charging", ID: c.ID, Start: c.Start, End: c.End, StartSoC: c.StartSoC, EndSoC: c.EndSoC, AddedKwh: c.AddedKwh, Cost: c.Cost,
-			Place: places.Name(c.Lat, c.Lon, named), Where: c.Where}
+			Place: places.Name(c.Lat, c.Lon, named), Where: c.Where, CostActual: c.CostActual, WallKwh: c.WallKwh}
 		e.Lat, e.Lon = c.Lat, c.Lon
 		all = append(all, span{e, c.Lat, c.Lon})
 	}

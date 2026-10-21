@@ -2,7 +2,8 @@ import { h, stat, dist, num, speed, pct, emptyState, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan } from '../energy.js';
-import { eventRow } from './history.js';
+import { eventRow } from '../eventrow.js';
+import { roadDay } from '../roadday.js';
 import { expandable } from '../daydetail.js';
 import { shareCard } from '../sharecard.js';
 
@@ -56,9 +57,10 @@ export default async function day(root, [date, action], session) {
     picker.addEventListener('change', () => { if (picker.value) location.hash = `#/day/${picker.value}`; });
     const stops = x.events.filter((v) => v.kind !== 'driving' && !v.base); // time at the base of a trip away is not a stop
     const roadCharges = stops.filter((v) => v.kind === 'charging' && v.where !== 'home').length; // charging stops away from home; a charge at home is not a stop
+    const road = roadDay(x.events, x.tz);
     const stopNo = new Map();
     let n = 0;
-    for (const v of x.events) if (v.kind !== 'driving' && !v.base && v.lat != null && v.lon != null) stopNo.set(v, ++n);
+    for (const v of x.events) if (v.kind !== 'driving' && !v.base && !road.hidden.has(v) && v.lat != null && v.lon != null) stopNo.set(v, ++n);
     const tiles = h('div', { class: 'dtiles day' },
       stat('🛣️ Distance', dist(t.km, 0)), stat('⏱️ Driving', hm(t.drivingSec)),
       e.addedKwh > 0 ? stat('⚡ Charged', `${num(e.addedKwh, 0, ' kWh')} · ${hm(t.chargingSec)}`) : null,
@@ -76,7 +78,7 @@ export default async function day(root, [date, action], session) {
       m.show({ routes, markers });
       map = h('div', {}, m.el, x.routes.some((r) => r.kind === 'estimate') ? h('div', { class: 'legend' }, h('span', {}, h('i'), 'recorded route'), h('span', {}, h('i', { class: 'dot' }), 'estimated road')) : null);
     } else if (x.routes.length) map = h('p', { class: 'muted' }, 'Maps are switched off, so only the list is shown.');
-    const list = x.events.length ? x.events.flatMap((v) => expandable(eventRow(v, x.tz, x.currency, stopNo.get(v)), v, x.currency)) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
+    const list = x.events.length ? x.events.filter((v) => !road.hidden.has(v)).flatMap((v) => [road.legBefore.get(v), ...expandable(eventRow(v, x.tz, x.currency, stopNo.get(v), road.extra.get(v)), v, x.currency)].filter(Boolean)).concat(road.lastLeg ? [road.lastLeg] : []) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
     const finished = x.events.some((v) => v.kind === 'driving') && !x.events.some((v) => v.kind === 'driving' && v.end == null);
     const share = admin && finished ? shareCard('day', x.date.replace(/-/g, ''), label) : null;
     const goShare = () => { const t = share && share.querySelector('#sht'); if (t) { share.scrollIntoView({ block: 'start' }); t.focus(); } };

@@ -47,7 +47,7 @@ func (s *Server) historyFeed(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		charges = append(charges, history.Charge{ID: c.ID, Start: c.StartTS, End: c.EndTS, StartSoC: c.StartSoC, EndSoC: c.EndSoC,
-			Lat: c.Lat, Lon: c.Lon, AddedKwh: c.AddedKwh, Cost: c.Cost, Where: c.Where})
+			Lat: c.Lat, Lon: c.Lon, AddedKwh: c.AddedKwh, Cost: c.Cost, Where: c.Where, CostActual: c.CostActual, WallKwh: c.WallKwh})
 	}
 	named, _ := s.S.ListNamedPlaces()
 	now := time.Now().Unix()

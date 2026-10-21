@@ -56,3 +56,9 @@ a.tcard:hover,a.tcard:focus-visible{background:var(--card2)}
 .key{display:inline-block;width:14px;height:10px;border-radius:3px;vertical-align:middle;background:var(--line)}
 .key.left{background:var(--ok)}.key.used{background:var(--warn)}.key.good{background:var(--ok)}.key.bad{background:var(--bad)}
 .key.start,.key.end{width:10px;border-radius:50%}.key.start{background:#16a34a}.key.end{background:#dc2626}
+
+.hleg{margin:6px 4px 10px;font-size:.9rem}
+
+/* a row header wraps instead of cutting the duration when both times are long */
+.hrow1{flex-wrap:wrap;row-gap:2px}.hrow1 .grow{flex:1 1 auto;min-width:max-content;overflow:visible}
+.hrow1 .hdelta{margin-left:auto}
