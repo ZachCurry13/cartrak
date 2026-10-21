@@ -32,9 +32,11 @@ function summaryCard(x) {
   const bits = [
     s.firstStart ? `Out from ${clock(s.firstStart, x.tz)} to ${clock(s.lastEnd, x.tz)}` : null,
     s.startSoc != null && s.endSoc != null ? `Battery ${pct(s.startSoc)} to ${pct(s.endSoc)}` : null,
-    s.costPerKm > 0 ? `${money(cur, isMetric() ? s.costPerKm : s.costPerKm * 1.609344)} per ${isMetric() ? 'km' : 'mile'} in charging` : null,
+    s.costPerKm > 0 ? `about ${money(cur, isMetric() ? s.costPerKm : s.costPerKm * 1.609344)} per ${isMetric() ? 'km' : 'mile'} driven today` : null,
     e.usedKwh > 0 && e.usedKm > 0 ? `${num(e.usedKwh, 0, ' kWh')} used driving` : null].filter(Boolean);
-  return h('section', { class: 'card' }, h('h2', {}, 'Summary'), ...lines.map((l) => h('p', {}, l)), bits.length ? h('p', { class: 'muted' }, bits.join(' · ')) : null);
+  const trip = x.trip && x.trip.km > 0 ? h('p', {}, h('b', {}, `${x.trip.label || 'This trip'} so far: `), `${dist(x.trip.km, 0)} driven since ${new Date(`${x.trip.from}T12:00:00`).toLocaleDateString([], { month: 'short', day: 'numeric' })}`,
+    x.trip.costPerKm != null ? `, about ${money(cur, isMetric() ? x.trip.costPerKm : x.trip.costPerKm * 1.609344)} per ${isMetric() ? 'km' : 'mile'}` : '', x.trip.base ? `. Base: ${x.trip.base}.` : '.') : null;
+  return h('section', { class: 'card' }, h('h2', {}, 'Summary'), ...lines.map((l) => h('p', {}, l)), trip, bits.length ? h('p', { class: 'muted' }, bits.join(' · ')) : null);
 }
 
 // A whole day on one map: every trip's route, the stops between them numbered to match the list underneath, and the day's totals.
@@ -52,11 +54,11 @@ export default async function day(root, [date, action], session) {
       h('h3', {}, label), h('button', { class: 'sec', 'aria-label': 'Next day', onclick: () => { location.hash = `#/day/${shift(x.date, 1)}`; } }, '›'));
     const picker = h('input', { type: 'date', value: x.date, 'aria-label': 'Pick a day', style: 'max-width:12em' });
     picker.addEventListener('change', () => { if (picker.value) location.hash = `#/day/${picker.value}`; });
-    const stops = x.events.filter((v) => v.kind !== 'driving');
+    const stops = x.events.filter((v) => v.kind !== 'driving' && !v.base); // time at the base of a trip away is not a stop
     const roadCharges = stops.filter((v) => v.kind === 'charging' && v.where !== 'home').length; // charging stops away from home; a charge at home is not a stop
     const stopNo = new Map();
     let n = 0;
-    for (const v of x.events) if (v.kind !== 'driving' && v.lat != null && v.lon != null) stopNo.set(v, ++n);
+    for (const v of x.events) if (v.kind !== 'driving' && !v.base && v.lat != null && v.lon != null) stopNo.set(v, ++n);
     const tiles = h('div', { class: 'dtiles day' },
       stat('🛣️ Distance', dist(t.km, 0)), stat('⏱️ Driving', hm(t.drivingSec)),
       e.addedKwh > 0 ? stat('⚡ Charged', `${num(e.addedKwh, 0, ' kWh')} · ${hm(t.chargingSec)}`) : null,

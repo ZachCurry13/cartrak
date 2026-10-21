@@ -118,6 +118,10 @@ Switch on **Wind lookup for trips** in More, Settings. CarTrak then asks Open-Me
 ## Vacation
 **More, Trip rules, Vacation**: pick the days and every trip on them is Personal, over your rules; trips you set by hand keep your choice, and removing the vacation puts the rules back.
 
+**A trip away and its base:** when the car spends the nights away from home during a mode (a vacation or a work trip), CarTrak finds your **base** from where it sleeps, one base per stretch of nights in the same place. Time parked at the base is not counted as a stop, the same as home; drives read "Base → Glen Arbor" or "Glen Arbor → Base"; and the Day view sums up the trip so far: how far you have driven and what the driving cost per mile. Charging at the base is shown as such but priced as public charging, unless you give the place its own price. In **Modes** you can choose one of your places as the base instead. While you are away, **Plan ahead** forecasts from your driving on the trip, up to its last day, not from your weekdays at home. A mode you spend at home has no base.
+
+**Cost per mile on a day:** the Day view works out what the day's driving cost from the energy it used and what a kWh has cost you (on a trip away, what it cost on the trip). A charge that fills the battery for several days is no longer billed to the day it happened.
+
 ## How firmly you drove, and regen
 On a trip, **Why this efficiency?** also says whether it was driven firmer or smoother than your usual, using the car's torque readings. The readings have no stated unit, so firm means above what your own last dozen trips reached nine times out of ten. The regen tiles show the range braking gave back, as the car reports it, and the energy that range is worth at the trip's own use per kilometre (an estimate, marked as one).
 

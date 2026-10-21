@@ -107,7 +107,9 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 	named, _ := s.S.ListNamedPlaces()
 	now := time.Now().Unix()
 	events := history.Build(list, charges, named, from.Unix(), to.Unix()-1, now)
-	s.placeEvents(events, list, named)
+	bases := s.baseFinder(s.cityNamer())
+	s.placeEvents(events, list, named, bases)
+	bases.cities.lookupLater()
 	sort.SliceStable(events, func(i, j int) bool { return events[i].Start < events[j].Start }) // the day reads forwards
 	capacity := s.capacityKwh()
 	lookups := 0
@@ -140,9 +142,10 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 		keep = append(keep, e)
 	}
 	sum.finish(list, events, min(dayEnd, now))
+	trip := s.dayCosts(&sum, from, used, usedKm, bases)
 	ok(w, map[string]any{"date": from.Format("2006-01-02"), "summary": sum, "tz": loc.String(), "events": keep, "routes": routes, "currency": s.currency(),
 		"totals": history.Sum(events, from.Unix(), to.Unix()-1, now),
-		"energy": map[string]any{"usedKwh": used, "usedKm": usedKm, "addedKwh": kwhAdded, "cost": costSum}})
+		"energy": map[string]any{"usedKwh": used, "usedKm": usedKm, "addedKwh": kwhAdded, "cost": costSum}, "trip": trip})
 }
 
 // daySummary is the day in numbers for a plain-English paragraph: how long was driven and stood still, how many stops,

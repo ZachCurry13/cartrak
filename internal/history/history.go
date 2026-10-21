@@ -39,6 +39,7 @@ type Event struct {
 	Lat        *float64 `json:"lat"`       // where it happened (the end of a drive), for a map
 	Lon        *float64 `json:"lon"`
 	EnergyKwh  *float64 `json:"energyKwh,omitempty"` // a drive's energy use, for its efficiency
+	Base       bool     `json:"base,omitempty"`      // at the base of a trip away: not counted as a stop
 }
 
 // minParked is the shortest gap worth showing as its own row.

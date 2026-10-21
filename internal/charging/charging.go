@@ -65,6 +65,9 @@ type Session struct {
 	Measured   bool     `json:"measured"`
 }
 
+// DistanceM is the distance in metres between two points.
+func DistanceM(a, b Point) float64 { return distanceM(a, b) }
+
 func distanceM(a, b Point) float64 {
 	const r = 6371000.0
 	la1, la2 := a.Lat*math.Pi/180, b.Lat*math.Pi/180

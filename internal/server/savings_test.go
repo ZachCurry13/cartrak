@@ -109,7 +109,8 @@ func TestPlanAheadNeedsEnoughHistoryAndThenForecastsTheWeek(t *testing.T) {
 	}
 	kwh := func(x float64) *float64 { return &x }
 	for d := 1; d <= 25; d++ { // a 20 km trip using 5 kWh every day since the first reading
-		start := time.Now().AddDate(0, 0, -d).Add(-time.Hour)
+		n := time.Now().In(srv.defaultLoc())
+		start := time.Date(n.Year(), n.Month(), n.Day(), 12, 0, 0, 0, n.Location()).AddDate(0, 0, -d) // midday, so the day is never in doubt
 		finishedTrip(t, srv, start, 20, func(tr *store.Trip) { tr.StartKwh, tr.EndKwh = kwh(50), kwh(45) })
 	}
 	r := get()

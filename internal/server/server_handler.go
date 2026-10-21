@@ -134,6 +134,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/time-off", s.auth(false, s.listTimeOff))
 	m.HandleFunc("POST /api/time-off", s.auth(true, s.addTimeOff))
 	m.HandleFunc("DELETE /api/time-off/{id}", s.auth(true, s.deleteTimeOff))
+	m.HandleFunc("PATCH /api/time-off/{id}", s.auth(true, s.setTimeOffBase))
 	m.HandleFunc("POST /api/repair/preview", s.auth(true, s.repairPreview))
 	m.HandleFunc("POST /api/repair/apply", s.auth(true, s.repairApply))
 	m.HandleFunc("GET /api/debug-report", s.auth(true, s.debugReport))

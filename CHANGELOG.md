@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.43.0
+
+### 🏨 Trips away have a base
+- When the car spends the nights away from home during a mode (a vacation or a work trip), CarTrak finds your **base** from where it sleeps. Time parked there is not counted as a stop, the same as home, and drives read **Base → Glen Arbor** or **Glen Arbor → Base**.
+- The Day view adds **the trip so far**: how far you have driven since it began and what the driving cost per mile.
+- In **Modes** you can choose one of your places as the base instead of the one CarTrak finds.
+- While you are away, **Plan ahead** forecasts from your driving on the trip, up to its last day, instead of your weekdays at home.
+
+### 💲 A fair cost per mile for a day
+- The Day view used to divide the day's charging bill by the day's miles, so a charge that filled the battery for several days made one day look expensive. It now works it out from the energy the day's driving used and what a kWh has cost you (on a trip, what it cost on the trip).
+
 ## 0.42.2
 
 ### 🎨 What the colours mean

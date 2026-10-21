@@ -27,6 +27,10 @@ type Input struct {
 	CapacityKwh float64
 	StartPct    float64 // battery level now
 	ReservePct  float64 // the level to stay above
+	// Away is set on a trip away: every day is the average of the trip so far (your weekdays at home do not fit a trip), the
+	// forecast runs to the trip's last day (at most Horizon), and two days of the trip are enough.
+	Away     bool
+	DaysLeft int // on a trip away, the days still to come, from tomorrow
 }
 
 // Day is one forecast day.
@@ -54,7 +58,11 @@ type Forecast struct {
 // Build forecasts the next Horizon days after Today. Each day is the average of the same weekday in the history; a weekday seen
 // fewer than twice uses the average of all days. It reports false when there is too little history or no energy figure.
 func Build(in Input) (Forecast, bool) {
-	if len(in.History) < MinHistoryDays || in.KwhPerKm <= 0 || in.CapacityKwh <= 0 {
+	need, horizon := MinHistoryDays, Horizon
+	if in.Away {
+		need, horizon = 2, min(Horizon, in.DaysLeft)
+	}
+	if len(in.History) < need || horizon < 1 || in.KwhPerKm <= 0 || in.CapacityKwh <= 0 {
 		return Forecast{}, false
 	}
 	var sum [7]float64
@@ -72,10 +80,10 @@ func Build(in Input) (Forecast, bool) {
 	mean := all / float64(len(in.History))
 	f := Forecast{StartPct: in.StartPct, ReservePct: in.ReservePct, HistoryDays: len(in.History)}
 	pct := in.StartPct
-	for i := 1; i <= Horizon; i++ {
+	for i := 1; i <= horizon; i++ {
 		d := in.Today.AddDate(0, 0, i)
 		km := mean
-		if n[d.Weekday()] >= 2 {
+		if !in.Away && n[d.Weekday()] >= 2 {
 			km = sum[d.Weekday()] / float64(n[d.Weekday()])
 		}
 		kwh := km * in.KwhPerKm

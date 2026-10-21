@@ -134,10 +134,27 @@ func (s *Server) planAhead(w http.ResponseWriter, r *http.Request) {
 		ok(w, map[string]any{"ready": false})
 		return
 	}
-	f, good := planahead.Build(planahead.Input{History: history, Today: midnight, KwhPerKm: kwh / km, CapacityKwh: *capacity, StartPct: *x.SoCPct, ReservePct: reserve})
+	in := planahead.Input{History: history, Today: midnight, KwhPerKm: kwh / km, CapacityKwh: *capacity, StartPct: *x.SoCPct, ReservePct: reserve}
+	away := ""
+	if b := s.baseFinder(nil).forDay(midnight.Format("2006-01-02")); b != nil { // on a trip away: forecast from the trip so far
+		var trip []planahead.DayKm
+		for _, h := range history {
+			if h.Date >= b.Stretch.From {
+				trip = append(trip, h)
+			}
+		}
+		if last, err := time.ParseInLocation("2006-01-02", b.Stretch.To, loc); err == nil && len(trip) >= 2 {
+			in.History, in.Away, in.DaysLeft = trip, true, int(last.Sub(midnight).Hours()/24+0.5)
+			away = b.Stretch.Label
+			if away == "" {
+				away = "this trip"
+			}
+		}
+	}
+	f, good := planahead.Build(in)
 	if !good {
 		ok(w, map[string]any{"ready": false, "historyDays": len(history), "needDays": planahead.MinHistoryDays})
 		return
 	}
-	ok(w, map[string]any{"ready": true, "forecast": f, "kwhPerKm": kwh / km})
+	ok(w, map[string]any{"ready": true, "forecast": f, "kwhPerKm": kwh / km, "away": away})
 }

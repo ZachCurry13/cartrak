@@ -68,3 +68,20 @@ func TestASteadyDailyDistanceGivesASteadyForecast(t *testing.T) {
 		t.Fatalf("a steady 28 km a day: %+v", f.Days[0])
 	}
 }
+
+func TestOnATripAwayTheForecastFollowsTheTripAndEndsWithIt(t *testing.T) {
+	today := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
+	trip := []DayKm{{Date: "2026-10-18", Km: 40}, {Date: "2026-10-19", Km: 60}} // two days of the trip so far
+	f, ok := Build(Input{History: trip, Today: today, KwhPerKm: 0.2, CapacityKwh: 80, StartPct: 90, ReservePct: 20, Away: true, DaysLeft: 3})
+	if !ok || len(f.Days) != 3 {
+		t.Fatalf("three days to the trip's end: %+v %v", f, ok)
+	}
+	for _, d := range f.Days {
+		if d.Km != 50 {
+			t.Fatalf("every day is the trip's average, not a weekday at home: %+v", f.Days)
+		}
+	}
+	if _, ok := Build(Input{History: trip[:1], Today: today, KwhPerKm: 0.2, CapacityKwh: 80, Away: true, DaysLeft: 3}); ok {
+		t.Fatal("one day of the trip is not enough")
+	}
+}

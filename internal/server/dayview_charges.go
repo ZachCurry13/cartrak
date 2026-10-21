@@ -63,7 +63,7 @@ func (d *daySummary) finish(list []*store.Trip, events []history.Event, dayEnd i
 		d.CostPerKm = d.cost / km
 	}
 	for _, e := range events {
-		if e.Kind != "parked" {
+		if e.Kind != "parked" || e.Base { // time at the base of a trip away is not a stop, the same as home
 			continue
 		}
 		end := dayEnd

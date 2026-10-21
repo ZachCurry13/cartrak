@@ -62,6 +62,7 @@ func (s *Server) listTrips(w http.ResponseWriter, r *http.Request) {
 	}
 	out := s.tripsWithEnergy(ts)
 	s.nameCities(out)
+	s.markBase(out)
 	ok(w, out)
 }
 
