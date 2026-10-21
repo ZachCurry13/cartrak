@@ -11,6 +11,9 @@
 - Insights drops the Charging and Battery tabs, the energy flow and the charging achievements for a car that cannot plug in. Liters and a price per liter, for devices set to kilometers.
 - The debug report gets a **FUEL** section.
 
+### 🧭 A half-circle gauge
+- The battery ring on **Home** and **Live** is now a **half-circle gauge** (and the fuel tank is the same gauge for a gas or hybrid car). It takes about 40 px less height, so the chips and Needs attention rise up the screen. **Live** shows the tank, not an empty Charge gauge, for a car with no battery level.
+
 ## 0.51.0
 
 ### ▶️ Trip replay follows the road

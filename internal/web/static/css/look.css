@@ -43,7 +43,7 @@ nav#tabs a.on{color:var(--accent);font-weight:650}
 }
 
 /* battery ring (Home and Live) */
-.ring{display:block;width:min(62vw,190px);height:auto;margin:2px auto 14px}
+.ring{display:block;width:min(72vw,230px);height:auto;margin:2px auto 10px}
 .ring .trk{stroke:var(--card2)}
 .ring .arc{stroke:var(--accent);transition:stroke-dasharray .6s}
 .ring.low .arc{stroke:var(--warn)}.ring.crit .arc{stroke:var(--bad)}

@@ -7,6 +7,7 @@ import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, cl
 import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
 import { batteryRing } from '../ring.js';
+import { pick } from './dashboard.js';
 import { powerTile, fitText } from '../livepower.js';
 import { isCharging } from '../chargestate.js';
 
@@ -38,7 +39,8 @@ export default async function live(root, _a, session) {
   const toggle = h('button', { class: 'sec' }, 'Road trip mode');
   const ring = batteryRing();
   const heroSub = h('div', { class: 'ts muted' });
-  const hero = h('div', { class: 'tile big' }, h('div', { class: 'tl muted' }, 'Charge'), ring.el, heroSub);
+  const heroLabel = h('div', { class: 'tl muted' }, 'Charge');
+  const hero = h('div', { class: 'tile big' }, heroLabel, ring.el, heroSub);
   const gps = admin ? gpsCard() : null;
   const power = powerTile();
   const dock = h('div', { class: 'dock' },
@@ -106,8 +108,12 @@ export default async function live(root, _a, session) {
       lastTs = x.ts;
       lastX = x;
       power.set(x);
-      ring.set(x.socPct, x.rangeKm != null ? `${dist(x.rangeKm, 0)} range` : '');
-      heroSub.textContent = mode === 'charging' && x.chargeKw > 0.2 ? `Charging at ${num(x.chargeKw, 1, ' kW')}` : nice(x.chargeState) || '';
+      const tank = x.fuelPct != null && x.socPct == null; // a gas or hybrid car with no battery level shows its tank
+      const fuelRange = tank ? pick(x.extra, 'fuelRange') : null;
+      heroLabel.textContent = tank ? 'Fuel' : 'Charge';
+      ring.what = tank ? 'Fuel' : 'Battery';
+      ring.set(tank ? x.fuelPct : x.socPct, tank ? (fuelRange != null ? `${dist(fuelRange, 0)} range` : '') : x.rangeKm != null ? `${dist(x.rangeKm, 0)} range` : '');
+      heroSub.textContent = tank ? '' : mode === 'charging' && x.chargeKw > 0.2 ? `Charging at ${num(x.chargeKw, 1, ' kW')}` : nice(x.chargeState) || '';
       set('range', dist(x.rangeKm, 0));
       set('energy', x.energyKwh != null ? num(x.energyKwh, 1, ' kWh') : '—', x.capacityKwh ? `of about ${num(x.capacityKwh, 0, ' kWh')}` : '');
       showReserve(x);
