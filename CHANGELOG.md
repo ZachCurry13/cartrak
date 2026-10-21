@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.45.0
+
+### 🛣️ More for road-trip days
+- The summary says how much of the day on the road went on charging ("On the road for 14 h 41 min, 3 h 33 min of it charging (24%)") and the longest stretch between charges.
+- Open a public charge that is priced from your general price and you can say **what a kWh costs here**. It is saved as a place with its own price, so every charge there, past and future, is worked out with it.
+- The car finishing its charge at home before you leave is no longer counted as one of the day's charges.
+- **Stopped … in all** only appears when you stayed at least five minutes longer than the car charged.
+
 ## 0.44.0
 
 ### 🛣️ Road-trip days read better

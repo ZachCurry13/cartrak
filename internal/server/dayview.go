@@ -91,12 +91,15 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 	var costSum, kwhAdded float64
 	var sum daySummary
 	for _, c := range sessions {
+		c := c
 		if c.StartTS < from.Unix() || c.StartTS >= to.Unix() {
 			continue
 		}
 		charges = append(charges, history.Charge{ID: c.ID, Start: c.StartTS, End: c.EndTS, StartSoC: c.StartSoC, EndSoC: c.EndSoC,
 			Lat: c.Lat, Lon: c.Lon, AddedKwh: c.AddedKwh, Cost: c.Cost, Where: c.Where, CostActual: c.CostActual, WallKwh: c.WallKwh})
-		sum.addCharge(&c)
+		if !topUpBeforeDrive(c, list) {
+			sum.addCharge(&c)
+		}
 		if c.AddedKwh != nil {
 			kwhAdded += *c.AddedKwh
 		}

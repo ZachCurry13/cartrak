@@ -61,7 +61,7 @@ export function eventRow(e, tz, cur, stopNumber, extra = {}) {
     if (e.end != null && e.distanceKm >= 0.5 && secs > 60) detail.push(speed((e.distanceKm / secs) * 3600) + ' average', e.energyKwh > 0.2 ? effSpan(e.distanceKm, e.energyKwh) : null);
   } else if (e.kind === 'charging') {
     detail.push(power(e, secs));
-    if (extra.stopSec > secs + 120) detail.push(`stopped ${span(extra.stopSec)} in all`);
+    if (extra.stopSec > secs + 300) detail.push(`stopped ${span(extra.stopSec)} in all`);
     // what a kWh cost: from a receipt, or worked out from a price
     const kwh = e.wallKwh || e.addedKwh;
     if (e.cost != null && kwh > 0.5) detail.push(`${money(cur, e.cost / kwh)}/kWh ${e.costActual ? '(receipt)' : '(estimate)'}`);

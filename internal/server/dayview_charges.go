@@ -100,3 +100,17 @@ func (d *daySummary) finish(list []*store.Trip, events []history.Event, dayEnd i
 		}
 	}
 }
+
+// topUpBeforeDrive says a session is the car finishing its charge at home just before a drive: under 2 kWh, ending within half an
+// hour of a trip starting. The Day view folds it into that drive ("Left home at 98%"), so the summary does not count it either.
+func topUpBeforeDrive(c charging.Session, list []*store.Trip) bool {
+	if c.Where != "home" || c.EndTS == nil || (c.AddedKwh != nil && *c.AddedKwh >= 2) {
+		return false
+	}
+	for _, t := range list {
+		if t.StartTS >= *c.EndTS && t.StartTS-*c.EndTS < 1800 {
+			return true
+		}
+	}
+	return false
+}

@@ -24,7 +24,8 @@ export function roadDay(events) {
     if (prev && next && prev.end != null && prev.end <= v.start + 60 && next.start >= (v.end || v.start)) add(v, { stopSec: next.start - prev.end });
   });
   const road = events.filter((v) => v.kind === 'charging' && v.where !== 'home' && !hidden.has(v));
-  let lastLeg = null;
+  let lastLeg = null, longestKm = 0;
+  const roadChargeSec = road.reduce((a, v) => a + ((v.end || Date.now() / 1000) - v.start), 0);
   if (road.length) {
     let km = 0, sec = 0, soc = null, n = 0, drives = 0;
     const leg = (title) => h('p', { class: 'muted hleg' }, h('b', {}, title), ` ${dist(km, 0)} in ${span(sec)}${soc != null ? `, arrived with ${pct(soc)}` : ''}`);
@@ -36,13 +37,15 @@ export function roadDay(events) {
         sec += v.end - v.start;
         soc = v.endSoc;
       } else if (road.includes(v) && km > 0) {
+        longestKm = Math.max(longestKm, km);
         n++;
         if (drives > 1) legBefore.set(v, leg(`Leg ${n}:`));
         km = sec = drives = 0;
         soc = null;
       }
     }
+    longestKm = Math.max(longestKm, km);
     if (km > 0 && n > 0 && drives > 1) lastLeg = leg(`Leg ${n + 1}:`);
   }
-  return { hidden, extra, legBefore, lastLeg };
+  return { hidden, extra, legBefore, lastLeg, roadCharges: road.length, roadChargeSec, longestKm };
 }

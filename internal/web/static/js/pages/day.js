@@ -17,8 +17,8 @@ const plural = (n, w, ws) => `${n} ${n === 1 ? w : ws || w + 's'}`;
 const clock = (ts, tz) => new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
 
 // The day in words: how long was driven and stood still, how many stops, what was charged and what it cost.
-function summaryCard(x) {
-  const atHome = x.events.filter((v) => v.kind === 'charging' && v.where === 'home').length;
+function summaryCard(x, road) {
+  const atHome = x.events.filter((v) => v.kind === 'charging' && v.where === 'home' && !road.hidden.has(v)).length;
   const s = x.summary, t = x.totals, e = x.energy, cur = x.currency;
   if (!s.trips && !s.sessions) return null;
   const lines = [];
@@ -28,6 +28,10 @@ function summaryCard(x) {
     const kind = s.fastSessions ? `${s.fastSessions} fast${s.sessions - s.fastSessions ? ` and ${s.sessions - s.fastSessions} slow` : ''}` : 'slow';
     const price = e.cost > 0 ? `, which cost ${s.estimated ? 'about ' : ''}${money(cur, e.cost)}${s.receipts && !s.estimated ? ' (from your receipts)' : s.receipts ? ` (${s.receipts} from receipts, ${s.estimated} worked out)` : ''}` : '';
     lines.push(`You charged ${plural(s.sessions, 'time')} (${kind}${atHome ? `; ${atHome === 1 ? 'one' : atHome} at home` : ''}) for ${hm(s.chargeSec)}, adding ${num(e.addedKwh, 0, ' kWh')} at an average of ${num(s.avgKw, 0, ' kW')} (peak ${num(s.peakKw, 0, ' kW')})${price}.`);
+    if (road.roadCharges && s.firstStart && s.lastEnd > s.firstStart) { // a road trip: how much of the day went on charging, and the longest stretch between charges
+      const out = s.lastEnd - s.firstStart;
+      lines.push(`On the road for ${hm(out)}, ${hm(road.roadChargeSec)} of it charging (${Math.round((road.roadChargeSec / out) * 100)}%). The longest stretch between charges was ${dist(road.longestKm, 0)}.`);
+    }
     if (s.unpriced) lines.push(`${plural(s.unpriced, 'session')} could not be priced. Set your price per kWh in More, Settings, or enter what you paid on the Charging page.`);
   }
   const bits = [
@@ -78,11 +82,11 @@ export default async function day(root, [date, action], session) {
       m.show({ routes, markers });
       map = h('div', {}, m.el, x.routes.some((r) => r.kind === 'estimate') ? h('div', { class: 'legend' }, h('span', {}, h('i'), 'recorded route'), h('span', {}, h('i', { class: 'dot' }), 'estimated road')) : null);
     } else if (x.routes.length) map = h('p', { class: 'muted' }, 'Maps are switched off, so only the list is shown.');
-    const list = x.events.length ? x.events.filter((v) => !road.hidden.has(v)).flatMap((v) => [road.legBefore.get(v), ...expandable(eventRow(v, x.tz, x.currency, stopNo.get(v), road.extra.get(v)), v, x.currency)].filter(Boolean)).concat(road.lastLeg ? [road.lastLeg] : []) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
+    const list = x.events.length ? x.events.filter((v) => !road.hidden.has(v)).flatMap((v) => [road.legBefore.get(v), ...expandable(eventRow(v, x.tz, x.currency, stopNo.get(v), road.extra.get(v)), v, x.currency, admin)].filter(Boolean)).concat(road.lastLeg ? [road.lastLeg] : []) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
     const finished = x.events.some((v) => v.kind === 'driving') && !x.events.some((v) => v.kind === 'driving' && v.end == null);
     const share = admin && finished ? shareCard('day', x.date.replace(/-/g, ''), label) : null;
     const goShare = () => { const t = share && share.querySelector('#sht'); if (t) { share.scrollIntoView({ block: 'start' }); t.focus(); } };
-    box.replaceChildren(...[nav, h('p', { class: 'seg' }, picker, share ? h('button', { class: 'sec', onclick: goShare }, 'Share this day') : null), summaryCard(x), tiles, map, h('h3', { style: 'margin:16px 0 6px' }, 'The day, in order'), ...list, share].filter(Boolean));
+    box.replaceChildren(...[nav, h('p', { class: 'seg' }, picker, share ? h('button', { class: 'sec', onclick: goShare }, 'Share this day') : null), summaryCard(x, road), tiles, map, h('h3', { style: 'margin:16px 0 6px' }, 'The day, in order'), ...list, share].filter(Boolean));
     if (action === 'share') setTimeout(goShare, 80);
   }
   await load(date);
