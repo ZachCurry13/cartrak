@@ -16,11 +16,15 @@ import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
 import { openMore } from './moresheet.js';
 import { applyBar, load as loadLayout, noteVisit } from './navlayout.js';
+import { applySeason, activeTheme, THEMES } from './seasons.js';
+import { playSeason } from './seasonfx.js';
+import { showWhatsNew } from './whatsnew.js';
 
 
 const view = document.getElementById('view');
 document.querySelector('.skip').addEventListener('click', (e) => { e.preventDefault(); view.focus(); });
 const tabs = document.getElementById('tabs');
+applySeason();
 export const session = { me: null, about: null, vehicle: null, installPrompt: null, cars: [] };
 let stopRefresh = null;
 
@@ -87,6 +91,15 @@ async function firstRunTour() {
   return true;
 }
 
+// The seasonal effect plays on Home once a session (bigger on the holiday itself), after the page has drawn.
+function seasonOnHome() {
+  const t = activeTheme();
+  if (!t) return;
+  const mark = `${new Date().toDateString()}|${t.key}`;
+  try { if (sessionStorage.getItem('seasonfx') === mark) return; sessionStorage.setItem('seasonfx', mark); } catch (e) { /* play anyway */ }
+  setTimeout(() => playSeason(THEMES[t.key][8], t.day), 600);
+}
+
 async function render() {
   if (stopRefresh) { stopRefresh(); stopRefresh = null; }
   const [name, ...args] = (location.hash.replace(/^#\/?/, '') || '').split('/');
@@ -107,6 +120,7 @@ async function render() {
         await loadVehicle();
         await loadLayout(session);
         applyBar(tabs, session);
+        showWhatsNew(session); // after an update: what changed, once
         if (await firstRunTour()) return; // hashchange re-renders onto the tour
       }
     }
@@ -115,6 +129,7 @@ async function render() {
     const mod = await (routes[name] || routes[''])();
     view.replaceChildren();
     const refresh = await mod.default(view, args, session);
+    if (name === '') seasonOnHome();
     const head = view.querySelector('h2');
     document.title = head && head.textContent ? `${head.textContent} · CarTrak` : 'CarTrak';
     if (typeof refresh === 'function') stopRefresh = startRefresh(refresh); // schedule depends on this device's data mode

@@ -92,7 +92,8 @@ function energyBar(g, f, x, y, width) {
 // how tall the energy block is: its title, the bar and one or two lines of key
 const ENERGY_H = 200;
 
-export function drawInfographic(w, routes) {
+// colors: the season's two colours for the glow behind the picture, or null for the usual teal and blue.
+export function drawInfographic(w, routes, colors = null) {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
@@ -100,7 +101,9 @@ export function drawInfographic(w, routes) {
   const bg = g.createLinearGradient(0, 0, W, H);
   bg.addColorStop(0, '#0b1a2b'); bg.addColorStop(1, '#070b14');
   g.fillStyle = bg; g.fillRect(0, 0, W, H);
-  for (const [cx, cy, rad, col] of [[W, 0, 900, 'rgba(34,211,165,.35)'], [0, H * 0.55, 800, 'rgba(59,130,246,.25)']]) {
+  const tint = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
+  const glows = colors ? [tint(colors[0], 0.4), tint(colors[1], 0.3)] : ['rgba(34,211,165,.35)', 'rgba(59,130,246,.25)'];
+  for (const [cx, cy, rad, col] of [[W, 0, 900, glows[0]], [0, H * 0.55, 800, glows[1]]]) {
     const rg = g.createRadialGradient(cx, cy, 0, cx, cy, rad);
     rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = rg; g.fillRect(0, 0, W, H);

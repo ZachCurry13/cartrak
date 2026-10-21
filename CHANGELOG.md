@@ -2,6 +2,13 @@
 
 ## 0.49.0
 
+### 🎃 Seasonal themes
+- CarTrak dresses up for the holidays: Halloween in October, Thanksgiving, Christmas (with twinkle lights), New Year's confetti, snow in winter, Valentine's, St. Patrick's, Easter and spring, the Fourth of July (fireworks), summer and autumn. Each changes the accent colour and the battery ring, puts an ornament by the name, and plays a short effect on Home once a session, bigger on the holiday itself. Wrapped and its infographic take on the season's colours.
+- Themes follow the dates around each holiday. Choose **Automatic**, a favourite, or **Off** in More, Display and data. The effect never plays with "reduce motion" or Data saver, and text keeps its contrast in light and dark.
+
+### ✨ What's new, after every update
+- The first time you open the app after an update, a sheet shows what changed in every version since you last opened it. **Got it** closes it until the next update.
+
 ### 🧭 Your own bottom bar and More
 - **Customize** (in the More sheet) chooses the pages in the bottom bar and the tiles at the top of More, in any order. Turn on **Arrange by how often I use them** to keep both in order of the pages you open most. Saved to your account, so it follows you; **Reset** goes back to the start.
 - The More tiles are now Insights, Reports, Day view, Places, Plan a trip and Settings. Things moved to where they belong: **charging prices** on the Charging page, **trip rules** on the Trips page, **alert settings** behind the bell (⚙ at the top of Notifications), and **people, cars and backups** under Settings and the Admin part of More.

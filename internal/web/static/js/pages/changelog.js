@@ -4,7 +4,7 @@ import { h } from '../ui.js';
 const inline = (text) => text.split('**').map((part, i) => (i % 2 ? h('b', {}, part) : part)).filter((x) => x !== '');
 
 // Minimal markdown for our own CHANGELOG.md: ## version, ### group, - bullet. Text only, never HTML.
-function render(md, current) {
+export function renderChangelog(md, current) {
   const out = [];
   let list = null;
   for (const line of md.split('\n')) {
@@ -34,5 +34,5 @@ export default async function changelog(root, _a, session) {
   session.about.justUpdated = false;
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, "What's new"),
     h('p', { class: 'muted' }, `You are on v${session.about.version}.`),
-    h('section', { class: 'card' }, ...render(text, session.about.version)));
+    h('section', { class: 'card' }, ...renderChangelog(text, session.about.version)));
 }

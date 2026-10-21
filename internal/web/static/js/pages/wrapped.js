@@ -4,6 +4,7 @@ import { compareDistance, compareEnergy, compareDriver, milesOrKm, distUnit, per
 import { flowChart, dayRing, ringKey } from '../funcharts.js';
 import { drawInfographic, shareImage } from '../infographic.js';
 import { efficiency } from '../energy.js';
+import { activeTheme, THEMES } from '../seasons.js';
 
 // Wrapped: a month or a year as full-screen slides. Tap the right side for the next one, the left side to go back. The last slide
 // is the infographic, to share or save.
@@ -20,6 +21,7 @@ export default async function wrapped(root, args) {
   const period = args[0] || '';
   const w = await api(`/api/analytics/wrapped?period=${encodeURIComponent(period)}`);
   const r = w.recap, cur = w.currency || '$', title = periodTitle(r.period);
+  const season = activeTheme();
   const routes = (await api(`/api/analytics/everywhere?period=${encodeURIComponent(r.period)}`).catch(() => ({ routes: [] }))).routes;
   if (!r.trips) {
     root.append(h('p', {}, h('a', { href: '#/analytics' }, '← Insights')), h('div', { class: 'empty' }, h('b', {}, `Nothing to wrap for ${title}`), h('p', { class: 'muted' }, 'There were no trips in it.')));
@@ -30,11 +32,11 @@ export default async function wrapped(root, args) {
   const p = w.personalities || [];
   const vs = compareDriver(r.km, w.ring && w.ring.days); // per day since CarTrak began, if that was later than the period's start
   const moments = (w.moments || []).filter((m) => ['longest', 'coldest', 'hottest', 'peakKw', 'efficient', 'topSpeed'].includes(m.key)).slice(0, 4);
-  const canvas = drawInfographic(w, routes);
+  const canvas = drawInfographic(w, routes, season ? [THEMES[season.key][6], THEMES[season.key][7]] : null);
   const img = h('img', { src: canvas.toDataURL('image/png'), alt: `${title} infographic`, class: 'wposter' });
   const shareMsg = h('p', { class: 'small', role: 'status' });
   const slides = [
-    [h('div', { class: 'kick' }, 'CarTrak Wrapped'), h('div', { class: 'grow' }), h('div', { class: 'huge', style: 'font-size:3.4rem' }, title), h('div', { class: 'line' }, 'Your car’s story. Tap to begin.'), h('div', { class: 'wemoji' }, '🚗💨')],
+    [h('div', { class: 'kick' }, 'CarTrak Wrapped'), h('div', { class: 'grow' }), h('div', { class: 'huge', style: 'font-size:3.4rem' }, title), h('div', { class: 'line' }, 'Your car’s story. Tap to begin.'), h('div', { class: 'wemoji' }, season ? `${THEMES[season.key][1]}🚗💨` : '🚗💨')],
     [h('div', { class: 'kick' }, `Your ${title}`), h('div', { class: 'grow' }), big, h('div', { class: 'line' }, `${distUnit()}. That’s ${compareDistance(r.km)}.`),
       h('div', { class: 'small' }, `${r.trips} trips · ${Math.round(r.hours)} hours behind the wheel · ${r.daysDriven} days on the road${prev != null ? ` · ${prev >= 0 ? '▲' : '▼'} ${Math.abs(prev)}% on the one before` : ''}`)],
     vs ? [h('div', { class: 'kick' }, 'How you compare'), h('div', { class: 'grow' }), h('div', { class: 'huge' }, vs.big), h('div', { class: 'line' }, vs.line),
@@ -66,7 +68,7 @@ export default async function wrapped(root, args) {
   const stage = h('section', { class: 'wrapped', role: 'dialog', 'aria-label': `${title} wrapped` }, bars, close, body);
   const show = (i) => {
     at = Math.max(0, Math.min(slides.length - 1, i));
-    stage.className = `wrapped ${SKIN[at % SKIN.length]}`;
+    stage.className = `wrapped ${season && (at === 0 || at === slides.length - 1) ? 'wseason' : SKIN[at % SKIN.length]}`; // the season opens and closes it
     [...bars.children].forEach((b, j) => b.classList.toggle('on', j <= at));
     body.replaceChildren(...slides[at].filter(Boolean));
     if (slides[at].includes(big)) countUp(big, Number(milesOrKm(r.km).replace(/,/g, '')));

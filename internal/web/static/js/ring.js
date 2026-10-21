@@ -15,7 +15,11 @@ export function batteryRing() {
   const big = el('text', { x: 75, y: 82, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 600 }, '—');
   const sub = el('text', { class: 'sub', x: 75, y: 102, 'text-anchor': 'middle', 'font-size': 12 }, '');
   const svg = el('svg', { viewBox: '0 0 150 150', class: 'ring', role: 'img', 'aria-label': 'Battery' }, null);
-  svg.append(trk, arc, big, sub);
+  // in a seasonal theme the arc runs between the season's two colours (css/look.css picks it up only then)
+  const defs = el('defs', {}, null), grad = el('linearGradient', { id: 'seasonring', x1: 0, y1: 0, x2: 1, y2: 1 }, null);
+  grad.append(el('stop', { offset: 0, style: 'stop-color:var(--season1, var(--accent))' }, null), el('stop', { offset: 1, style: 'stop-color:var(--season2, var(--accent))' }, null));
+  defs.append(grad);
+  svg.append(defs, trk, arc, big, sub);
   return {
     el: svg,
     set(pct, subText) {

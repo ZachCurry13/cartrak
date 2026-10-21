@@ -74,3 +74,16 @@ Live fits the screen without scrolling, on a phone or a tablet on a car mount. T
 
 ## Remote start
 While the car runs from a remote start, Home and Live show how long is left, counted down from the car's own countdown as of its last report. If the car has not reported for a while the time can drift a little. CarTrak only reads this; it cannot start or stop the car.
+
+## Seasonal themes
+**More, Display and data, Seasonal themes** dresses the app up for the time of year: Halloween (October), Thanksgiving (November
+until Thanksgiving Day), Christmas (from the day after Thanksgiving to December 26), New Year (December 31 and January 1), winter,
+Valentine's (February 1 to 14), St. Patrick's (March 1 to 17), Easter (the two weeks before Easter Sunday), spring, the Fourth of
+July (July 1 to 4), summer and autumn. A theme changes the accent colour and the battery ring, puts an ornament by the name, and plays
+a short effect on Home once a session (bigger on the holiday itself). Wrapped and its infographic use the season's colours.
+**Automatic** follows the date; pick one theme to keep it, or **Off**. It is a choice for each device. The effect never plays with the
+phone's "reduce motion" setting or in Data saver.
+
+## What's new
+After an update, the first time the app opens it shows what changed in every version since this device last opened it. **Got it**
+closes it until the next update; **More, About and updates, What's new** keeps the whole list.

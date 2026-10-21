@@ -203,3 +203,16 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .ybar span{white-space:nowrap}
 .navrow{gap:6px;align-items:center;flex-wrap:nowrap}.navrow .grow{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.navrow .ico.sm{width:40px;height:40px;flex:0 0 auto}.navrow>svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.navrow .ico.sm[disabled]{opacity:.3}
 .sheet.more{max-height:88vh;overflow-y:auto}
+/* Seasonal themes (js/seasons.js, js/seasonfx.js): the colours come from data-season on the root; these are the touches */
+#ornament{font-size:1.15rem;margin-left:6px;line-height:1}
+#seasonfx{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:70}
+.sunglow{background:radial-gradient(60% 40% at 80% 0%,rgba(255,190,60,.35),transparent 70%);animation:sunfade 5s ease forwards}
+@keyframes sunfade{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+#top{position:relative}.xlights{position:absolute;left:0;right:0;top:2px;display:flex;justify-content:space-around;pointer-events:none}
+.xlights i{width:6px;height:6px;border-radius:50%;background:#ef4444;box-shadow:0 0 8px currentColor;animation:twinkle 1.5s ease-in-out infinite alternate}
+.xlights i:nth-child(3n+2){background:#22c55e}.xlights i:nth-child(3n){background:#facc15}
+@keyframes twinkle{from{opacity:.35}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.xlights i{animation:none}}
+.wrapped.wseason{background:radial-gradient(120% 80% at 100% 0%,var(--season1),transparent 60%),radial-gradient(110% 80% at 0% 100%,var(--season2),transparent 60%),#0b1220}
+:root[data-season] .ring .arc{stroke:url(#seasonring)}:root[data-season] .ring.low .arc{stroke:var(--warn)}:root[data-season] .ring.crit .arc{stroke:var(--bad)}
+.wnew{max-height:58vh;overflow-y:auto}.wnew h2{font-size:1.05rem}
