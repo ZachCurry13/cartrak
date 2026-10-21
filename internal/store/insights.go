@@ -40,3 +40,22 @@ func (s *Store) TripTemps(from int64) (map[int64]float64, error) {
 	}
 	return out, rows.Err()
 }
+
+// SocReadings is the battery level over time since from, from the small trends table, oldest first.
+func (s *Store) SocReadings(from int64) ([][2]float64, error) {
+	rows, err := s.DB.Query(`SELECT ts,soc FROM trends WHERE ts>=? AND soc IS NOT NULL ORDER BY ts`, from)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out [][2]float64
+	for rows.Next() {
+		var ts int64
+		var soc float64
+		if err := rows.Scan(&ts, &soc); err != nil {
+			return nil, err
+		}
+		out = append(out, [2]float64{float64(ts), soc})
+	}
+	return out, rows.Err()
+}

@@ -28,7 +28,7 @@ export default async function settings(root, _a, session) {
     finder(admin),
     h('div', { class: 'menu-cols' },
       h('div', {},
-        group('Reports', item('#/reports', 'Reports and insights', 'Year in review, statistics, efficiency, mileage and exports')),
+        group('Reports', item('#/analytics', 'Insights', 'Wrapped, everywhere you have been, achievements and charts'), item('#/reports', 'Reports', 'Year in review, statistics, efficiency, mileage and exports')),
         group('Cars', admin ? item('#/charging-settings', 'Charging settings', 'Prices, night rates, home place, charging alerts') : null, item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`, session.cars.length > 1 ? chip('work', 'Switch') : null)),
         admin ? group('Connections',
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),

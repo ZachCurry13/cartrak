@@ -39,6 +39,8 @@ const (
 	LeftOpen          = "left_open"
 	CarFault          = "car_fault"
 	ChargeSlow        = "charge_slow"
+	Achievement       = "achievement"
+	MonthlyRecap      = "monthly_recap"
 )
 
 type Kind struct {
@@ -52,7 +54,7 @@ var Kinds = []Kind{
 	{ChargeComplete, "Charging complete", "The battery reached its target or charging stopped."},
 	{PlugIn, "Plugged in", "The charging cable was connected."},
 	{PlugOut, "Unplugged", "The charging cable was removed."},
-	{LowBattery, "Low battery", "The battery fell to the level an admin chose under More, Settings, while the car was not charging. Off until a level is chosen."},
+	{LowBattery, "Low battery", "The battery fell to the car's Battery reserve (More, Charging settings; 20% unless chosen) while the car was not charging."},
 	{ChargeBudget, "Charging budget", "This month's charging cost passed the budget an admin set under More, Settings. At most once a month."},
 	{LeftOpen, "Left open", "The parked car has a door, the tailgate, the hood or a window open for ten minutes."},
 	{BackupReminder, "Backup reminder", "No backup has been downloaded in the last month. At most once a month, and only after CarTrak has been recording for two weeks."},
@@ -67,6 +69,8 @@ var Kinds = []Kind{
 	{BumpWhileParked, "Bump while parked", "A parked car's motion sensors read above the bump level (More, Settings). The car reports only now and then, so a short knock can be missed."},
 	{LowDisk, "Low disk space", "The disk CarTrak stores its data on is getting full. At most one alert every three days."},
 	{AlarmSounding, "Car alarm", "The car reports that its alarm or panic alarm is going off."},
+	{Achievement, "Achievement earned", "You earned a new badge in Insights, such as a 1,000-mile month or the 150 kW club."},
+	{MonthlyRecap, "Your month, wrapped", "On the first of the month, when last month's Wrapped is ready to look at."},
 	{WeeklySummary, "Weekly summary", "A short summary of the week on Sunday evening: distance, trips, charging and efficiency."},
 	{ArrivePlace, "Arrived at a named place", "The car arrived at a place you named under More, Places, such as Home or the office."},
 	{LeavePlace, "Left a named place", "The car left a place you named under More, Places."},

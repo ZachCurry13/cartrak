@@ -17,7 +17,7 @@ const mk = (tag, attrs, text) => {
 //   xTitle/yTitle  words under and beside the axes
 export function lineChart({ points, xFmt, yFmt, xTicks, summary, xTitle, yTitle, yMin = 0, height = 190, color = 'var(--accent)' }) {
   if (!points || points.length < 2) return h('p', { class: 'muted' }, 'Not enough readings for a chart yet.');
-  const W = 320, H = height, L = 40, R = 10, T = 10, B = 34;
+  const W = 320, H = height, L = 40, R = 10, T = 22, B = 34; // room at the top for the y title above the highest label
   const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
   const x0 = Math.min(...xs), x1 = Math.max(...xs);
   const yMax = Math.max(...ys), yLo = Math.min(yMin, ...ys);

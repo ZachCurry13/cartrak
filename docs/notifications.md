@@ -16,6 +16,8 @@ CarTrak can send a notification to your phone or computer when something happens
 | Low battery | The battery fell to the car's **Battery reserve** (More, Charging settings; 20% unless chosen) while the car was not charging. Once, then again after it has recovered five points |
 | Charging budget | This month's charging cost passed the budget an admin set under More, Settings. Once a month. Needs your price per kWh |
 | Low disk space | The disk CarTrak stores its data on is nearly full (under 5 GB or 8 percent free). At most once every three days. Off by default |
+| Achievement earned | A new badge in Insights, such as a 1,000-mile month or the 150 kW club. Off by default |
+| Your month, wrapped | On the first of the month from 9 am, when last month's Wrapped is ready. Off by default |
 | Weekly summary | On Sunday evening (6 pm, car time zone): distance, trips, charging and efficiency for the last seven days. Off by default |
 | Service due | A reminder from More, Maintenance came due by distance or time |
 | Arrived at / Left a named place | The car arrived at or left a place named under More, Places |

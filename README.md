@@ -22,6 +22,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Getting-started guide, the version shown in the app, update notices, and the changelog built in
 - Settings in an **Admin page** in the app, or in `config.yaml`, or environment variables
 - Built-in login with admin and read-only viewer roles (viewers get a simpler set of tabs and menu)
+- **Insights**: Wrapped for a month or the year with a shareable infographic, every route you drove glowing on a map, achievements, where every kWh went, and charts of charging, driving and the battery ([details](docs/insights.md))
 - **Several cars and people**: each car has its own database, settings and Ford link; each person sees only the cars they were given, and can be allowed to bring a car of their own ([details](docs/several-cars.md))
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
 
@@ -139,7 +140,7 @@ Tap the **?** at the top of the app (or **More, How to use CarTrak**) for a two-
 
 ## Documentation
 [TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
-[Configuration](docs/configuration.md) · [Road trips and charging](docs/road-trips-and-charging.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Car data](docs/car-data.md) · [Vehicle health](docs/vehicle-health.md) · [Several cars and people](docs/several-cars.md) · [Backup and security](docs/backup.md) · [Places and maintenance](docs/places-and-maintenance.md) · [Sharing](docs/sharing.md) · [Home Assistant](docs/home-assistant.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
+[Configuration](docs/configuration.md) · [Insights](docs/insights.md) · [Road trips and charging](docs/road-trips-and-charging.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Car data](docs/car-data.md) · [Vehicle health](docs/vehicle-health.md) · [Several cars and people](docs/several-cars.md) · [Backup and security](docs/backup.md) · [Places and maintenance](docs/places-and-maintenance.md) · [Sharing](docs/sharing.md) · [Home Assistant](docs/home-assistant.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash

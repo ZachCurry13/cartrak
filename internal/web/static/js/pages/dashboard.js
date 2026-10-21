@@ -54,6 +54,12 @@ function weekCard(w) {
 
 function card(title, ...kids) { return h('section', { class: 'card' }, h('h2', {}, title), ...kids); }
 
+function wrappedTeaser() {
+  const d = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return h('a', { class: 'wteaser w-teal', href: `#/wrapped/${key}`, style: 'min-height:110px;margin-bottom:12px' }, h('span', { class: 'kick' }, 'Wrapped'), h('b', {}, `Your ${d.toLocaleDateString([], { month: 'long' })} is ready ✨`), h('span', {}, 'Tap to play ▶'));
+}
+
 // Ford sends some values only when the car wakes, so say when a value is old.
 function oldNote(x, metric) {
   const t = Date.parse(pick(x, `${metric}.updateTime`) || '') / 1000;
@@ -126,6 +132,7 @@ export default async function dashboard(root, _args, session) {
         ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}`, style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
     }
     if (!staleSince) out.push(...await setupCards(session));
+    if (!staleSince && new Date().getDate() <= 7) out.push(wrappedTeaser()); // the first week of a month: last month's Wrapped
     if (full) out.push(...await homeCards(maint)); // the day so far and the month: skipped in Data saver
     if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));
     const lastTrip = trips[0];

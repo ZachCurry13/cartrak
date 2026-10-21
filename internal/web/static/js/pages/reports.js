@@ -57,7 +57,12 @@ export default async function reports(root, _a, session) {
   }
   draw();
 
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Reports')), builder,
+  const last = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
+  const lastKey = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}`;
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Reports')),
+    h('div', { class: 'wteasers' }, h('a', { class: 'wteaser w-teal', href: `#/wrapped/${lastKey}` }, h('span', { class: 'kick' }, 'Wrapped'), h('b', {}, last.toLocaleDateString([], { month: 'long', year: 'numeric' })), h('span', {}, 'Tap to play ▶')),
+      h('a', { class: 'wteaser w-violet', href: '#/analytics' }, h('span', { class: 'kick' }, 'Insights'), h('b', {}, 'Maps, badges and charts'), h('span', {}, 'Open →'))),
+    builder,
     group(`${year ? year.year : 'This year'} and beyond`,
       tile('#/year', 'Year in review', yearLine, 'Copy a summary to share'),
       tile('#/stats', 'Statistics', 'Bars by day, month and year, and where you charge'),

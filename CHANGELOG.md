@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.47.0
+
+### ✨ Insights
+A new **Insights** section (More, Insights, and on the Reports page) makes your history fun to look at.
+- **Wrapped**: your month or year as full-screen slides you tap through: the distance compared with something everyone knows, your car's **personality** (The Night Charger, The Road Tripper…), energy, cost and savings, where every kWh went, towns visited, highlights, achievements and a typical day.
+- **Infographic**: Wrapped ends with one tall picture of the month or year that you can **share or save**.
+- **Everywhere you've been**: every route you drove glowing on a dark map, brightest where you drive most.
+- **Achievements**: 19 badges with progress rings, from a 1,000-mile month to the 150 kW club, Sub-zero and Explorer.
+- **Where every kWh went** and **A day in the life**: an energy flow from the charger to city and highway driving, climate and losses, and a 24-hour clock of when the car drives and charges.
+- Detailed charts in four tabs: **Charging** (energy by month, price per kWh, where it came from, when you plug in, fastest charges), **Driving** (efficiency against temperature with your own trend line, a calendar of miles, efficiency by speed, trip lengths, when you drive), **Records** (a recap for any month and your personal bests) and **Battery** (daily level, time at each level, capacity, 12 V).
+
+### 🔔 Two new optional alerts
+- **Achievement earned** when you earn a badge, and **Your month, wrapped** on the first of the month. Both also appear in the Inbox; for the first week of a month Home shows "Your September is ready".
+
+### 🐞 Fixes
+- The Low battery alert's description still said it was off until a level was chosen; it now names the Battery reserve.
+- Line charts leave room for their title above the top label.
+
 ## 0.46.0
 
 ### ✨ A fresher, more consistent look

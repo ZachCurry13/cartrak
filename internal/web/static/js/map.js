@@ -27,11 +27,12 @@ const svgEl = (tag, attrs) => {
   return e;
 };
 
-export function createMap(cfg, { height = 260, interactive = true } = {}) {
+// glow: a dark map with every route drawn faint and blended, so streets driven often light up (the Insights map).
+export function createMap(cfg, { height = 260, interactive = true, glow = false } = {}) {
   const tiles = h('div', { class: 'map-tiles' });
   const svg = svgEl('svg', { class: 'map-svg' });
   const credit = h('div', { class: 'map-credit' }, /openstreetmap/i.test(cfg.attribution || '') ? h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noopener' }, cfg.attribution) : cfg.attribution || '');
-  const el = h('div', { class: `map${interactive ? ' live' : ''}`, style: `height:${height}px` }, tiles, svg, credit);
+  const el = h('div', { class: `map${interactive ? ' live' : ''}${glow ? ' glow' : ''}`, style: `height:${height}px` }, tiles, svg, credit);
   let center = [0, 0];
   let zoom = MIN_ZOOM;
   let routes = [];
@@ -72,11 +73,27 @@ export function createMap(cfg, { height = 260, interactive = true } = {}) {
     svg.setAttribute('viewBox', `0 0 ${w} ${ht}`);
     svg.replaceChildren();
     const xy = ([lat, lon]) => { const [x, y] = project(lat, lon, zoom); return `${(x - left).toFixed(1)},${(y - top).toFixed(1)}`; };
+    // in glow mode the routes share one blurred, blended layer: one filter pass however many trips there are
+    let layer = svg;
+    if (glow) {
+      const f = svgEl('filter', { id: 'mapglow', x: '-10%', y: '-10%', width: '120%', height: '120%' });
+      const merge = svgEl('feMerge', {});
+      merge.append(svgEl('feMergeNode', { in: 'b' }), svgEl('feMergeNode', { in: 'SourceGraphic' }));
+      f.append(svgEl('feGaussianBlur', { stdDeviation: '2', result: 'b' }), merge);
+      const defs = svgEl('defs', {});
+      defs.append(f);
+      layer = svgEl('g', { filter: 'url(#mapglow)', class: 'map-glow' });
+      svg.append(defs, layer);
+    }
     for (const r of routes) {
       const pts = r.points.map(xy).join(' ');
-      const hit = svgEl('polyline', { points: pts, fill: 'none', stroke: 'transparent', 'stroke-width': 16, class: 'map-hit' });
-      if (r.onClick) { hit.style.cursor = 'pointer'; hit.addEventListener('click', r.onClick); }
-      svg.append(svgEl('polyline', { points: pts, fill: 'none', stroke: r.color || '#1b5fc4', 'stroke-width': r.width || 4, 'stroke-linejoin': 'round', 'stroke-linecap': r.cap || (r.dash ? 'butt' : 'round'), 'stroke-dasharray': r.dash || null, opacity: r.opacity || 1 }), hit);
+      layer.append(svgEl('polyline', { points: pts, fill: 'none', stroke: r.color || '#1b5fc4', 'stroke-width': r.width || 4, 'stroke-linejoin': 'round', 'stroke-linecap': r.cap || (r.dash ? 'butt' : 'round'), 'stroke-dasharray': r.dash || null, opacity: r.opacity || 1 }));
+      if (r.onClick) {
+        const hit = svgEl('polyline', { points: pts, fill: 'none', stroke: 'transparent', 'stroke-width': 16, class: 'map-hit' });
+        hit.style.cursor = 'pointer';
+        hit.addEventListener('click', r.onClick);
+        svg.append(hit);
+      }
     }
     for (const m of markers) {
       const [x, y] = xy([m.lat, m.lon]).split(',');

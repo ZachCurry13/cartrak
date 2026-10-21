@@ -99,6 +99,7 @@ type TripFilter struct {
 	From, To int64
 	Category string
 	Limit    int
+	All      bool // every matching trip, for analysis that looks at the whole history (Limit is ignored)
 }
 
 func (s *Store) ListTrips(f TripFilter) ([]*Trip, error) {
@@ -117,7 +118,9 @@ func (s *Store) ListTrips(f TripFilter) ([]*Trip, error) {
 		a = append(a, f.Category)
 	}
 	q = append(q, `ORDER BY start_ts DESC LIMIT ?`)
-	if f.Limit <= 0 || f.Limit > 1000 {
+	if f.All {
+		f.Limit = -1 // no limit
+	} else if f.Limit <= 0 || f.Limit > 1000 {
 		f.Limit = 200
 	}
 	a = append(a, f.Limit)
