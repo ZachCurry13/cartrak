@@ -30,6 +30,7 @@ export default async function settings(root, _a, session) {
     h('div', { class: 'menu-cols' },
       h('div', {},
         group('Reports', item('#/analytics', 'Insights', 'Wrapped, everywhere you have been, achievements and charts'), item('#/reports', 'Reports', 'Year in review, statistics, efficiency, mileage and exports'),
+          item('#/trophies', 'Trophies', 'Your collection, with what is still to earn'),
           isFuelCar(session) ? item('#/fuel', 'Fuel', 'Fill-ups, price per gallon and the size of the tank') : null),
         !admin && session.me.ownCar ? group('Cars', item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`)) : null,
         admin ? group('Connections',

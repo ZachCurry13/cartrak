@@ -57,3 +57,8 @@ back it up, and the card is not shown at all when there is nothing worth saying:
 - **A fast charger that is slow for you**: a place where your fast charges averaged well under your usual fast-charging speed.
 - **Under 10% at the charger**: when that happened three times or more.
 - **What public charging costs on top**: when public charging cost at least twice your home price per kWh.
+
+## Trophies and most visited
+**Insights, Trophies** is your collection: every trophy your car can earn, in color once earned and grayed out with a progress ring until then, with **Next up** for the closest ones. Charging trophies are left out for a car that cannot plug in, and the tank trophies for an electric car. Efficiency trophies use only the odometer's own distances, so a trip whose distance was corrected never counts.
+
+**Most visited** (Insights, Highlights) lists the places you named and the towns you went to most in the last 12 months, counted from the trips that ended there.

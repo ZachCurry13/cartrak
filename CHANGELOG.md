@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.54.0
+
+### 🏆 A trophy collection
+- A new **Trophies** page (Insights, or More) shows every trophy your car can earn, the ones you have in color and the rest **grayed out with how far along you are**, plus **Next up** for the ones closest to done. Trophies that cannot apply are not listed: charging ones for a gas car, the tank ones for an electric car.
+- **Fourteen new trophies** from your habits: Marathon day (300 miles in a day), Night rider, Low and slow, Winter warrior, Gentle month, Sunrise patrol, Weekend warrior, Regular (20 visits to one place), Triple threat, Round trip, Holiday cruiser, and 50,000, 100,000 and 150,000 miles on the clock. For charging: Quick charge, Loss detective (enter the charger's kWh on 10 sessions), Plugged-in streak, Gas station skipper. For the tank: Mile muncher (400 miles between fill-ups) and Thrifty fill. Efficiency trophies use only the odometer's own distances, so a corrected trip never counts.
+- **Most visited**: Insights, Highlights has a card with the places you named and the towns you went to most in the last 12 months, counted from the trips that ended there.
+
 ## 0.53.0
 
 ### ⚡ Home loads much faster

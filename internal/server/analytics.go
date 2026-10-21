@@ -60,6 +60,7 @@ func (s *Server) analyticsTrips(from int64) ([]analytics.Trip, error) {
 	}
 	temps, _ := s.S.TripTemps(from)
 	capacity := s.capacityKwh()
+	named, _ := s.S.ListNamedPlaces()
 	var done []tripOut
 	for _, t := range ts {
 		if !t.Open && t.EndTS != nil {
@@ -70,7 +71,11 @@ func (s *Server) analyticsTrips(from int64) ([]analytics.Trip, error) {
 	var out []analytics.Trip
 	for _, o := range done {
 		t := o.Trip
-		a := analytics.Trip{ID: t.ID, Start: t.StartTS, End: *t.EndTS, Km: t.DistanceKm, MaxKph: t.MaxSpeedKph, Category: t.Category, Corrected: t.DistanceSrc != ""}
+		a := analytics.Trip{ID: t.ID, Start: t.StartTS, End: *t.EndTS, Km: t.DistanceKm, MaxKph: t.MaxSpeedKph, Category: t.Category, Corrected: t.DistanceSrc != "",
+			From: places.Name(t.StartLat, t.StartLon, named), To: places.Name(t.EndLat, t.EndLon, named)}
+		if t.EndOdo != nil {
+			a.OdoKm = *t.EndOdo
+		}
 		if e, ok := trips.EnergyUsed(t, capacity); ok {
 			a.Kwh = e.Kwh
 		}

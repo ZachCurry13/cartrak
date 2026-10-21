@@ -34,6 +34,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("PUT /api/me/layout", s.auth(false, s.putLayout))
 	m.HandleFunc("GET /api/fuel", s.auth(false, s.fuelPage))
 	m.HandleFunc("GET /api/analytics/fuel", s.auth(false, s.fuelStats))
+	m.HandleFunc("GET /api/analytics/places", s.auth(false, s.popularPlaces))
 	m.HandleFunc("POST /api/fuel/fills", s.auth(true, s.addFill))
 	m.HandleFunc("PATCH /api/fuel/fills/{id}", s.auth(true, s.patchFill))
 	m.HandleFunc("DELETE /api/fuel/fills/{id}", s.auth(true, s.deleteFill))

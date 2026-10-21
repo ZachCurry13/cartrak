@@ -131,7 +131,7 @@ func (s *Server) wrapped(w http.ResponseWriter, r *http.Request) {
 		top = top[:3]
 	}
 	var earned []analytics.Badge
-	for _, b := range s.carBadges(analytics.Badges(ts, cs, towns, loc)) {
+	for _, b := range s.allBadges(ts, cs, towns, loc) {
 		if b.Earned >= from && b.Earned < to {
 			earned = append(earned, b)
 		}

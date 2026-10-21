@@ -12,6 +12,8 @@ type Trip struct {
 	End       int64    `json:"end"`
 	Km        float64  `json:"km"`
 	Kwh       float64  `json:"kwh"`                 // energy used, 0 when unknown
+	From, To  string   `json:"-"`                   // the named places it started and ended at, "" when not at one
+	OdoKm     float64  `json:"-"`                   // the odometer at its end, km
 	Corrected bool     `json:"corrected,omitempty"` // its distance was adjusted by hand or from the estimated road, so it is not the odometer's own
 	Gal       float64  `json:"gal,omitempty"`       // fuel burned, gallons, 0 when unknown (gas and hybrid cars)
 	TempC     *float64 `json:"tempC,omitempty"`     // average outside temperature, when known

@@ -116,3 +116,29 @@ func TestAFillUpCanBeAddedByHandDismissedOrDeleted(t *testing.T) {
 		t.Fatal("signed-out callers get nothing")
 	}
 }
+
+func TestThePlacesWentToMostAreRanked(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	_ = srv.S.SaveNamedPlace(&store.NamedPlace{Name: "Gym", Lat: 44.7, Lon: -85.6, RadiusM: 150})
+	_ = srv.S.SaveNamedPlace(&store.NamedPlace{Name: "Cabin", Lat: 45.0, Lon: -85.0, RadiusM: 150})
+	t0 := time.Now().Add(-48 * time.Hour).Unix()
+	for i, at := range [][2]float64{{44.7, -85.6}, {44.7, -85.6}, {44.7, -85.6}, {45.0, -85.0}} {
+		start, end := t0+int64(i)*3600, t0+int64(i)*3600+900
+		la, lo := at[0], at[1]
+		tr := &store.Trip{StartTS: start, Category: "personal", CategorySource: "default"}
+		_ = srv.S.CreateTrip(tr)
+		tr.EndTS, tr.DistanceKm, tr.Open, tr.EndLat, tr.EndLon = &end, 10, false, &la, &lo
+		_ = srv.S.UpdateTrip(tr)
+	}
+	_, body := do(t, admin, "GET", ts.URL+"/api/analytics/places?days=30", "", nil)
+	var d struct {
+		Places []struct {
+			Name   string
+			Visits int
+		}
+	}
+	if json.Unmarshal([]byte(body), &d) != nil || len(d.Places) != 2 || d.Places[0].Name != "Gym" || d.Places[0].Visits != 3 || d.Places[1].Name != "Cabin" {
+		t.Fatalf("the most visited first: %s", body)
+	}
+}

@@ -64,8 +64,7 @@ async function badgesCard() {
   if (!list.length) return null;
   const earned = list.filter((b) => b.earned).length;
   const box = h('div', {}, badgeGrid(list, '$', 6));
-  const more = h('button', { type: 'button', class: 'sec sm', onclick: () => { box.replaceChildren(badgeGrid(list, '$')); more.remove(); } }, `See all ${list.length}`);
-  return card(`Achievements · ${earned} of ${list.length}`, box, h('p', { class: 'seg', style: 'margin-top:12px' }, more));
+  return card(`Trophies · ${earned} of ${list.length}`, box, h('p', { class: 'seg', style: 'margin-top:12px' }, h('a', { class: 'btn sec sm', href: '#/trophies' }, `See the whole collection (${list.length})`)));
 }
 
 function lifeCards() {
@@ -95,6 +94,23 @@ async function careCard(session) {
     h('p', { style: 'margin-top:10px' }, h('a', { href: '#/service' }, 'Service history')));
 }
 
+// The places this car went to most: the ones you named, and the towns. Name more places to make the first list richer.
+async function placesCard() {
+  const d = await api('/api/analytics/places?days=365').catch(() => null);
+  if (!d || (!d.places.length && !d.towns.length)) return null;
+  const body = h('div');
+  const draw = (which) => {
+    const list = d[which], most = Math.max(1, ...list.map((p) => p.visits));
+    body.replaceChildren(...(list.length ? list.map((p) => h('div', { class: 'row', style: 'flex-wrap:nowrap' }, h('span', { class: 'grow', style: 'min-width:0' }, h('b', {}, p.name), h('div', { class: 'bar', style: 'margin-top:4px' }, h('i', { style: `width:${Math.round((p.visits / most) * 100)}%` }))),
+      h('span', { style: 'text-align:right;white-space:nowrap' }, h('b', {}, String(p.visits)), h('div', { class: 'muted' }, 'visits'))))
+      : [h('p', { class: 'muted' }, which === 'places' ? 'Name the places you go to (More, Places) and the most visited show here.' : 'No towns looked up yet.')]));
+  };
+  const seg = h('div', { class: 'seg', style: 'margin-bottom:10px' });
+  const pick = (which) => { seg.replaceChildren(...[['places', 'Your places'], ['towns', 'Towns']].map(([k, t]) => h('button', { type: 'button', class: k === which ? 'on' : '', 'aria-pressed': String(k === which), onclick: () => pick(k) }, t))); draw(which); };
+  pick(d.places.length ? 'places' : 'towns');
+  return card('Most visited, last 12 months', seg, body, h('p', { class: 'muted' }, `Counted from the ${d.trips} trips that ended there.`));
+}
+
 export default async function analytics(root, args, session) {
   const tab = args[0];
   const TABS = tabsFor(session);
@@ -108,6 +124,6 @@ export default async function analytics(root, args, session) {
     return;
   }
   root.append(...head, wrappedCards());
-  const [glow, badges] = await Promise.all([glowCard(), badgesCard()]);
-  root.append(...[glow, badges, ...(session.vehicle && session.vehicle.plug === false ? [] : lifeCards()), await careCard(session)].filter(Boolean));
+  const [glow, badges, visited] = await Promise.all([glowCard(), badgesCard(), placesCard()]);
+  root.append(...[glow, visited, badges, ...(session.vehicle && session.vehicle.plug === false ? [] : lifeCards()), await careCard(session)].filter(Boolean));
 }

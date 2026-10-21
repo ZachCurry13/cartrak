@@ -57,7 +57,7 @@ func (s *Server) newBadges(ctx context.Context) {
 		known[k] = true
 	}
 	var have []string
-	for _, b := range s.carBadges(analytics.Badges(ts, cs, s.towns(raw), s.defaultLoc())) {
+	for _, b := range s.allBadges(ts, cs, s.towns(raw), s.defaultLoc()) {
 		if b.Earned == 0 {
 			continue
 		}

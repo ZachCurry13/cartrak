@@ -9,19 +9,18 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
-// evOnlyBadges are the achievements about charging and battery efficiency: a car that cannot plug in could never earn them.
-var evOnlyBadges = map[string]bool{"kw150": true, "mwh1": true, "mwh10": true, "night50": true, "hyper": true}
-
-// carBadges leaves out the achievements that do not apply to this car.
-func (s *Server) carBadges(bs []analytics.Badge) []analytics.Badge {
-	if s.vehicleInfo().Plug {
-		return bs
-	}
-	out := make([]analytics.Badge, 0, len(bs))
-	for _, b := range bs {
-		if !evOnlyBadges[b.Key] {
-			out = append(out, b)
+// allBadges is every trophy that applies to this car: the totals, and the habits (analytics.MoreBadges). Trophies about charging are
+// left out for a car that cannot plug in, and about the tank for one with no engine.
+func (s *Server) allBadges(ts []analytics.Trip, cs []analytics.Charge, towns map[string]int64, loc *time.Location) []analytics.Badge {
+	fills, _ := s.S.ListRefuels()
+	all := append(analytics.Badges(ts, cs, towns, loc), analytics.MoreBadges(ts, cs, fills, loc)...)
+	info := s.vehicleInfo()
+	out := make([]analytics.Badge, 0, len(all))
+	for _, b := range all {
+		if (!info.Plug && analytics.EVOnly[b.Key]) || (!info.Engine && analytics.FuelOnly[b.Key]) {
+			continue
 		}
+		out = append(out, b)
 	}
 	return out
 }
@@ -34,7 +33,7 @@ func (s *Server) badgesState(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	bs := s.carBadges(analytics.Badges(ts, cs, s.towns(raw), s.defaultLoc()))
+	bs := s.allBadges(ts, cs, s.towns(raw), s.defaultLoc())
 	type out struct {
 		analytics.Badge
 		Progress float64 `json:"progress"`
