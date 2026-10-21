@@ -6,6 +6,9 @@
 - **Customize** (in the More sheet) chooses the pages in the bottom bar and the tiles at the top of More, in any order. Turn on **Arrange by how often I use them** to keep both in order of the pages you open most. Saved to your account, so it follows you; **Reset** goes back to the start.
 - The More tiles are now Insights, Reports, Day view, Places, Plan a trip and Settings. Things moved to where they belong: **charging prices** on the Charging page, **trip rules** on the Trips page, **alert settings** behind the bell (⚙ at the top of Notifications), and **people, cars and backups** under Settings and the Admin part of More.
 
+### ✨ Wrapped: how you compare
+- A new slide compares your driving with the average American driver (about 13,500 miles a year, from the US Department of Transportation): "1.8× the miles of the average American driver". CarTrak has no other drivers' data, so it compares with that published average rather than claiming a ranking.
+
 ### 💚 Charity
 - A new **Charity** trip category, starting at the US charity mileage rate of 14 cents a mile, and a **Charity trip** mode that labels every trip of a stretch of days as Charity. Reports and the mileage log can include it.
 

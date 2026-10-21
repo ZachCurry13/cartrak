@@ -8,8 +8,9 @@ is worked out on your own server from what CarTrak already stores; nothing is se
 - **Wrapped**: a month or a year as full-screen slides you tap through, like a story. Tap the right side for the next slide, the
   left side to go back. The slides are your distance (compared with something everyone knows, such as Route 66 end to end), your
   car's **personality**, the energy you charged and what it cost (and saved against a gas car when one is set under Charging
-  settings), where every kWh went, the towns you visited and the places you went most, highlights such as the longest and coldest
-  drive, achievements earned, and a typical day. The last slide is an **infographic**: one tall picture of the month, which
+  settings), where every kWh went, the towns you visited and the places you went most, how your miles compare with the average American driver (about 13,500 miles a
+  year, from the US Department of Transportation; CarTrak has no other drivers' data, so it is that average, not a ranking),
+  highlights such as the longest and coldest drive, achievements earned, and a typical day. The last slide is an **infographic**: one tall picture of the month, which
   **Share picture** sends to another app or saves to the phone. On the first of each month, Home shows "Your September is ready"
   for a week, and phones that turned on the **Your month, wrapped** alert are told.
 - **Everywhere you've been**: every route you drove, drawn faint on a dark map and added on top of each other, so the roads you

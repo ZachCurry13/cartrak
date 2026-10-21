@@ -55,6 +55,21 @@ export function valueText(kind, v, cur = '$') {
 // "{pct} of your charging started after 9 pm" with the number filled in
 export const personalityLine = (p) => p.why.replace('{pct}', `${Math.round(Math.min(1, p.share) * 100)}%`).replace('{eff}', efficiency(p.share * 7.2 * 100, 100) || '');
 
+// The average American drives about 13,500 miles a year (US Department of Transportation): about 59 km a day. CarTrak has no other
+// drivers' data, so this is the honest comparison: against that average, not a ranking.
+const AVG_KM_PER_DAY = 13500 * 1.609344 / 365;
+
+// "1.8× the average American driver: farther than most", or null when there are too few days to say.
+export function compareDriver(km, days) {
+  if (!(days >= 3) || !(km > 0)) return null;
+  const r = km / days / AVG_KM_PER_DAY;
+  const x = r >= 10 ? Math.round(r) : Math.round(r * 10) / 10;
+  if (r >= 1.5) return { big: `${x}×`, line: 'the miles of the average American driver. That puts you well ahead of most drivers.' };
+  if (r >= 1.1) return { big: `${x}×`, line: 'the miles of the average American driver: a little more than most.' };
+  if (r > 0.9) return { big: 'Right on', line: 'the average American driver, mile for mile.' };
+  return { big: `${Math.round(r * 100)}%`, line: `of the miles of the average American driver: ${r >= 0.6 ? 'a bit under average' : 'lighter on the road than most'}.` };
+}
+
 // "07:15" in the phone's own clock style (7:15 AM, or 07:15)
 export const clockText = (hhmm) => { const [hh, mm] = hhmm.split(':').map(Number); return new Date(2000, 0, 1, hh, mm).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); };
 
