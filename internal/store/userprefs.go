@@ -10,8 +10,9 @@ import (
 
 // UserPrefs is one person's choices.
 type UserPrefs struct {
-	Birthday   string `json:"birthday"`   // "MM-DD", or empty
-	HolidayOff bool   `json:"holidayOff"` // no holiday or birthday touches on alerts, and no birthday alert
+	Birthday     string `json:"birthday"`     // "MM-DD", or empty
+	HolidayOff   bool   `json:"holidayOff"`   // no holiday or birthday touches on alerts, and no birthday alert
+	HolidayVoice bool   `json:"holidayVoice"` // friendly alerts also talk in the holiday's voice (Santa, a friendly ghost, a leprechaun)
 }
 
 func prefsKey(uid int64) string { return fmt.Sprintf("prefs:%d", uid) }

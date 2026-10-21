@@ -71,3 +71,6 @@ The bell in the header opens a list of every alert CarTrak has raised lately abo
 Notifications are tied to the phone's registration with its push service. If that registration is lost (the app was reinstalled,
 or the browser cleared its data), open More, Notifications: CarTrak registers the phone again by itself and says so, then tick
 the alerts you want. **Refresh the app** keeps the registration.
+
+### Holiday voices
+With **Holiday voices** on (Notifications page, next to Holiday touches), the friendly alerts around a holiday talk in its voice: Santa at Christmas, a friendly ghost at Halloween, a leprechaun on St. Patrick's Day, the Easter bunny, Cupid on Valentine's Day, fireworks on the Fourth of July, a grateful turkey at Thanksgiving and a toast at New Year. The alerts for charging done, plugging in and out, and trips start and end get their own lines ("Ho ho ho! Fully charged"); the others get a short opener in front. Only the words change: the numbers and the facts are the same, and warnings never use a voice. It is off until you turn it on.

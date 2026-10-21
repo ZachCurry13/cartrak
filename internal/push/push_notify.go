@@ -24,11 +24,9 @@ func (s *Service) Notify(ctx context.Context, a Alert) {
 		now = now.In(s.Location())
 	}
 	wanted, quiet, sent := 0, 0, 0
-	out := a
+	carName := ""
 	if s.CarName != nil {
-		if n := s.CarName(); n != "" {
-			out.Title = n + ": " + a.Title
-		}
+		carName = s.CarName()
 	}
 	for _, sub := range subs {
 		if s.Visible != nil && !s.Visible(sub.UserID) {
@@ -42,11 +40,14 @@ func (s *Service) Notify(ctx context.Context, a Alert) {
 			continue
 		}
 		wanted++
-		msg := out
+		msg := a
 		if s.Prefs != nil {
 			if p := s.Prefs(sub.UserID); !p.HolidayOff {
-				msg = Touch(out, p.Birthday, now)
+				msg = TouchWith(a, p.Birthday, now, p.HolidayVoice)
 			}
+		}
+		if carName != "" { // the car's name goes first, after any holiday wording, so people with several cars know which one
+			msg.Title = carName + ": " + msg.Title
 		}
 		if s.SendTo(ctx, sub, msg) == nil {
 			sent++

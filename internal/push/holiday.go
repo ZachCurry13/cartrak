@@ -83,7 +83,10 @@ func IsBirthday(birthday string, t time.Time) bool {
 }
 
 // Touch gives an alert its holiday or birthday touch for one person, when it is a friendly one.
-func Touch(a Alert, birthday string, now time.Time) Alert {
+func Touch(a Alert, birthday string, now time.Time) Alert { return TouchWith(a, birthday, now, false) }
+
+// TouchWith is Touch, and when the person turned holiday voices on, the alert also talks in the holiday's voice.
+func TouchWith(a Alert, birthday string, now time.Time, voiced bool) Alert {
 	if !friendly[a.Kind] {
 		return a
 	}
@@ -93,6 +96,9 @@ func Touch(a Alert, birthday string, now time.Time) Alert {
 		return a
 	}
 	if h, ok := holidayOn(now); ok {
+		if voiced {
+			a = speak(a, h.Emoji)
+		}
 		a.Title = h.Emoji + " " + a.Title
 		a.Body = joinLine(a.Body, h.Greeting)
 	}

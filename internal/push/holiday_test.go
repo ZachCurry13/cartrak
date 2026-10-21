@@ -50,3 +50,31 @@ func TestTouch(t *testing.T) {
 		t.Fatal("29 February is kept on the 28th only in other years")
 	}
 }
+
+func TestHolidayVoicesChangeTheWordsNotTheFacts(t *testing.T) {
+	done := Alert{Kind: ChargeComplete, Title: "Charging complete", Body: "Battery at 80%."}
+	a := TouchWith(done, "", day(2026, time.December, 24), true)
+	if a.Title != "🎄 Ho ho ho! Fully charged" || a.Body != "Battery at 80%." {
+		t.Fatalf("Santa words the title, the facts stay: %+v", a)
+	}
+	other := TouchWith(Alert{Kind: Achievement, Title: "Achievement: Hypermiler", Body: "A good drive."}, "", day(2026, time.October, 31), true)
+	if other.Title != "🎃 Achievement: Hypermiler" || other.Body != "Boo! (a friendly one)\nA good drive.\nHappy Halloween!" {
+		t.Fatalf("an alert with no voice line of its own gets an opener: %+v", other)
+	}
+	if plain := TouchWith(done, "", day(2026, time.December, 24), false); plain.Title != "🎄 Charging complete" {
+		t.Fatalf("voices are off unless asked for: %+v", plain)
+	}
+	if warn := TouchWith(Alert{Kind: LowTire, Title: "Low tire pressure"}, "", day(2026, time.December, 24), true); warn.Title != "Low tire pressure" {
+		t.Fatalf("warnings never use a voice: %+v", warn)
+	}
+	if b := TouchWith(done, "12-24", day(2026, time.December, 24), true); b.Title != "🎂 Charging complete" {
+		t.Fatalf("a birthday beats the holiday: %+v", b)
+	}
+}
+
+func TestTheShamrockVoiceIsFound(t *testing.T) {
+	a := TouchWith(Alert{Kind: TripEnd, Title: "Trip ended", Body: "12 mi"}, "", day(2026, time.March, 17), true)
+	if a.Title != "☘️ Home safe, bless ye: trip ended" {
+		t.Fatalf("a leprechaun: %+v", a)
+	}
+}
