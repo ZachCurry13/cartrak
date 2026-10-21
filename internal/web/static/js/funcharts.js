@@ -86,7 +86,8 @@ export function badge(b, i, cur) {
   if (p > 0) ring.append(S('circle', { cx: 39, cy: 39, r: 33, fill: 'none', stroke: col, 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-dasharray': `${Math.max(0.5, c * p)} ${c}`, transform: 'rotate(-90 39 39)' }));
   const sub = b.earned ? new Date(b.earned * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
     : b.kind === 'tempC' ? b.about : `${valueText(b.kind, b.value, cur)} of ${valueText(b.kind, b.goal, cur)}`;
-  return h('div', { class: `badge${b.earned ? '' : ' locked'}`, title: b.about }, h('div', { class: 'bring' }, ring, h('span', {}, b.emoji)), h('b', {}, b.name), h('span', { class: 'muted' }, sub));
+  const eta = !b.earned && b.eta ? `about ${new Date(b.eta * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}` : '';
+  return h('div', { class: `badge${b.earned ? '' : ' locked'}`, title: b.about }, h('div', { class: 'bring' }, ring, h('span', {}, b.emoji)), h('b', {}, b.name), h('span', { class: 'muted' }, b.earned && b.note ? b.note : sub), eta ? h('span', { class: 'muted' }, eta) : null);
 }
 
 // Earned badges first (newest first), then the ones closest to done.

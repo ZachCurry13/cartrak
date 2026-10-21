@@ -14,6 +14,7 @@ import (
 func (s *Server) allBadges(ts []analytics.Trip, cs []analytics.Charge, towns map[string]int64, loc *time.Location) []analytics.Badge {
 	fills, _ := s.S.ListRefuels()
 	all := append(analytics.Badges(ts, cs, towns, loc), analytics.MoreBadges(ts, cs, fills, loc)...)
+	all = analytics.WithEstimates(all, ts, time.Now())
 	info := s.vehicleInfo()
 	out := make([]analytics.Badge, 0, len(all))
 	for _, b := range all {

@@ -98,3 +98,27 @@ func TestChargingAndFuelTrophies(t *testing.T) {
 		t.Fatalf("quick, detective, 14 evenings, 800 km on a tank and a cheap fill-up: %+v", got)
 	}
 }
+
+func TestOdometerTrophiesAlreadyPassedSayAndTheNextOneHasAnEstimate(t *testing.T) {
+	now := tm("2026-10-21 12:00")
+	var ts []Trip
+	for d := 0; d < 30; d++ { // 50 km a day for a month, the odometer already at 88,000 miles when it began
+		s := now - int64(30-d)*86400
+		ts = append(ts, Trip{ID: int64(d + 1), Start: s, End: s + 1800, Km: 50, OdoKm: 88000*kmPerMile + float64(d+1)*50})
+	}
+	bs := byKey(WithEstimates(MoreBadges(ts, nil, nil, time.UTC), ts, time.Unix(now, 0)))
+	if bs["odo50"].Earned == 0 || bs["odo50"].Note == "" || bs["odo100"].Earned != 0 || bs["odo100"].Note != "" {
+		t.Fatalf("50,000 is behind it, 100,000 is not: %+v %+v", bs["odo50"], bs["odo100"])
+	}
+	km100 := 100000 * kmPerMile
+	want := now + int64((km100-(88000*kmPerMile+30*50))/50*86400)
+	if got := bs["odo100"].Eta; got < want-86400 || got > want+86400 {
+		t.Fatalf("about when 100,000 miles comes at 50 km a day: %d, want about %d", got, want)
+	}
+	if bs["odo50"].Eta != 0 {
+		t.Fatal("an earned trophy needs no estimate")
+	}
+	if got := byKey(WithEstimates(MoreBadges(ts[:3], nil, nil, time.UTC), ts[:3], time.Unix(now, 0)))["odo100"].Eta; got != 0 {
+		t.Fatal("under a week of driving is too little to estimate from")
+	}
+}
