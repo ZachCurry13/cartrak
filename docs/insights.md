@@ -62,3 +62,6 @@ back it up, and the card is not shown at all when there is nothing worth saying:
 **Insights, Trophies** is your collection: every trophy your car can earn, in color once earned and grayed out with a progress ring until then, with **Next up** for the closest ones. Charging trophies are left out for a car that cannot plug in, and the tank trophies for an electric car. Efficiency trophies use only the odometer's own distances, so a trip whose distance was corrected never counts.
 
 **Most visited** (Insights, Highlights) lists the places you named and the towns you went to most in the last 12 months, counted from the trips that ended there.
+
+### Ladders and where you earned it
+Trophies that are rungs of one climb are shown as **ladders**: the rung you are on in full, the ones you have passed checked off above it. A line under a ladder puts the rung in perspective: for energy, how long it would run a home (and, for the biggest rung, a city for seconds or minutes); for distance, a marathon, Route 66 or the Moon. An earned trophy also says **where** it was earned (a place you named, else the town of the trip or charge that finished then); trophies already reached when CarTrak began have no place.

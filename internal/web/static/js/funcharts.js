@@ -95,7 +95,7 @@ export function badge(b, i, cur) {
 export function badgeRow(b, i, cur) {
   const ring = badge(b, i, cur).querySelector('.bring');
   const when = (ts) => new Date(ts * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
-  const status = b.earned ? (b.note || `Earned ${when(b.earned)}`)
+  const status = b.earned ? (b.note || `Earned ${when(b.earned)}${b.where ? ` · ${b.where}` : ''}`)
     : [b.kind === 'tempC' ? null : `${valueText(b.kind, b.value, cur)} so far, of ${valueText(b.kind, b.goal, cur)}`, b.eta ? `about ${when(b.eta)}` : null].filter(Boolean).join(' · ') || 'Not yet';
   return h('div', { class: `trow${b.earned ? '' : ' locked'}` }, ring, h('div', { class: 'grow', style: 'min-width:0' }, h('b', {}, b.name), h('div', {}, `${b.about}.`), h('div', { class: 'muted' }, status)));
 }

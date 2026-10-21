@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/analytics"
+	"github.com/ZachCurry13/cartrak/internal/places"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
@@ -15,6 +16,7 @@ func (s *Server) allBadges(ts []analytics.Trip, cs []analytics.Charge, towns map
 	fills, _ := s.S.ListRefuels()
 	all := append(analytics.Badges(ts, cs, towns, loc), analytics.MoreBadges(ts, cs, fills, loc)...)
 	all = analytics.WithEstimates(all, ts, time.Now())
+	s.addWhere(all, cs)
 	info := s.vehicleInfo()
 	out := make([]analytics.Badge, 0, len(all))
 	for _, b := range all {
@@ -24,6 +26,51 @@ func (s *Server) allBadges(ts []analytics.Trip, cs []analytics.Charge, towns map
 		out = append(out, b)
 	}
 	return out
+}
+
+// addWhere says where each earned trophy was earned: a place you named, else the town, of the trip or the charge that finished at the
+// moment it was earned. Towns are only those already looked up (never asked for now); a trophy already reached when CarTrak began has none.
+func (s *Server) addWhere(bs []analytics.Badge, cs []analytics.Charge) {
+	need := false
+	for _, b := range bs {
+		need = need || (b.Earned > 0 && b.Note == "")
+	}
+	if !need {
+		return
+	}
+	raw, err := s.S.ListTrips(store.TripFilter{All: true})
+	if err != nil {
+		return
+	}
+	named, _ := s.S.ListNamedPlaces()
+	names := s.cityNamer()
+	at := map[int64]string{}
+	for _, t := range raw {
+		if t.Open || t.EndTS == nil {
+			continue
+		}
+		w := places.Name(t.EndLat, t.EndLon, named)
+		if w == "" {
+			w = names.name(t.EndLat, t.EndLon)
+		}
+		if w != "" {
+			at[*t.EndTS] = w
+		}
+	}
+	for _, c := range cs {
+		switch {
+		case c.Place != "":
+			at[c.End] = c.Place
+		case c.Where == "home":
+			at[c.End] = "Home"
+		}
+	}
+	names.lookupLater()
+	for i := range bs {
+		if bs[i].Earned > 0 && bs[i].Note == "" {
+			bs[i].Where = at[bs[i].Earned]
+		}
+	}
 }
 
 // badgesState is every achievement with its progress. GET /api/analytics/badges

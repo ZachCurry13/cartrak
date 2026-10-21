@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ZachCurry13/cartrak/internal/analytics"
 	"math"
 	"net/http"
 	"strings"
@@ -140,5 +141,23 @@ func TestThePlacesWentToMostAreRanked(t *testing.T) {
 	}
 	if json.Unmarshal([]byte(body), &d) != nil || len(d.Places) != 2 || d.Places[0].Name != "Gym" || d.Places[0].Visits != 3 || d.Places[1].Name != "Cabin" {
 		t.Fatalf("the most visited first: %s", body)
+	}
+}
+
+func TestATrophySaysWhereItWasEarned(t *testing.T) {
+	_, srv := healthServer(t, fakeProv{}, false, false)
+	_ = srv.S.SaveNamedPlace(&store.NamedPlace{Name: "Gym", Lat: 44.7, Lon: -85.6, RadiusM: 150})
+	la, lo := 44.7, -85.6
+	start := time.Now().Add(-2 * time.Hour).Unix()
+	end := start + 900
+	tr := &store.Trip{StartTS: start, Category: "personal", CategorySource: "default"}
+	_ = srv.S.CreateTrip(tr)
+	tr.EndTS, tr.DistanceKm, tr.Open, tr.EndLat, tr.EndLon = &end, 10, false, &la, &lo
+	_ = srv.S.UpdateTrip(tr)
+	bs := []analytics.Badge{{Key: "a", Earned: end}, {Key: "b", Earned: end + 5}, {Key: "c", Earned: end, Note: "Already reached when CarTrak began"}, {Key: "d"}}
+	cs := []analytics.Charge{{End: end + 5, Where: "home"}}
+	srv.addWhere(bs, cs)
+	if bs[0].Where != "Gym" || bs[1].Where != "Home" || bs[2].Where != "" || bs[3].Where != "" {
+		t.Fatalf("the place of the trip or the charge that finished then: %+v", bs)
 	}
 }

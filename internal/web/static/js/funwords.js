@@ -34,6 +34,18 @@ export function compareEnergy(kwh) {
   return days >= 1.5 ? `enough to run a home for ${Math.round(days)} days` : `${Math.round(kwh / 0.015).toLocaleString()} phone charges`;
 }
 
+// energy on a scale that keeps growing with the amount: a home's days, months and years, then a big city's seconds. About 29 kWh a day
+// is an average US home; New York City averages roughly 5.7 GW (about 50 TWh a year), so these are rough.
+export function compareEnergyTier(kwh) {
+  const days = kwh / 29;
+  if (days < 60) return `a home for ${Math.max(1, Math.round(days))} day${Math.round(days) === 1 ? '' : 's'}`;
+  if (days < 730) return `a home for about ${Math.round(days / 30)} months`;
+  const home = `a home for about ${(days / 365).toFixed(1)} years`;
+  if (kwh < 50000) return home;
+  const secs = (kwh / 5.7e6) * 3600;
+  return `${home}, or New York City for about ${secs < 120 ? Math.round(secs) + ' seconds' : Math.round(secs / 60) + ' minutes'}`;
+}
+
 export const milesOrKm = (km) => Math.round(isMetric() ? km : km / KM_PER_MI).toLocaleString();
 export const distUnit = () => (isMetric() ? 'kilometers' : 'miles');
 
