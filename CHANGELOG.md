@@ -10,6 +10,7 @@
 - With two or more cars, the car picker at the top has **All cars**: every car side by side (battery or fuel, range, what it is doing, the last trip) and the month or the year **together**, with each car's share and how much of the driving was electric. **Trips** lists every car's trips in one list. Tap a car or a trip to open it.
 
 ### 🎃 Smaller fixes
+- When CarTrak does not answer for a moment (for example while it restarts after an update), a save says so in words instead of "HTTP 502", and a page tries once more and then shows what the phone kept.
 - On a narrow phone with the car picker showing, the seasonal ornament steps aside so the header stays on one line.
 
 ## 0.49.0

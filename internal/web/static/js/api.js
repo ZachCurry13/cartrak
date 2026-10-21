@@ -33,6 +33,17 @@ export async function api(path, opts = {}) {
     showOffline(hit.t);
     return hit.v;
   }
+  // 502, 503, 504 and Cloudflare's 52x: the server did not answer, usually because it is restarting after an update. A page
+  // asks once more after a moment, then shows what this device kept; a save says so in words.
+  if (r.status === 502 || r.status === 503 || r.status === 504 || (r.status >= 520 && r.status <= 527)) {
+    if (init.method === 'GET' && !opts.retried) {
+      await new Promise((ok) => setTimeout(ok, 2000));
+      return api(path, { ...opts, retried: true });
+    }
+    const hit = keep && ((await loadAnswer(key)) || (wkey && (await loadAnswer(wkey))));
+    if (hit) { showOffline(hit.t); return hit.v; }
+    throw new Error('CarTrak didn’t answer just now. It may be restarting after an update. Try again in a minute.');
+  }
   if (r.status === 401) { forgetOffline(); if (!opts.noAuthRedirect) throw new AuthError('login required'); }
   const text = await r.text();
   let data = null;
