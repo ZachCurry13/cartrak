@@ -17,6 +17,12 @@ type tripOut struct {
 	EndCity         string   `json:"endCity"`
 	EstCost         *float64 `json:"estCost"`            // a guess at what its energy cost, at your average price; only on the trip page
 	Currency        string   `json:"currency,omitempty"` // the symbol for EstCost
+	// A gas or hybrid car: the tank level (percent) at each end, how far a full tank would go at this pace, and, once the tank size is
+	// known, the gallons burned.
+	StartFuel *float64 `json:"startFuel"`
+	EndFuel   *float64 `json:"endFuel"`
+	KmPerTank *float64 `json:"kmPerTank"`
+	FuelGal   *float64 `json:"fuelGal"`
 }
 
 // capacityKwh is the battery's latest estimated capacity, used to estimate trips that were recorded
@@ -47,5 +53,6 @@ func (s *Server) tripsWithEnergy(ts []*store.Trip) []tripOut {
 	for _, t := range ts {
 		out = append(out, namedWith(withEnergy(t, capacity), all))
 	}
+	s.withFuel(out)
 	return out
 }

@@ -60,14 +60,22 @@ func (s *Server) analyticsTrips(from int64) ([]analytics.Trip, error) {
 	}
 	temps, _ := s.S.TripTemps(from)
 	capacity := s.capacityKwh()
-	var out []analytics.Trip
+	var done []tripOut
 	for _, t := range ts {
-		if t.Open || t.EndTS == nil {
-			continue
+		if !t.Open && t.EndTS != nil {
+			done = append(done, tripOut{Trip: t})
 		}
+	}
+	s.withFuel(done) // a gas or hybrid car's gallons, from the tank gauge
+	var out []analytics.Trip
+	for _, o := range done {
+		t := o.Trip
 		a := analytics.Trip{ID: t.ID, Start: t.StartTS, End: *t.EndTS, Km: t.DistanceKm, MaxKph: t.MaxSpeedKph, Category: t.Category}
 		if e, ok := trips.EnergyUsed(t, capacity); ok {
 			a.Kwh = e.Kwh
+		}
+		if o.FuelGal != nil {
+			a.Gal = *o.FuelGal
 		}
 		if v, ok := temps[t.ID]; ok {
 			v := v
@@ -106,7 +114,8 @@ func (s *Server) analyticsRecords(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, map[string]any{"records": analytics.Records(ts, cs, s.defaultLoc()), "currency": s.currency()})
+	fills, _ := s.S.ListRefuels()
+	ok(w, map[string]any{"records": append(analytics.Records(ts, cs, s.defaultLoc()), analytics.FuelRecords(ts, fills)...), "currency": s.currency()})
 }
 
 func (s *Server) analyticsRecap(w http.ResponseWriter, r *http.Request) {
@@ -128,10 +137,17 @@ func (s *Server) analyticsRecap(w http.ResponseWriter, r *http.Request) {
 		g := s.Cfg.Gas()
 		gas = analytics.Gas{LitersPerKm: g.LitersPerKm, PricePerLiter: g.PricePerLiter, GridKgPerKwh: s.Cfg.GridCO2()}
 	}
+	fills, _ := s.S.ListRefuels()
+	recap := analytics.PeriodRecap(month, ts, cs, gas, loc)
+	var fuelRecap *analytics.FuelRecap
+	if f := analytics.FuelSummary(recap.From, recap.To, ts, fills); f.Any() {
+		fuelRecap = &f
+	}
 	ok(w, struct {
 		analytics.Recap
-		Currency string `json:"currency"`
-	}{analytics.PeriodRecap(month, ts, cs, gas, loc), s.currency()})
+		Currency string               `json:"currency"`
+		Fuel     *analytics.FuelRecap `json:"fuel,omitempty"`
+	}{recap, s.currency(), fuelRecap})
 }
 
 func (s *Server) analyticsBattery(w http.ResponseWriter, r *http.Request) {

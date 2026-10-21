@@ -78,7 +78,7 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 		end = *t.EndTS
 	}
 	if r.URL.Query().Get("samples") == "0" { // data saver: skip the (large) list of route points
-		one := s.placeNames(withEnergy(t, s.capacityKwh()))
+		one := s.withFuelOne(s.placeNames(withEnergy(t, s.capacityKwh())))
 		s.withTripCost(&one)
 		ok(w, map[string]any{"trip": one, "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
 		return
@@ -89,7 +89,7 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 	if len(phone) < 2 {
 		est = s.estimateFor(t, true)
 	}
-	one := s.placeNames(withEnergy(t, s.capacityKwh()))
+	one := s.withFuelOne(s.placeNames(withEnergy(t, s.capacityKwh())))
 	s.withTripCost(&one)
 	ok(w, map[string]any{"trip": one, "samples": ss, "phone": phone, "estimate": est})
 }

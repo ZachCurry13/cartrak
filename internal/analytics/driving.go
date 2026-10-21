@@ -12,6 +12,7 @@ type Trip struct {
 	End      int64    `json:"end"`
 	Km       float64  `json:"km"`
 	Kwh      float64  `json:"kwh"`             // energy used, 0 when unknown
+	Gal      float64  `json:"gal,omitempty"`   // fuel burned, gallons, 0 when unknown (gas and hybrid cars)
 	TempC    *float64 `json:"tempC,omitempty"` // average outside temperature, when known
 	MaxKph   float64  `json:"maxKph"`
 	Category string   `json:"category"`

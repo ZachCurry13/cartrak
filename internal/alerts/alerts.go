@@ -61,6 +61,7 @@ type Engine struct {
 	lastDrive    time.Time   // the last reading with the ignition on or the car moving
 	restVec      *[3]float64 // the previous parked reading of the motion sensors
 	lowSent      bool
+	lowFuelSent  bool
 	openFrom     time.Time
 	openSent     bool
 }
@@ -96,6 +97,7 @@ func (e *Engine) Handle(st *ford.State) {
 	e.namedPlaces(st, first)
 	e.parkedWatch(st, first)
 	e.lowBattery(st, first)
+	e.fuelAlerts(st, first)
 	e.unlocked(st)
 	e.leftOpen(st)
 	e.trip(first)

@@ -9,6 +9,23 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
+// evOnlyBadges are the achievements about charging and battery efficiency: a car that cannot plug in could never earn them.
+var evOnlyBadges = map[string]bool{"kw150": true, "mwh1": true, "mwh10": true, "night50": true, "hyper": true}
+
+// carBadges leaves out the achievements that do not apply to this car.
+func (s *Server) carBadges(bs []analytics.Badge) []analytics.Badge {
+	if s.vehicleInfo().Plug {
+		return bs
+	}
+	out := make([]analytics.Badge, 0, len(bs))
+	for _, b := range bs {
+		if !evOnlyBadges[b.Key] {
+			out = append(out, b)
+		}
+	}
+	return out
+}
+
 // badgesState is every achievement with its progress. GET /api/analytics/badges
 func (s *Server) badgesState(w http.ResponseWriter, r *http.Request) {
 	ts, raw, err1 := s.tripsWithPlaces(0)
@@ -17,7 +34,7 @@ func (s *Server) badgesState(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	bs := analytics.Badges(ts, cs, s.towns(raw), s.defaultLoc())
+	bs := s.carBadges(analytics.Badges(ts, cs, s.towns(raw), s.defaultLoc()))
 	type out struct {
 		analytics.Badge
 		Progress float64 `json:"progress"`

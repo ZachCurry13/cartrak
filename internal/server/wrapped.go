@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/analytics"
+	"github.com/ZachCurry13/cartrak/internal/fuel"
 	"github.com/ZachCurry13/cartrak/internal/places"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -89,6 +90,13 @@ func (s *Server) wrapped(w http.ResponseWriter, r *http.Request) {
 			inTs = append(inTs, t)
 		}
 	}
+	fills, _ := s.S.ListRefuels()
+	var inFills []fuel.Fill
+	for _, f := range fills {
+		if f.TS >= from && f.TS < to {
+			inFills = append(inFills, f)
+		}
+	}
 	var inCs []analytics.Charge
 	for _, c := range cs {
 		if c.Start >= from && c.Start < to {
@@ -123,7 +131,7 @@ func (s *Server) wrapped(w http.ResponseWriter, r *http.Request) {
 		top = top[:3]
 	}
 	var earned []analytics.Badge
-	for _, b := range analytics.Badges(ts, cs, towns, loc) {
+	for _, b := range s.carBadges(analytics.Badges(ts, cs, towns, loc)) {
 		if b.Earned >= from && b.Earned < to {
 			earned = append(earned, b)
 		}
@@ -157,7 +165,8 @@ func (s *Server) wrapped(w http.ResponseWriter, r *http.Request) {
 		"personalities": analytics.Personalities(inTs, inCs, loc),
 		"flow":          analytics.EnergyFlow(ts, cs, from, to, s.storedKwh(from, end)),
 		"ring":          analytics.TypicalDay(inTs, inCs, from, end, loc),
-		"moments":       analytics.Records(inTs, inCs, loc),
+		"moments":       append(analytics.Records(inTs, inCs, loc), analytics.FuelRecords(inTs, inFills)...),
+		"fuel":          fuelOrNil(from, to, ts, fills),
 		"badges":        earned,
 		"towns":         len(townsHere),
 		"places":        top,

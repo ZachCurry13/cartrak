@@ -42,6 +42,8 @@ const (
 	Achievement       = "achievement"
 	MonthlyRecap      = "monthly_recap"
 	ServiceVisit      = "service_visit"
+	FillUp            = "fill_up"
+	LowFuel           = "low_fuel"
 )
 
 type Kind struct {
@@ -55,6 +57,8 @@ var Kinds = []Kind{
 	{ChargeComplete, "Charging complete", "The battery reached its target or charging stopped."},
 	{PlugIn, "Plugged in", "The charging cable was connected."},
 	{PlugOut, "Unplugged", "The charging cable was removed."},
+	{LowFuel, "Low fuel", "The tank fell to 15% or less. Once, until it has been filled."},
+	{FillUp, "Filled up", "The fuel gauge jumped up, so CarTrak kept a fill-up for you to complete with the gallons and the price per gallon."},
 	{LowBattery, "Low battery", "The battery fell to the car's Battery reserve (More, Charging settings; 20% unless chosen) while the car was not charging."},
 	{ChargeBudget, "Charging budget", "This month's charging cost passed the budget an admin set under More, Settings. At most once a month."},
 	{LeftOpen, "Left open", "The parked car has a door, the tailgate, the hood or a window open for ten minutes."},

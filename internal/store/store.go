@@ -101,6 +101,10 @@ CREATE TABLE IF NOT EXISTS device_events (
   id INTEGER PRIMARY KEY, device_id INTEGER NOT NULL, ts INTEGER NOT NULL,
   type TEXT NOT NULL, lat REAL, lon REAL);
 CREATE INDEX IF NOT EXISTS device_events_ts ON device_events(ts);
+CREATE TABLE IF NOT EXISTS refuels (
+  id INTEGER PRIMARY KEY, ts INTEGER NOT NULL, start_pct REAL NOT NULL DEFAULT 0, end_pct REAL NOT NULL DEFAULT 0, odo_km REAL,
+  gallons REAL, price_per_gal REAL, status TEXT NOT NULL DEFAULT 'pending', source TEXT NOT NULL DEFAULT 'auto');
+CREATE INDEX IF NOT EXISTS refuels_ts ON refuels(ts);
 `
 
 // Open opens (or creates) a car's database in dir.
