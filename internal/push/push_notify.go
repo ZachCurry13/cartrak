@@ -42,13 +42,42 @@ func (s *Service) Notify(ctx context.Context, a Alert) {
 			continue
 		}
 		wanted++
-		if s.SendTo(ctx, sub, out) == nil {
+		msg := out
+		if s.Prefs != nil {
+			if p := s.Prefs(sub.UserID); !p.HolidayOff {
+				msg = Touch(out, p.Birthday, now)
+			}
+		}
+		if s.SendTo(ctx, sub, msg) == nil {
 			sent++
 		}
 	}
 	if s.Log != nil {
 		s.Log(a, len(subs), wanted, quiet, sent)
 	}
+}
+
+// SendToUser delivers an alert to each of one person's devices that is not in quiet hours, whatever alerts they chose. It
+// reports how many accepted it and whether a device was in quiet hours, so the caller can try again later.
+func (s *Service) SendToUser(ctx context.Context, userID int64, a Alert) (sent int, waiting bool) {
+	subs, err := s.Subs.ListPushSubs(userID)
+	if err != nil {
+		return 0, true
+	}
+	now := time.Now()
+	if s.Location != nil {
+		now = now.In(s.Location())
+	}
+	for _, sub := range subs {
+		if InQuiet(sub.Quiet, now) {
+			waiting = true
+			continue
+		}
+		if s.SendTo(ctx, sub, a) == nil {
+			sent++
+		}
+	}
+	return sent, waiting
 }
 
 func has(list []string, v string) bool {

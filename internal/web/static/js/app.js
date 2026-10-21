@@ -16,7 +16,7 @@ import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
 import { openMore } from './moresheet.js';
 import { applyBar, load as loadLayout, noteVisit } from './navlayout.js';
-import { applySeason, activeTheme, THEMES } from './seasons.js';
+import { applySeason, activeTheme, setBirthday, THEMES } from './seasons.js';
 import { playSeason } from './seasonfx.js';
 import { showWhatsNew } from './whatsnew.js';
 
@@ -114,6 +114,8 @@ async function render() {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));
       setCarReserve(session.me.reservePct);
+      setBirthday(session.me.birthday);
+      applySeason();
       await loadCars();
       if (!session.cars.length) { // a person who may bring a car but has none yet
         tabs.hidden = true;

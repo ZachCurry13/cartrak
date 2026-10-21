@@ -22,7 +22,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - Getting-started guide, the version shown in the app, update notices, and the changelog built in
 - Settings in an **Admin page** in the app, or in `config.yaml`, or environment variables
 - Built-in login with admin and read-only viewer roles (viewers get a simpler set of tabs and menu)
-- **Seasonal themes**: Halloween, Thanksgiving, Christmas, New Year, Valentine's, St. Patrick's, Easter, the Fourth of July and the seasons, each with its own colors and a little effect ([details](docs/live-and-data-saver.md#seasonal-themes))
+- **Seasonal themes**: Halloween, Thanksgiving, Christmas, New Year, Valentine's, St. Patrick's, Easter, the Fourth of July and the seasons, each with its own colors and a little effect, a birthday theme on your own birthday, and holiday touches on friendly alerts ([details](docs/live-and-data-saver.md#seasonal-themes))
 - **Insights**: Wrapped for a month or the year with a shareable infographic, every route you drove glowing on a map, achievements, where every kWh went, and charts of charging, driving and the battery ([details](docs/insights.md))
 - **Several cars and people**: each car has its own database, settings and Ford link; each person sees only the cars they were given, and can be allowed to bring a car of their own ([details](docs/several-cars.md))
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready

@@ -195,5 +195,6 @@ func (f *Fleet) Run(ctx context.Context) error {
 	go f.Upd.Run(ctx, front.Srv.UpdateCheckEnabled)
 	f.Conn.Enabled = front.Srv.UpdateCheckEnabled
 	go f.Conn.Run(ctx)
+	go f.birthdayLoop(ctx)
 	return nil
 }

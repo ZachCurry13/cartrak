@@ -16,7 +16,20 @@ export const THEMES = {
   halloween: ['Halloween', '🎃', '#ff8a1f', '#a84a00', '#2a1300', '#fff', '#f97316', '#7c3aed', 'bats'],
   thanksgiving: ['Thanksgiving', '🦃', '#e8a33d', '#8a5200', '#2a1700', '#fff', '#d97706', '#b45309', 'leaves'],
   christmas: ['Christmas', '🎄', '#ff4d5e', '#b3132b', '#33040b', '#fff', '#dc2626', '#16a34a', 'lights'],
+  birthday: ['Birthday', '🎂', '#ff7ad9', '#a3227f', '#3a0630', '#fff', '#ec4899', '#facc15', 'confetti'],
 };
+
+// The signed-in person's birthday ("MM-DD"), from /api/me: on that day Automatic shows the birthday theme instead of the holiday.
+let birthday = '';
+export const setBirthday = (b) => { birthday = b || ''; };
+
+export function isBirthday(date = new Date()) {
+  if (!birthday) return false;
+  const m = date.getMonth() + 1, d = date.getDate();
+  const leap = new Date(date.getFullYear(), 1, 29).getMonth() === 1;
+  if (birthday === '02-29' && !leap && m === 2 && d === 28) return true; // kept on the 28th in other years
+  return birthday === `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
 
 const md = (m, d) => m * 100 + d;
 
@@ -55,6 +68,18 @@ export function themeFor(date = new Date()) {
   return pick('winter');
 }
 
+// What Home says on a birthday or on the holiday itself (the same words the alerts use), or null.
+const GREETINGS = { valentine: "Happy Valentine's Day!", stpatrick: "Happy St. Patrick's Day!", easter: 'Happy Easter!', july4: 'Happy Fourth of July!',
+  halloween: 'Happy Halloween!', thanksgiving: 'Happy Thanksgiving!', christmas: 'Merry Christmas!' };
+export function greeting(date = new Date()) {
+  if (getSeasonPref() === 'off') return null;
+  if (isBirthday(date)) return 'Happy birthday! 🎂';
+  const t = themeFor(date);
+  if (!t.day) return null;
+  if (t.key === 'newyear') return date.getMonth() === 11 ? "Happy New Year's Eve! 🎉" : 'Happy New Year! 🎉';
+  return GREETINGS[t.key] ? `${GREETINGS[t.key]} ${THEMES[t.key][1]}` : null;
+}
+
 const KEY = 'season';
 export const getSeasonPref = () => { try { return localStorage.getItem(KEY) || 'auto'; } catch (e) { return 'auto'; } };
 export const setSeasonPref = (v) => { try { localStorage.setItem(KEY, v); } catch (e) { /* storage blocked */ } };
@@ -64,6 +89,7 @@ export function activeTheme() {
   const pref = getSeasonPref();
   if (pref === 'off') return null;
   if (THEMES[pref]) return { key: pref, day: false };
+  if (isBirthday()) return { key: 'birthday', day: true };
   return themeFor();
 }
 

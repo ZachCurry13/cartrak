@@ -29,6 +29,17 @@ CarTrak can send a notification to your phone or computer when something happens
 
 A new device starts with Charging complete, Low tire pressure and Low 12 V battery. Each device has its own choices, and each can set **quiet hours** (for example 22:00 to 07:00) when nothing is sent. Quiet hours follow the car time zone from Settings.
 
+### Holiday touches
+Around a holiday (Halloween, Thanksgiving, Christmas, New Year, Valentine's, St. Patrick's, Easter and the Fourth of July, on the
+same dates as the [seasonal themes](live-and-data-saver.md#seasonal-themes)), the friendly alerts start with the holiday's emoji, such
+as **🎃 Charging complete**, and on the day itself they add "Happy Halloween!". The friendly ones are trips, charging done, plugging in
+and out, arriving and leaving places, the weekly summary, Wrapped, achievements and service visits. Warnings (low battery, tires,
+alarm, left open or unlocked, disk space, Ford trouble and the like) always stay plain.
+
+On your birthday (set under Display and data) those alerts get a 🎂 instead, and from 9 in the morning each of your devices gets one
+**🎂 Happy birthday!** alert, outside quiet hours; with several cars it still comes once. **Holiday touches** on the Notifications page
+turns all of this off. It follows you to every device and is saved with **Save alert choices**.
+
 Each alert is sent once. After CarTrak restarts it does not repeat what was already true, and it only announces things that change from then on.
 
 ## Where it works

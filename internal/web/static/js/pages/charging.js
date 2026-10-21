@@ -17,7 +17,7 @@ function summaryCard(sum) {
     h('span', { class: 'grow' }, monthName(m.month), ' ', h('span', { class: 'muted' }, `${m.sessions} session${m.sessions === 1 ? '' : 's'} · ${num(m.kwh, 0, ' kWh')}${m.km > 0 ? ` · ${dist(m.km, 0)} driven` : ''}`)),
     h('span', {}, m.priced ? h('b', {}, money(cur, m.cost)) : '—', m.costPerKm != null ? h('div', { class: 'muted' }, perDistance(cur, m.costPerKm)) : null)));
   return h('section', { class: 'card' }, h('h2', {}, 'Charging cost'),
-    sum.priceSet ? null : h('p', { class: 'banner notice' }, 'Add your price per kWh in More, Settings (Price per kWh at home) to see what charging costs.'),
+    sum.priceSet ? null : h('p', { class: 'banner notice' }, 'Add your price per kWh under ', h('a', { href: '#/charging-settings' }, 'Charging prices'), ' to see what charging costs.'),
     sum.thisMonth ? h('p', {}, 'This month so far ', h('b', {}, money(cur, sum.thisMonth.cost)), sum.thisMonth.projected != null ? h('span', { class: 'muted' }, ` · on pace for about ${money(cur, sum.thisMonth.projected)}`) : null) : null,
     first ? h('p', { class: 'muted' }, `By month, from the energy that went into the battery. On a slow charger the cost includes what is lost as heat: ${Math.round((1 - sum.efficiency.value) * 100)}% ${sum.efficiency.source === 'measured' ? `(measured from ${sum.efficiency.samples} sessions where you entered the charger's number)` : sum.efficiency.samples ? `(your setting; ${sum.efficiency.samples} of the 3 sessions needed to measure it have the charger's number)` : "(your setting; enter the charger's kWh on a few sessions below to measure it)"}.`) : null,
     ...rows);

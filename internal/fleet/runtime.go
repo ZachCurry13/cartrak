@@ -69,7 +69,7 @@ func (f *Fleet) build(c store.Car, primary bool) (*Runtime, error) {
 	p.After = srv.Broadcast
 	id := c.ID
 	pushSvc := &push.Service{KV: f.Core, Subs: f.Core, Location: cfgs.Location,
-		Visible: func(uid int64) bool { return f.canSee(uid, id) }, CarName: func() string { return f.labelFor(id) }}
+		Visible: func(uid int64) bool { return f.canSee(uid, id) }, CarName: func() string { return f.labelFor(id) }, Prefs: f.Core.Prefs}
 	pushSvc.Log = func(a push.Alert, devices, wanted, quiet, sent int) {
 		_ = st.LogAlert(store.AlertLogEntry{Kind: a.Kind, Title: a.Title, Body: a.Body, Devices: devices, Wanted: wanted, Quiet: quiet, Sent: sent, URL: a.URL})
 	}

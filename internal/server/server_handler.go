@@ -32,6 +32,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/checklist", s.auth(false, s.setupChecklist))
 	m.HandleFunc("GET /api/me/layout", s.auth(false, s.getLayout))
 	m.HandleFunc("PUT /api/me/layout", s.auth(false, s.putLayout))
+	m.HandleFunc("GET /api/me/prefs", s.auth(false, s.getPrefs))
+	m.HandleFunc("PUT /api/me/prefs", s.auth(false, s.putPrefs))
 	m.HandleFunc("POST /api/checklist/hide", s.auth(false, s.hideSetup))
 	m.HandleFunc("POST /api/checklist/skip", s.auth(false, s.skipSetup))
 

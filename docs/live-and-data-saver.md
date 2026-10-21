@@ -84,6 +84,14 @@ a short effect on Home once a session (bigger on the holiday itself). Wrapped an
 **Automatic** follows the date; pick one theme to keep it, or **Off**. It is a choice for each device. The effect never plays with the
 phone's "reduce motion" setting or in Data saver.
 
+On a holiday itself, and on your birthday, Home also says so at the top ("Happy Halloween! 🎃").
+
+### Your birthday
+Set your birthday (the month and day, never the year) under **More, Display and data, Your birthday**. On that day **Automatic**
+shows the birthday theme instead of the holiday one: party colors, a cake by the name, confetti and "Happy birthday! 🎂" on Home.
+The birthday is kept with your sign-in, so it follows you to every device, and only you see it; the People list never shows it.
+Someone born on February 29 gets it on the 28th in other years. **Getting started** has it as an optional step.
+
 ## What's new
 After an update, the first time the app opens it shows what changed in every version since this device last opened it. **Got it**
 closes it until the next update; **More, About and updates, What's new** keeps the whole list.

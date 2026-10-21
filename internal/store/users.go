@@ -57,6 +57,7 @@ func (s *Store) ListUsers() ([]User, error) {
 func (s *Store) DeleteUser(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM users WHERE id=?`, id)
 	_, _ = s.DB.Exec(`DELETE FROM car_access WHERE user_id=?`, id)
+	s.forgetPrefs(id)
 	return err
 }
 

@@ -1,6 +1,7 @@
 import { h, chip, ago, when } from '../ui.js';
 import { api } from '../api.js';
 import { unsupported, current, enable, disable } from '../push.js';
+import { loadPrefs, savePrefs } from '../myprefs.js';
 
 const guessLabel = () => (/android/i.test(navigator.userAgent) ? 'Android phone' : /iphone|ipad/i.test(navigator.userAgent) ? 'iPhone' : /windows/i.test(navigator.userAgent) ? 'Windows computer' : /mac/i.test(navigator.userAgent) ? 'Mac' : 'This device');
 
@@ -24,6 +25,8 @@ export default async function notifications(root, _a, session) {
   const qOn = h('input', { id: 'qon', type: 'checkbox', checked: !!q0[0] });
   const qFrom = h('input', { id: 'qf', type: 'time', value: q0[0] || '22:00' });
   const qTo = h('input', { id: 'qt', type: 'time', value: q0[1] || '07:00' });
+  const prefs = await loadPrefs();
+  const holidayOn = h('input', { id: 'hol', type: 'checkbox', checked: !prefs.holidayOff, onchange: () => dirty() });
   const msg = h('p', { class: 'muted', role: 'status' });
   const box = h('div');
   const quiet = () => (qOn.checked ? `${qFrom.value}-${qTo.value}` : '');
@@ -38,8 +41,10 @@ export default async function notifications(root, _a, session) {
   const saveBar = h('div', { class: 'savebar', hidden: true });
   const dirty = () => { saveBar.hidden = false; say(''); };
   async function save() {
+    const touches = holidayOn.checked === !!prefs.holidayOff;
+    if (touches) Object.assign(prefs, await savePrefs({ holidayOff: !holidayOn.checked })); // follows the person, not the device
     if (!mine() && !(here && typeof Notification !== 'undefined' && Notification.permission === 'granted')) {
-      say('Turn on alerts on this device first (above); your choices are used when you do.');
+      say(`${touches ? 'Holiday touches saved ✓ ' : ''}Turn on alerts on this device (above) to save which alerts it gets.`);
       return;
     }
     try {
@@ -76,6 +81,9 @@ export default async function notifications(root, _a, session) {
         h('p', {}, h('label', { for: 'qon' }, qOn, ' No alerts between')),
         h('div', { class: 'cols2' }, h('div', {}, h('label', { for: 'qf' }, 'From'), qFrom), h('div', {}, h('label', { for: 'qt' }, 'To'), qTo)),
         h('p', { class: 'muted' }, 'Quiet hours use the car time zone from Settings.'),
+        h('h2', {}, 'Holiday touches'),
+        h('p', {}, h('label', { for: 'hol' }, holidayOn, ' 🎃 Dress up friendly alerts for holidays and my birthday')),
+        h('p', { class: 'muted' }, 'Around a holiday, alerts like Trip ended and Charging complete start with its emoji and wish you a happy holiday on the day. On your birthday (set it under Display) you also get a happy birthday in the morning. Warnings always stay plain. This follows you to every device.'),
         h('p', { class: 'seg' }, h('button', { type: 'button', class: 'on', onclick: () => run(save) }, 'Save alert choices')),
         msg),
       cfg.devices.length ? h('section', { class: 'card' }, h('h2', {}, 'Your devices'),

@@ -205,6 +205,7 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .sheet.more{max-height:88vh;overflow-y:auto}
 /* Seasonal themes (js/seasons.js, js/seasonfx.js): the colors come from data-season on the root; these are the touches */
 #ornament{font-size:1.15rem;margin-left:6px;line-height:1}
+.greeting{margin:0 0 12px;font-size:1.15rem;font-weight:700;color:var(--accent);text-wrap:balance}
 #seasonfx{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:70}
 .sunglow{background:radial-gradient(60% 40% at 80% 0%,rgba(255,190,60,.35),transparent 70%);animation:sunfade 5s ease forwards}
 @keyframes sunfade{0%{opacity:0}25%{opacity:1}100%{opacity:0}}

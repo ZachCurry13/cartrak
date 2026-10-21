@@ -188,8 +188,10 @@ func (s *Server) me(w http.ResponseWriter, r *http.Request) {
 	if s.Cfg != nil {
 		reserve = s.Cfg.LowBatteryLevel()
 	}
+	u := userFrom(r)
 	ok(w, struct {
 		*store.User
 		ReservePct float64 `json:"reservePct"`
-	}{userFrom(r), reserve})
+		Birthday   string  `json:"birthday"` // the person's own, for the birthday theme
+	}{u, reserve, s.core().Prefs(u.ID).Birthday})
 }

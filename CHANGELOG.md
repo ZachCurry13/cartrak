@@ -9,6 +9,15 @@
 ### 🚗🚙 All cars
 - With two or more cars, the car picker at the top has **All cars**: every car side by side (battery or fuel, range, what it is doing, the last trip) and the month or the year **together**, with each car's share and how much of the driving was electric. **Trips** lists every car's trips in one list. Tap a car or a trip to open it.
 
+### 🎂 Birthdays
+- Set your birthday under **More, Display and data** (just the month and day). On that day CarTrak dresses up for you: party colors, a cake, confetti and **Happy birthday!** on Home, with a happy birthday alert on your phone in the morning. Only you see it, on every device you sign in on.
+
+### 🎃 Holiday alerts
+- Around a holiday, friendly alerts start with its emoji, such as **🎃 Charging complete** or **🎄 Trip ended**, and on the day itself they wish you a happy holiday. Home says so too. Warnings always stay plain. Turn it off with **Holiday touches** on the Notifications page.
+
+### 🧭 Getting started, brought up to date
+- New optional steps for adding another car (even one shared by the same Ford account) and your birthday. Places mentions dealerships and tire shops, and the electricity price step and search now open **Charging prices**, where those settings moved.
+
 ### 🔔 Notifications that save
 - Alert choices no longer save on every tap. Tick what you want, then **Save alert choices** (a Save bar also appears at the bottom while there are changes). The page then shows what was really saved, and a phone that lost its registration is registered again with your choices.
 - When a request hits a bug, CarTrak now answers with a message instead of a dropped connection (which showed as "HTTP 502"), and notes it in a new **Server errors** part of the debug report.

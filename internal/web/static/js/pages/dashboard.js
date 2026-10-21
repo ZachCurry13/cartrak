@@ -19,6 +19,7 @@ import { bandRow } from '../rangeband.js';
 import { batteryRing } from '../ring.js';
 import { googleMapsUrl, mapButtons } from '../maplinks.js';
 import { effSpan, kwhText } from '../energy.js';
+import { greeting } from '../seasons.js';
 
 let homeMap = null; // kept between refreshes
 let homeLink = null; // the map is a link: tap it to open the spot in Google Maps
@@ -94,6 +95,8 @@ export default async function dashboard(root, _args, session) {
       // Only while the one essential step (linking Ford) is missing. The optional steps stay on the Getting started page.
       if (!ob.dismissed && ob.canLink && !ob.linked) out.push(h('a', { class: 'card', href: '#/start', style: 'display:block;text-decoration:none' }, h('b', {}, 'Getting started'), h('div', { class: 'muted' }, 'Connect your Ford account to start seeing your car →')));
     }
+    const hi = greeting();
+    if (hi) out.push(h('p', { class: 'greeting' }, hi));
     const strip = healthStrip(health, session.me.role === 'admin');
     if (strip) out.push(strip);
     const vac = await vacationNote();

@@ -123,6 +123,8 @@ type Service struct {
 	Visible func(userID int64) bool
 	// CarName, when set and not empty, is put before the title so people with several cars know which one it is about.
 	CarName func() string
+	// Prefs, when set, is each person's birthday and whether they want holiday touches on friendly alerts.
+	Prefs func(userID int64) store.UserPrefs
 }
 
 const (

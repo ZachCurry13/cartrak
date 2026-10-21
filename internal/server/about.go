@@ -88,7 +88,14 @@ func (s *Server) onboarding(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	pr := s.prices()
+	cars, _ := s.core().ListCars()
+	birthday := false
+	if u := userFrom(r); u != nil {
+		birthday = s.core().Prefs(u.ID).Birthday != ""
+	}
 	ok(w, map[string]any{
+		"cars":        len(cars),
+		"birthday":    birthday,
 		"places":      len(named),
 		"maintenance": len(maintenance),
 		"alerts":      alerts,

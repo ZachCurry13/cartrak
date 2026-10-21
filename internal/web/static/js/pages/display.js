@@ -1,7 +1,8 @@
 import { h, isMetric, setMetric, getTheme, setTheme, getTimeMode, setTimeMode } from '../ui.js';
 import { MODES, getPref, setPref } from '../mode.js';
-import { THEMES, getSeasonPref, setSeasonPref, applySeason, themeFor } from '../seasons.js';
+import { THEMES, getSeasonPref, setSeasonPref, applySeason, themeFor, isBirthday } from '../seasons.js';
 import { playSeason } from '../seasonfx.js';
+import { birthdayCard } from '../myprefs.js';
 
 // One labeled choice with optional help text.
 function setting(id, label, select, help) {
@@ -38,18 +39,20 @@ export default async function display(root, _a, session) {
   const btn = h('button', { onclick: () => refreshApp(btn, msg) }, 'Refresh the app');
   const server = session && session.about ? session.about.version : '';
   const stale = server && loadedVersion !== server;
+  const nowKey = isBirthday() ? 'birthday' : themeFor().key;
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Display and data')),
     h('p', { class: 'muted' }, 'These choices apply to this device only.'),
     h('section', { class: 'group' }, h('div', { class: 'menu' },
       setting('s-un', 'Units', choice([['imperial', 'Miles, °F, psi'], ['metric', 'Kilometers, °C, kPa']], isMetric() ? 'metric' : 'imperial', (v) => setMetric(v === 'metric'))),
       setting('s-th', 'Theme', choice([['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']], getTheme(), setTheme)),
-      setting('s-se', 'Seasonal themes', choice([['auto', `Automatic (now: ${THEMES[themeFor().key][0]} ${THEMES[themeFor().key][1]})`], ['off', 'Off'], ...Object.entries(THEMES).map(([k, t]) => [k, `${t[1]} ${t[0]}`])], getSeasonPref(),
+      setting('s-se', 'Seasonal themes', choice([['auto', `Automatic (now: ${THEMES[nowKey][0]} ${THEMES[nowKey][1]})`], ['off', 'Off'], ...Object.entries(THEMES).map(([k, t]) => [k, `${t[1]} ${t[0]}`])], getSeasonPref(),
         (v) => { setSeasonPref(v); const t = applySeason(); if (t) playSeason(THEMES[t.key][8], true); }),
         'Colors, an ornament and a short effect on Home that follow the holidays. Automatic changes with the date; the effect never plays with reduce motion or Data saver.'),
       setting('s-tm', 'Trip times', choice([['trip', 'Where the trip happened'], ['device', 'This device']], getTimeMode(), setTimeMode),
         'Trips show the local time where they started, with the zone name.'),
       setting('s-dm', 'Data use', choice(Object.entries(MODES), getPref(), (v) => { setPref(v); location.reload(); }),
         'Normal refreshes every 30 s. Live pushes each new reading. Data saver shows the essentials, refreshes every 5 min, and loads big things only when you tap.'))),
+    await birthdayCard(session),
     h('section', { class: 'card' }, h('h2', {}, 'If something looks old'),
       h('p', {}, `These screens are version ${loadedVersion}. The server is version ${server || 'unknown'}.`),
       stale ? h('p', { class: 'banner' }, 'They do not match, so this phone is showing old screens. Tap Refresh the app.') : h('p', { class: 'muted' }, 'They match.'),
