@@ -7,7 +7,7 @@ const addDays = (day, n) => { const d = new Date(`${day}T12:00:00`); d.setDate(d
 
 // What each kind of mode is called: Vacation makes trips Personal; every other category is a mode of its own, so Work trip mode
 // and Medical mode are there, and so is one for each category the owner adds.
-const MODE_NAME = { vacation: 'Vacation', work: 'Work trip', medical: 'Medical' };
+const MODE_NAME = { vacation: 'Vacation', work: 'Work trip', medical: 'Medical', charity: 'Charity trip' };
 export const modeName = (kind) => MODE_NAME[kind] || catLabel(kind);
 const modeOptions = () => [['vacation', 'Vacation (trips are Personal)'], ...categoryList().filter((c) => c.key !== 'personal').map((c) => [c.key, `${modeName(c.key)} mode (trips are ${c.label})`])];
 const outcome = (kind) => (kind === 'vacation' ? 'Personal' : catLabel(kind));

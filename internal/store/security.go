@@ -50,6 +50,8 @@ type SessionInfo struct {
 	IP      string `json:"ip"`
 	Agent   string `json:"agent"`
 	Token   string `json:"-"`
+	// LastActive is when the session was last used (to about five minutes), 0 before this was recorded.
+	LastActive int64 `json:"lastActive"`
 }
 
 // SetSessionInfo records where a session was started from.
@@ -60,7 +62,7 @@ func (s *Store) SetSessionInfo(token, ip, agent string) error {
 
 // ListSessions returns the sessions that have not expired, newest first.
 func (s *Store) ListSessions() ([]SessionInfo, error) {
-	rows, err := s.DB.Query(`SELECT s.rowid,u.name,u.role,s.created,s.expires,s.ip,s.agent,s.token FROM sessions s JOIN users u ON u.id=s.user_id
+	rows, err := s.DB.Query(`SELECT s.rowid,u.name,u.role,s.created,s.expires,s.ip,s.agent,s.token,s.last_active FROM sessions s JOIN users u ON u.id=s.user_id
 		WHERE s.expires>? ORDER BY s.created DESC, s.rowid DESC`, time.Now().Unix())
 	if err != nil {
 		return nil, err
@@ -69,7 +71,7 @@ func (s *Store) ListSessions() ([]SessionInfo, error) {
 	out := []SessionInfo{}
 	for rows.Next() {
 		var x SessionInfo
-		if err := rows.Scan(&x.ID, &x.User, &x.Role, &x.Created, &x.Expires, &x.IP, &x.Agent, &x.Token); err != nil {
+		if err := rows.Scan(&x.ID, &x.User, &x.Role, &x.Created, &x.Expires, &x.IP, &x.Agent, &x.Token, &x.LastActive); err != nil {
 			return nil, err
 		}
 		out = append(out, x)

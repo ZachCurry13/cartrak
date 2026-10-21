@@ -377,7 +377,7 @@ func TestTheDebugReportCanCoverThisCarOrEveryCarAndNamesNoCar(t *testing.T) {
 		t.Fatal("add car")
 	}
 	_, one := ann.do("GET", "/api/debug-report?hours=6", "", car("2"))
-	if !strings.Contains(one, "installation: car 2 of 2 (added by a person)") || !strings.Contains(one, "categories: 3 (0 of your own)") || strings.Contains(one, "CAR 1 of") {
+	if !strings.Contains(one, "installation: car 2 of 2 (added by a person)") || !strings.Contains(one, "categories: 4 (0 of your own)") || strings.Contains(one, "CAR 1 of") {
 		t.Fatalf("this car's report says where it sits: %.600s", one)
 	}
 	if _, byQuery := ann.do("GET", "/api/debug-report?hours=6&car=2", "", nil); !strings.Contains(byQuery, "installation: car 2 of 2") {

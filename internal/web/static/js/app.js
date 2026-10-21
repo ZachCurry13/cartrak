@@ -15,6 +15,7 @@ import { loadCategories } from './categories.js';
 import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
 import { openMore } from './moresheet.js';
+import { applyBar, load as loadLayout, noteVisit } from './navlayout.js';
 
 
 const view = document.getElementById('view');
@@ -90,7 +91,9 @@ async function render() {
   if (stopRefresh) { stopRefresh(); stopRefresh = null; }
   const [name, ...args] = (location.hash.replace(/^#\/?/, '') || '').split('/');
   const tab = ['', 'trips', 'live', 'charging', 'health', 'data'].includes(name) ? name : name === 'stats' ? 'charging' : name === 'fields' ? 'data' : name === 'trip' || name === 'history' || name === 'day' || name === 'journey' || name === 'review' ? 'trips' : 'settings';
-  tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
+  const exact = [...tabs.querySelectorAll('a')].find((a) => a.getAttribute('href') === `#/${name}`); // a page put in the bar lights up itself
+  tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', exact ? a === exact : a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
+  noteVisit(name);
   try {
     if (!session.me) {
       session.me = await cached('me', () => api('/api/me'));
@@ -102,6 +105,8 @@ async function render() {
       } else {
         await loadAbout();
         await loadVehicle();
+        await loadLayout(session);
+        applyBar(tabs, session);
         if (await firstRunTour()) return; // hashchange re-renders onto the tour
       }
     }
@@ -145,6 +150,7 @@ async function syncLabel() {
 
 // The More tab slides a sheet up over the page, as the app on a phone usually does; the whole More page is one row down in it.
 tabs.querySelector('a[href="#/settings"]').addEventListener('click', (e) => { if (session.me) { e.preventDefault(); openMore(session); } });
+addEventListener('layoutchange', () => { if (session.me) { applyBar(tabs, session); render(); } });
 addEventListener('hashchange', render);
 setInterval(() => { if (!document.hidden) syncLabel(); }, effective() === 'saver' ? 300000 : 30000);
 // Ford may send the browser back to the site root (the redirect address registered on the Ford app may have

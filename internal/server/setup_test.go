@@ -69,3 +69,22 @@ func TestMeCarriesTheCarsBatteryReserve(t *testing.T) {
 		t.Fatalf("the chosen reserve, with who is signed in: %s", body)
 	}
 }
+
+func TestEachPersonKeepsTheirOwnBarAndTiles(t *testing.T) {
+	ts, _ := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	if _, body := do(t, admin, "GET", ts.URL+"/api/me/layout", "", nil); body != "{}\n" {
+		t.Fatalf("nothing chosen yet: %q", body)
+	}
+	if code, _ := do(t, admin, "PUT", ts.URL+"/api/me/layout", `{"bar":["home","insights","trips"],"tiles":["reports"],"auto":true}`, xh); code != 200 {
+		t.Fatal("save")
+	}
+	if _, body := do(t, admin, "GET", ts.URL+"/api/me/layout", "", nil); !strings.Contains(body, `"bar":["home","insights","trips"]`) || !strings.Contains(body, `"auto":true`) {
+		t.Fatalf("kept: %s", body)
+	}
+	for _, bad := range []string{`{"bar":[],"tiles":[]}`, `{"bar":["a","b","c","d","e","f","g"],"tiles":[]}`, `{"bar":["../x"],"tiles":[]}`} {
+		if code, _ := do(t, admin, "PUT", ts.URL+"/api/me/layout", bad, xh); code != 400 {
+			t.Fatalf("%s should be refused", bad)
+		}
+	}
+}

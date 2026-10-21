@@ -66,6 +66,10 @@ func TestTypicalDay(t *testing.T) {
 	if math.Abs(r.Parked-(1-2.5/24)) > 1e-9 {
 		t.Fatalf("parked share: %v", r.Parked)
 	}
+	// the same ten days inside a whole year: only the days since the first one count
+	if y := TypicalDay(ts, cs, from-300*86400, to, utc); y.Days != 10 || math.Abs(y.Driving[29]-1) > 1e-9 {
+		t.Fatalf("a year that began before the data: %d days, %v", y.Days, y.Driving[29])
+	}
 }
 
 func TestBadgesAreEarnedWhenTheGoalIsReached(t *testing.T) {

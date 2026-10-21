@@ -42,7 +42,7 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 	hottest := best("hottest", "Hottest drive", "tempC", more)
 	peak := best("peakKw", "Fastest charging", "kw", more)
 	biggest := best("bigCharge", "Most energy in one charge", "kwh", more)
-	cheapest := best("cheapest", "Cheapest kWh (5 kWh or more)", "price", less)
+	cheapest := best("cheapest", "Cheapest public charge (paid, 5 kWh or more)", "price", less)
 	days := map[string]float64{}
 	for _, t := range ts {
 		if t.Km < 0.3 {
@@ -70,7 +70,7 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 		if c.Kwh > 0 {
 			biggest(c.Kwh, c.Start, 0, c.ID)
 		}
-		if c.Cost != nil && c.Kwh >= 5 {
+		if c.Cost != nil && *c.Cost > 0 && c.Where != "home" && c.Kwh >= 5 { // home charging and free chargers would always win
 			wall := c.WallKwh
 			if wall <= 0 {
 				wall = c.Kwh

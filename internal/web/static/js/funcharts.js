@@ -64,7 +64,7 @@ export function dayRing(r) {
   };
   for (const [rad, w] of [[92, 26], [62, 18]]) { arc(0, 48, rad, w, 'var(--card2)'); arc(48, 96, rad, w, 'var(--card2)'); }
   const top = Math.max(...r.driving, ...r.charging, 1e-9);
-  const paint = (arr, rad, w, col) => arr.forEach((v, q) => { if (v > 0.02) arc(q, q + 1.05, rad, w, `color-mix(in srgb,${col} ${Math.round(25 + (v / top) * 75)}%,var(--card2))`); });
+  const paint = (arr, rad, w, col) => arr.forEach((v, q) => { if (v > top * 0.04) arc(q, q + 1.05, rad, w, `color-mix(in srgb,${col} ${Math.round(25 + (v / top) * 75)}%,var(--card2))`); });
   paint(r.driving, 92, 26, '#f59e0b');
   paint(r.charging, 62, 18, '#22c55e');
   ['12a', '3a', '6a', '9a', '12p', '3p', '6p', '9p'].forEach((t, i) => { const a = (i / 8) * 2 * Math.PI - Math.PI / 2; svg.append(S('text', { x: 120 + 122 * Math.cos(a), y: 124 + 122 * Math.sin(a), 'text-anchor': 'middle', 'font-size': '10', fill: 'currentColor', 'fill-opacity': '.6' }, t)); });

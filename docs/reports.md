@@ -12,7 +12,7 @@ Choose the report, then what goes in it, then download:
 
 Whichever report, you choose each time:
 
-- **Categories**: all, one, or several (Work, Personal, Medical and your own).
+- **Categories**: all, one, or several (Work, Personal, Medical, Charity and your own). Charity starts at the US charity mileage rate of 14 cents a mile; a **Charity trip** mode labels every trip of a stretch of days as Charity.
 - **Days**: a first and last day, or calendar week numbers such as `26-28` for a year.
 - **File type**: Excel or CSV, and miles or kilometres (it follows the units set on the device).
 

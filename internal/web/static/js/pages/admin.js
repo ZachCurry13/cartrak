@@ -16,7 +16,9 @@ export default async function admin(root, _a, session) {
   let data = await api('/api/admin/settings');
   const box = h('div');
   const msg = h('p', { class: 'muted', role: 'status' });
+  const site = session.me.siteRole === 'admin';
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('h2', {}, 'Admin settings'),
+    h('nav', { class: 'linkrow', 'aria-label': 'More admin' }, h('a', { href: '#/backup' }, 'Backup'), site ? h('a', { href: '#/people' }, 'People') : null, site ? h('a', { href: '#/security' }, 'Sign-ins') : null, h('a', { href: '#/cars' }, 'Cars'), h('a', { href: '#/charging-settings' }, 'Charging prices'), h('a', { href: '#/debug' }, 'Debug report')),
     h('p', { class: 'muted' }, 'These are saved in CarTrak\'s database. A value set in an environment variable or config.yaml wins and is shown locked: change it there. The Ford secret is stored on the server and is never shown again.'),
     h('p', { class: 'muted' }, 'Charging prices, night rates and charging alerts are now under Charging, ', h('a', { href: '#/charging-settings' }, 'Charging settings'), '.'),
     box, msg, diagCard());

@@ -201,3 +201,5 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .wteasers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px}.wteaser{display:flex;flex-direction:column;gap:4px;min-height:150px;justify-content:flex-end;padding:16px;border-radius:20px;color:#fff;text-decoration:none}.wteaser .kick{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;opacity:.85}.wteaser b{font-size:1.35rem;line-height:1.15}.wteaser span:last-child{font-size:.82rem;opacity:.85}
 .socbar{display:flex;height:22px;border-radius:8px;overflow:hidden;margin:6px 0}.socbar i{display:block;height:100%}.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
 .ybar span{white-space:nowrap}
+.navrow{gap:6px;align-items:center;flex-wrap:nowrap}.navrow .grow{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.navrow .ico.sm{width:40px;height:40px;flex:0 0 auto}.navrow>svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.navrow .ico.sm[disabled]{opacity:.3}
+.sheet.more{max-height:88vh;overflow-y:auto}

@@ -70,6 +70,18 @@ type DayRing struct {
 // TypicalDay builds the ring over the days from..to.
 func TypicalDay(ts []Trip, cs []Charge, from, to int64, loc *time.Location) DayRing {
 	var r DayRing
+	// count only from the first day there is anything: a year that began before CarTrak did is not a year of the car parked
+	first := to
+	for _, t := range ts {
+		first = min(first, t.Start)
+	}
+	for _, c := range cs {
+		first = min(first, c.Start)
+	}
+	if first > from && first < to {
+		y, m, d := time.Unix(first, 0).In(loc).Date()
+		from = max(from, time.Date(y, m, d, 0, 0, 0, 0, loc).Unix())
+	}
 	days := float64(to-from) / 86400
 	if days < 1 {
 		return r

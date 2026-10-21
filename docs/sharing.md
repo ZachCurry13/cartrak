@@ -14,7 +14,7 @@ The page shows the distance, driving time (and for a journey the elapsed time an
 You see the link **once**, when you make it, and can copy it then. CarTrak keeps only a check value of the link, so it cannot show it again; make a new link if you lose it.
 
 ## Turn a link off
-**More, Security, Shared links** lists every link with its title, what it shows, when it was made, when it stops working and how many times it was opened. **Turn off** stops it immediately.
+**More, Sign-ins and devices, Shared links** lists every link with its title, what it shows, when it was made, when it stops working and how many times it was opened. **Turn off** stops it immediately.
 
 ## How it is protected
 - The link contains a long random secret. Wrong guesses are slowed down and locked out the same way wrong passwords are.

@@ -27,7 +27,7 @@ export default async function charging(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
   const now = chargeNow();
-  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Charging')), h('nav', { class: 'linkrow', 'aria-label': 'More about charging' }, h('a', { href: '#/charging-settings' }, 'Settings'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/plan' }, 'Plan a trip')), now.el, forecastCard(), box);
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Charging')), h('nav', { class: 'linkrow', 'aria-label': 'More about charging' }, h('a', { href: '#/charging-settings' }, 'Prices and settings'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/plan' }, 'Plan a trip')), now.el, forecastCard(), box);
   async function load() {
     const [cs, sum, savings, tips] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin), coachCard()]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));

@@ -74,6 +74,10 @@ func (s *Store) SessionUser(token string) (*User, error) {
 		return nil, nil
 	}
 	u.OwnCar = own != 0
+	if err == nil { // when it was last used, for the sign-ins page: written at most every five minutes
+		now := time.Now().Unix()
+		_, _ = s.DB.Exec(`UPDATE sessions SET last_active=? WHERE token=? AND last_active<?`, now, token, now-300)
+	}
 	return &u, err
 }
 

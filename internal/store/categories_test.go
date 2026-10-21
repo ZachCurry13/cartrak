@@ -2,12 +2,15 @@ package store
 
 import "testing"
 
-func TestCategoriesStartWithThreeAndOwnersAddAndRemoveTheirOwn(t *testing.T) {
+func TestCategoriesStartWithFourAndOwnersAddAndRemoveTheirOwn(t *testing.T) {
 	s, _ := Open(t.TempDir())
 	t.Cleanup(func() { s.Close() })
 	cs, _ := s.ListCategories()
-	if len(cs) != 3 || cs[0].Key != "personal" || cs[1].Key != "work" || cs[2].Key != "medical" {
+	if len(cs) != 4 || cs[0].Key != "personal" || cs[1].Key != "work" || cs[2].Key != "medical" || cs[3].Key != "charity" || cs[3].Rate == nil || *cs[3].Rate != 0.14 {
 		t.Fatalf("seed: %+v", cs)
+	}
+	if err := s.DeleteCategory("charity"); err == nil {
+		t.Fatal("charity is built in")
 	}
 	key, err := s.AddCategory("Charity run", "#16a34a", nil)
 	if err != nil || key != "charity-run" || !s.CategoryExists(key) {

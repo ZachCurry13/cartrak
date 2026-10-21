@@ -2,9 +2,12 @@ package server
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 // describeAgent turns a browser's long User-Agent text into something readable, like "Chrome on Android".
@@ -53,21 +56,60 @@ func (s *Server) securityInfo(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie(cookieName); err == nil {
 		cur = c.Value
 	}
-	type row struct {
-		ID      int64  `json:"id"`
-		User    string `json:"user"`
-		Role    string `json:"role"`
-		Created int64  `json:"created"`
-		Expires int64  `json:"expires"`
-		IP      string `json:"ip"`
-		Agent   string `json:"agent"`
-		Current bool   `json:"current"`
-	}
-	out := make([]row, 0, len(sessions))
+	out := make([]sessionRow, 0, len(sessions))
 	for _, x := range sessions {
-		out = append(out, row{x.ID, x.User, x.Role, x.Created, x.Expires, x.IP, x.Agent, x.Token == cur})
+		out = append(out, sessionRow{x.ID, x.User, x.Role, x.Created, x.Expires, x.IP, x.Agent, x.Token == cur, max(x.LastActive, x.Created)})
 	}
-	ok(w, map[string]any{"signins": logs, "sessions": out, "now": time.Now().Unix()})
+	users, _ := s.core().ListUsers()
+	ok(w, map[string]any{"signins": logs, "sessions": out, "people": peopleSignedIn(users, out, logs), "now": time.Now().Unix()})
+}
+
+type sessionRow struct {
+	ID         int64  `json:"id"`
+	User       string `json:"user"`
+	Role       string `json:"role"`
+	Created    int64  `json:"created"`
+	Expires    int64  `json:"expires"`
+	IP         string `json:"ip"`
+	Agent      string `json:"agent"`
+	Current    bool   `json:"current"`
+	LastActive int64  `json:"lastActive"`
+}
+
+// personSignins is one account at a glance: how many devices are signed in, when it was last used, its last sign-in and the
+// failed attempts under its name in the log.
+type personSignins struct {
+	Name       string `json:"name"`
+	Role       string `json:"role"`
+	Devices    int    `json:"devices"`
+	LastActive int64  `json:"lastActive"`
+	LastSignin int64  `json:"lastSignin"`
+	Failed     int    `json:"failed"`
+}
+
+func peopleSignedIn(users []store.User, sessions []sessionRow, logs []store.Signin) []personSignins {
+	out := make([]personSignins, 0, len(users))
+	for _, u := range users {
+		p := personSignins{Name: u.Name, Role: u.Role}
+		for _, x := range sessions {
+			if x.User == u.Name {
+				p.Devices++
+				p.LastActive = max(p.LastActive, x.LastActive)
+			}
+		}
+		for _, l := range logs {
+			switch {
+			case !strings.EqualFold(l.Name, u.Name):
+			case l.OK:
+				p.LastSignin = max(p.LastSignin, l.TS)
+			default:
+				p.Failed++
+			}
+		}
+		out = append(out, p)
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].LastActive > out[j].LastActive })
+	return out
 }
 
 // revokeSession signs one device out.

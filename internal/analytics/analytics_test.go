@@ -76,7 +76,8 @@ func TestRecordsAndStreak(t *testing.T) {
 		{ID: 3, Start: at("2026-10-03 08:00"), End: at("2026-10-03 08:10"), Km: 5, TempC: fp(25)},
 		{ID: 4, Start: at("2026-10-07 08:00"), End: at("2026-10-07 08:10"), Km: 5},
 	}
-	cs := []Charge{{ID: 7, Start: at("2026-10-01 12:00"), Kwh: 55, WallKwh: 57, Cost: fp(31), PeakKw: 150}, {ID: 8, Start: at("2026-10-02 22:00"), Kwh: 30, Cost: fp(4.5), PeakKw: 11}}
+	cs := []Charge{{ID: 7, Start: at("2026-10-01 12:00"), Kwh: 55, WallKwh: 57, Cost: fp(31), PeakKw: 150, Where: "public"}, {ID: 8, Start: at("2026-10-02 22:00"), Kwh: 30, Cost: fp(9), PeakKw: 11, Where: "public"},
+		{ID: 9, Start: at("2026-10-03 22:00"), Kwh: 30, Cost: fp(3), Where: "home"}, {ID: 10, Start: at("2026-10-04 12:00"), Kwh: 20, Cost: fp(0), Where: "public"}}
 	got := map[string]Record{}
 	for _, r := range Records(ts, cs, utc) {
 		got[r.Key] = r

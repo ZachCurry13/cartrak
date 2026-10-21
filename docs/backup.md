@@ -28,9 +28,10 @@ Your current data is not deleted. It is kept in the data folder as `cartrak.db.b
 
 **By hand, if the app will not start:** stop CarTrak, delete `cartrak.db-wal` and `cartrak.db-shm` if they exist, replace `cartrak.db` in the data folder with the backup (renamed to `cartrak.db`), and start CarTrak.
 
-## Security
-**More, Security** (admins) has two lists:
-- **Signed in now:** every phone and browser that is signed in, with where it signed in from, and a button to sign it out. Use it for a lost phone or a device you do not recognise.
+## Sign-ins and devices
+**More, Sign-ins and devices** (admins of the installation; also from Settings) has three lists:
+- **Everyone:** each account with how many devices are signed in, when it was last used (to about five minutes), its last sign-in and any failed attempts under its name.
+- **Signed in now:** every phone and browser that is signed in, with where it signed in from, when it was last active, and a button to sign it out. Use it for a lost phone or a device you do not recognise.
 - **Sign-in log:** the last 100 sign-in attempts, newest first, with the name that was tried, whether it worked, and the device and address. Many failures in a row, or a name you do not know, is worth a look. Passwords are never stored.
 
 The address comes from the connection (or from Cloudflare when CarTrak is reached through a tunnel).

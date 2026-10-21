@@ -29,9 +29,16 @@ func TestTheSignInLogAndSignedInDevicesCanBeSeenAndRevoked(t *testing.T) {
 			Agent string
 		}
 		Sessions []struct {
-			ID      int64
-			User    string
-			Current bool
+			ID         int64
+			User       string
+			Current    bool
+			LastActive int64
+		}
+		People []struct {
+			Name       string
+			Devices    int
+			LastActive int64
+			Failed     int
 		}
 	}
 	if code != 200 || json.Unmarshal([]byte(b), &out) != nil {
@@ -43,8 +50,11 @@ func TestTheSignInLogAndSignedInDevicesCanBeSeenAndRevoked(t *testing.T) {
 	if strings.Contains(b, "not-the-password") {
 		t.Fatal("the password must never be stored")
 	}
-	if len(out.Sessions) == 0 || !out.Sessions[0].Current {
-		t.Fatalf("this device is marked as the current one: %s", b)
+	if len(out.Sessions) == 0 || !out.Sessions[0].Current || out.Sessions[0].LastActive == 0 {
+		t.Fatalf("this device is marked as the current one, and when it was last used: %s", b)
+	}
+	if len(out.People) == 0 || out.People[0].Devices < 1 || out.People[0].LastActive == 0 || out.People[0].Failed != 1 {
+		t.Fatalf("everyone at a glance: %s", b)
 	}
 	if code, _ := do(t, &http.Client{}, "GET", ts.URL+"/api/security", "", nil); code != 401 {
 		t.Fatalf("anonymous: %d", code)

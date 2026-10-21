@@ -30,6 +30,8 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/onboarding", s.auth(false, s.onboarding))
 	m.HandleFunc("POST /api/onboarding/dismiss", s.auth(true, s.dismissOnboarding))
 	m.HandleFunc("GET /api/checklist", s.auth(false, s.setupChecklist))
+	m.HandleFunc("GET /api/me/layout", s.auth(false, s.getLayout))
+	m.HandleFunc("PUT /api/me/layout", s.auth(false, s.putLayout))
 	m.HandleFunc("POST /api/checklist/hide", s.auth(false, s.hideSetup))
 	m.HandleFunc("POST /api/checklist/skip", s.auth(false, s.skipSetup))
 

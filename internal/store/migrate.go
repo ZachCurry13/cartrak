@@ -22,6 +22,7 @@ var migrations = []struct{ table, column, ddl string }{
 	{"sessions", "created", `ALTER TABLE sessions ADD COLUMN created INTEGER NOT NULL DEFAULT 0`},
 	{"sessions", "ip", `ALTER TABLE sessions ADD COLUMN ip TEXT NOT NULL DEFAULT ''`},
 	{"sessions", "agent", `ALTER TABLE sessions ADD COLUMN agent TEXT NOT NULL DEFAULT ''`},
+	{"sessions", "last_active", `ALTER TABLE sessions ADD COLUMN last_active INTEGER NOT NULL DEFAULT 0`},
 	{"trips", "journey_id", `ALTER TABLE trips ADD COLUMN journey_id INTEGER`},
 	{"charges", "start_kwh", `ALTER TABLE charges ADD COLUMN start_kwh REAL`},
 	{"charges", "end_kwh", `ALTER TABLE charges ADD COLUMN end_kwh REAL`},

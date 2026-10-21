@@ -23,20 +23,24 @@ const categoriesSchema = `CREATE TABLE IF NOT EXISTS categories (
   key TEXT PRIMARY KEY, label TEXT NOT NULL, color TEXT NOT NULL DEFAULT '', rate REAL,
   builtin INTEGER NOT NULL DEFAULT 0, sort INTEGER NOT NULL DEFAULT 0)`
 
-// The categories every car starts with. Personal and Work cannot be removed; Medical can be renamed but not removed either, so
-// reports that mention it stay valid.
+// The categories every car starts with. Personal and Work cannot be removed; Medical and Charity can be renamed but not removed
+// either, so reports that mention them stay valid. Charity starts with the US charity mileage rate, 14 cents a mile, which is set
+// by law rather than each year (change it under Trip categories elsewhere).
 var seedCategories = []Category{
 	{Key: "personal", Label: "Personal", Builtin: true, Sort: 1},
 	{Key: "work", Label: "Work", Builtin: true, Sort: 2},
 	{Key: "medical", Label: "Medical", Color: "#dc2626", Builtin: true, Sort: 3},
+	{Key: "charity", Label: "Charity", Color: "#16a34a", Rate: &charityRate, Builtin: true, Sort: 4},
 }
+
+var charityRate = 0.14
 
 func (s *Store) ensureCategories() error {
 	if _, err := s.DB.Exec(categoriesSchema); err != nil {
 		return err
 	}
 	for _, c := range seedCategories {
-		if _, err := s.DB.Exec(`INSERT OR IGNORE INTO categories(key,label,color,builtin,sort) VALUES(?,?,?,1,?)`, c.Key, c.Label, c.Color, c.Sort); err != nil {
+		if _, err := s.DB.Exec(`INSERT OR IGNORE INTO categories(key,label,color,rate,builtin,sort) VALUES(?,?,?,?,1,?)`, c.Key, c.Label, c.Color, c.Rate, c.Sort); err != nil {
 			return err
 		}
 	}

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.49.0
+
+### 🧭 Your own bottom bar and More
+- **Customize** (in the More sheet) chooses the pages in the bottom bar and the tiles at the top of More, in any order. Turn on **Arrange by how often I use them** to keep both in order of the pages you open most. Saved to your account, so it follows you; **Reset** goes back to the start.
+- The More tiles are now Insights, Reports, Day view, Places, Plan a trip and Settings. Things moved to where they belong: **charging prices** on the Charging page, **trip rules** on the Trips page, **alert settings** behind the bell (⚙ at the top of Notifications), and **people, cars and backups** under Settings and the Admin part of More.
+
+### 💚 Charity
+- A new **Charity** trip category, starting at the US charity mileage rate of 14 cents a mile, and a **Charity trip** mode that labels every trip of a stretch of days as Charity. Reports and the mileage log can include it.
+
+### 🔐 Sign-ins and devices
+- Admins see **everyone** at a glance: each account's signed-in devices, when it was last used, its last sign-in and failed attempts. Every device shows when it was last active.
+
+### 🐞 Fixes
+- **A day in the life** showed 100% parked for a year (or any stretch that began before CarTrak did). It now counts from the first day with data, and draws a short history clearly.
+- The **cheapest kWh** record now only counts paid public charging, not home or free chargers.
+
 ## 0.48.0
 
 ### 🔔 Notifications that stay saved
