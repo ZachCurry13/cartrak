@@ -92,7 +92,7 @@ func (o Options) widths() []float64 {
 func Workbook(trips []Trip, o Options) *xlsx.Workbook {
 	unit := "Miles"
 	if o.Metric {
-		unit = "Kilometres"
+		unit = "Kilometers"
 	}
 	rows, total := Sum(trips, o)
 	sheet := &xlsx.Sheet{Name: "Trips", Widths: o.widths()}

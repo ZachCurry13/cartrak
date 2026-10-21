@@ -16,8 +16,8 @@ func TestCategoriesStartWithFourAndOwnersAddAndRemoveTheirOwn(t *testing.T) {
 	if err != nil || key != "charity-run" || !s.CategoryExists(key) {
 		t.Fatalf("add: %q %v", key, err)
 	}
-	if _, err := s.AddCategory("Bad colour", "red", nil); err == nil {
-		t.Fatal("a colour must be #rrggbb")
+	if _, err := s.AddCategory("Bad color", "red", nil); err == nil {
+		t.Fatal("a color must be #rrggbb")
 	}
 	// two with the same label get different keys
 	k2, _ := s.AddCategory("Charity run", "", nil)

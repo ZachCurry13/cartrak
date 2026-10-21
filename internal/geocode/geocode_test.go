@@ -91,6 +91,6 @@ func TestFailuresAreNotCachedAndRequestsAreSpacedOut(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := (&Client{BaseURL: srv.URL, MinGap: time.Hour, last: time.Now()}).City(ctx, 1, 1); err == nil {
-		t.Fatal("a cancelled request must stop waiting")
+		t.Fatal("a canceled request must stop waiting")
 	}
 }

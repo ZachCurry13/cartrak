@@ -36,6 +36,6 @@ func TestJudgeAgainstTheDriversOwnFirmLevel(t *testing.T) {
 		t.Fatal("a trip of three readings is not judged")
 	}
 	if _, ok := Judge(hard, Baseline{}); ok {
-		t.Fatal("no baseline, no judgement")
+		t.Fatal("no baseline, no judgment")
 	}
 }

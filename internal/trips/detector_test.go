@@ -273,7 +273,7 @@ func TestASessionKeepsTheChargerTypeTheCarReportedWhileCharging(t *testing.T) {
 	if len(cs) != 1 || cs[0].Station != "DC" {
 		t.Fatalf("station: %+v", cs)
 	}
-	// A parked reading with a stale station type must not start or colour anything.
+	// A parked reading with a stale station type must not start or color anything.
 	if stationOf(b) != "" {
 		t.Fatal("stale station type is ignored when not charging")
 	}

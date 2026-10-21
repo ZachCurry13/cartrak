@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-// The app keeps the choice between miles and kilometres on each device, and sends it with every call in the X-Units
+// The app keeps the choice between miles and kilometers on each device, and sends it with every call in the X-Units
 // header. Anything the server writes in words for a person (a message, a finding) uses it; numbers in the API itself stay
-// in kilometres and the app converts them. Without the header the answer is in miles, the app's default.
+// in kilometers and the app converts them. Without the header the answer is in miles, the app's default.
 
 const kmPerMile = 1.609344
 

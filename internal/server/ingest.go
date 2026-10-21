@@ -58,8 +58,8 @@ type fixReq struct {
 	TS    int64 `json:"ts"`
 	Lat   *num  `json:"lat"`
 	Lon   *num  `json:"lon"`
-	Speed *num  `json:"speed"` // metres per second, as phones report it
-	Acc   *num  `json:"acc"`   // metres
+	Speed *num  `json:"speed"` // meters per second, as phones report it
+	Acc   *num  `json:"acc"`   // meters
 }
 
 // point validates one fix. It returns false for one that cannot be stored.
@@ -152,7 +152,7 @@ func (s *Server) ingestPoints(w http.ResponseWriter, r *http.Request, d *store.D
 	ok(w, map[string]int{"saved": len(keep), "skipped": len(in.Points) - len(keep)})
 }
 
-// movingNow is true when a fresh fix shows the phone travelling faster than walking pace
+// movingNow is true when a fresh fix shows the phone traveling faster than walking pace
 // (about 11 km/h), which is as good as a "trip started" message for the poller.
 func movingNow(ps []store.Point) bool {
 	cut := time.Now().Add(-2 * time.Minute).Unix()

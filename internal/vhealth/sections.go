@@ -96,7 +96,7 @@ func traction(f map[string]any, t Trends) Section {
 	}
 	capKwh := num(f, "Estimated capacity", "kwh", "xevBatteryCapacity")
 	if capKwh != nil {
-		capKwh.Note = "The car's own estimate of what the battery can hold now. It moves a few percent with the temperature and the charge level, so the chart shows the middle reading of each day. Watch it over months: a steady fall is normal ageing."
+		capKwh.Note = "The car's own estimate of what the battery can hold now. It moves a few percent with the temperature and the charge level, so the chart shows the middle reading of each day. Watch it over months: a steady fall is normal aging."
 	}
 	status := text(f, "Battery status", "xevBatteryPerformanceStatus")
 	if status != nil {

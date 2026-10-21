@@ -53,7 +53,7 @@ func inGeo(r store.Rule, lat, lon *float64) bool {
 	return Haversine(*lat, *lon, *r.GeoLat, *r.GeoLon) <= *r.GeoRadius
 }
 
-// Haversine returns the distance in metres between two points.
+// Haversine returns the distance in meters between two points.
 func Haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371000.0
 	rad := math.Pi / 180

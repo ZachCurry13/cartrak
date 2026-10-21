@@ -32,8 +32,8 @@ Ford limits how often an app may ask (about one request per endpoint every 30 se
 **Linking works but no data appears.**
 Check More -> Ford connection for the last error. Ford's API may return fewer fields than its dictionary lists, or the vehicle may not be authorized for your app. The Data page shows what actually arrived.
 
-**Trips are labelled wrong.**
-Check `CARTRAK_TZ`: rules use that time zone. After changing rules press "Re-apply to past trips". Trips you labelled by hand are never changed.
+**Trips are labeled wrong.**
+Check `CARTRAK_TZ`: rules use that time zone. After changing rules press "Re-apply to past trips". Trips you labeled by hand are never changed.
 
 **No update banner.**
 Update checks can be off (More -> About), the container may have no internet, or you are already on the newest version. Pre-release/`main` builds never show update notices.
@@ -53,11 +53,11 @@ The live feed is a long-lived connection. It works through a Cloudflare tunnel; 
 **Live view shows "Ford asked CarTrak to slow down".**
 Ford limited how often the app may ask. CarTrak waits as long as Ford requests. Turn off Road trip mode or raise `CARTRAK_POLL_LIVE_SEC`.
 
-**A setting is greyed out ("locked") in Admin settings.**
+**A setting is grayed out ("locked") in Admin settings.**
 It is set by an environment variable or `config.yaml`, which win over the Admin page. Change it there, or remove it there to edit it in the app.
 
 Still stuck? Open an issue at https://github.com/ZachCurry13/cartrak/issues. Do not include your Ford secret or tokens.
 
 ## The Debug report, for one car or every car
 
-**More, Debug report** makes a text report of the car on screen for the last 6 hours to 14 days. If you administer the whole installation and have more than one car, pick any car from the list (yours or, for an administrator of the whole installation, anyone's), or choose **Every car, together** to get one report with each car under its own heading. It lists the readings, trips, charging, polling, alerts and the settings that shape behaviour, and has no positions, people's or cars' names, keys or VIN. Read it before sending it and delete anything you would rather not share.
+**More, Debug report** makes a text report of the car on screen for the last 6 hours to 14 days. If you administer the whole installation and have more than one car, pick any car from the list (yours or, for an administrator of the whole installation, anyone's), or choose **Every car, together** to get one report with each car under its own heading. It lists the readings, trips, charging, polling, alerts and the settings that shape behavior, and has no positions, people's or cars' names, keys or VIN. Read it before sending it and delete anything you would rather not share.

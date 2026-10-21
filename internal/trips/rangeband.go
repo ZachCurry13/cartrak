@@ -8,7 +8,7 @@ import (
 )
 
 // Window is a stretch of driving, measured as distance and the battery percent it used. Dividing one by
-// the other gives the real kilometres per percent, which already includes the weather, the speeds and the
+// the other gives the real kilometers per percent, which already includes the weather, the speeds and the
 // car's hidden top and bottom buffer. That is why it needs no battery capacity.
 type Window struct {
 	Trips   int     `json:"trips"`

@@ -31,7 +31,7 @@ func TestThinKeepsTheEndsAndRounds(t *testing.T) {
 		t.Fatalf("%d points, first %v last %v", len(got), got[0], got[len(got)-1])
 	}
 	if p := Thin([][2]float64{{40.123456789, -75.987654321}, {41, -75}}, 10); p[0] != [2]float64{40.12346, -75.98765} {
-		t.Fatalf("rounded to a metre: %v", p[0])
+		t.Fatalf("rounded to a meter: %v", p[0])
 	}
 }
 

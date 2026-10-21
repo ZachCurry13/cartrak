@@ -10,7 +10,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
-// addDrive stores a finished trip of km kilometres, starting at.
+// addDrive stores a finished trip of km kilometers, starting at.
 func addDrive(t *testing.T, srv *Server, at time.Time, km float64) {
 	t.Helper()
 	fp := func(v float64) *float64 { return &v }

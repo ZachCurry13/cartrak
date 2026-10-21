@@ -29,14 +29,14 @@ type Client struct {
 type answer struct {
 	Code   string `json:"code"`
 	Routes []struct {
-		Distance float64 `json:"distance"` // metres
+		Distance float64 `json:"distance"` // meters
 		Geometry struct {
 			Coordinates [][2]float64 `json:"coordinates"` // lon, lat
 		} `json:"geometry"`
 	} `json:"routes"`
 }
 
-// Route is the driving route through the points in order, and its length in kilometres.
+// Route is the driving route through the points in order, and its length in kilometers.
 func (c *Client) Route(ctx context.Context, via []Point) ([]Point, float64, error) {
 	if len(via) < 2 {
 		return nil, 0, fmt.Errorf("need at least two points")

@@ -5,7 +5,7 @@ import { planTrip } from './tripplan.js';
 
 const mid = (b) => (b.hiKph >= 300 ? b.loKph + 8 : (b.loKph + b.hiKph) / 2);
 
-// Energy per kilometre against speed from your own drives: c(v) = a + b*v*v, fitted to the speed ranges you have driven
+// Energy per kilometer against speed from your own drives: c(v) = a + b*v*v, fitted to the speed ranges you have driven
 // (weighted by distance). It is smooth, so it can say something about speeds close to those you have driven.
 export function fitSpeedModel(bands) {
   const use = bands.filter((b) => b.km >= 4 && b.kwh > 0);

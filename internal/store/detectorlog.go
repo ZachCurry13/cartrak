@@ -5,7 +5,7 @@ import "time"
 const detectorLogDDL = `CREATE TABLE IF NOT EXISTS detector_log (id INTEGER PRIMARY KEY, ts INTEGER NOT NULL, kind TEXT NOT NULL, note TEXT NOT NULL)`
 
 // LogEntry is one decision CarTrak made that leaves no trace in the records themselves: a blip thrown away, a paused
-// charge picked up again, an alert held back. The Debug report lists them so odd behaviour can be explained.
+// charge picked up again, an alert held back. The Debug report lists them so odd behavior can be explained.
 type LogEntry struct {
 	TS   int64  `json:"ts"`
 	Kind string `json:"kind"`

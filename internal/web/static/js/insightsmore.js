@@ -62,11 +62,11 @@ export function driving(body) {
         scatter(d.temp.map((p) => ({ x: p.tempC, y: p.kmPerKwh, size: p.km, text: `${temp(p.tempC)} · ${eff(p.kmPerKwh)} · ${dist(p.km)}`, href: `#/trip/${p.id}` })),
           { xFmt: (x) => temp(x), yFmt: (y) => (eff(y) || '').split(' ')[0], xTitle: 'Outside temperature', yTitle: (eff(1) || '').split(' ').slice(1).join(' '), line: f, summary: f ? `At ${temp(cold)} about ${at(cold)}; at ${temp(warm)} about ${at(warm)}` : 'Tap a dot to read it' })),
       card('Where the miles went', calendarHeat(d.days.map((x) => ({ date: x.date, value: x.km, text: `${dist(x.km, 0)} in ${x.trips} trip${x.trips === 1 ? '' : 's'}` })),
-        { weeks: days === '90' ? 14 : 26, colour: 'var(--warn)', summary: `${d.days.length} days with driving · ${dist(d.km, 0)}` })),
+        { weeks: days === '90' ? 14 : 26, color: 'var(--warn)', summary: `${d.days.length} days with driving · ${dist(d.km, 0)}` })),
       d.speed.length ? card('Efficiency by average speed', ...d.speed.map((s) => h('div', { class: 'row' }, h('span', { style: 'width:6.5em;flex:0 0 auto' }, `${speedRange(s)}`),
         h('div', { class: 'bar grow' }, h('i', { style: `width:${(s.kmPerKwh / bestSpeed.kmPerKwh) * 100}%;background:var(--ok)` })), h('b', { style: 'flex:0 0 auto' }, eff(s.kmPerKwh).split(' ')[0])))) : null,
       card('How long your trips are', stackBars(d.lengths.map((b, i) => ({ label: lengthLabels[i], parts: [b.trips], text: `${b.trips} trips` })), { classes: ['cost'], legend: [`Trips, by ${isMetric() ? 'km' : 'miles'}`], summary: `Most trips are ${lengthLabels[busiest]} ${isMetric() ? 'km' : 'miles'}` })),
-      card('When you drive', heatGrid(WEEK, HOURS, d.hourWeek, { colour: 'var(--warn)', text: (r, c, v) => `${WEEK[r]} ${hourText(c)}: ${dist(v, 0)} driven`, summary: 'Tap a square' })));
+      card('When you drive', heatGrid(WEEK, HOURS, d.hourWeek, { color: 'var(--warn)', text: (r, c, v) => `${WEEK[r]} ${hourText(c)}: ${dist(v, 0)} driven`, summary: 'Tap a square' })));
   });
   body.append(out);
 }

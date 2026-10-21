@@ -66,7 +66,7 @@ type Session struct {
 	Measured   bool     `json:"measured"`
 }
 
-// DistanceM is the distance in metres between two points.
+// DistanceM is the distance in meters between two points.
 func DistanceM(a, b Point) float64 { return distanceM(a, b) }
 
 func distanceM(a, b Point) float64 {

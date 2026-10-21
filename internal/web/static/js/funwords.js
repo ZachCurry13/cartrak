@@ -34,7 +34,7 @@ export function compareEnergy(kwh) {
 }
 
 export const milesOrKm = (km) => Math.round(isMetric() ? km : km / KM_PER_MI).toLocaleString();
-export const distUnit = () => (isMetric() ? 'kilometres' : 'miles');
+export const distUnit = () => (isMetric() ? 'kilometers' : 'miles');
 
 // a value of a badge or a record, by its kind
 export function valueText(kind, v, cur = '$') {

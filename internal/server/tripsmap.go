@@ -11,7 +11,7 @@ import (
 const (
 	overviewTrips  = 60 // trips drawn on the overview map unless asked for fewer
 	overviewMax    = 100
-	overviewPoints = 40 // a trip needs no more than this to be recognisable at overview scale
+	overviewPoints = 40 // a trip needs no more than this to be recognizable at overview scale
 )
 
 type routeOut struct {

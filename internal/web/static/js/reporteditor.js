@@ -2,7 +2,7 @@ import { h } from './ui.js';
 import { api } from './api.js';
 
 // Making or changing a custom report: its columns in order, the heading each one shows, columns with a fixed value (a company name, a
-// cost centre), and whether the summary sits above the table.
+// cost center), and whether the summary sits above the table.
 export function reportEditor(opts, tpl, done) {
   const cfg = tpl ? JSON.parse(JSON.stringify(tpl.config)) : { columns: opts.columns.filter((c) => c.default).map((c) => ({ key: c.key, label: '' })), fixed: [], summary: true, title: '' };
   cfg.fixed = cfg.fixed || [];
@@ -47,7 +47,7 @@ export function reportEditor(opts, tpl, done) {
     h('label', { for: 'rs', style: 'display:flex;gap:8px;align-items:center;margin:8px 0' }, summary, 'Put a summary above the table, and a totals sheet'),
     h('h3', { style: 'margin:14px 0 6px' }, 'Columns, in order'), list,
     h('p', {}, h('button', { class: 'sec', type: 'button', onclick: () => { cfg.columns.push({ key: opts.columns[0].key, label: '' }); drawCols(); } }, 'Add a column')),
-    h('h3', { style: 'margin:14px 0 6px' }, 'Fixed columns'), h('p', { class: 'muted' }, 'A column with the same value on every row, such as a company name or a cost centre.'), fixedList,
+    h('h3', { style: 'margin:14px 0 6px' }, 'Fixed columns'), h('p', { class: 'muted' }, 'A column with the same value on every row, such as a company name or a cost center.'), fixedList,
     h('p', {}, h('button', { class: 'sec', type: 'button', onclick: () => { cfg.fixed.push({ label: '', value: '' }); drawFixed(); } }, 'Add a fixed column')),
     h('p', { class: 'seg' }, h('button', { onclick: save }, 'Save report'), h('button', { class: 'sec', onclick: () => done(false) }, 'Cancel')), msg);
 }

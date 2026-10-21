@@ -11,7 +11,7 @@ export default async function review(root, _a, session) {
   async function load() {
     const all = await api('/api/trips?limit=200');
     const todo = all.filter((t) => !t.open && t.categorySource === 'default');
-    if (!todo.length) return box.replaceChildren(emptyState('All caught up', 'Every trip is labelled Work or Personal.', '#/trips', 'See trips'));
+    if (!todo.length) return box.replaceChildren(emptyState('All caught up', 'Every trip is labeled Work or Personal.', '#/trips', 'See trips'));
     box.replaceChildren(h('p', { class: 'muted' }, `${todo.length} trip${todo.length === 1 ? '' : 's'} with no label yet. Trip rules (More, Trip rules) can label them for you in future.`),
       ...todo.map((t) => {
         const set = (category) => async () => { await api(`/api/trips/${t.id}`, { method: 'PATCH', body: { category, notes: t.notes || '' } }); load(); };

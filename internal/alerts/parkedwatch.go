@@ -29,7 +29,7 @@ func motionVec(f map[string]any) ([3]float64, bool) {
 	return v, any
 }
 
-// Motion is how hard the car's motion sensors say it is being pushed (metres per second squared, gravity taken
+// Motion is how hard the car's motion sensors say it is being pushed (meters per second squared, gravity taken
 // out), or false when the car reported none. A parked car reads close to zero.
 func Motion(f map[string]any) (float64, bool) {
 	x, y, z := ford.Number(f, "acceleration.value.x"), ford.Number(f, "acceleration.value.y"), ford.Number(f, "acceleration.value.z")

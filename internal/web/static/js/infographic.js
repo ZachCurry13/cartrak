@@ -92,7 +92,7 @@ function energyBar(g, f, x, y, width) {
 // how tall the energy block is: its title, the bar and one or two lines of key
 const ENERGY_H = 200;
 
-// colors: the season's two colours for the glow behind the picture, or null for the usual teal and blue.
+// colors: the season's two colors for the glow behind the picture, or null for the usual teal and blue.
 export function drawInfographic(w, routes, colors = null) {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
@@ -150,7 +150,7 @@ export async function shareImage(canvas, name) {
   const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
   const file = new File([blob], `${name}.png`, { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: name }); return 'shared'; } catch (e) { if (e.name === 'AbortError') return 'cancelled'; }
+    try { await navigator.share({ files: [file], title: name }); return 'shared'; } catch (e) { if (e.name === 'AbortError') return 'canceled'; }
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

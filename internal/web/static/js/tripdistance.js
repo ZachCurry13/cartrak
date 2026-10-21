@@ -36,7 +36,7 @@ export function tripDistanceCard(t) {
   const short = shortOdometer(t);
   if (short) setTimeout(check, 0);
   const metric = isMetric();
-  const num = h('input', { type: 'number', step: '0.1', min: 0.1, inputmode: 'decimal', placeholder: metric ? 'km' : 'miles', 'aria-label': `Distance in ${metric ? 'kilometres' : 'miles'}`, style: 'width:8em' });
+  const num = h('input', { type: 'number', step: '0.1', min: 0.1, inputmode: 'decimal', placeholder: metric ? 'km' : 'miles', 'aria-label': `Distance in ${metric ? 'kilometers' : 'miles'}`, style: 'width:8em' });
   const enter = () => { const v = Number(num.value); if (!(v > 0)) { msg.textContent = 'Enter the distance.'; return; } send({ km: metric ? v : v * 1.609344 }); };
   return h('section', { class: 'card' }, h('h2', {}, short ? 'This distance looks too short' : 'Does the distance look wrong?'),
     short ? h('p', {}, `The odometer says ${dist(t.distanceKm, 1)}, but the start and end are ${dist(straightKm(t), 1)} apart in a straight line, so the drive was longer. CarTrak may also have noticed the trip late; if you know the real distance, type it below.`) : null,

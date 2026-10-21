@@ -38,5 +38,5 @@ func Name(lat, lon *float64, all []*store.NamedPlace) string {
 	return ""
 }
 
-// Distance is how far the position is from the place's centre, in metres.
+// Distance is how far the position is from the place's center, in meters.
 func Distance(lat, lon float64, p *store.NamedPlace) float64 { return meters(lat, lon, p.Lat, p.Lon) }

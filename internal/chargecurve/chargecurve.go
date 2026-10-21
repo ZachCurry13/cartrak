@@ -22,7 +22,7 @@ type Curve struct {
 	At80Kw        *float64 `json:"at80Kw"`        // power as it passed about 80 percent
 }
 
-// Build summarises points (any order). energyStart and energyEnd are the energy left in the battery at the start and
+// Build summarizes points (any order). energyStart and energyEnd are the energy left in the battery at the start and
 // the end of the session, when the car reported it.
 func Build(points []Point, energyStart, energyEnd *float64) Curve {
 	ps := append([]Point(nil), points...)

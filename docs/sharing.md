@@ -27,7 +27,7 @@ The link only works where CarTrak can be reached. To share with people outside y
 
 ## Sharing a whole day
 
-Open a day in the **Day view** and use **Share this day** (or the Share box at the bottom of the page). The link shows the day's trips together: distance, driving time, number of trips and stops, and the routes if you choose to include them, with the same choices as a trip (route trimmed at both ends, the whole route, or numbers only; whether to show the cities and the times; when it stops working). It never says which categories the trips have, so a medical trip in the day is not labelled as one. A day with a trip still in progress cannot be shared yet.
+Open a day in the **Day view** and use **Share this day** (or the Share box at the bottom of the page). The link shows the day's trips together: distance, driving time, number of trips and stops, and the routes if you choose to include them, with the same choices as a trip (route trimmed at both ends, the whole route, or numbers only; whether to show the cities and the times; when it stops working). It never says which categories the trips have, so a medical trip in the day is not labeled as one. A day with a trip still in progress cannot be shared yet.
 
 ## Short links
 

@@ -73,7 +73,7 @@ func TestParseTiresAndLocksFromLists(t *testing.T) {
 
 // What a fast charger looks like in real telemetry: the charge status says IN_PROGRESS, there is no onboard charger
 // power, and only the battery's own current and voltage show that energy is flowing in.
-func TestFastChargingIsRecognisedFromTheStatusWordAndThePackCurrent(t *testing.T) {
+func TestFastChargingIsRecognizedFromTheStatusWordAndThePackCurrent(t *testing.T) {
 	raw := []byte(`{"telemetry":{"metrics":{
 	  "xevBatteryChargeDisplayStatus":{"value":"IN_PROGRESS"},
 	  "xevPlugChargerStatus":{"value":"CONNECTED"},

@@ -15,7 +15,7 @@ const (
 	longTripHour = 24.0 // a trip longer than this has probably not been closed
 )
 
-// Odo is one odometer reading, in kilometres.
+// Odo is one odometer reading, in kilometers.
 type Odo struct {
 	TS int64
 	Km float64

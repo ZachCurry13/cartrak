@@ -20,7 +20,7 @@ func (s src) settings() Tab {
 		departures.Rows = append(departures.Rows, d...)
 	}
 	other := group("Other settings", "",
-		s.text("Units on the car's screen", "Whether the car's own screen uses miles or kilometres.", "displaySystemOfMeasure"),
+		s.text("Units on the car's screen", "Whether the car's own screen uses miles or kilometers.", "displaySystemOfMeasure"),
 		s.num("Remote start run time", "duration", "How long a remote start keeps the car running before it shuts off if you do not get in.", "remoteStartRunDurationSetting"),
 		s.text("Car mode", "Normal means the car is in everyday use. Other modes are for the factory or transport.", "vehicleLifeCycleMode"))
 	return tab("settings", "Settings and schedules", "What the car is set to do. Read only.", updates, departures, other)

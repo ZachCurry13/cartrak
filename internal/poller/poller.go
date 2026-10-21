@@ -95,7 +95,7 @@ func (p *Poller) Now() {
 	}
 }
 
-// Run blocks until ctx is cancelled.
+// Run blocks until ctx is canceled.
 func (p *Poller) Run(ctx context.Context) {
 	wait := time.Second
 	for {

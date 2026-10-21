@@ -32,13 +32,13 @@ Content-Type: application/json
 | Trip ends | `https://YOUR-ADDRESS/api/ingest/event` | `{"type":"drive_end"}` |
 | Still alive (optional) | `https://YOUR-ADDRESS/api/ingest/event` | `{"type":"ping"}` |
 
-Any message can also carry a position: `"lat":44.98,"lon":-93.26`, plus optional `"acc"` (metres) and `"speed"` (metres per second). Numbers in quotes are fine too, because automation apps often add them.
+Any message can also carry a position: `"lat":44.98,"lon":-93.26`, plus optional `"acc"` (meters) and `"speed"` (meters per second). Numbers in quotes are fine too, because automation apps often add them.
 
 ### Android: Tasker
 1. New **Profile -> State -> Net -> BT Connected**, pick your car's Bluetooth name.
 2. In the **entry task** add **Net -> HTTP Request**: Method `POST`, URL as above, Headers (one per line) `Authorization: Bearer YOUR_TOKEN` and `Content-Type: application/json`, Body `{"type":"drive_start"}`.
 3. In the **exit task** add the same action with Body `{"type":"drive_end"}`.
-4. Exclude Tasker from battery optimisation so it runs when the screen is off.
+4. Exclude Tasker from battery optimization so it runs when the screen is off.
 
 ### Android: MacroDroid
 1. New macro, trigger **Connectivity -> Bluetooth Event -> Device Connected** (your car). Add trigger **Disconnected** to a second macro.
@@ -56,7 +56,7 @@ For a route you can send `POST /api/ingest/points` with `{"points":[{"ts":170000
 
 Without an app, open **Live** on the phone and press **Record GPS from this phone**. That records only while the page is open with the screen on (see 3b for background tracking), and keeps points in the browser until they are sent, so a dropped signal loses nothing.
 
-A phone that reports travelling faster than walking pace also counts as "trip started" for the faster checks.
+A phone that reports traveling faster than walking pace also counts as "trip started" for the faster checks.
 
 ## 3b. Tracking in the background (so the page does not need to be open)
 A web page cannot track you once you leave it: phones put it to sleep. A free tracking app can run in the background and send each position to CarTrak. Two work well; pick the one for your phone. Both use the token from step 1, so create a device first.
@@ -68,7 +68,7 @@ A web page cannot track you once you leave it: phones put it to sleep. A free tr
 4. Under **HTTP headers** add two lines: `Authorization: Bearer YOUR_TOKEN` and `Content-Type: application/json`.
 5. Under **HTTP body** enter: `{"points":[{"ts":%TIMESTAMP,"lat":%LAT,"lon":%LON,"speed":%SPD,"acc":%ACC}]}`
 6. Turn on **Allow auto sending** and leave **Discard offline locations** off, so positions recorded without a signal are sent later.
-7. Set the **logging interval** to about 5 to 10 seconds, switch off battery optimisation for the app, and turn on **Start on boot**.
+7. Set the **logging interval** to about 5 to 10 seconds, switch off battery optimization for the app, and turn on **Start on boot**.
 
 Check it worked: More, Phone tracking should show "Heard from just now" and a growing point count for that device. The placeholder names above (`%LAT`, `%LON`, `%SPD`, `%ACC`, `%TIMESTAMP`) come from published setup guides; if the app lists different names in its own help, use those. If a language setting makes it write decimals with commas, switch the phone to a region that uses dots. GPSLogger can also be started and stopped by Tasker or MacroDroid, for example when the car's Bluetooth connects.
 
@@ -82,7 +82,7 @@ Check it worked: More, Phone tracking should show "Heard from just now" and a gr
 
 OwnTracks only sends when the phone decides to, and iPhones sometimes pause background apps; if it goes quiet, opening the app resumes it. One Home Assistant document says the Android version of OwnTracks is no longer supported, so on Android GPSLogger is the safer choice.
 
-A phone that reports travelling faster than walking pace also makes CarTrak check the car more often, exactly like the "trip started" message.
+A phone that reports traveling faster than walking pace also makes CarTrak check the car more often, exactly like the "trip started" message.
 
 ## Privacy and housekeeping
 - Tokens are stored only as a hash. Removing a phone makes its token stop working at once; points it already sent are kept.

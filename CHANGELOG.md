@@ -9,6 +9,13 @@
 ### 🚗🚙 All cars
 - With two or more cars, the car picker at the top has **All cars**: every car side by side (battery or fuel, range, what it is doing, the last trip) and the month or the year **together**, with each car's share and how much of the driving was electric. **Trips** lists every car's trips in one list. Tap a car or a trip to open it.
 
+### 🔔 Notifications that save
+- Alert choices no longer save on every tap. Tick what you want, then **Save alert choices** (a Save bar also appears at the bottom while there are changes). The page then shows what was really saved, and a phone that lost its registration is registered again with your choices.
+- When a request hits a bug, CarTrak now answers with a message instead of a dropped connection (which showed as "HTTP 502"), and notes it in a new **Server errors** part of the debug report.
+
+### 🇺🇸 US English
+- The app and the guides now use US spelling throughout (color, kilometers, meters, center, canceled). Searching for "tyre" still finds tires.
+
 ### 🎃 Smaller fixes
 - When CarTrak does not answer for a moment (for example while it restarts after an update), a save says so in words instead of "HTTP 502", and a page tries once more and then shows what the phone kept.
 - On a narrow phone with the car picker showing, the seasonal ornament steps aside so the header stays on one line.
@@ -22,8 +29,8 @@
 - A new optional alert, **Service visit**, asks on your phone. The wait before asking can be changed in Settings, or turned off.
 
 ### 🎃 Seasonal themes
-- CarTrak dresses up for the holidays: Halloween in October, Thanksgiving, Christmas (with twinkle lights), New Year's confetti, snow in winter, Valentine's, St. Patrick's, Easter and spring, the Fourth of July (fireworks), summer and autumn. Each changes the accent colour and the battery ring, puts an ornament by the name, and plays a short effect on Home once a session, bigger on the holiday itself. Wrapped and its infographic take on the season's colours.
-- Themes follow the dates around each holiday. Choose **Automatic**, a favourite, or **Off** in More, Display and data. The effect never plays with "reduce motion" or Data saver, and text keeps its contrast in light and dark.
+- CarTrak dresses up for the holidays: Halloween in October, Thanksgiving, Christmas (with twinkle lights), New Year's confetti, snow in winter, Valentine's, St. Patrick's, Easter and spring, the Fourth of July (fireworks), summer and autumn. Each changes the accent color and the battery ring, puts an ornament by the name, and plays a short effect on Home once a session, bigger on the holiday itself. Wrapped and its infographic take on the season's colors.
+- Themes follow the dates around each holiday. Choose **Automatic**, a favorite, or **Off** in More, Display and data. The effect never plays with "reduce motion" or Data saver, and text keeps its contrast in light and dark.
 
 ### ✨ What's new, after every update
 - The first time you open the app after an update, a sheet shows what changed in every version since you last opened it. **Got it** closes it until the next update.
@@ -88,7 +95,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ### ✨ A fresher, more consistent look
 - **Charging sessions look like trips**: a battery picture filled from where the charge started to where it ended, what it added and how long, where, the battery bar, peak and average power, and the cost with where it came from (**receipt**, **place price**, **home price**, **public price**). Editing where it was, the charger's kWh and what you paid sits behind an **Edit** button.
-- One colour language everywhere: green is energy going in (charging), amber is energy going out (driving), grey is parked. Rows on the Day view and History now have the same coloured edge as trip and charging cards.
+- One color language everywhere: green is energy going in (charging), amber is energy going out (driving), gray is parked. Rows on the Day view and History now have the same colored edge as trip and charging cards.
 - On a phone, trip cards give the town names the full width, with the label and share button underneath.
 - The links at the top of Trips and Charging are a single row of small buttons instead of a stack.
 - Fix: Home said **Charging** whenever the car was not driving. It now says Parked unless the car is really charging.
@@ -145,9 +152,9 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ## 0.42.2
 
-### 🎨 What the colours mean
-- The Trips list has a **What the colours mean** fold: the green bar is battery left after the drive and amber the part it used, a green badge is more efficient than your average and red less, the dots mark where a drive started (green) and ended (red), and the stripe on the left is the category colour.
-- The trip page now shows the same battery bar, with what its colours mean.
+### 🎨 What the colors mean
+- The Trips list has a **What the colors mean** fold: the green bar is battery left after the drive and amber the part it used, a green badge is more efficient than your average and red less, the dots mark where a drive started (green) and ended (red), and the stripe on the left is the category color.
+- The trip page now shows the same battery bar, with what its colors mean.
 - A trip that started and ended in the same town reads **Around Traverse City** instead of just the town.
 
 ### 🪲 A clearer Debug report
@@ -180,7 +187,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ### 💰 Cost per mile, savings and CO2
 - **Home → This month** and the **Charging** page now show what charging cost **per mile (or km)**, for the month and the year so far. Each trip page shows an estimated energy cost at your recent average price.
-- In **Charging settings → Compared with a gas car**, give the gas price and your gas car's economy (US gallons and mpg, or litres and L per 100 km) to see **what you saved** against it and the **CO2 avoided**. Nothing is compared until you set both.
+- In **Charging settings → Compared with a gas car**, give the gas price and your gas car's economy (US gallons and mpg, or liters and L per 100 km) to see **what you saved** against it and the **CO2 avoided**. Nothing is compared until you set both.
 
 ### 🐢 Slow fast charge is fairer
 - A charge all the way to 100% tapers off near full on every charger, so its average is always lower. The **Slow fast charge** alert now only judges fast charges that stopped by about 85%, and only against your earlier charges that did the same.
@@ -206,7 +213,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ## 0.39.1
 
-### 🕒 Old door reports are labelled as old
+### 🕒 Old door reports are labeled as old
 - A parked car stops reporting, so a door shown as open can be the last thing the car said before it went to sleep. The **Doors** rows on the Body tab and the **Doors and locks** line now say when the car last reported them.
 - The **Left open** alert says "The car last reported this at 9:29 am, so it may have been closed since", and it no longer repeats for the very same old report (for example after every trip).
 
@@ -222,7 +229,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 ## 0.38.3
 
 ### 🚪 Honest door names
-- Ford reports the two front doors as a single "front" entry, labelled with the driver's side, so a passenger door that was open showed up as "Driver front". CarTrak now calls it **Front door (driver or passenger side)** on the Body tab, the Doors summary and the Left open alert, unless Ford ever reports the passenger door on its own. The rear doors are named as before.
+- Ford reports the two front doors as a single "front" entry, labeled with the driver's side, so a passenger door that was open showed up as "Driver front". CarTrak now calls it **Front door (driver or passenger side)** on the Body tab, the Doors summary and the Left open alert, unless Ford ever reports the passenger door on its own. The rear doors are named as before.
 
 ## 0.38.2
 
@@ -240,7 +247,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - **A charge at home is no longer counted as a stop.** The Day view's Stops tile and the numbered stops only count charging away from home, and the written summary says how many of the charges were at home ("7 times (6 fast and 1 slow; one at home)").
 
 ### ✨ A livelier Trips list
-- Each drive is now a card with a **little picture of its route** (green where it began, red where it ended), a big distance, the time and place, a **battery bar** showing the level it ended at and the stretch it used, and an **efficiency badge** that turns green or red when the drive was clearly better or worse than the rest of the list. The category sits on the right with a round **Share** button, and a stripe down the left edge takes the category's colour. The Day view's tiles have icons too.
+- Each drive is now a card with a **little picture of its route** (green where it began, red where it ended), a big distance, the time and place, a **battery bar** showing the level it ended at and the stretch it used, and an **efficiency badge** that turns green or red when the drive was clearly better or worse than the rest of the list. The category sits on the right with a round **Share** button, and a stripe down the left edge takes the category's color. The Day view's tiles have icons too.
 
 ## 0.37.1
 
@@ -285,7 +292,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - See [docs/reports.md](docs/reports.md).
 
 ### 🏷️ Trip categories and modes
-- **Medical, and categories of your own.** A trip can now be Personal, Work, **Medical**, or any category you add (More, Trip rules, Trip categories): a name, a colour and an optional mileage rate for each. Trip rules, the trip filter, the review list, the year in review and the Mileage log all use them. Removing one of your own makes its trips Personal again.
+- **Medical, and categories of your own.** A trip can now be Personal, Work, **Medical**, or any category you add (More, Trip rules, Trip categories): a name, a color and an optional mileage rate for each. Trip rules, the trip filter, the review list, the year in review and the Mileage log all use them. Removing one of your own makes its trips Personal again.
 - **Modes.** Vacation mode is now one of several: pick the days and a mode (Vacation, **Work trip**, **Medical**, or one of your categories) and every trip in them gets that label. If two modes cover the same day, the one you added last wins. Trips you set by hand keep what you chose.
 
 ### 🔗 Share a trip from more places
@@ -319,8 +326,8 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - **Fix a day now merges a paused charge.** A rebuild left the cable out of the readings it replayed, so it never joined a charge that paused and picked up again, and never joined a quick replug. Run **Fix a day** again over the days with split sessions.
 - **Road estimates name the trips they could not do.** The message now lists each trip (tap it to open it) and why, for example that the road found was 11.2 mi but the odometer says 5.6 mi. A trip whose road came out a very different length is remembered and not asked for again, so the notice does not keep coming back.
 
-### 📏 Miles and kilometres
-- A hunt through every screen with the app set to miles found distances in kilometres in a few places. The **Data check** findings, the road-estimate message, the service reminder checks, the **Debug report** and the wind lookup help now follow the units set on the device. The Debug report names its units in its column headings.
+### 📏 Miles and kilometers
+- A hunt through every screen with the app set to miles found distances in kilometers in a few places. The **Data check** findings, the road-estimate message, the service reminder checks, the **Debug report** and the wind lookup help now follow the units set on the device. The Debug report names its units in its column headings.
 - The **trips spreadsheet (CSV)** has two more columns at the end, distance in miles and top speed in mph.
 
 ## 0.35.0
@@ -356,12 +363,12 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - **Power and energy on every reading.** Fast chargers report no power at all, so the report showed 0.0 kW for a whole fast charge. It now shows the power worked out from the battery's current and voltage (marked with a ~), and the energy left in kWh, so a charge can be checked against a receipt line by line.
 - **Decisions that leave no trace.** A trip thrown away as a blip, a charging session picked up again after a pause, a charging stop and why it was called complete or interrupted, and a bump alert held back (and why) are now listed with their times. They used to vanish.
 - **Polling.** How often CarTrak really asked Ford since it last started: the pace it planned, the actual time between answers, and each rate limit or error.
-- **Settings snapshot.** The settings that shape behaviour (poll intervals, prices, alert levels, whether the wind and road lookups are on, the time zone, the battery size and the named places) with no secrets and no positions.
+- **Settings snapshot.** The settings that shape behavior (poll intervals, prices, alert levels, whether the wind and road lookups are on, the time zone, the battery size and the named places) with no secrets and no positions.
 - **Per-session detail.** Each charging session shows its charger type, what you paid if you entered it, and the power as the battery passed 20, 40, 60 and 80 percent.
 - It lists up to 1100 reading lines instead of 700, so more of a three-day window fits.
 
 ### 🗺️ Day view
-- **Trips → Day view** (and **Map of this day** on each day of the History feed, and **See the whole day** on a trip) shows a whole day on one map: every trip in its own colour, the stops between them as numbered markers that match the numbers in the list underneath, and the day's totals.
+- **Trips → Day view** (and **Map of this day** on each day of the History feed, and **See the whole day** on a trip) shows a whole day on one map: every trip in its own color, the stops between them as numbered markers that match the numbers in the list underneath, and the day's totals.
 - A written **Summary** says it in plain words: how long you drove over how many trips and how far, at what average and top speed; how many times you stopped and for how long in all (and the longest stop); how many times you charged (fast or slow), for how long, how many kWh were added, at what average and peak power, and what it cost. The cost says how much comes from receipts you entered and how much is worked out from a price, and sessions that could not be priced are called out. Below it: when you were out from and to, the battery at the start and the end, charging cost per mile, and the energy used driving.
 - Routes use phone GPS first, then a kept estimated road, then the car's own positions.
 
@@ -476,7 +483,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - A new card adds up, across your last 60 days of trips, how much energy **speed**, **weather** and **everything else** (wind, hills, climate control, braking) cost or saved against your usual driving, in kWh.
 
 ### 🎨 Reason chips that tell the truth
-- A reason chip is now red only when it really cost that trip energy. A short city trip full of stops and braking can be one of your most efficient (low speeds suit an EV), so there those chips are grey descriptions, not culprits. Speed and weather chips show how much they moved the result ("Highway speed +12%", "Low speeds −18%", "Mild weather −6%"), and a better-than-usual trip with no clear reason says by how much.
+- A reason chip is now red only when it really cost that trip energy. A short city trip full of stops and braking can be one of your most efficient (low speeds suit an EV), so there those chips are gray descriptions, not culprits. Speed and weather chips show how much they moved the result ("Highway speed +12%", "Low speeds −18%", "Mild weather −6%"), and a better-than-usual trip with no clear reason says by how much.
 
 ## 0.26.0
 
@@ -486,7 +493,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - Nothing needs bumping by hand any more: the cache name follows the version.
 
 ### 📏 Feet in imperial
-- The size of a place in **Trip rules** and **Places** was always in metres. It now follows your units (feet in imperial).
+- The size of a place in **Trip rules** and **Places** was always in meters. It now follows your units (feet in imperial).
 
 ### 🔄 No more old screens after an update
 - The **A new version is ready** bar now also appears when you come back to the app after it has been in the background and the server has been updated, not only while it is open. This is what was leaving a phone on old screens (Celsius in the road-trip planner) next to a new version number.
@@ -515,7 +522,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - **Efficiency insights** has a **By speed** card: your miles per kWh at each speed from your own drives, and how much more energy the fastest cruising uses than the band below it.
 
 ### 🧐 Why was this trip efficient (or not)?
-- A trip now has **Why this efficiency?**, and the best and worst trips on Efficiency insights show short reason chips: **Freezing or cold weather, Hot weather, Highway speed, Stop and go, Idling and climate control, Hard braking, Quick starts**, or **Gentle driving** and **Mild weather** for a good one. It compares the trip with your own driving: how much of the difference the speeds explain, how much the weather explains, and what is left (wind, hills, climate control, braking). Hard braking and quick starts are inferred from big speed changes between readings, so they are a guide, not a measurement. The page also says how much range the car counted braking gave back (its own figure, in kilometres of range), with a **Regenerative braking helped** chip when that is a good share of the trip.
+- A trip now has **Why this efficiency?**, and the best and worst trips on Efficiency insights show short reason chips: **Freezing or cold weather, Hot weather, Highway speed, Stop and go, Idling and climate control, Hard braking, Quick starts**, or **Gentle driving** and **Mild weather** for a good one. It compares the trip with your own driving: how much of the difference the speeds explain, how much the weather explains, and what is left (wind, hills, climate control, braking). Hard braking and quick starts are inferred from big speed changes between readings, so they are a guide, not a measurement. The page also says how much range the car counted braking gave back (its own figure, in kilometers of range), with a **Regenerative braking helped** chip when that is a good share of the trip.
 
 ### 🔋 True battery level and tires
 - **Health** shows the percentage the car displays next to the battery's own level, the usable battery size worked out from them (energy left divided by the true level), and its trend over the months.
@@ -536,7 +543,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ## 0.24.0
 
-### ⚡ Fast-charger stops are now recognised
+### ⚡ Fast-charger stops are now recognized
 - Found in a real Debug report from a road trip: at a DC fast charger Ford reports the charge status **IN_PROGRESS** with 0.0 kW, and CarTrak only looked for the word "CHARGING" or an AC power figure. So fast-charger stops were never seen as charging: no charging sessions were recorded for them and the whole road trip stayed one long trip. CarTrak now treats IN_PROGRESS as charging, and when the onboard charger reports no power it works the power out from the battery's own current and voltage (about 41 kW in the report's example) while a cable is connected. This also fixes the Charging page, Live and Home showing "not charging" at a fast charger, and the Home Assistant feed.
 - Run **More, Fix a day** over the road trip again after updating: it now splits the trip at each fast-charger stop and records the charging sessions.
 
@@ -634,7 +641,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 - The trips CSV now also has energy used, whether it is an estimate, and the named start and end places.
 
 ### 👁️ Easier to read in light mode
-- A contrast check of every text and button colour found that a few in light mode (links, green buttons and chips, amber and red labels) were slightly under the recommended contrast. They are a little deeper now. Dark mode already passed.
+- A contrast check of every text and button color found that a few in light mode (links, green buttons and chips, amber and red labels) were slightly under the recommended contrast. They are a little deeper now. Dark mode already passed.
 
 ### 💽 Disk space
 - **Status** now shows how much room is left on the disk CarTrak stores its data on (on the Docker image), warning when it is getting low and going red when it is nearly full, with a link to Free up space. A new optional alert, **Low disk space**, warns you at most once every three days. CarTrak adds readings all the time, so a full disk would stop everything.
@@ -728,7 +735,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ### 🔋 Charging history and cost
 - The **Charging** tab now shows the energy each session added (in kWh), and a **Charging cost** card with every month: sessions, kWh, cost, miles driven and **cost per mile**.
-- Set your price per kWh at home (and away from home, and a currency symbol) in More, Settings. Mark one session as **Home** and CarTrak recognises home from then on. Slow chargers include about 10% lost as heat.
+- Set your price per kWh at home (and away from home, and a currency symbol) in More, Settings. Mark one session as **Home** and CarTrak recognizes home from then on. Slow chargers include about 10% lost as heat.
 
 ### 💾 Backup
 - **More, Backup** downloads a copy of your data: a small backup without the raw Ford readings, or a full one. Sign-in sessions are never included. See docs/backup.md for restoring.
@@ -750,11 +757,11 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 ## 0.14.0
 
 ### 🎨 A new look
-- CarTrak now has a darker, calmer look with one green accent. Light mode follows the same design with deeper colours, and it still follows your phone or your choice under More, Display and data.
+- CarTrak now has a darker, calmer look with one green accent. Light mode follows the same design with deeper colors, and it still follows your phone or your choice under More, Display and data.
 - **Home** shows the battery as a ring with the percentage and range inside, then Energy left and Battery temp, your reserve and the 20 to 80% figure. Charging and Vehicle statuses now read as plain words (for example Not ready, Disconnected, Park) instead of Ford's capital letters.
 - **Live** uses the same ring on its big Charge tile. The ring turns amber at 20% or less and red at 10% or less.
 - The bottom bar has an icon above each label, and on a wide screen the left sidebar has them too.
-- Cards, buttons, chips, the Trips filters, the More menu and the Health and Data pages share one set of colours, sizes and corners. The day chart on Data follows the theme.
+- Cards, buttons, chips, the Trips filters, the More menu and the Health and Data pages share one set of colors, sizes and corners. The day chart on Data follows the theme.
 - Nothing about what CarTrak records or how it works has changed.
 
 ## 0.13.0
@@ -881,10 +888,10 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 ### ✨ A cleaner More page
 - More is now a short grouped menu (Connections, Trips, This device, Admin, Help) with status chips, instead of one long page of cards. Each row opens its own page: Ford connection, Remote access, Display and data, People, Settings, Getting started, About and updates.
 - On tablets and computers the menu uses two columns.
-- Slightly darker grey text in light mode for easier reading.
+- Slightly darker gray text in light mode for easier reading.
 
 ### 🧹 Under the hood
-- Source files were split so none is over 200 lines; behaviour is unchanged.
+- Source files were split so none is over 200 lines; behavior is unchanged.
 
 ## 0.7.3
 

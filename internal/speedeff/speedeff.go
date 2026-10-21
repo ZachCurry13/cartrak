@@ -6,7 +6,7 @@ import "sort"
 // Reading is one stored reading of a moving car.
 type Reading struct {
 	TS    int64
-	Odo   float64 // kilometres
+	Odo   float64 // kilometers
 	Kwh   float64 // energy left in the battery
 	Speed float64 // km/h
 }

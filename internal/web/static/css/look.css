@@ -1,5 +1,5 @@
-/* The look: dark first, one green accent. Light mode keeps the same structure with deeper colours.
-   Loaded after the other stylesheets, so it has the last word. Colours only live in this block. */
+/* The look: dark first, one green accent. Light mode keeps the same structure with deeper colors.
+   Loaded after the other stylesheets, so it has the last word. Colors only live in this block. */
 :root{--bg:#0d1117;--card:#161d27;--card2:#1c2531;--line:#232d3a;--text:#e6edf3;--muted:#8b98a5;--accent:#2fd4a0;--accent-text:#04261c;--work:#f5b84a;--personal:#58a6ff;--bad:#ff7b72;--ok:#2fd4a0;--warn:#f5b84a;color-scheme:dark}
 @media (prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#08795a;--accent-text:#fff;--work:#9a4308;--personal:#1b5fc4;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}}
 :root[data-theme=light]{--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#08795a;--accent-text:#fff;--work:#9a4308;--personal:#1b5fc4;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}
@@ -203,7 +203,7 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .ybar span{white-space:nowrap}
 .navrow{gap:6px;align-items:center;flex-wrap:nowrap}.navrow .grow{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.navrow .ico.sm{width:40px;height:40px;flex:0 0 auto}.navrow>svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.navrow .ico.sm[disabled]{opacity:.3}
 .sheet.more{max-height:88vh;overflow-y:auto}
-/* Seasonal themes (js/seasons.js, js/seasonfx.js): the colours come from data-season on the root; these are the touches */
+/* Seasonal themes (js/seasons.js, js/seasonfx.js): the colors come from data-season on the root; these are the touches */
 #ornament{font-size:1.15rem;margin-left:6px;line-height:1}
 #seasonfx{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:70}
 .sunglow{background:radial-gradient(60% 40% at 80% 0%,rgba(255,190,60,.35),transparent 70%);animation:sunfade 5s ease forwards}
@@ -222,3 +222,4 @@ textarea{font:inherit;color:var(--text);background:var(--card2);border:1px solid
 #top h1{flex:0 0 auto}#ornament{margin-left:4px;font-size:1rem}
 .fleetcar + .fleetcar{margin-top:0}
 @media (max-width:390px){#top:has(#carsel:not([hidden])) #ornament{display:none}} /* a narrow phone with the car picker: keep the header on one line */
+.savebar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:60;display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:14px;background:var(--card);border:1px solid var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.35)}.savebar[hidden]{display:none}

@@ -36,7 +36,7 @@ type Report struct {
 	Months    []Month `json:"months"`
 }
 
-// Build summarises daily averages (oldest first).
+// Build summarizes daily averages (oldest first).
 func Build(days []store.Day) Report {
 	r := Report{Days: len(days), Months: []Month{}}
 	idx := map[string]*Month{}

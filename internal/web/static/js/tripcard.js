@@ -5,7 +5,7 @@ import { catColor } from './categories.js';
 const NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
 
-// A small picture of where the drive went: the route in the category's colour, a green dot where it began and a red one where it ended.
+// A small picture of where the drive went: the route in the category's color, a green dot where it began and a red one where it ended.
 // A line drawn only between the car's few reported positions (no GPS track or road yet) is dashed: it is not the road.
 function thumb(route, color) {
   const points = route && route.points;
@@ -33,14 +33,14 @@ export function battery(t) {
   return h('div', { class: 'sbar', title: `${pct(t.startSoc)} to ${pct(t.endSoc)}` }, h('i', { class: 'used', style: `left:${end}%;width:${start - end}%` }), h('i', { class: 'left', style: `width:${end}%` }));
 }
 
-// What the colours on a trip card mean, in a fold that stays closed until asked.
-export function colourKey() {
+// What the colors on a trip card mean, in a fold that stays closed until asked.
+export function colorKey() {
   const sw = (cls) => h('i', { class: `key ${cls}`, 'aria-hidden': 'true' });
-  return h('details', { class: 'tkey' }, h('summary', {}, 'What the colours mean'),
+  return h('details', { class: 'tkey' }, h('summary', {}, 'What the colors mean'),
     h('p', {}, sw('left'), ' Green bar: battery left after the drive. ', sw('used'), ' Amber: the part the drive used.'),
-    h('p', {}, sw('good'), ' Green badge: more efficient than your average drive. ', sw('bad'), ' Red: less efficient. No colour: about average.'),
+    h('p', {}, sw('good'), ' Green badge: more efficient than your average drive. ', sw('bad'), ' Red: less efficient. No color: about average.'),
     h('p', {}, sw('start'), ' Green dot: where it started. ', sw('end'), ' Red dot: where it ended. A dashed line joins the few places the car reported, until the road is found.'),
-    h('p', {}, 'The stripe down the left is the trip\'s category colour (Personal, Work and your own).'));
+    h('p', {}, 'The stripe down the left is the trip\'s category color (Personal, Work and your own).'));
 }
 
 // One drive in the Trips list: its route, how far and how long, where, how much battery it took and how efficient it was against the rest.

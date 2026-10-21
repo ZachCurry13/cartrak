@@ -75,11 +75,11 @@ export function dayRing(r) {
 
 export const ringKey = () => h('div', { class: 'ckey', style: 'justify-content:center' }, h('span', {}, h('i', { style: 'background:#f59e0b' }), 'Driving'), h('span', {}, h('i', { style: 'background:#22c55e' }), 'Charging'));
 
-const COLOURS = ['#22c55e', '#f59e0b', '#a78bfa', '#3b82f6', '#f97316', '#14b8a6', '#eab308', '#38bdf8'];
+const COLORS = ['#22c55e', '#f59e0b', '#a78bfa', '#3b82f6', '#f97316', '#14b8a6', '#eab308', '#38bdf8'];
 
-// One badge: its emoji in a ring that fills with progress, full and in colour once earned.
+// One badge: its emoji in a ring that fills with progress, full and in color once earned.
 export function badge(b, i, cur) {
-  const p = b.progress ?? (b.earned ? 1 : 0), col = COLOURS[i % COLOURS.length];
+  const p = b.progress ?? (b.earned ? 1 : 0), col = COLORS[i % COLORS.length];
   const ring = S('svg', { viewBox: '0 0 78 78', width: 78, height: 78, 'aria-hidden': 'true' });
   const c = 2 * Math.PI * 33;
   ring.append(S('circle', { cx: 39, cy: 39, r: 33, fill: 'var(--card2)', stroke: 'var(--line)', 'stroke-width': 6 }));

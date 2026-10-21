@@ -9,7 +9,7 @@ Named places do three things:
 - They are for you: the public share links and the mileage log do not use them (the mileage log names cities, as before).
 
 ## Trips to review
-Trips that no rule matched and that you have not labelled show as **N trips to review** at the top of Trips. The review screen lists them with **Work** and **Personal** buttons (admins). Labelling a trip here is the same as choosing it on the trip page: your choice is never changed by rules.
+Trips that no rule matched and that you have not labeled show as **N trips to review** at the top of Trips. The review screen lists them with **Work** and **Personal** buttons (admins). Labeling a trip here is the same as choosing it on the trip page: your choice is never changed by rules.
 
 ## Maintenance
 **More, Maintenance** keeps service reminders by distance, by time, or both, for example a tire rotation every 6,000 miles or 6 months, or a cabin air filter every 2 years. The preset buttons are only starting points: use the intervals in your car's service schedule.

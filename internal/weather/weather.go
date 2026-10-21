@@ -1,5 +1,5 @@
 // Package weather looks up the hourly wind for a place and a day, for the optional wind estimate on a trip. It only
-// asks for wind speed, direction and gusts, and only for a map cell about fifty kilometres wide, never an exact position.
+// asks for wind speed, direction and gusts, and only for a map cell about fifty kilometers wide, never an exact position.
 package weather
 
 import (
@@ -22,7 +22,7 @@ type Hour struct {
 	GustKm  float64 `json:"gustKph"`
 }
 
-// Cell is a map cell about fifty kilometres wide (half a degree): the only form of a position that is ever sent.
+// Cell is a map cell about fifty kilometers wide (half a degree): the only form of a position that is ever sent.
 func Cell(lat, lon float64) (clat, clon float64, key string) {
 	clat, clon = math.Round(lat*2)/2, math.Round(lon*2)/2
 	return clat, clon, fmt.Sprintf("%.1f,%.1f", clat, clon)

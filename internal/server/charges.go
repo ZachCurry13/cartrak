@@ -140,7 +140,7 @@ func (s *Server) chargeSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 // patchCharge sets whether a session was at home or public. Marking one as home also tells CarTrak where
-// home is, so later sessions there are recognised on their own. {"kind":"home"|"public"|""}. Admin only.
+// home is, so later sessions there are recognized on their own. {"kind":"home"|"public"|""}. Admin only.
 func (s *Server) patchCharge(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	var in struct {

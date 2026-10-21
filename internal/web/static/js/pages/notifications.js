@@ -27,15 +27,32 @@ export default async function notifications(root, _a, session) {
   const msg = h('p', { class: 'muted', role: 'status' });
   const box = h('div');
   const quiet = () => (qOn.checked ? `${qFrom.value}-${qTo.value}` : '');
+  for (const el of [qOn, qFrom, qTo]) el.addEventListener('change', () => dirty());
   const say = (t) => { msg.textContent = t; };
 
   async function run(f) {
     try { say(''); await f(); } catch (e) { say(e.message); }
   }
+  // One save for the alerts and quiet hours together. A device the server lost is registered again with these choices; then
+  // the page shows what the server really kept.
+  const saveBar = h('div', { class: 'savebar', hidden: true });
+  const dirty = () => { saveBar.hidden = false; say(''); };
   async function save() {
-    if (!mine()) { say('Turn on alerts on this device first (above); your choices are used when you do.'); return; }
-    cfg = await api('/api/push/prefs', { method: 'POST', body: { endpoint: here, events: [...chosen], quiet: quiet() } });
-    say('Saved.');
+    if (!mine() && !(here && typeof Notification !== 'undefined' && Notification.permission === 'granted')) {
+      say('Turn on alerts on this device first (above); your choices are used when you do.');
+      return;
+    }
+    try {
+      cfg = mine() ? await api('/api/push/prefs', { method: 'POST', body: { endpoint: here, events: [...chosen], quiet: quiet() } }) : null;
+    } catch (e) {
+      if (!/not registered/.test(e.message)) throw e;
+      cfg = null;
+    }
+    if (!cfg) { cfg = await enable((await api('/api/push/config')).publicKey, label.value.trim() || guessLabel(), [...chosen], quiet()); here = await current(); }
+    const kept = mine();
+    saveBar.hidden = true;
+    draw();
+    say(kept ? `Saved ✓ ${kept.events.length} alert${kept.events.length === 1 ? '' : 's'} on this device${kept.quiet ? `, quiet ${kept.quiet}` : ''}.` : 'Could not save: this device is not registered. Turn alerts on above.');
   }
   const toggle = () => run(async () => {
     if (mine()) { cfg = await disable(); here = null; } else { cfg = await enable(cfg.publicKey, label.value.trim(), [...chosen], quiet()); here = await current(); }
@@ -52,13 +69,14 @@ export default async function notifications(root, _a, session) {
           on ? h('button', { class: 'sec', onclick: () => run(async () => { await api('/api/push/test', { method: 'POST', body: { endpoint: here } }); say('Test sent. It should arrive in a moment.'); }) }, 'Send a test alert') : null)),
       h('section', { class: 'card' }, h('h2', {}, 'Which alerts'),
         ...cfg.kinds.map((k) => {
-          const box = h('input', { type: 'checkbox', id: `k-${k.id}`, checked: chosen.has(k.id), onchange: (e) => { if (e.target.checked) chosen.add(k.id); else chosen.delete(k.id); run(save); } });
+          const box = h('input', { type: 'checkbox', id: `k-${k.id}`, checked: chosen.has(k.id), onchange: (e) => { if (e.target.checked) chosen.add(k.id); else chosen.delete(k.id); dirty(); } });
           return h('div', { class: 'hrow' }, h('label', { for: `k-${k.id}`, class: 'hl' }, box, ' ', k.label), h('span', { class: 'hn muted' }, k.help));
         }),
         h('h2', {}, 'Quiet hours'),
         h('p', {}, h('label', { for: 'qon' }, qOn, ' No alerts between')),
         h('div', { class: 'cols2' }, h('div', {}, h('label', { for: 'qf' }, 'From'), qFrom), h('div', {}, h('label', { for: 'qt' }, 'To'), qTo)),
-        h('p', {}, h('button', { class: 'sec', onclick: () => run(save) }, 'Save quiet hours'), ' ', h('span', { class: 'muted' }, 'Uses the car time zone from Settings.')),
+        h('p', { class: 'muted' }, 'Quiet hours use the car time zone from Settings.'),
+        h('p', { class: 'seg' }, h('button', { type: 'button', class: 'on', onclick: () => run(save) }, 'Save alert choices')),
         msg),
       cfg.devices.length ? h('section', { class: 'card' }, h('h2', {}, 'Your devices'),
         ...cfg.devices.map((d) => h('div', { class: 'hrow' }, h('span', { class: 'hl' }, d.label, d.endpoint === here ? ' (this one)' : ''),
@@ -88,6 +106,8 @@ export default async function notifications(root, _a, session) {
   }
   root.append(h('p', { class: 'muted' }, 'Get a notification on this phone or computer when something happens. Alerts say things like "Charging complete" and never include a location. They are encrypted so only your device can read them, but the push service of the phone maker (Google or Apple) can see that one was sent.'), box);
   root.append(log);
+  saveBar.append(h('span', { class: 'grow' }, 'Unsaved changes'), h('button', { type: 'button', class: 'on', onclick: () => run(save) }, 'Save'));
+  root.append(saveBar);
   draw();
   if (rejoined) say('This device was registered again, so its alerts are saved here. Check the ones you want.');
 }

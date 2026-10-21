@@ -13,7 +13,7 @@ const FROM = { receipt: 'receipt', place: 'place price', home: 'home price', 'ho
 const NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
 
-// A small upright battery: the part that was there before in a quiet colour, the part this charge added in green.
+// A small upright battery: the part that was there before in a quiet color, the part this charge added in green.
 function batteryThumb(c) {
   const box = h('div', { class: 'tthumb', 'aria-hidden': 'true' });
   const a = Math.max(0, Math.min(100, c.startSoc ?? 0)), b = Math.max(a, Math.min(100, c.endSoc ?? a));

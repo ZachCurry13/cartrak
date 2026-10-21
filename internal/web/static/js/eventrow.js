@@ -17,7 +17,7 @@ const short = (sec) => { const m = Math.round(sec / 60); return m < 60 ? `${m} m
 
 const clock = (ts, tz) => new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
 
-// A thin bar of the battery level: what was left in a quiet colour and the part that changed in the event's own colour.
+// A thin bar of the battery level: what was left in a quiet color and the part that changed in the event's own color.
 function levelBar(e) {
   const a = e.startSoc, b = e.endSoc;
   if (a == null && b == null) return null;

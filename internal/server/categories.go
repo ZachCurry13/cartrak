@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// listCategories: GET /api/categories. The ways trips can be labelled on this car.
+// listCategories: GET /api/categories. The ways trips can be labeled on this car.
 func (s *Server) listCategories(w http.ResponseWriter, r *http.Request) {
 	cs, err := s.S.ListCategories()
 	if err != nil {

@@ -12,30 +12,30 @@ import (
 
 // Input is everything the report is built from.
 type Input struct {
-	Version   string
-	Now       time.Time
-	Loc       *time.Location
-	From      time.Time
-	Vehicle   string
-	Linked    bool
-	LastOK    time.Time
-	LastErr   string
-	Metric    bool // distances and speeds in kilometres; otherwise miles
-	Rows      []store.DebugRow
-	Locks     map[int64][]string // raw lock and door fields, by reading time
-	Fields    []string           // every field of the latest reading as "name = value", positions and identifiers already removed
-	Trips     []*store.Trip
-	Polls     []PollInfo       // the latest polls CarTrak made (since it last started)
-	Decisions []store.LogEntry // blips thrown away, charges picked up again, alerts held back, and why
-	Settings  []string         // the settings that shape behaviour, without secrets or positions
-	Curves    map[int64]string // by charging session id: the power at 20, 40, 60 and 80 percent
-	CostFrom  map[int64]string // by charging session id: where its cost came from and the price per kWh
-	Days      []string         // trip-away stretches and how each day's base was settled, no positions
-	ClientApp []string         // the phone's loaded app version and its recent errors, added by the page
-	Points    map[int64][3]int // by trip id: readings the car sent, how many had a position, and phone GPS points
-	Charges   []*store.Charge
-	Alerts    []store.AlertLogEntry
-	MaxLines  int
+	Version      string
+	Now          time.Time
+	Loc          *time.Location
+	From         time.Time
+	Vehicle      string
+	Linked       bool
+	LastOK       time.Time
+	LastErr      string
+	Metric       bool // distances and speeds in kilometers; otherwise miles
+	Rows         []store.DebugRow
+	Locks        map[int64][]string // raw lock and door fields, by reading time
+	Fields       []string           // every field of the latest reading as "name = value", positions and identifiers already removed
+	Trips        []*store.Trip
+	Polls        []PollInfo       // the latest polls CarTrak made (since it last started)
+	Decisions    []store.LogEntry // blips thrown away, charges picked up again, alerts held back, and why
+	Settings     []string         // the settings that shape behavior, without secrets or positions
+	Curves       map[int64]string // by charging session id: the power at 20, 40, 60 and 80 percent
+	CostFrom     map[int64]string // by charging session id: where its cost came from and the price per kWh
+	Days         []string         // trip-away stretches and how each day's base was settled, no positions
+	ServerErrors []string         // requests that hit a bug since CarTrak started, with where in the code
+	Points       map[int64][3]int // by trip id: readings the car sent, how many had a position, and phone GPS points
+	Charges      []*store.Charge
+	Alerts       []store.AlertLogEntry
+	MaxLines     int
 }
 
 func fp(p *float64, f string) string {

@@ -40,6 +40,6 @@ rest:
 Then, for example, an automation can turn on a charger plug, or send "plug in the car" when the car is below a level in the evening and `Car plugged in` is off.
 
 ## What you get
-`GET /api/ha/state` with `Authorization: Bearer <token>` returns JSON with: `ready`, `ts` (when Ford reported it), `ageSeconds`, `batteryPct`, `rangeKm`, `energyKwh`, `capacityKwh`, `plugged`, `charging`, `chargeKw`, `locked`, `ignition`, `speedKph`, `odometerKm`, `battery12vVolts` and `outsideC`. Distances are in kilometres. Values Ford did not send are `null`. Ford updates some values only when the car wakes, so check `ageSeconds`.
+`GET /api/ha/state` with `Authorization: Bearer <token>` returns JSON with: `ready`, `ts` (when Ford reported it), `ageSeconds`, `batteryPct`, `rangeKm`, `energyKwh`, `capacityKwh`, `plugged`, `charging`, `chargeKw`, `locked`, `ignition`, `speedKph`, `odometerKm`, `battery12vVolts` and `outsideC`. Distances are in kilometers. Values Ford did not send are `null`. Ford updates some values only when the car wakes, so check `ageSeconds`.
 
 If you protect CarTrak with Cloudflare Access, allow this path for Home Assistant (a service token or a bypass rule), or reach CarTrak from Home Assistant on your home network.

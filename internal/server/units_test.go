@@ -14,7 +14,7 @@ func TestMessagesFollowTheUnitsTheDeviceSends(t *testing.T) {
 	metric := httptest.NewRequest("GET", "/", nil)
 	metric.Header.Set("X-Units", "metric")
 	if metricReq(imperial) || !metricReq(metric) {
-		t.Fatal("miles are the default, kilometres only when asked")
+		t.Fatal("miles are the default, kilometers only when asked")
 	}
 	f := routeFailure{RoadKm: 18, OdoKm: 9}
 	if got := f.text(false); got != "the road found was 11.2 mi but the odometer says 5.6 mi" {

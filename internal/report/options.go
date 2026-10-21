@@ -28,7 +28,7 @@ type Pick struct {
 	Label string `json:"label"`
 }
 
-// Fixed is a column whose value is the same on every row (a company name, a cost centre).
+// Fixed is a column whose value is the same on every row (a company name, a cost center).
 type Fixed struct {
 	Label string `json:"label"`
 	Value string `json:"value"`
@@ -36,7 +36,7 @@ type Fixed struct {
 
 // Options says what the report looks like and how it is worked out.
 type Options struct {
-	Metric   bool               // kilometres and km/h; otherwise miles and mph
+	Metric   bool               // kilometers and km/h; otherwise miles and mph
 	Columns  []Pick             // the columns, in order; empty means the standard ones
 	Fixed    []Fixed            // extra columns with a fixed value
 	Labels   map[string]string  // category key to its name
@@ -61,7 +61,7 @@ func (o Options) picks() []Pick {
 				if p.Label == "" {
 					p.Label = c.Label
 					if p.Key == "distance" && o.Metric {
-						p.Label = "Kilometres"
+						p.Label = "Kilometers"
 					}
 					p.Label = o.label(c)
 				}
@@ -84,11 +84,11 @@ func (o Options) picks() []Pick {
 func (o Options) label(c Column) string {
 	switch {
 	case c.Key == "distance" && o.Metric:
-		return "Kilometres"
+		return "Kilometers"
 	case c.Key == "topspeed":
 		return "Top Speed (" + o.speedUnit() + ")"
 	case c.Key == "costper" && o.Metric:
-		return "Cost per Kilometre"
+		return "Cost per Kilometer"
 	case c.Key == "avgspeed":
 		return "Average Speed (" + o.speedUnit() + ")"
 	}

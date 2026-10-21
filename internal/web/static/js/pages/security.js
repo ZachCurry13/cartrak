@@ -23,7 +23,7 @@ export default async function security(root, _a, session) {
               p.lastSignin ? `last signed in ${when(p.lastSignin)}` : null].filter(Boolean).join(' · '))),
           p.failed ? chip('bad', `${p.failed} failed`) : null))),
       h('section', { class: 'card' }, h('h2', {}, 'Signed in now'),
-        h('p', { class: 'muted' }, 'Sign out a device you no longer use or do not recognise. It has to sign in again.'),
+        h('p', { class: 'muted' }, 'Sign out a device you no longer use or do not recognize. It has to sign in again.'),
         ...d.sessions.map((x) => h('div', { class: 'row' },
           h('div', { class: 'grow', style: 'flex-basis:12em' }, h('b', {}, x.user), ' ', x.current ? chip('ok', 'this device') : null,
             h('div', { class: 'muted' }, [where(x), active(x.lastActive, d.now), x.created ? `signed in ${ago(x.created)}` : null].filter(Boolean).join(' · '))),

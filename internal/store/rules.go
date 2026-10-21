@@ -4,7 +4,7 @@ import "database/sql"
 
 // Rule auto-classifies a trip. Days is a bitmask (Sun=1, Mon=2 ... Sat=64);
 // StartMin/EndMin are minutes after local midnight. An optional geofence
-// requires the trip to start within GeoRadius metres of the point.
+// requires the trip to start within GeoRadius meters of the point.
 type Rule struct {
 	ID        int64    `json:"id"`
 	Name      string   `json:"name"`

@@ -4,12 +4,12 @@ import "time"
 
 // Gas is the car CarTrak compares against, and the grid's CO2, for the recap's savings. Zero values leave savings out.
 type Gas struct {
-	LitresPerKm   float64
-	PricePerLitre float64
+	LitersPerKm   float64
+	PricePerLiter float64
 	GridKgPerKwh  float64
 }
 
-const kgCO2PerLitre = 2.31 // burning a litre of gasoline
+const kgCO2PerLiter = 2.31 // burning a liter of gasoline
 
 // Recap is a month or a year told in numbers, made to be shared.
 type Recap struct {
@@ -111,16 +111,16 @@ func PeriodRecap(period string, ts []Trip, cs []Charge, gas Gas, loc *time.Locat
 	if r.KwhCharged > 0 {
 		r.HomeShare = home / r.KwhCharged
 	}
-	if gas.LitresPerKm > 0 && gas.PricePerLitre > 0 && r.Km > 0 {
-		litres := r.Km * gas.LitresPerKm
-		g := litres * gas.PricePerLitre
+	if gas.LitersPerKm > 0 && gas.PricePerLiter > 0 && r.Km > 0 {
+		liters := r.Km * gas.LitersPerKm
+		g := liters * gas.PricePerLiter
 		r.GasCost = &g
 		if r.Cost > 0 && r.KmPerKwh > 0 {
 			saved := g - r.Cost/r.KwhCharged*(r.Km/r.KmPerKwh) // the cost of the energy this month's driving used
 			r.Saved = &saved
 		}
 		if gas.GridKgPerKwh >= 0 && r.KmPerKwh > 0 {
-			kg := litres*kgCO2PerLitre - r.Km/r.KmPerKwh*gas.GridKgPerKwh
+			kg := liters*kgCO2PerLiter - r.Km/r.KmPerKwh*gas.GridKgPerKwh
 			r.KgCO2Saved = &kg
 		}
 	}

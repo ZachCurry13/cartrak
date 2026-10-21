@@ -127,7 +127,7 @@ func (s *Server) guard(admin, site bool, next http.HandlerFunc) http.HandlerFunc
 			fail(w, 403, "admin only")
 			return
 		}
-		// State-changing calls must come from our own pages (CSRF defence).
+		// State-changing calls must come from our own pages (CSRF defense).
 		if r.Method != http.MethodGet && r.Header.Get("X-Requested-With") != "cartrak" {
 			fail(w, 403, "missing header")
 			return

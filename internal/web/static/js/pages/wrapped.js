@@ -59,7 +59,7 @@ export default async function wrapped(root, args) {
     w.ring && w.ring.days ? [h('div', { class: 'kick' }, 'A day in the life'), h('div', { class: 'wpanel' }, dayRing(w.ring), ringKey()),
       w.ring.leaveAt ? h('div', { class: 'small' }, `Out the door around ${clockText(w.ring.leaveAt)} on weekdays${w.ring.plugInAt ? `, plugged in around ${clockText(w.ring.plugInAt)}` : ''}.`) : null] : null,
     [h('div', { class: 'kick' }, 'Your infographic'), img, h('div', { class: 'seg', style: 'margin-top:12px' },
-      h('button', { type: 'button', class: 'on', onclick: async (e) => { e.stopPropagation(); shareMsg.textContent = { shared: 'Shared.', saved: 'Saved to your downloads.', cancelled: '' }[await shareImage(canvas, `CarTrak ${title}`)]; } }, 'Share picture'),
+      h('button', { type: 'button', class: 'on', onclick: async (e) => { e.stopPropagation(); shareMsg.textContent = { shared: 'Shared.', saved: 'Saved to your downloads.', canceled: '' }[await shareImage(canvas, `CarTrak ${title}`)]; } }, 'Share picture'),
       h('a', { class: 'btn sec', href: '#/analytics', onclick: (e) => e.stopPropagation() }, 'Done')), shareMsg],
   ].filter(Boolean);
 

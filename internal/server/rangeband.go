@@ -33,7 +33,7 @@ type bandMonth struct {
 }
 
 // rangeBand answers "how far do I get between 20 and 80 percent?" from how the car has really been
-// driven lately: kilometres per percent of battery over the last `days`, and the same by month.
+// driven lately: kilometers per percent of battery over the last `days`, and the same by month.
 // GET /api/range-band?low=20&high=80&days=30
 func (s *Server) rangeBand(w http.ResponseWriter, r *http.Request) {
 	low := intQuery(r, "low", 20, 1, 98)

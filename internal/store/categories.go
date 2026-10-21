@@ -10,7 +10,7 @@ import (
 type Category struct {
 	Key     string   `json:"key"` // the short name stored on each trip, such as "medical"
 	Label   string   `json:"label"`
-	Color   string   `json:"color"` // a hex colour like #dc2626, for the label on a trip; empty for the built-in look
+	Color   string   `json:"color"` // a hex color like #dc2626, for the label on a trip; empty for the built-in look
 	Rate    *float64 `json:"rate"`  // a mileage deduction per mile for this category; nil uses the general rate (work) or none
 	Builtin bool     `json:"builtin"`
 	Sort    int      `json:"sort"`
@@ -81,11 +81,11 @@ func (s *Store) CategoryExists(key string) bool {
 var nonKey = regexp.MustCompile(`[^a-z0-9]+`)
 var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
-// CleanColor accepts a #rrggbb colour or nothing.
+// CleanColor accepts a #rrggbb color or nothing.
 func CleanColor(c string) (string, error) {
 	c = strings.TrimSpace(c)
 	if c != "" && !hexColor.MatchString(c) {
-		return "", errors.New("the colour must look like #dc2626")
+		return "", errors.New("the color must look like #dc2626")
 	}
 	return c, nil
 }
@@ -124,7 +124,7 @@ func (s *Store) AddCategory(label, color string, rate *float64) (string, error) 
 	return key, err
 }
 
-// UpdateCategory changes a category's name, colour and rate. The key never changes.
+// UpdateCategory changes a category's name, color and rate. The key never changes.
 func (s *Store) UpdateCategory(key, label, color string, rate *float64) error {
 	if err := s.ensureCategories(); err != nil {
 		return err

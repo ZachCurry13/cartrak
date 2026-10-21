@@ -12,9 +12,9 @@ func (s *Store) SampleAt(ts int64) (*Sample, error) {
 	return x, err
 }
 
-// NeighbourTS gives the time of the reading just before and just after ts (0 when there is none),
+// NeighborTS gives the time of the reading just before and just after ts (0 when there is none),
 // for stepping through history. It reads only the index.
-func (s *Store) NeighbourTS(ts int64) (prev, next int64) {
+func (s *Store) NeighborTS(ts int64) (prev, next int64) {
 	_ = s.DB.QueryRow(`SELECT ts FROM samples WHERE ts<? ORDER BY ts DESC LIMIT 1`, ts).Scan(&prev)
 	_ = s.DB.QueryRow(`SELECT ts FROM samples WHERE ts>? ORDER BY ts ASC LIMIT 1`, ts).Scan(&next)
 	return prev, next

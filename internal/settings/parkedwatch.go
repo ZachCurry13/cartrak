@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// Parked watch: how big a jolt on a parked car's motion sensors counts as a bump (metres per second squared).
+// Parked watch: how big a jolt on a parked car's motion sensors counts as a bump (meters per second squared).
 const BumpKey = "CARTRAK_BUMP_THRESHOLD"
 
 var bumpOptions = []Option{{"", "Normal (1.0)"}, {"0.6", "Sensitive (0.6)"}, {"2.0", "Hard knocks only (2.0)"}, {"off", "Off"}}

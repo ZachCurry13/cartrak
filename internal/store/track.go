@@ -2,7 +2,7 @@ package store
 
 import "time"
 
-// Point is one GPS fix sent by a phone. Speed is km/h, accuracy is metres.
+// Point is one GPS fix sent by a phone. Speed is km/h, accuracy is meters.
 type Point struct {
 	TS       int64    `json:"ts"`
 	Lat      float64  `json:"lat"`

@@ -2,7 +2,7 @@
 // how big the battery is, and how fast you charge. It makes no map route: it says how many charging
 // stops a distance needs and about how far along each one is.
 
-// All distances are kilometres. Percentages are of the dash battery. Charging power is kW.
+// All distances are kilometers. Percentages are of the dash battery. Charging power is kW.
 export function planTrip({ distanceKm, startPct, reservePct, targetPct, kmPerPct, capacityKwh, chargeKw }) {
   const out = { stops: [], arrivePct: null, extraMinutes: 0, ok: true, reason: '' };
   if (!(kmPerPct > 0)) return { ...out, ok: false, reason: 'CarTrak does not know yet how far your battery goes.' };

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// drive makes readings every 30 s at a constant speed that use perKm kWh per kilometre.
+// drive makes readings every 30 s at a constant speed that use perKm kWh per kilometer.
 func drive(startTS int64, odo, kwh, kph, perKm float64, n int) []Reading {
 	var out []Reading
 	for i := 0; i <= n; i++ {
@@ -15,7 +15,7 @@ func drive(startTS int64, odo, kwh, kph, perKm float64, n int) []Reading {
 	return out
 }
 
-func TestFasterBandsUseMoreEnergyPerKilometre(t *testing.T) {
+func TestFasterBandsUseMoreEnergyPerKilometer(t *testing.T) {
 	rs := append(drive(0, 1000, 80, 70, 0.14, 120), drive(10000, 1100, 60, 112, 0.22, 120)...)
 	got := Build(rs)
 	if len(got) != 2 {

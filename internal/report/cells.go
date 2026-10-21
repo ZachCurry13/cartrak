@@ -99,7 +99,7 @@ func (o Options) cell(key string, t Trip) xlsx.Cell {
 }
 
 // effText writes how far a trip went on its energy, in the unit chosen: miles per kWh, watt-hours per mile, or miles per percent of
-// the battery (kilometres when metric; kWh per 100 km stands in for the first, as the app does).
+// the battery (kilometers when metric; kWh per 100 km stands in for the first, as the app does).
 func (o Options) effText(km, kwh float64) string {
 	switch {
 	case o.EffUnit == "pct" && o.Capacity > 0:

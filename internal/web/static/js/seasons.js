@@ -1,8 +1,8 @@
-// Seasonal themes: the accent colour, a header ornament, the Wrapped colours and a short effect on Home follow the holidays
+// Seasonal themes: the accent color, a header ornament, the Wrapped colors and a short effect on Home follow the holidays
 // around the date. Each device chooses: Automatic (the default), one theme, or Off. Only the accent changes; green still means
 // charging and amber driving, and every theme has a deeper accent for light mode so text on it stays readable.
 
-// key: name, emoji, accent (dark, light), text on the accent (dark, light), two Wrapped colours, the Home effect
+// key: name, emoji, accent (dark, light), text on the accent (dark, light), two Wrapped colors, the Home effect
 export const THEMES = {
   newyear: ['New Year', '🎉', '#f5c542', '#8a6300', '#2a1f00', '#fff', '#f5c542', '#7c3aed', 'confetti'],
   winter: ['Winter', '❄️', '#7cc7ff', '#1d5f9a', '#04203a', '#fff', '#38bdf8', '#6366f1', 'snow'],
@@ -67,7 +67,7 @@ export function activeTheme() {
   return themeFor();
 }
 
-// One stylesheet with every theme's colours, for dark and light, so the page switches with an attribute.
+// One stylesheet with every theme's colors, for dark and light, so the page switches with an attribute.
 function styles() {
   let css = '';
   for (const [k, t] of Object.entries(THEMES)) {
@@ -77,7 +77,7 @@ function styles() {
   return css;
 }
 
-// Puts the theme on the page: the colours, and the ornament beside the name in the header.
+// Puts the theme on the page: the colors, and the ornament beside the name in the header.
 export function applySeason() {
   if (!document.getElementById('seasoncss')) {
     const st = document.createElement('style');

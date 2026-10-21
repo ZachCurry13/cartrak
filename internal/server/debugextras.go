@@ -75,7 +75,7 @@ func onOff(b bool) string {
 	return "off"
 }
 
-// debugSettings lists what shapes behaviour. Secrets and positions are never included.
+// debugSettings lists what shapes behavior. Secrets and positions are never included.
 func (s *Server) debugSettings() []string {
 	var out []string
 	add := func(f string, a ...any) { out = append(out, fmt.Sprintf(f, a...)) }

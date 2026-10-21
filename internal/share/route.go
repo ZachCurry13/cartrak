@@ -20,7 +20,7 @@ func meters(a, b [2]float64) float64 {
 	return 2 * r * math.Asin(math.Sqrt(h))
 }
 
-// Trim removes the first and last `m` metres of the path. A path too short to keep anything comes back empty.
+// Trim removes the first and last `m` meters of the path. A path too short to keep anything comes back empty.
 func Trim(pts [][2]float64, m float64) [][2]float64 {
 	if len(pts) < 2 {
 		return nil
@@ -39,7 +39,7 @@ func Trim(pts [][2]float64, m float64) [][2]float64 {
 	return append([][2]float64(nil), pts[start:end+1]...)
 }
 
-// Thin keeps at most max points, always the first and the last, and rounds to about a metre.
+// Thin keeps at most max points, always the first and the last, and rounds to about a meter.
 func Thin(pts [][2]float64, max int) [][2]float64 {
 	if max < 2 {
 		max = 2

@@ -100,7 +100,7 @@ func TestMonthRecapWithSavings(t *testing.T) {
 		{ID: 3, Start: at("2026-09-20 08:00"), End: at("2026-09-20 09:00"), Km: 50, Kwh: 10},
 	}
 	cs := []Charge{{Start: at("2026-10-02 22:00"), Kwh: 24, Cost: fp(3.6), Where: "home"}}
-	r := PeriodRecap("2026-10", ts, cs, Gas{LitresPerKm: 0.08, PricePerLitre: 1, GridKgPerKwh: 0.4}, utc)
+	r := PeriodRecap("2026-10", ts, cs, Gas{LitersPerKm: 0.08, PricePerLiter: 1, GridKgPerKwh: 0.4}, utc)
 	if r.Trips != 2 || r.Km != 120 || r.DaysDriven != 1 || r.Longest.ID != 1 || *r.PrevKm != 50 || r.KmPerKwh != 5 || r.HomeShare != 1 {
 		t.Fatalf("recap: %+v", r)
 	}

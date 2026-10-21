@@ -31,7 +31,7 @@ Your current data is not deleted. It is kept in the data folder as `cartrak.db.b
 ## Sign-ins and devices
 **More, Sign-ins and devices** (admins of the installation; also from Settings) has three lists:
 - **Everyone:** each account with how many devices are signed in, when it was last used (to about five minutes), its last sign-in and any failed attempts under its name.
-- **Signed in now:** every phone and browser that is signed in, with where it signed in from, when it was last active, and a button to sign it out. Use it for a lost phone or a device you do not recognise.
+- **Signed in now:** every phone and browser that is signed in, with where it signed in from, when it was last active, and a button to sign it out. Use it for a lost phone or a device you do not recognize.
 - **Sign-in log:** the last 100 sign-in attempts, newest first, with the name that was tried, whether it worked, and the device and address. Many failures in a row, or a name you do not know, is worth a look. Passwords are never stored.
 
 The address comes from the connection (or from Cloudflare when CarTrak is reached through a tunnel).

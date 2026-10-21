@@ -138,7 +138,7 @@ func TestDrivingTabConvertsSpeedAndNeverShowsAPlace(t *testing.T) {
 	f := fixture(t)
 	for k := range f {
 		if strings.HasSuffix(k, "speed.value") {
-			f[k] = 10.0 // metres per second
+			f[k] = 10.0 // meters per second
 		}
 	}
 	r := Build(f, reading, ford.EV)

@@ -209,7 +209,7 @@ func (s *Server) Handler() http.Handler {
 
 	static, _ := fs.Sub(web.Files, "static")
 	m.Handle("/", s.staticHandler(static))
-	return secHeaders(gzipHandler(m))
+	return recoverer(secHeaders(gzipHandler(m)))
 }
 
 func secHeaders(next http.Handler) http.Handler {

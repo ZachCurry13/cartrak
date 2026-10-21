@@ -79,8 +79,8 @@ While the car runs from a remote start, Home and Live show how long is left, cou
 **More, Display and data, Seasonal themes** dresses the app up for the time of year: Halloween (October), Thanksgiving (November
 until Thanksgiving Day), Christmas (from the day after Thanksgiving to December 26), New Year (December 31 and January 1), winter,
 Valentine's (February 1 to 14), St. Patrick's (March 1 to 17), Easter (the two weeks before Easter Sunday), spring, the Fourth of
-July (July 1 to 4), summer and autumn. A theme changes the accent colour and the battery ring, puts an ornament by the name, and plays
-a short effect on Home once a session (bigger on the holiday itself). Wrapped and its infographic use the season's colours.
+July (July 1 to 4), summer and autumn. A theme changes the accent color and the battery ring, puts an ornament by the name, and plays
+a short effect on Home once a session (bigger on the holiday itself). Wrapped and its infographic use the season's colors.
 **Automatic** follows the date; pick one theme to keep it, or **Off**. It is a choice for each device. The effect never plays with the
 phone's "reduce motion" setting or in Data saver.
 

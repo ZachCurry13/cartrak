@@ -1,7 +1,7 @@
 import { h } from './ui.js';
 
 // More charts for the Insights pages, in the same manner as chart.js: a readout above that says in words what was touched,
-// theme colours only, and sizes that work on a phone.
+// theme colors only, and sizes that work on a phone.
 
 const NS = 'http://www.w3.org/2000/svg';
 const mk = (tag, attrs, text) => {
@@ -13,7 +13,7 @@ const mk = (tag, attrs, text) => {
 const box = (readout, body, note) => h('div', { class: 'chartbox' }, readout, body, note ? h('div', { class: 'muted chartnote' }, note) : null);
 
 // Bars made of parts stacked on each other (home and public energy in a month). items [{ label, parts: [value, ...], text }],
-// classes name each part's colour (in order), legend names them.
+// classes name each part's color (in order), legend names them.
 export function stackBars(items, { classes, legend, summary = '', height = 130 }) {
   if (!items.length) return null;
   const top = Math.max(...items.map((i) => i.parts.reduce((a, b) => a + b, 0)), 1e-9);
@@ -29,7 +29,7 @@ export function stackBars(items, { classes, legend, summary = '', height = 130 }
 
 // A grid of cells shaded by value: hour of the week, for example. rows and cols are labels (cols may be sparse: '' for no
 // label), values[r][c] numbers, text(r, c, v) what the readout says for a cell.
-export function heatGrid(rows, cols, values, { text, summary = '', colour = 'var(--ok)' }) {
+export function heatGrid(rows, cols, values, { text, summary = '', color = 'var(--ok)' }) {
   const top = Math.max(...values.flat(), 1e-9);
   const readout = h('div', { class: 'chartread', role: 'status' }, summary);
   const grid = h('div', { class: 'hgrid', style: `grid-template-columns:2.4em repeat(${cols.length},minmax(0,1fr))` });
@@ -37,7 +37,7 @@ export function heatGrid(rows, cols, values, { text, summary = '', colour = 'var
     grid.append(h('span', { class: 'muted hgl' }, rl));
     cols.forEach((_c, c) => {
       const v = values[r][c];
-      const cell = h('button', { type: 'button', class: 'hcell', 'aria-label': text(r, c, v), style: `background:${v > 0 ? `color-mix(in srgb,${colour} ${Math.round(18 + (v / top) * 82)}%,var(--card2))` : 'var(--card2)'}`,
+      const cell = h('button', { type: 'button', class: 'hcell', 'aria-label': text(r, c, v), style: `background:${v > 0 ? `color-mix(in srgb,${color} ${Math.round(18 + (v / top) * 82)}%,var(--card2))` : 'var(--card2)'}`,
         onclick: () => { grid.querySelectorAll('.hcell.on').forEach((x) => x.classList.remove('on')); cell.classList.add('on'); readout.textContent = text(r, c, v); } });
       grid.append(cell);
     });
@@ -48,7 +48,7 @@ export function heatGrid(rows, cols, values, { text, summary = '', colour = 'var
 
 // A calendar of days, one column per week (Sunday at the top), shaded by value. days [{ date: 'YYYY-MM-DD', value, text }].
 // It shows the last `weeks` weeks and scrolls sideways inside itself when that is wider than the screen.
-export function calendarHeat(days, { weeks = 26, summary = '', colour = 'var(--ok)', today = new Date() }) {
+export function calendarHeat(days, { weeks = 26, summary = '', color = 'var(--ok)', today = new Date() }) {
   const byDate = new Map(days.map((d) => [d.date, d]));
   const top = Math.max(...days.map((d) => d.value), 1e-9);
   const readout = h('div', { class: 'chartread', role: 'status' }, summary);
@@ -63,7 +63,7 @@ export function calendarHeat(days, { weeks = 26, summary = '', colour = 'var(--o
       const x = byDate.get(iso(d));
       const v = x ? x.value : 0;
       const label = x ? `${d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}: ${x.text}` : `${d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}: no driving`;
-      const cell = h('button', { type: 'button', class: 'ccell', title: label, 'aria-label': label, style: `grid-row:${r + 1};grid-column:${w + 1};background:${v > 0 ? `color-mix(in srgb,${colour} ${Math.round(25 + (v / top) * 75)}%,var(--card2))` : 'var(--card2)'}`,
+      const cell = h('button', { type: 'button', class: 'ccell', title: label, 'aria-label': label, style: `grid-row:${r + 1};grid-column:${w + 1};background:${v > 0 ? `color-mix(in srgb,${color} ${Math.round(25 + (v / top) * 75)}%,var(--card2))` : 'var(--card2)'}`,
         onclick: () => { grid.querySelectorAll('.ccell.on').forEach((c) => c.classList.remove('on')); cell.classList.add('on'); readout.textContent = label; } });
       grid.append(cell);
     }
@@ -74,7 +74,7 @@ export function calendarHeat(days, { weeks = 26, summary = '', colour = 'var(--o
 }
 
 // Points against two axes, with an optional straight trend line. points [{ x, y, size, text, href }]; line [a, b] for y = a + b·x.
-export function scatter(points, { xFmt, yFmt, xTitle, yTitle, line, summary = '', colour = 'var(--ok)' }) {
+export function scatter(points, { xFmt, yFmt, xTitle, yTitle, line, summary = '', color = 'var(--ok)' }) {
   if (points.length < 3) return h('p', { class: 'muted' }, 'Not enough trips for this chart yet.');
   const W = 320, H = 220, L = 42, R = 10, T = 22, B = 34;
   const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
@@ -90,7 +90,7 @@ export function scatter(points, { xFmt, yFmt, xTitle, yTitle, line, summary = ''
   svg.append(mk('text', { x: (L + W - R) / 2, y: H - 2, 'text-anchor': 'middle', 'font-size': '10', fill: 'currentColor', 'fill-opacity': '.6' }, xTitle), mk('text', { x: 4, y: 9, 'font-size': '10', fill: 'currentColor', 'fill-opacity': '.6' }, yTitle));
   const maxSize = Math.max(...points.map((p) => p.size || 1));
   const dots = points.map((p) => {
-    const c = mk('circle', { cx: sx(p.x), cy: sy(p.y), r: 2.5 + 3.5 * Math.sqrt((p.size || 1) / maxSize), fill: colour, 'fill-opacity': '.55' });
+    const c = mk('circle', { cx: sx(p.x), cy: sy(p.y), r: 2.5 + 3.5 * Math.sqrt((p.size || 1) / maxSize), fill: color, 'fill-opacity': '.55' });
     svg.append(c);
     return c;
   });

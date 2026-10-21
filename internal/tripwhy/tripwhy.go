@@ -15,7 +15,7 @@ type Reading struct {
 	OutsideC *float64
 }
 
-// Speed band history: kilometres per kWh for a speed range.
+// Speed band history: kilometers per kWh for a speed range.
 type Band struct {
 	LoKph, HiKph float64
 	KmPerKwh     float64
@@ -59,7 +59,7 @@ type Facts struct {
 	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
 	Wind        *Wind    `json:"wind"`
 	RegenKm     *float64 `json:"regenKm"`  // range the car says braking gave back during the trip (its own counter)
-	RegenKwh    *float64 `json:"regenKwh"` // the energy that range is worth, at this trip's own use per kilometre
+	RegenKwh    *float64 `json:"regenKwh"` // the energy that range is worth, at this trip's own use per kilometer
 }
 
 // Tag is one short reason shown next to a trip. Bad means it cost energy.

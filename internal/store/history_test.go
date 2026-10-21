@@ -48,11 +48,11 @@ func TestTheCarCanBeLookedUpAsItWasAtAnyMoment(t *testing.T) {
 	if got := at(5000); got == nil || *got != 60 {
 		t.Fatalf("after the last reading: %v", got)
 	}
-	prev, next := s.NeighbourTS(base.Add(time.Hour).Unix())
+	prev, next := s.NeighborTS(base.Add(time.Hour).Unix())
 	if prev != base.Unix() || next != base.Add(2*time.Hour).Unix() {
-		t.Fatalf("neighbours: %d %d", prev, next)
+		t.Fatalf("neighbors: %d %d", prev, next)
 	}
-	if p, n := s.NeighbourTS(base.Unix()); p != 0 || n == 0 {
+	if p, n := s.NeighborTS(base.Unix()); p != 0 || n == 0 {
 		t.Fatalf("no reading before the first: %d %d", p, n)
 	}
 	if s.FirstSampleTS() != base.Unix() {

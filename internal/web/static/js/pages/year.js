@@ -6,7 +6,7 @@ import { tapBars } from '../chart.js';
 
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short' }); };
 
-// Bars for kilometres per month, scaled to the busiest one.
+// Bars for kilometers per month, scaled to the busiest one.
 function bars(months) {
   return tapBars(months.map((m) => ({ label: monthName(m.month), value: m.km, text: `${dist(m.km, 0)} in ${m.trips} trip${m.trips === 1 ? '' : 's'}` })), { summary: 'Distance driven each month' });
 }

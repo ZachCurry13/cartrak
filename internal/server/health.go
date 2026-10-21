@@ -151,7 +151,7 @@ func addressNote(a string) string {
 	return " (" + a + ")"
 }
 
-// phoneItem summarises the paired phones: none (optional), none heard from yet, or the latest contact.
+// phoneItem summarizes the paired phones: none (optional), none heard from yet, or the latest contact.
 func phoneItem(ds []store.Device, now int64) healthItem {
 	var latest *store.Device
 	for i := range ds {

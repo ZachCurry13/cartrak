@@ -46,9 +46,9 @@ export function tempBandLabel(name) {
   if (m) return `${f(+m[1])} °F and above`;
   return name;
 }
-// Short distances (the size of a place) in this device's units: metres, or feet.
+// Short distances (the size of a place) in this device's units: meters, or feet.
 export const shortDist = (m) => (metric ? `${Math.round(m)} m` : `${Math.round((m * 3.28084) / 10) * 10} ft`);
-export const smallUnit = () => (metric ? 'metres' : 'feet');
+export const smallUnit = () => (metric ? 'meters' : 'feet');
 export const fromMeters = (m) => (metric ? Math.round(m) : Math.round(m * 3.28084));
 export const toMeters = (v) => (metric ? v : v / 3.28084);
 export const pressure = (kpa) => n(kpa) ? dash : metric ? `${Math.round(kpa)} kPa` : `${(kpa * 0.145038).toFixed(0)} psi`;
@@ -73,7 +73,7 @@ export const stat = (label, value) => h('div', { class: 'stat' }, h('div', { cla
 // emptyState is a friendly "nothing here yet" with what to do next (an optional button link).
 export const emptyState = (title, body, href, label) => h('div', { class: 'empty' }, h('b', {}, title), h('p', { class: 'muted' }, body), href ? h('a', { class: 'btn', href }, label) : null);
 export const chip = (cls, text) => h('span', { class: `chip ${cls}` }, text);
-// The categories of this car, so a trip's label can use the owner's own name and colour.
+// The categories of this car, so a trip's label can use the owner's own name and color.
 let cats = {};
 export function setCategories(list) { cats = Object.fromEntries(list.map((c) => [c.key, c])); }
 export const catChip = (t) => {

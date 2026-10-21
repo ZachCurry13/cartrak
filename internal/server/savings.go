@@ -15,7 +15,7 @@ func (s *Server) savingsFor(ss []charging.Session, from, to time.Time) savings.R
 	in := savings.Input{GridKgPerKwh: 0.37}
 	if s.Cfg != nil {
 		p := s.Cfg.Gas()
-		in.LitresPerKm, in.PricePerLitre, in.GridKgPerKwh = p.LitresPerKm, p.PricePerLitre, s.Cfg.GridCO2()
+		in.LitersPerKm, in.PricePerLiter, in.GridKgPerKwh = p.LitersPerKm, p.PricePerLiter, s.Cfg.GridCO2()
 	}
 	for _, c := range ss {
 		if c.Open || c.AddedKwh == nil || c.StartTS < from.Unix() || c.StartTS >= to.Unix() {

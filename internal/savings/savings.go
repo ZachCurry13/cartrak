@@ -1,8 +1,8 @@
 // Package savings works out what driving electric has cost against a gas car, and the CO2 it avoided.
 package savings
 
-// kgCO2PerLitre is the CO2 from burning a litre of gas (8.887 kg per US gallon).
-const kgCO2PerLitre = 2.348
+// kgCO2PerLiter is the CO2 from burning a liter of gas (8.887 kg per US gallon).
+const kgCO2PerLiter = 2.348
 
 // Input is one period: the distance driven, what charging cost, and the gas car to compare with.
 type Input struct {
@@ -11,8 +11,8 @@ type Input struct {
 	Priced        int     // of them, how many have a cost
 	ChargingCost  float64 // of the priced sessions
 	WallKwh       float64 // energy taken from the grid, for the CO2
-	LitresPerKm   float64 // the gas car; zero when not set
-	PricePerLitre float64
+	LitersPerKm   float64 // the gas car; zero when not set
+	PricePerLiter float64
 	GridKgPerKwh  float64
 }
 
@@ -24,7 +24,7 @@ type Result struct {
 	CostPerKm    *float64 `json:"costPerKm"` // charging cost per distance driven; only when every session has a price
 	GasCost      *float64 `json:"gasCost"`   // what the same distance would have cost in the gas car
 	Saved        *float64 `json:"saved"`     // gas cost minus charging cost
-	GasLitres    *float64 `json:"gasLitres"`
+	GasLiters    *float64 `json:"gasLiters"`
 	CO2AvoidedKg *float64 `json:"co2AvoidedKg"`
 }
 
@@ -35,13 +35,13 @@ func Compute(in Input) Result {
 		c := in.ChargingCost / in.Km
 		r.CostPerKm = &c
 	}
-	if in.Km <= 0 || in.LitresPerKm <= 0 {
+	if in.Km <= 0 || in.LitersPerKm <= 0 {
 		return r
 	}
-	litres := in.Km * in.LitresPerKm
-	r.GasLitres = &litres
-	if in.PricePerLitre > 0 {
-		pc := litres * in.PricePerLitre
+	liters := in.Km * in.LitersPerKm
+	r.GasLiters = &liters
+	if in.PricePerLiter > 0 {
+		pc := liters * in.PricePerLiter
 		r.GasCost = &pc
 		if in.Priced > 0 {
 			s := pc - in.ChargingCost
@@ -52,7 +52,7 @@ func Compute(in Input) Result {
 	if grid <= 0 {
 		grid = 0.37
 	}
-	co2 := litres*kgCO2PerLitre - in.WallKwh*grid
+	co2 := liters*kgCO2PerLiter - in.WallKwh*grid
 	r.CO2AvoidedKg = &co2
 	return r
 }

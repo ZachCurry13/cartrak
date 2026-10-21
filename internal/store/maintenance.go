@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Maintenance is a service reminder: something to do every so many kilometres, every so many days, or both.
+// Maintenance is a service reminder: something to do every so many kilometers, every so many days, or both.
 type Maintenance struct {
 	ID         int64    `json:"id"`
 	Name       string   `json:"name"`

@@ -25,7 +25,7 @@ export default async function help(root, _a, session) {
 
   const quick = h('section', { class: 'card' }, h('h2', {}, 'Quick settings'),
     h('p', { class: 'muted' }, 'These apply to this device only.'),
-    pick('Units', [['imperial', 'Miles, °F, psi'], ['metric', 'Kilometres, °C, kPa']], isMetric() ? 'metric' : 'imperial', (v) => { setMetric(v === 'metric'); dispatchEvent(new Event('hashchange')); }),
+    pick('Units', [['imperial', 'Miles, °F, psi'], ['metric', 'Kilometers, °C, kPa']], isMetric() ? 'metric' : 'imperial', (v) => { setMetric(v === 'metric'); dispatchEvent(new Event('hashchange')); }),
     pick('Theme', [['auto', 'Automatic'], ['light', 'Light'], ['dark', 'Dark']], getTheme(), (v) => { setTheme(v); applyTheme(); }),
     pick('Data use', Object.entries(MODES), getPref(), (v) => setPref(v)),
     h('p', {}, h('a', { href: '#/display' }, 'More display settings')));

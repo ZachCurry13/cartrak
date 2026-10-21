@@ -36,7 +36,7 @@ func (s *Server) carData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	info := s.vehicleInfo()
-	prev, next := s.S.NeighbourTS(ts)
+	prev, next := s.S.NeighborTS(ts)
 	ok(w, map[string]any{
 		"ready": true, "ts": ts, "requested": at, "latest": at == 0 || next == 0,
 		"prev": prev, "next": next, "first": first, "model": modelName(f), "vehicle": info,

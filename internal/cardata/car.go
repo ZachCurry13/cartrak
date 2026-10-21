@@ -18,7 +18,7 @@ func (s src) car() Tab {
 		model,
 		s.make(),
 		s.plain("Trim code", "Ford's short code for this version of the car.", "garage.modelCode"),
-		s.text("Colour", "The paint colour on record.", "garage.color"),
+		s.text("Color", "The paint color on record.", "garage.color"),
 		s.text("Vehicle type", "The kind of vehicle on record.", "garage.vehicleType"),
 		s.text("Engine type", "How the car is powered. BEV means battery electric.", "garage.engineType"),
 		say("Treated by CarTrak as", s.pt.Label(), "CarTrak uses this to decide which batteries, fuel and charging details to show. It comes from Ford's record, or your choice in Settings."),

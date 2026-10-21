@@ -103,7 +103,7 @@ func TestTheDebugReportShowsFastChargerPowerPollingSettingsAndDecisions(t *testi
 	if code != 200 || json.Unmarshal([]byte(b), &out) != nil {
 		t.Fatalf("%d %s", code, b)
 	}
-	for _, want := range []string{"| ~114.0 |", "kWh left", "power: 20% 114 kW", "charger type DC", "SETTINGS THAT SHAPE BEHAVIOUR", "polling: driving every", "POLLING (how often", "DECISIONS CARTRAK MADE", "trip_discarded | trip 9 thrown away"} {
+	for _, want := range []string{"| ~114.0 |", "kWh left", "power: 20% 114 kW", "charger type DC", "SETTINGS THAT SHAPE BEHAVIOR", "polling: driving every", "POLLING (how often", "DECISIONS CARTRAK MADE", "trip_discarded | trip 9 thrown away"} {
 		if !strings.Contains(out.Text, want) {
 			t.Fatalf("the report lacks %q:\n%s", want, out.Text)
 		}

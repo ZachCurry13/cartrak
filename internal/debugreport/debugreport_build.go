@@ -10,7 +10,7 @@ import (
 // Build writes the report.
 func Build(in Input) string {
 	var b strings.Builder
-	dunit, sunit, per := "mi", "mph", 1.0/1.609344 // distances, speeds, and what to multiply kilometres by
+	dunit, sunit, per := "mi", "mph", 1.0/1.609344 // distances, speeds, and what to multiply kilometers by
 	if in.Metric {
 		dunit, sunit, per = "km", "km/h", 1
 	}
@@ -126,6 +126,14 @@ func Build(in Input) string {
 		b.WriteString("(none)\n")
 	}
 
+	b.WriteString("\nSERVER ERRORS (requests that hit a bug since CarTrak last started)\n")
+	if len(in.ServerErrors) == 0 {
+		b.WriteString("(none)\n")
+	}
+	for _, l := range in.ServerErrors {
+		b.WriteString("    " + l + "\n")
+	}
+
 	if len(in.Days) > 0 {
 		b.WriteString("\nTIME AWAY (stretches and each day's base; no positions)\n")
 		for _, l := range in.Days {
@@ -133,7 +141,7 @@ func Build(in Input) string {
 		}
 	}
 
-	b.WriteString("\nSETTINGS THAT SHAPE BEHAVIOUR (no secrets, no positions)\n")
+	b.WriteString("\nSETTINGS THAT SHAPE BEHAVIOR (no secrets, no positions)\n")
 	for _, l := range in.Settings {
 		b.WriteString("    " + l + "\n")
 	}

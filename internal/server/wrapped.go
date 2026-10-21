@@ -81,7 +81,7 @@ func (s *Server) wrapped(w http.ResponseWriter, r *http.Request) {
 	var gas analytics.Gas
 	if s.Cfg != nil {
 		g := s.Cfg.Gas()
-		gas = analytics.Gas{LitresPerKm: g.LitresPerKm, PricePerLitre: g.PricePerLitre, GridKgPerKwh: s.Cfg.GridCO2()}
+		gas = analytics.Gas{LitersPerKm: g.LitersPerKm, PricePerLiter: g.PricePerLiter, GridKgPerKwh: s.Cfg.GridCO2()}
 	}
 	var inTs []analytics.Trip
 	for _, t := range ts {

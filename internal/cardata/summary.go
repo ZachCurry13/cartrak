@@ -116,7 +116,7 @@ func (s src) freshness() *Row {
 	return say("Values updated recently", text, "A high number means the car has been awake and reporting. A low number is normal for a car that has been parked a while.")
 }
 
-// doorNamer names the doors of one list. Ford lists the front doors as a single "front" entry, labelled with the driver's side, when it
+// doorNamer names the doors of one list. Ford lists the front doors as a single "front" entry, labeled with the driver's side, when it
 // does not report the passenger door on its own; calling that one "driver" would be a guess, so it is named for what it is.
 func doorNamer(items []map[string]any) func(map[string]any) string {
 	front := func(d map[string]any) bool {

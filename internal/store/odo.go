@@ -1,6 +1,6 @@
 package store
 
-// OdoPoint is one odometer reading (kilometres) and when the car reported it.
+// OdoPoint is one odometer reading (kilometers) and when the car reported it.
 type OdoPoint struct {
 	TS int64
 	Km float64

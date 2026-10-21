@@ -45,7 +45,7 @@ func TestColumnsCanBeChosenRenamedAndExtended(t *testing.T) {
 	var buf bytes.Buffer
 	_ = CSV(&buf, []Trip{trip(3, "work", 12.5)}, o)
 	recs, _ := csv.NewReader(&buf).ReadAll()
-	if strings.Join(recs[0], ",") != "Trip date,Kilometres,Reason,Company" || strings.Join(recs[1], ",") != "2026-03-03,12.5,Work,Acme" {
+	if strings.Join(recs[0], ",") != "Trip date,Kilometers,Reason,Company" || strings.Join(recs[1], ",") != "2026-03-03,12.5,Work,Acme" {
 		t.Fatalf("custom columns: %v", recs)
 	}
 	// text that looks like a formula is made harmless in a CSV
@@ -81,8 +81,8 @@ func TestFunColumnsShowEnergyCostEfficiencyInTheChosenUnitAndMPGe(t *testing.T) 
 		t.Fatalf("miles per percent: %v", got)
 	}
 	m := run(Options{Metric: true, KwhPrice: 0.20})
-	if m[7] != "31.1 kWh/100 km" || m[3] != "Cost per Kilometre" || m[9] != "0.062" {
-		t.Fatalf("kilometres: %v", m)
+	if m[7] != "31.1 kWh/100 km" || m[3] != "Cost per Kilometer" || m[9] != "0.062" {
+		t.Fatalf("kilometers: %v", m)
 	}
 	if got := run(Options{}); got[8] != "" || got[9] != "" {
 		t.Fatalf("no price known, no cost: %v", got)

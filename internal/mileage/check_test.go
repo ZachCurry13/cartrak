@@ -13,7 +13,7 @@ func tripOdo(id int64, from, to float64) *store.Trip {
 	return &store.Trip{ID: id, StartOdo: &from, EndOdo: &to}
 }
 
-func TestEveryKilometreRecordedMeansItAddsUp(t *testing.T) {
+func TestEveryKilometerRecordedMeansItAddsUp(t *testing.T) {
 	pts := []store.OdoPoint{odo(0, 1000), odo(60, 1010), odo(120, 1030), odo(180, 1030), odo(240, 1045)}
 	c := CheckTrips(pts, []*store.Trip{tripOdo(1, 1000, 1030), tripOdo(2, 1030, 1045)})
 	if !c.Ok || c.DrivenKm != 45 || c.MissingKm != 0 || len(c.Gaps) != 0 || c.CoveredKm != 45 {
@@ -60,9 +60,9 @@ func TestRoundingNoiseAndParkedReadingsAreNotGaps(t *testing.T) {
 	if c := CheckTrips([]store.OdoPoint{odo(0, 5)}, nil); !c.Ok || c.Readings != 1 {
 		t.Fatalf("one reading proves nothing: %+v", c)
 	}
-	// A gap of only a few hundred metres in total is not worth the owner's attention.
+	// A gap of only a few hundred meters in total is not worth the owner's attention.
 	if c := CheckTrips([]store.OdoPoint{odo(0, 100), odo(60, 100.6)}, nil); len(c.Gaps) != 0 {
-		t.Fatalf("under a kilometre: %+v", c)
+		t.Fatalf("under a kilometer: %+v", c)
 	}
 }
 
