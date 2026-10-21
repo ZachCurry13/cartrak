@@ -129,7 +129,30 @@ func (s *Server) wrapped(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	end := min(to, time.Now().Unix())
+	// car care: the service visits logged in the period
+	type care struct {
+		Visits int      `json:"visits"`
+		Cost   float64  `json:"cost"`
+		Items  []string `json:"items"`
+	}
+	cc := care{Items: []string{}}
+	if vs, err := s.S.Visits(from, to, "logged"); err == nil {
+		seenItem := map[string]bool{}
+		for _, v := range vs {
+			cc.Visits++
+			if v.Cost != nil {
+				cc.Cost += *v.Cost
+			}
+			for _, it := range v.Items {
+				if !seenItem[it] {
+					seenItem[it] = true
+					cc.Items = append(cc.Items, it)
+				}
+			}
+		}
+	}
 	ok(w, map[string]any{
+		"service":       cc,
 		"recap":         analytics.PeriodRecap(period, ts, cs, gas, loc),
 		"personalities": analytics.Personalities(inTs, inCs, loc),
 		"flow":          analytics.EnergyFlow(ts, cs, from, to, s.storedKwh(from, end)),

@@ -30,3 +30,16 @@ The honest limit: CarTrak only sees what the car reports, and a parked car repor
 ## Charging prices at a place
 
 Open a place under **More, Places** and set **Price per kWh here**: a rate for charging there that replaces your usual home or public price (enter 0 if it is free). Tick **Counts as home charging** to treat the place like home. Leave the price empty and charging there uses the usual prices. A place named Home counts as home without any setting. A charging session you set to Home or Away by hand still uses your choice. The usual prices, the cheaper night rate and the charging alerts are under **Charging, Charging settings**.
+
+## Service visits
+Mark the places where the car is serviced: on **More, Places**, set a place to **Dealership**, **Tire shop** or **Repair shop**. When
+the car then stays there for 20 minutes or more (change it, or turn it off, with **Settings, Ask about a service visit after**),
+CarTrak asks once the car has left whether it was serviced: on Home, and on phones that turned on the **Service visit** alert.
+
+Tap what was done (the usual jobs are there to tap, or add your own), the cost, and when each job is due again, in distance or
+months. "Due again" creates or changes the service reminder of the same name, and work that matches an existing reminder resets it,
+so the reminders stay right without a second step. Or tap **It was not a service visit**.
+
+**More, Maintenance, Service history** lists every visit with what was done, the cost and the odometer, and **Log a service**
+adds one CarTrak did not see. The history downloads as a spreadsheet from **Reports** (Service history), Insights counts service in
+the year's running cost, and Wrapped has a Car care slide for a month or year with service in it.

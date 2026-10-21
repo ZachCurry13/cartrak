@@ -216,3 +216,5 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .wrapped.wseason{background:radial-gradient(120% 80% at 100% 0%,var(--season1),transparent 60%),radial-gradient(110% 80% at 0% 100%,var(--season2),transparent 60%),#0b1220}
 :root[data-season] .ring .arc{stroke:url(#seasonring)}:root[data-season] .ring.low .arc{stroke:var(--warn)}:root[data-season] .ring.crit .arc{stroke:var(--bad)}
 .wnew{max-height:58vh;overflow-y:auto}.wnew h2{font-size:1.05rem}
+.chipbtn{min-height:40px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:.88rem}.chipbtn.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+textarea{font:inherit;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}

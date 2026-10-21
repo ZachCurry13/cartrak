@@ -41,6 +41,7 @@ const (
 	ChargeSlow        = "charge_slow"
 	Achievement       = "achievement"
 	MonthlyRecap      = "monthly_recap"
+	ServiceVisit      = "service_visit"
 )
 
 type Kind struct {
@@ -69,6 +70,7 @@ var Kinds = []Kind{
 	{BumpWhileParked, "Bump while parked", "A parked car's motion sensors read above the bump level (More, Settings). The car reports only now and then, so a short knock can be missed."},
 	{LowDisk, "Low disk space", "The disk CarTrak stores its data on is getting full. At most one alert every three days."},
 	{AlarmSounding, "Car alarm", "The car reports that its alarm or panic alarm is going off."},
+	{ServiceVisit, "Service visit", "After the car stayed at a dealership, tire shop or repair shop you marked under Places: was it serviced? Log what was done and what it cost."},
 	{Achievement, "Achievement earned", "You earned a new badge in Insights, such as a 1,000-mile month or the 150 kW club."},
 	{MonthlyRecap, "Your month, wrapped", "On the first of the month, when last month's Wrapped is ready to look at."},
 	{WeeklySummary, "Weekly summary", "A short summary of the week on Sunday evening: distance, trips, charging and efficiency."},

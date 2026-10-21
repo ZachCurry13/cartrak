@@ -12,7 +12,8 @@ import (
 // CleanupLoop removes phone GPS points older than the "keep days" setting, once at start and then
 // every six hours. With the setting empty (the default) nothing is ever removed.
 func (s *Server) CleanupLoop(ctx context.Context) {
-	go s.noticeLoop(ctx) // badges and the monthly Wrapped, hourly
+	go s.noticeLoop(ctx)  // badges and the monthly Wrapped, hourly
+	go s.serviceLoop(ctx) // service visits, every few minutes
 	for {
 		s.cleanupOnce(time.Now())
 		select {

@@ -12,6 +12,7 @@ import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
 import { vacationNote } from '../vacation.js';
 import { setupCards } from '../setup.js';
+import { serviceCards } from '../servicecard.js';
 import { shortOdometer } from '../tripdistance.js';
 import { isCharging } from '../chargestate.js';
 import { bandRow } from '../rangeband.js';
@@ -131,7 +132,7 @@ export default async function dashboard(root, _args, session) {
         unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null,
         ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}`, style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
     }
-    if (!staleSince) out.push(...await setupCards(session));
+    if (!staleSince) out.push(...await serviceCards(session), ...await setupCards(session));
     if (!staleSince && new Date().getDate() <= 7) out.push(wrappedTeaser()); // the first week of a month: last month's Wrapped
     if (full) out.push(...await homeCards(maint)); // the day so far and the month: skipped in Data saver
     if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));

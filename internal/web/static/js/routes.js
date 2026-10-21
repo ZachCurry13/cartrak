@@ -18,6 +18,7 @@ export const routes = {
   setup: () => import('./pages/setup.js'),
   analytics: () => import('./pages/analytics.js'),
   wrapped: () => import('./pages/wrapped.js'),
+  service: () => import('./pages/service.js'),
   changelog: () => import('./pages/changelog.js'),
   admin: () => import('./pages/admin.js'),
   connect: () => import('./pages/connect.js'),

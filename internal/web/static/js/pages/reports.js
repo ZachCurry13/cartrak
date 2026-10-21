@@ -78,5 +78,6 @@ export default async function reports(root, _a, session) {
       admin ? tile('#/mileage', 'Mileage log', 'Business miles by week, ready to copy') : null),
     group('Quick downloads',
       downloadTile('/api/export/charging.csv', 'Charging (spreadsheet)', 'Every session with energy, cost and charger type'),
+      downloadTile('/api/export/service.csv', 'Service history (spreadsheet)', 'Every service visit with what was done and what it cost'),
       admin ? downloadTile('/api/export/all.zip', 'Everything (zip)', 'Trips, charging, places and service reminders') : null));
 }

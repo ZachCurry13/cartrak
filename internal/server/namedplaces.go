@@ -46,6 +46,8 @@ type placeIn struct {
 	ChargePrice *float64 `json:"chargePrice"`
 	ClearPrice  bool     `json:"clearPrice"`
 	ChargeHome  *bool    `json:"chargeHome"`
+	// ServiceKind: dealer, tire, repair, or "" for not a service place.
+	ServiceKind *string `json:"serviceKind"`
 }
 
 func (in *placeIn) check() string {
@@ -57,6 +59,9 @@ func (in *placeIn) check() string {
 	}
 	if in.ChargePrice != nil && (*in.ChargePrice < 0 || *in.ChargePrice > 20) {
 		return "the price per kWh must be between 0 (free) and 20"
+	}
+	if in.ServiceKind != nil && *in.ServiceKind != "" && *in.ServiceKind != "dealer" && *in.ServiceKind != "tire" && *in.ServiceKind != "repair" {
+		return "a service place is a dealership, a tire shop or a repair shop"
 	}
 	return ""
 }
@@ -98,6 +103,9 @@ func (s *Server) addNamedPlace(w http.ResponseWriter, r *http.Request) {
 		p.RadiusM = *in.RadiusM
 	}
 	p.ChargePrice = in.ChargePrice
+	if in.ServiceKind != nil {
+		p.ServiceKind = *in.ServiceKind
+	}
 	if in.ChargeHome != nil {
 		p.ChargeHome = *in.ChargeHome
 	}
@@ -130,6 +138,9 @@ func (s *Server) patchNamedPlace(w http.ResponseWriter, r *http.Request) {
 		p.ChargePrice = nil
 	} else if in.ChargePrice != nil {
 		p.ChargePrice = in.ChargePrice
+	}
+	if in.ServiceKind != nil {
+		p.ServiceKind = *in.ServiceKind
 	}
 	if in.ChargeHome != nil {
 		p.ChargeHome = *in.ChargeHome

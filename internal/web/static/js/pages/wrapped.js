@@ -53,6 +53,8 @@ export default async function wrapped(root, args) {
       r.longest && w.towns ? h('div', { class: 'small' }, `Longest drive: ${dist(r.longest.km, 0)}.`) : null,
       r.busiestDay ? h('div', { class: 'small' }, `Busiest day: ${new Date(`${r.busiestDay.date}T12:00`).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}, ${dist(r.busiestDay.km, 0)}.`) : null],
     moments.length ? [h('div', { class: 'kick' }, 'Highlights'), ...moments.map((m) => h('div', { class: 'wmoment' }, h('b', {}, valueText(m.kind, m.value, cur)), h('span', {}, m.title)))] : null,
+    w.service && w.service.visits ? [h('div', { class: 'kick' }, 'Car care'), h('div', { class: 'wemoji big' }, '🔧'), h('div', { class: 'huge', style: 'font-size:2.6rem' }, `${w.service.visits} service visit${w.service.visits === 1 ? '' : 's'}`),
+      h('div', { class: 'line' }, w.service.items.slice(0, 5).join(', ')), w.service.cost > 0 ? h('div', { class: 'small' }, `${cur}${w.service.cost.toFixed(2)} spent keeping it in shape.`) : null] : null,
     (w.badges || []).length ? [h('div', { class: 'kick' }, 'Achievements earned'), h('div', { class: 'wbadges' }, ...w.badges.map((b) => h('div', {}, h('span', { class: 'wemoji' }, b.emoji), h('b', {}, b.name))))] : null,
     w.ring && w.ring.days ? [h('div', { class: 'kick' }, 'A day in the life'), h('div', { class: 'wpanel' }, dayRing(w.ring), ringKey()),
       w.ring.leaveAt ? h('div', { class: 'small' }, `Out the door around ${clockText(w.ring.leaveAt)} on weekdays${w.ring.plugInAt ? `, plugged in around ${clockText(w.ring.plugInAt)}` : ''}.`) : null] : null,

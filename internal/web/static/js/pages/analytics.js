@@ -79,6 +79,18 @@ function lifeCards() {
   return [card('Where every kWh went', choices([['30', '30 days'], ['90', '90 days'], ['365', 'Year']], '30', load), flow, sub), card('A day in the life', ring)];
 }
 
+// Car care: the last twelve months of service, and what owning the car cost (charging and service).
+async function careCard() {
+  const [svc, ch] = await Promise.all([api('/api/service').catch(() => null), api('/api/analytics/charging?days=365').catch(() => null)]);
+  if (!svc || !ch) return null;
+  const since = Date.now() / 1000 - 365 * 86400;
+  const vs = svc.visits.filter((v) => v.status === 'logged' && v.start >= since);
+  const cur = svc.currency || '$', spent = vs.reduce((a, v) => a + (v.cost || 0), 0);
+  return card('Car care and running cost', h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${cur}${Math.round(ch.cost + spent).toLocaleString()}`), h('span', {}, 'charging and service, 12 months')),
+    h('div', {}, h('b', {}, String(vs.length)), h('span', {}, `service visit${vs.length === 1 ? '' : 's'} · ${cur}${Math.round(spent)}`))),
+    h('p', { style: 'margin-top:10px' }, h('a', { href: '#/service' }, 'Service history')));
+}
+
 export default async function analytics(root, args, session) {
   const tab = args[0];
   const head = [h('p', {}, h('a', { href: '#/reports' }, '← Reports')), h('div', { class: 'page-title' }, h('h2', {}, 'Insights')),
@@ -92,5 +104,5 @@ export default async function analytics(root, args, session) {
   }
   root.append(...head, wrappedCards());
   const [glow, badges] = await Promise.all([glowCard(), badgesCard()]);
-  root.append(...[glow, badges, ...lifeCards()].filter(Boolean));
+  root.append(...[glow, badges, ...lifeCards(), await careCard()].filter(Boolean));
 }

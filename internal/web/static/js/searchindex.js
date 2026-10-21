@@ -28,6 +28,7 @@ const EXTRA = [
   ['See recent alerts (the bell)', 'Header → bell', '#/inbox', 'Every alert about your cars, newest first, even with push off.', 'inbox notifications alerts bell history unread messages'],
   ['Help and quick settings', 'Header → ?', '#/help', 'Units, theme, data use and a getting-started checklist.', 'help getting started quick settings units theme data install home screen'],
   ['Insights', 'More → Insights', '#/analytics', 'Wrapped for a month or the year, everywhere you have been, achievements, where the energy went and detailed charts.', 'insights wrapped recap year month map heatmap everywhere achievements badges charts graphs analytics records personality infographic'],
+  ['Service history', 'More → Maintenance → Service history', '#/service', 'Every service visit with what was done and what it cost; log one, or answer one CarTrak noticed at a service place.', 'service history maintenance dealership dealer tire shop repair visit oil rotation cost log'],
   ['Setup checklist', 'More → Setup checklist', '#/setup', 'Suggested next steps, all optional: install, alerts, places, prices and more.', 'setup checklist getting started todo to do suggestions new'],
   ['Restore or download a backup', 'More → Backup', '#/backup', 'Save a copy of your data or put one back.', 'backup restore export download zip csv spreadsheet save copy'],
   ['Delete a bad trip', 'Trips → open the trip → Fix this trip', '#/trips', 'Delete a duplicate or close a trip that never ended.', 'delete remove bad trip duplicate close stuck'],

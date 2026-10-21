@@ -20,6 +20,7 @@ export default async function maintenance(root, _a, session) {
   const admin = session.me.role === 'admin';
   const box = h('div');
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Maintenance')),
+    h('nav', { class: 'linkrow', 'aria-label': 'Service' }, h('a', { href: '#/service' }, 'Service history'), h('a', { href: '#/places' }, 'Mark service places')),
     h('p', { class: 'muted' }, 'Reminders for service by distance, by time or both. Each one counts from when you add it or mark it done, and you get an alert when it comes due (turn on Service due under More, Notifications).'), box);
 
   async function load() {

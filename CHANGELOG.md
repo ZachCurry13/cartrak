@@ -2,6 +2,12 @@
 
 ## 0.49.0
 
+### 🔧 Service visits
+- Mark a place as a **dealership, tire shop or repair shop** (More, Places). When the car stays there 20 minutes or more, CarTrak asks after you leave: **was it serviced?** Tap what was done (tire rotation, cabin filter, wipers and more, or your own), what it cost, and when each is due again.
+- "Due again" sets your **service reminders** for you, and work that matches a reminder resets it.
+- **Service history** (More, Maintenance) lists every visit with what was done, the cost and the odometer, and you can log one by hand. It downloads as a spreadsheet from Reports, Insights adds service to the year's running cost, and Wrapped gets a **Car care** slide.
+- A new optional alert, **Service visit**, asks on your phone. The wait before asking can be changed in Settings, or turned off.
+
 ### 🎃 Seasonal themes
 - CarTrak dresses up for the holidays: Halloween in October, Thanksgiving, Christmas (with twinkle lights), New Year's confetti, snow in winter, Valentine's, St. Patrick's, Easter and spring, the Fourth of July (fireworks), summer and autumn. Each changes the accent colour and the battery ring, puts an ornament by the name, and plays a short effect on Home once a session, bigger on the holiday itself. Wrapped and its infographic take on the season's colours.
 - Themes follow the dates around each holiday. Choose **Automatic**, a favourite, or **Off** in More, Display and data. The effect never plays with "reduce motion" or Data saver, and text keeps its contrast in light and dark.

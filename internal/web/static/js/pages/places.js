@@ -23,6 +23,13 @@ function chargeBox(p, reload) {
     h('p', {}, h('button', { onclick: save }, 'Save'), ' ', msg));
 }
 
+// Whether a place is where the car is serviced: a long stop there is asked about as a service visit (More, Maintenance).
+function serviceKind(p, reload) {
+  const sel = h('select', { 'aria-label': `What kind of place ${p.name} is`, onchange: async () => { await api(`/api/named-places/${p.id}`, { method: 'PATCH', body: { serviceKind: sel.value } }).catch(() => null); reload(); } },
+    ...[['', 'Not a service place'], ['dealer', '🔧 Dealership'], ['tire', '🛞 Tire shop'], ['repair', '🔩 Repair shop']].map(([v, t]) => h('option', { value: v, selected: (p.serviceKind || '') === v }, t)));
+  return h('div', { style: 'margin:0 0 6px' }, sel);
+}
+
 // Places you have named, such as Home or the office. Trips show the names, and you can get an alert on
 // arriving and leaving (More, Notifications).
 export default async function places(root, _a, session) {
@@ -42,7 +49,7 @@ export default async function places(root, _a, session) {
     box.replaceChildren(...[
       h('section', { class: 'card' }, h('h2', {}, 'Your places'),
         ...(ps.length ? ps.map((p) => h('div', {}, h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, p.name), h('div', { class: 'muted' }, `within about ${shortDist(p.radiusM)}`)),
-          admin ? h('button', { class: 'sec', onclick: async () => { if (confirm(`Remove ${p.name}?`)) { await api(`/api/named-places/${p.id}`, { method: 'DELETE' }); load(); } } }, 'Remove') : null), admin ? chargeBox(p, load) : null))
+          admin ? h('button', { class: 'sec', onclick: async () => { if (confirm(`Remove ${p.name}?`)) { await api(`/api/named-places/${p.id}`, { method: 'DELETE' }); load(); } } }, 'Remove') : null), admin ? serviceKind(p, load) : null, admin ? chargeBox(p, load) : null))
           : [emptyState('No places yet', 'Drive to Home or the office and use the form below while the car is there.')])),
       admin ? h('section', { class: 'card' }, h('h2', {}, 'Add where the car is now'),
         h('label', { for: 'pn' }, 'Name'), name, h('label', { for: 'pr' }, 'How close counts as there'), size,
