@@ -20,6 +20,7 @@ import { batteryRing } from '../ring.js';
 import { googleMapsUrl, mapButtons } from '../maplinks.js';
 import { effSpan, kwhText } from '../energy.js';
 import { greeting } from '../seasons.js';
+import { isFuelCar } from '../navlayout.js';
 
 let homeMap = null; // kept between refreshes
 let homeLink = null; // the map is a link: tap it to open the spot in Google Maps
@@ -86,10 +87,11 @@ export default async function dashboard(root, _args, session) {
         session.me.role === 'admin' ? api('/api/onboarding') : null, api('/api/health').catch(() => null)]);
       const week = await api(`/api/summary?from=${Math.floor(Date.now() / 1000) - 7 * 86400}`).catch(() => null);
       const maint = await api('/api/maintenance').catch(() => null);
+      const fuelPending = isFuelCar(session) ? ((await api('/api/fuel').catch(() => null)) || {}).pending || 0 : 0; // fill-ups found, waiting for the gallons and price
       const recent = session.me.role === 'admin' ? await api('/api/trips?limit=200').catch(() => []) : [];
-      cache = { status, trips, ob, health, week, maint, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length, short: recent.filter((x) => x.startTs > Date.now() / 1000 - 30 * 86400 && shortOdometer(x)) };
+      cache = { status, trips, ob, health, week, maint, fuelPending, unlabelled: recent.filter((x) => !x.open && x.categorySource === 'default').length, short: recent.filter((x) => x.startTs > Date.now() / 1000 - 30 * 86400 && shortOdometer(x)) };
     }
-    const { status, trips, ob, health, week, maint, unlabelled, short = [] } = cache;
+    const { status, trips, ob, health, week, maint, unlabelled, short = [], fuelPending = 0 } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
     if (ob) {
       // Only while the one essential step (linking Ford) is missing. The optional steps stay on the Getting started page.
@@ -135,9 +137,10 @@ export default async function dashboard(root, _args, session) {
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
     const due = ((maint && maint.items) || []).filter((m) => m.state !== 'ok');
-    if (due.length || unlabelled || short.length) {
+    if (due.length || unlabelled || short.length || fuelPending) {
       out.push(card('Needs attention',
         ...due.map((m) => h('a', { class: 'row', href: '#/maintenance', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, m.name), chip(m.state === 'overdue' ? 'bad' : 'work', m.state === 'overdue' ? 'service due' : 'due soon'))),
+        fuelPending ? h('a', { class: 'row', href: '#/fuel', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${fuelPending} fill-up${fuelPending === 1 ? '' : 's'} to complete`), chip('work', 'add gallons')) : null,
         unlabelled ? h('a', { class: 'row', href: '#/review', style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null,
         ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}`, style: 'color:inherit;text-decoration:none' }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
     }

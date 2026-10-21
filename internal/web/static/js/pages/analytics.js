@@ -3,11 +3,14 @@ import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { flowChart, dayRing, ringKey, badgeGrid } from '../funcharts.js';
 import { periodTitle, clockText } from '../funwords.js';
+import { isFuelCar } from '../navlayout.js';
 
 // Insights: Wrapped for a month or the year, everywhere you have driven, achievements, where the energy goes and a typical day.
 // Under them, the detailed charts (#/analytics/charging, driving, records, battery).
 
-const TABS = [['charging', 'Charging'], ['driving', 'Driving'], ['records', 'Records'], ['battery', 'Battery']];
+const ALL_TABS = [['fuel', 'Fuel', 'fuel'], ['charging', 'Charging', 'plug'], ['driving', 'Driving'], ['records', 'Records'], ['battery', 'Battery', 'plug']];
+// A gas or hybrid car has a Fuel tab; Charging and Battery are for a car that plugs in.
+const tabsFor = (session) => ALL_TABS.filter(([, , need]) => need === 'fuel' ? isFuelCar(session) : need === 'plug' ? !session.vehicle || session.vehicle.plug !== false : true).map(([k, name]) => [k, name]);
 const card = (title, ...kids) => h('section', { class: 'card' }, h('h2', {}, title), ...kids);
 
 // A row of choices that redraws a part of the page.
@@ -80,23 +83,25 @@ function lifeCards() {
 }
 
 // Car care: the last twelve months of service, and what owning the car cost (charging and service).
-async function careCard() {
-  const [svc, ch] = await Promise.all([api('/api/service').catch(() => null), api('/api/analytics/charging?days=365').catch(() => null)]);
+async function careCard(session) {
+  const fuelCar = isFuelCar(session);
+  const [svc, ch] = await Promise.all([api('/api/service').catch(() => null), fuelCar ? api('/api/analytics/fuel?days=365').then((f) => ({ cost: f.total.spent })).catch(() => null) : api('/api/analytics/charging?days=365').catch(() => null)]);
   if (!svc || !ch) return null;
   const since = Date.now() / 1000 - 365 * 86400;
   const vs = svc.visits.filter((v) => v.status === 'logged' && v.start >= since);
   const cur = svc.currency || '$', spent = vs.reduce((a, v) => a + (v.cost || 0), 0);
-  return card('Car care and running cost', h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${cur}${Math.round(ch.cost + spent).toLocaleString()}`), h('span', {}, 'charging and service, 12 months')),
+  return card('Car care and running cost', h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${cur}${Math.round(ch.cost + spent).toLocaleString()}`), h('span', {}, `${fuelCar ? 'fuel' : 'charging'} and service, 12 months`)),
     h('div', {}, h('b', {}, String(vs.length)), h('span', {}, `service visit${vs.length === 1 ? '' : 's'} · ${cur}${Math.round(spent)}`))),
     h('p', { style: 'margin-top:10px' }, h('a', { href: '#/service' }, 'Service history')));
 }
 
 export default async function analytics(root, args, session) {
   const tab = args[0];
+  const TABS = tabsFor(session);
   const head = [h('p', {}, h('a', { href: '#/reports' }, '← Reports')), h('div', { class: 'page-title' }, h('h2', {}, 'Insights')),
     h('nav', { class: 'atabs', 'aria-label': 'Insights' }, h('a', { href: '#/analytics', class: tab ? '' : 'on' }, 'Highlights'), ...TABS.map(([k, t]) => h('a', { href: `#/analytics/${k}`, class: tab === k ? 'on' : '' }, t)))];
   if (tab && TABS.some(([k]) => k === tab)) {
-    const mod = await import(tab === 'charging' || tab === 'driving' ? '../insightsmore.js' : '../insightsmore2.js');
+    const mod = await import(tab === 'fuel' ? '../insightsfuel.js' : tab === 'charging' || tab === 'driving' ? '../insightsmore.js' : '../insightsmore2.js');
     const body = h('div');
     root.append(...head, body);
     await mod[tab](body, session);
@@ -104,5 +109,5 @@ export default async function analytics(root, args, session) {
   }
   root.append(...head, wrappedCards());
   const [glow, badges] = await Promise.all([glowCard(), badgesCard()]);
-  root.append(...[glow, badges, ...lifeCards(), await careCard()].filter(Boolean));
+  root.append(...[glow, badges, ...(session.vehicle && session.vehicle.plug === false ? [] : lifeCards()), await careCard(session)].filter(Boolean));
 }

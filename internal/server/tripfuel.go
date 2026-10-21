@@ -94,9 +94,9 @@ func (s *Server) withFuel(out []tripOut) {
 		if o.Open || o.EndTS == nil {
 			continue
 		}
-		start, startAt, ok1 := levelAtOrBefore(pts, o.StartTS+60, startFreshSec)
-		end, _, ok2 := levelAtOrBefore(pts, *o.EndTS+120, endFreshSec)
-		if !ok1 || !ok2 || climbed(pts, startAt, *o.EndTS+120) {
+		start, startAt, ok1 := levelAtOrBefore(pts, o.StartTS+5, startFreshSec)
+		end, _, ok2 := levelAtOrBefore(pts, *o.EndTS+5, endFreshSec)
+		if !ok1 || !ok2 || climbed(pts, startAt, *o.EndTS+5) {
 			continue
 		}
 		o.StartFuel, o.EndFuel = &start, &end

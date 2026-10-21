@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { forgetOffline } from '../offlinestore.js';
 import { notices } from '../notice.js';
 import { buildIndex, search } from '../searchindex.js';
+import { isFuelCar } from '../navlayout.js';
 
 // The More page: a short, grouped menu. Each row opens its own page.
 export default async function settings(root, _a, session) {
@@ -28,7 +29,8 @@ export default async function settings(root, _a, session) {
     finder(admin),
     h('div', { class: 'menu-cols' },
       h('div', {},
-        group('Reports', item('#/analytics', 'Insights', 'Wrapped, everywhere you have been, achievements and charts'), item('#/reports', 'Reports', 'Year in review, statistics, efficiency, mileage and exports')),
+        group('Reports', item('#/analytics', 'Insights', 'Wrapped, everywhere you have been, achievements and charts'), item('#/reports', 'Reports', 'Year in review, statistics, efficiency, mileage and exports'),
+          isFuelCar(session) ? item('#/fuel', 'Fuel', 'Fill-ups, price per gallon and the size of the tank') : null),
         !admin && session.me.ownCar ? group('Cars', item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`)) : null,
         admin ? group('Connections',
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),

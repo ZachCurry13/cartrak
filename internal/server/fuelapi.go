@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -149,4 +150,40 @@ func (s *Server) deleteFill(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ok(w, "deleted")
+}
+
+// fuelDebug is the fuel part of the debug report: nothing for a car that has no fuel gauge readings.
+func (s *Server) fuelDebug(from time.Time) []string {
+	pts, err := s.S.FuelBetween(from.Unix(), time.Now().Unix())
+	fills, _ := s.S.ListRefuels()
+	if err != nil || (len(pts) == 0 && len(fills) == 0) {
+		return nil
+	}
+	loc := s.defaultLoc()
+	at := func(ts int64) string { return time.Unix(ts, 0).In(loc).Format("01-02 15:04") }
+	var out []string
+	if tank, n := fuel.TankGallons(fills); n > 0 {
+		out = append(out, fmt.Sprintf("tank size %.1f gal, from %d fill-up(s)", tank, n))
+	} else {
+		out = append(out, "tank size not known yet (no fill-up with its gallons)")
+	}
+	out = append(out, fmt.Sprintf("fuel readings in this window: %d", len(pts)))
+	for _, f := range fills {
+		gal, price := "-", "-"
+		if f.Gallons != nil {
+			gal = fmt.Sprintf("%.2f gal", *f.Gallons)
+		}
+		if f.PricePerGal != nil {
+			price = fmt.Sprintf("%.3f/gal", *f.PricePerGal)
+		}
+		out = append(out, fmt.Sprintf("fill-up %s | tank %.0f%% > %.0f%% | %s | %s | %s, %s", at(f.TS), f.StartPct, f.EndPct, gal, price, f.Status, f.Source))
+	}
+	step := 1
+	if len(pts) > 60 { // a line every so often keeps the report short
+		step = len(pts) / 60
+	}
+	for i := 0; i < len(pts); i += step {
+		out = append(out, fmt.Sprintf("gauge %s | %.0f%%", at(pts[i].TS), pts[i].Pct))
+	}
+	return out
 }

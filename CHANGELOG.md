@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.52.0
+
+### ⛽ Gas and hybrid cars, properly
+- A new **Fuel** page (More, and in the bottom bar for a gas or hybrid car). When the fuel gauge jumps up, CarTrak keeps a **fill-up** and asks (an optional **Filled up** alert) for the **gallons** and the **price per gallon**, entered each time.
+- CarTrak **works out the size of the tank by itself** from those fill-ups: 6 gallons that took the gauge from 30% to 70% is a 15 gallon tank. It gets better with every fill-up that starts well below full.
+- **Trips** show the tank at each end and, once the tank size is known, the **fuel used, the economy (mpg or L/100 km) and the cost**. Older trips get it too, from the readings already kept. A drive with a stop at the pump in the middle is left without a number rather than a wrong one.
+- **Insights, Fuel**: what you spent by month and the economy by month. **Records** adds best economy, the farthest between fill-ups, the biggest fill-up and the cheapest gas. **Wrapped** has a **Fuel** slide, and its infographic and the monthly recap speak gallons and dollars instead of kWh.
+- A new **Low fuel** alert (15% or less). Home shows fill-ups still waiting for their gallons under **Needs attention**.
+- Insights drops the Charging and Battery tabs, the energy flow and the charging achievements for a car that cannot plug in. Liters and a price per liter, for devices set to kilometers.
+- The debug report gets a **FUEL** section.
+
 ## 0.51.0
 
 ### ▶️ Trip replay follows the road

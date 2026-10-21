@@ -10,6 +10,7 @@ export const PAGES = [
   ['trips', '#/trips', 'Trips', 'M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z|o12,10,2.5'],
   ['live', '#/live', 'Live', 'M13 2L4 14h7l-1 8 9-12h-7l1-8z'],
   ['charging', '#/charging', 'Charging', 'M9 2v5M15 2v5M6 7h12v4a6 6 0 01-12 0V7zM12 17v5', 'plug'],
+  ['fuel', '#/fuel', 'Fuel', 'M5 21V4a1 1 0 011-1h7a1 1 0 011 1v17M4 21h11M8 8h3M14 9h2a2 2 0 012 2v5a1.5 1.5 0 003 0V9l-3-3', 'fuel'],
   ['health', '#/health', 'Health', 'M3 12h4l2-6 4 12 2-6h6', 'admin'],
   ['data', '#/data', 'Data', 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', 'admin'],
   ['insights', '#/analytics', 'Insights', 'M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z'],
@@ -25,8 +26,11 @@ export const PAGES = [
 const byKey = new Map(PAGES.map((p) => [p[0], p]));
 export const MAX_BAR = 6;
 
-export const defaults = (admin) => ({
-  bar: admin ? ['home', 'trips', 'live', 'charging', 'health', 'data'] : ['home', 'trips', 'live', 'charging', 'insights'],
+// A gas or hybrid car: it has a tank to watch instead of a plug.
+export const isFuelCar = (session) => !!(session.vehicle && session.vehicle.engine && session.vehicle.powertrain && session.vehicle.powertrain !== 'ev');
+
+export const defaults = (admin, fuelCar = false) => ({
+  bar: admin ? ['home', 'trips', 'live', fuelCar ? 'fuel' : 'charging', 'health', 'data'] : ['home', 'trips', 'live', fuelCar ? 'fuel' : 'charging', 'insights'],
   tiles: admin ? ['insights', 'reports', 'day', 'places', 'plan', 'settings'] : ['reports', 'day', 'places', 'plan', 'history', 'display'],
   auto: false,
 });
@@ -43,6 +47,7 @@ export function allowed(key, session) {
   if (!p) return false;
   if (p[4] === 'admin') return session.me.role === 'admin';
   if (p[4] === 'plug') return !session.vehicle || session.vehicle.plug !== false;
+  if (p[4] === 'fuel') return isFuelCar(session);
   return true;
 }
 
@@ -64,7 +69,7 @@ const byUse = (keys) => {
 // left out.
 export function current(session) {
   const admin = session.me.role === 'admin';
-  const l = layout || read(LOCAL, null) || defaults(admin);
+  const l = layout || read(LOCAL, null) || defaults(admin, isFuelCar(session));
   const clean = (keys) => keys.filter((k) => byKey.has(k) && allowed(k, session));
   const bar = clean(l.bar).slice(0, MAX_BAR), tiles = clean(l.tiles);
   return { bar: l.auto ? byUse(bar) : bar, tiles: l.auto ? byUse(tiles) : tiles, auto: !!l.auto };
@@ -72,7 +77,7 @@ export function current(session) {
 
 export async function load(session) {
   const saved = await api('/api/me/layout').catch(() => null);
-  layout = saved && saved.bar ? saved : defaults(session.me.role === 'admin');
+  layout = saved && saved.bar ? saved : defaults(session.me.role === 'admin', isFuelCar(session));
   write(LOCAL, layout);
 }
 

@@ -126,6 +126,13 @@ func Build(in Input) string {
 		b.WriteString("(none)\n")
 	}
 
+	if len(in.Fuel) > 0 {
+		b.WriteString("\nFUEL (tank size learned from fill-ups; fill-ups with the gauge before and after; the tank gauge over time)\n")
+		for _, l := range in.Fuel {
+			b.WriteString("    " + l + "\n")
+		}
+	}
+
 	b.WriteString("\nSERVER ERRORS (requests that hit a bug since CarTrak last started)\n")
 	if len(in.ServerErrors) == 0 {
 		b.WriteString("(none)\n")

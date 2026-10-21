@@ -7,7 +7,7 @@ import { windowPicker } from './insightsmore.js';
 // The detailed Insights pages for records and the monthly recap, and for the battery (#/analytics/records, #/analytics/battery).
 
 const card = (title, ...kids) => h('section', { class: 'card' }, h('h2', {}, title), ...kids);
-const ICON = { longest: '🛣️', efficient: '🍃', topSpeed: '🏁', coldest: '🥶', hottest: '🥵', peakKw: '⚡', bigCharge: '🔋', cheapest: '💲', bigDay: '📅', streak: '🔥' };
+const ICON = { longest: '🛣️', efficient: '🍃', topSpeed: '🏁', coldest: '🥶', hottest: '🥵', peakKw: '⚡', bigCharge: '🔋', cheapest: '💲', bigDay: '📅', streak: '🔥', bestMpg: '🍃', longestTank: '⛽', biggestFill: '🛢️', cheapestGas: '💲' };
 const day = (ts, date) => (date ? new Date(`${date}T12:00`) : new Date(ts * 1000)).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 
 function recapCard(period, onMove) {
@@ -19,8 +19,12 @@ function recapCard(period, onMove) {
       h('button', { class: 'sec sm', 'aria-label': 'Month before', onclick: () => onMove(-1) }, '‹'), h('button', { class: 'sec sm', 'aria-label': 'Month after', onclick: () => onMove(1) }, '›')),
     r.trips ? h('div', { class: 'bigfig', style: 'margin-top:12px' },
       h('div', {}, h('b', {}, valueText('km', r.km)), h('span', {}, `${r.trips} trips${up != null ? ` · ${up >= 0 ? '▲' : '▼'} ${Math.abs(up)}%` : ''}`)),
-      h('div', {}, h('b', {}, r.kmPerKwh ? valueText('kmPerKwh', r.kmPerKwh) : '—'), h('span', {}, `${num(r.kwhUsed, 0, ' kWh')} used`)),
-      h('div', {}, h('b', {}, `${cur}${r.cost.toFixed(2)}`), h('span', {}, `${r.sessions} charges · ${Math.round(r.homeShare * 100)}% at home`)),
+      r.fuel && !(r.kwhCharged > 0)
+        ? h('div', {}, h('b', {}, r.fuel.kmPerGal ? valueText('kmPerGal', r.fuel.kmPerGal) : '—'), h('span', {}, r.fuel.gal ? `${valueText('gal', r.fuel.gal)} burned` : 'fuel economy'))
+        : h('div', {}, h('b', {}, r.kmPerKwh ? valueText('kmPerKwh', r.kmPerKwh) : '—'), h('span', {}, `${num(r.kwhUsed, 0, ' kWh')} used`)),
+      r.fuel && !(r.kwhCharged > 0)
+        ? h('div', {}, h('b', {}, `${cur}${r.fuel.spent.toFixed(2)}`), h('span', {}, `${r.fuel.fills} fill-up${r.fuel.fills === 1 ? '' : 's'}${r.fuel.avgPrice > 0 ? ` · ${valueText('pricePerGal', r.fuel.avgPrice, cur)}` : ''}`))
+        : h('div', {}, h('b', {}, `${cur}${r.cost.toFixed(2)}`), h('span', {}, `${r.sessions} charges · ${Math.round(r.homeShare * 100)}% at home`)),
       r.saved != null ? h('div', {}, h('b', {}, `${cur}${Math.round(r.saved)} saved`), h('span', {}, `against a gas car${r.kgCo2Saved > 0 ? ` · ${Math.round(r.kgCo2Saved)} kg CO₂` : ''}`)) : h('div', {}, h('b', {}, `${r.daysDriven} days`), h('span', {}, 'with driving'))) : h('p', { class: 'muted' }, 'No trips this month.'),
     r.trips ? h('p', { class: 'seg', style: 'margin-top:12px' }, h('a', { class: 'btn', href: `#/wrapped/${r.period}` }, 'Play it as Wrapped ▶')) : null);
   });

@@ -55,6 +55,7 @@ func TestTheTankIsLearnedFromAFillUpAndTripsGetGallonsAndCost(t *testing.T) {
 		level(start+int64(i)*300, pct)
 	}
 	end := start + 1800
+	level(end+30, 80) // someone fills up right after parking: the tank at the end of the drive is still the 70%
 	tr := &store.Trip{StartTS: start, Category: "personal", CategorySource: "default"}
 	_ = srv.S.CreateTrip(tr)
 	tr.EndTS, tr.DistanceKm, tr.Open = &end, 64.4, false

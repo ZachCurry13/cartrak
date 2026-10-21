@@ -19,6 +19,7 @@ export const GROUPS = [
     ['#/time', 'Time', 'How much of the time the car was parked, driving or charging, and where it was parked.'],
     ['#/insights', 'Efficiency insights', 'What changes your miles per kWh: temperature, month, best and worst trips.'],
     ['#/maintenance', 'Maintenance', 'Service reminders by distance or time.'],
+    ['#/fuel', 'Fuel', 'For a gas or hybrid car: fill-ups with the gallons and the price per gallon, the tank size CarTrak works out, and what fuel costs.'],
   ]],
   ['The car itself', [
     ['#/health', 'Health', '12 V battery, main battery, tires, trouble codes, parked drain.'],

@@ -44,6 +44,7 @@ export const routes = {
   backup: () => import('./pages/backup.js'),
   notifications: () => import('./pages/notifications.js'),
   phone: () => import('./pages/phone.js'),
+  fuel: () => import('./pages/fuel.js'),
   about: () => import('./pages/about.js'),
   status: () => import('./pages/status.js'),
   live: () => import('./pages/live.js'),

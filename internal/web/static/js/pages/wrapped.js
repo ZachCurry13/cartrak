@@ -1,9 +1,10 @@
-import { h, dist, temp } from '../ui.js';
+import { h, dist, temp, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { compareDistance, compareEnergy, compareDriver, milesOrKm, distUnit, personalityLine, periodTitle, valueText, clockText } from '../funwords.js';
 import { flowChart, dayRing, ringKey } from '../funcharts.js';
 import { drawInfographic, shareImage } from '../infographic.js';
 import { efficiency } from '../energy.js';
+import { economy, volText, priceText } from '../fuelunits.js';
 import { activeTheme, THEMES } from '../seasons.js';
 
 // Wrapped: a month or a year as full-screen slides. Tap the right side for the next one, the left side to go back. The last slide
@@ -31,7 +32,7 @@ export default async function wrapped(root, args) {
   const prev = r.prevKm > 0 ? Math.round(((r.km - r.prevKm) / r.prevKm) * 100) : null;
   const p = w.personalities || [];
   const vs = compareDriver(r.km, w.ring && w.ring.days); // per day since CarTrak began, if that was later than the period's start
-  const moments = (w.moments || []).filter((m) => ['longest', 'coldest', 'hottest', 'peakKw', 'efficient', 'topSpeed'].includes(m.key)).slice(0, 4);
+  const moments = (w.moments || []).filter((m) => ['longest', 'coldest', 'hottest', 'peakKw', 'efficient', 'topSpeed', 'bestMpg', 'longestTank', 'cheapestGas'].includes(m.key)).slice(0, 4);
   const canvas = drawInfographic(w, routes, season ? [THEMES[season.key][6], THEMES[season.key][7]] : null);
   const img = h('img', { src: canvas.toDataURL('image/png'), alt: `${title} infographic`, class: 'wposter' });
   const shareMsg = h('p', { class: 'small', role: 'status' });
@@ -46,7 +47,9 @@ export default async function wrapped(root, args) {
     r.kwhCharged > 0 ? [h('div', { class: 'kick' }, 'Energy'), h('div', { class: 'huge' }, valueText('kwh', r.kwhCharged)), h('div', { class: 'line' }, `charged, ${compareEnergy(r.kwhCharged)}.`),
       h('div', { class: 'small' }, `${Math.round(r.homeShare * 100)}% at home · ${r.sessions} charges · ${cur}${r.cost.toFixed(2)}${r.kmPerKwh ? ` · ${efficiency(r.kmPerKwh * 100, 100)}` : ''}`),
       r.saved != null ? h('div', { class: 'wsave' }, h('b', {}, `${cur}${Math.round(r.saved)}`), ' saved against a gas car', r.kgCo2Saved > 0 ? h('div', {}, `and ${Math.round(r.kgCo2Saved)} kg of CO₂ kept out of the air`) : null) : null] : null,
-    [h('div', { class: 'kick' }, 'Where every kWh went'), h('div', { class: 'wpanel' }, flowChart(w.flow))],
+    w.fuel && !(r.kwhCharged > 0) ? [h('div', { class: 'kick' }, 'Fuel'), h('div', { class: 'huge' }, `${cur}${Math.round(w.fuel.spent).toLocaleString()}`), h('div', { class: 'line' }, `on fuel${w.fuel.galBought > 0 ? `, ${volText(w.fuel.galBought)} in ${w.fuel.fills} fill-up${w.fuel.fills === 1 ? '' : 's'}` : ''}.`),
+      h('div', { class: 'small' }, [w.fuel.kmPerGal > 0 ? `${economy(w.fuel.kmPerGal, 1)} on average` : '', w.fuel.avgPrice > 0 ? `${priceText(cur, w.fuel.avgPrice)} on average` : '', w.fuel.costPerKm > 0 ? `${cur}${(w.fuel.costPerKm * (isMetric() ? 1 : 1.609344)).toFixed(2)} a ${isMetric() ? 'km' : 'mile'}` : ''].filter(Boolean).join(' · '))] : null,
+    r.kwhCharged > 0 || w.flow.homeKwh + w.flow.publicKwh > 0 ? [h('div', { class: 'kick' }, 'Where every kWh went'), h('div', { class: 'wpanel' }, flowChart(w.flow))] : null,
     [h('div', { class: 'kick' }, 'Out and about'), ...(w.towns ? [h('div', { class: 'huge' }, String(w.towns)), h('div', { class: 'line' }, `town${w.towns === 1 ? '' : 's'} visited.`)]
       : r.longest ? [h('div', { class: 'huge' }, dist(r.longest.km, 0)), h('div', { class: 'line' }, 'your longest drive.')] : []),
       (w.places || []).length ? h('div', { class: 'small' }, `Your regulars: ${w.places.map((x) => `${x.name} (${x.visits})`).join(', ')}`) : null,

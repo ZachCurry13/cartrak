@@ -13,6 +13,7 @@ const EXTRA = [
   ['Ford sign-in and credentials', 'More → Ford connection', '#/ford', 'Link or relink your Ford account.', 'ford account link login connect credentials client id secret relink'],
   ['Miles or kilometers, °F or °C', 'More → Display and data', '#/display', 'Units, theme, trip times and data use for this device.', 'units miles kilometers km metric imperial fahrenheit celsius temperature psi kpa'],
   ['Dark or light theme', 'More → Display and data', '#/display', 'Choose the look for this device.', 'theme dark light mode appearance color color'],
+  ['Fuel and fill-ups', 'More → Fuel', '#/fuel', 'Fill-ups with the gallons and the price per gallon, the tank size CarTrak learns, and fuel cost, for a gas or hybrid car.', 'fuel gas gasoline petrol fill-up fill up fillup gallons liters price per gallon tank mpg fuel economy refuel hybrid'],
   ['Your birthday', 'More → Display and data', '#/display', 'Set your birthday, and CarTrak dresses up for you that day with a happy birthday alert in the morning.', 'birthday birth day party cake celebrate'],
   ['Holiday themes', 'More → Display and data', '#/display', 'Seasonal colors, an ornament and a short effect on Home that follow the holidays, or off.', 'holiday holidays seasonal season theme christmas halloween easter decorations off'],
   ['Holiday touches on alerts', 'More → Notifications', '#/notifications', 'Friendly alerts get the holiday emoji and a happy holiday on the day. Warnings stay plain.', 'holiday alerts emoji notifications festive birthday touches'],

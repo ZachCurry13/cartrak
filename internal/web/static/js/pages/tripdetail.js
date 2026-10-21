@@ -12,7 +12,8 @@ import { placeCard } from '../placecard.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
 import { whyCard } from '../tripwhy.js';
-import { battery } from '../tripcard.js';
+import { battery, fuelBar } from '../tripcard.js';
+import { economy, volText } from '../fuelunits.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -76,6 +77,17 @@ async function versusAverage(t) {
   return h('p', { class: 'muted' }, `${Math.abs(diff)}% ${diff > 0 ? 'more' : 'less'} efficient than your average over the last year.`);
 }
 
+// The stats of a gas or hybrid car's drive: the tank at each end, and the fuel once the tank size is known. The gauge moves in coarse steps, so
+// the figures say they are estimates.
+function fuelStats(t) {
+  const cur = t.currency || '$';
+  return [stat('Tank used', num(t.startFuel - t.endFuel, 0, '%')), stat('Start', pct(t.startFuel)), stat('End', pct(t.endFuel)),
+    t.fuelGal != null ? stat('Fuel used (estimate)', `≈ ${volText(t.fuelGal)}`) : null,
+    t.fuelGal != null ? stat('Fuel economy (estimate)', `≈ ${economy(t.distanceKm, t.fuelGal) || '—'}`) : null,
+    t.kmPerTank != null ? stat('Range on a full tank at this pace', dist(t.kmPerTank, 0)) : null,
+    t.estCost != null ? stat('Fuel cost (estimate)', `≈ ${cur}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${cur}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null].filter(Boolean);
+}
+
 export default async function tripDetail(root, [id, action], session) {
   const saver = isSaver();
   const [{ trip: t, ...data }, mc] = await Promise.all([api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`), mapConfig()]);
@@ -106,10 +118,12 @@ export default async function tripDetail(root, [id, action], session) {
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
       t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
+        ...(t.startFuel != null ? fuelStats(t) : [
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : '')),
-        t.estCost != null ? stat('Energy cost (estimate)', `≈ ${t.currency || '$'}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${t.currency || '$'}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null),
-      battery(t) ? h('div', { style: 'margin-top:10px' }, battery(t), h('p', { class: 'muted', style: 'margin:4px 0 0' }, 'Green: battery left after the drive. Amber: what the drive used.')) : null,
+        t.estCost != null ? stat('Energy cost (estimate)', `≈ ${t.currency || '$'}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${t.currency || '$'}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null])),
+      battery(t) || fuelBar(t) ? h('div', { style: 'margin-top:10px' }, battery(t) || fuelBar(t), h('p', { class: 'muted', style: 'margin:4px 0 0' }, `Green: ${battery(t) ? 'battery' : 'fuel'} left after the drive. Amber: what the drive used.`)) : null,
+      t.startFuel != null && t.fuelGal == null ? h('p', { class: 'muted' }, 'CarTrak learns the size of the tank from your fill-ups. Log one under Fuel and this shows the gallons and the cost.') : null,
       avg),
     admin && shortOdometer(t) ? tripDistanceCard(t) : null, // drastically short: up here, where it is seen
     why,

@@ -1,5 +1,6 @@
 import { compareDistance, milesOrKm, distUnit, personalityLine, periodTitle, valueText } from './funwords.js';
 import { efficiency } from './energy.js';
+import { economy, volText } from './fuelunits.js';
 
 // The Wrapped infographic: one tall picture (1080 x 1920, a phone story) of a month or a year, drawn on a canvas so it can be
 // shared or saved as an image. w is the Wrapped answer, routes the period's routes for the little glowing map.
@@ -113,18 +114,25 @@ export function drawInfographic(w, routes, colors = null) {
   text(g, milesOrKm(r.km), PAD, 380, 190, { weight: 800 });
   let y = wrap(g, `${distUnit()} · ${compareDistance(r.km)}`, PAD, 450, 40, W - PAD * 2, 52, { weight: 600 });
   const tw = (W - PAD * 2 - 28) / 2;
-  const eff = r.kmPerKwh > 0 ? efficiency(r.kmPerKwh * 100, 100) : '—';
+  const fuelCar = !!w.fuel && !(r.kwhCharged > 0); // a gas or hybrid car tells fuel, not kWh
+  const hasFlow = !!w.flow && !fuelCar;
+  const eff = fuelCar ? (w.fuel.kmPerGal > 0 ? economy(w.fuel.kmPerGal, 1) : '—') : r.kmPerKwh > 0 ? efficiency(r.kmPerKwh * 100, 100) : '—';
   const cur = w.currency || '$';
   y += 20;
   tile(g, PAD, y, tw, 160, `${r.trips}`, `trips · ${Math.round(r.hours)} h driving`);
   tile(g, PAD + tw + 28, y, tw, 160, eff, 'efficiency');
-  tile(g, PAD, y + 188, tw, 160, valueText('kwh', r.kwhCharged), `charged · ${Math.round(r.homeShare * 100)}% at home`);
-  tile(g, PAD + tw + 28, y + 188, tw, 160, r.saved != null ? `${cur}${Math.round(r.saved)} saved` : `${cur}${r.cost.toFixed(0)}`, r.saved != null ? 'against a gas car' : 'charging cost');
+  if (fuelCar) {
+    tile(g, PAD, y + 188, tw, 160, volText(w.fuel.galBought), `bought · ${w.fuel.fills} fill-up${w.fuel.fills === 1 ? '' : 's'}`);
+    tile(g, PAD + tw + 28, y + 188, tw, 160, `${cur}${Math.round(w.fuel.spent)}`, 'on fuel');
+  } else {
+    tile(g, PAD, y + 188, tw, 160, valueText('kwh', r.kwhCharged), `charged · ${Math.round(r.homeShare * 100)}% at home`);
+    tile(g, PAD + tw + 28, y + 188, tw, 160, r.saved != null ? `${cur}${Math.round(r.saved)} saved` : `${cur}${r.cost.toFixed(0)}`, r.saved != null ? 'against a gas car' : 'charging cost');
+  }
   y += 188 * 2 + 30;
   // the parts under the map have their own heights; the map takes what is left, so nothing runs into the footer
   const p = (w.personalities || [])[0];
   const badges = (w.badges || []).slice(0, 6);
-  const below = (p ? 190 : 0) + (badges.length ? 110 : 0) + (w.flow ? ENERGY_H : 0) + 70;
+  const below = (p ? 190 : 0) + (badges.length ? 110 : 0) + (hasFlow ? ENERGY_H : 0) + 70;
   const mapH = Math.max(260, H - y - below - 60);
   glowMap(g, routes, PAD, y, W - PAD * 2, mapH);
   text(g, w.towns ? `${w.towns} towns` : 'Everywhere you went', PAD + 32, y + 60, 34, { weight: 700 });
@@ -140,7 +148,7 @@ export function drawInfographic(w, routes, colors = null) {
     badges.forEach((b, i) => text(g, b.emoji, PAD + 150 + i * 110, y + 34, 72, {}));
     y += 110;
   }
-  energyBar(g, w.flow, PAD, y + 10, W - PAD * 2);
+  if (hasFlow) energyBar(g, w.flow, PAD, y + 10, W - PAD * 2);
   text(g, 'Made with CarTrak', W / 2, H - 40, 28, { alpha: 0.55, align: 'center' });
   return c;
 }

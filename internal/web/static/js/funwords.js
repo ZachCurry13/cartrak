@@ -1,5 +1,6 @@
 import { dist, num, temp, speed, isMetric } from './ui.js';
 import { efficiency } from './energy.js';
+import { volText, priceText, economyFromKmPerGal } from './fuelunits.js';
 
 // The words for Wrapped and the badges: a distance compared with something everyone knows, energy in everyday terms, and each
 // kind of number written the way people say it.
@@ -46,6 +47,9 @@ export function valueText(kind, v, cur = '$') {
     case 'kw': return num(v, 0, ' kW');
     case 'kwh': return v >= 1000 ? `${(v / 1000).toFixed(1)} MWh` : num(v, 0, ' kWh');
     case 'price': return `${cur}${v.toFixed(2)}/kWh`;
+    case 'kmPerGal': return economyFromKmPerGal(v) || '—';
+    case 'gal': return volText(v);
+    case 'pricePerGal': return priceText(cur, v);
     case 'days': return `${Math.round(v)} days`;
     case 'towns': return `${Math.round(v)} towns`;
     default: return Math.round(v).toLocaleString();

@@ -1,6 +1,7 @@
 import { h, catChip, chip, dist, when, duration, pct } from './ui.js';
 import { effSpan } from './energy.js';
 import { catColor } from './categories.js';
+import { economy } from './fuelunits.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
@@ -33,11 +34,18 @@ export function battery(t) {
   return h('div', { class: 'sbar', title: `${pct(t.startSoc)} to ${pct(t.endSoc)}` }, h('i', { class: 'used', style: `left:${end}%;width:${start - end}%` }), h('i', { class: 'left', style: `width:${end}%` }));
 }
 
+// The same for a gas or hybrid car: the tank level it ended at, then the stretch it spent.
+export function fuelBar(t) {
+  if (t.startFuel == null || t.endFuel == null) return null;
+  const end = Math.max(0, Math.min(100, t.endFuel)), start = Math.max(end, Math.min(100, t.startFuel));
+  return h('div', { class: 'sbar', title: `${pct(t.startFuel)} to ${pct(t.endFuel)} of the tank` }, h('i', { class: 'used', style: `left:${end}%;width:${start - end}%` }), h('i', { class: 'left', style: `width:${end}%` }));
+}
+
 // What the colors on a trip card mean, in a fold that stays closed until asked.
 export function colorKey() {
   const sw = (cls) => h('i', { class: `key ${cls}`, 'aria-hidden': 'true' });
   return h('details', { class: 'tkey' }, h('summary', {}, 'What the colors mean'),
-    h('p', {}, sw('left'), ' Green bar: battery left after the drive. ', sw('used'), ' Amber: the part the drive used.'),
+    h('p', {}, sw('left'), ' Green bar: battery (or fuel) left after the drive. ', sw('used'), ' Amber: the part the drive used.'),
     h('p', {}, sw('good'), ' Green badge: more efficient than your average drive. ', sw('bad'), ' Red: less efficient. No color: about average.'),
     h('p', {}, sw('start'), ' Green dot: where it started. ', sw('end'), ' Red dot: where it ended. A dashed line joins the few places the car reported, until the road is found.'),
     h('p', {}, 'The stripe down the left is the trip\'s category color (Personal, Work and your own).'));
@@ -66,7 +74,8 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
       t.distanceSrc ? chip('work', 'corrected') : null, t.journeyId ? chip('work', 'journey') : null),
     h('div', { class: 'muted' }, when(t.startTs, t.tz)),
     places ? h('div', { class: 'muted tplaces' }, ...places) : null,
-    h('div', { class: 'tline' }, battery(t), kmPerKwh ? h('span', { class: `pill ${grade}` }, effText) : null),
+    h('div', { class: 'tline' }, battery(t) || fuelBar(t), kmPerKwh ? h('span', { class: `pill ${grade}` }, effText) : null,
+      !kmPerKwh && t.fuelGal > 0 ? h('span', { class: 'pill', title: 'From the tank gauge, so an estimate' }, `≈ ${economy(t.distanceKm, t.fuelGal)}`) : null),
     t.notes ? h('div', { class: 'muted' }, t.notes) : null),
   h('div', { class: 'tside' }, catChip(t), share));
 }

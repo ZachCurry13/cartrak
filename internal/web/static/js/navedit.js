@@ -1,5 +1,5 @@
 import { h } from './ui.js';
-import { PAGES, MAX_BAR, allowed, current, defaults, save, page, icon } from './navlayout.js';
+import { PAGES, MAX_BAR, allowed, current, defaults, save, page, icon, isFuelCar } from './navlayout.js';
 
 // Customize: choose the pages in the bottom bar and the tiles in the More sheet, in any order, or let them follow how often
 // each page is opened. Saved to the person's account.
@@ -29,7 +29,7 @@ export function openEditor(session, done) {
       section('More tiles', state.tiles, 12, 'The big buttons at the top of More.'),
       h('p', { class: 'seg', style: 'margin-top:14px' },
         h('button', { type: 'button', class: 'on', onclick: async () => { try { await save(state); close(); done(); } catch (e) { msg.textContent = e.message; } } }, 'Save'),
-        h('button', { type: 'button', onclick: () => { Object.assign(state, defaults(session.me.role === 'admin')); state.bar = [...state.bar]; state.tiles = [...state.tiles]; draw(); } }, 'Reset'),
+        h('button', { type: 'button', onclick: () => { Object.assign(state, defaults(session.me.role === 'admin', isFuelCar(session))); state.bar = [...state.bar]; state.tiles = [...state.tiles]; draw(); } }, 'Reset'),
         h('button', { type: 'button', onclick: close }, 'Cancel')), msg);
   }
   const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-label': 'Customize' }, h('div', { class: 'mhandle', 'aria-hidden': 'true' }), h('div', { class: 'mhead' }, h('h2', {}, 'Customize')), body);
