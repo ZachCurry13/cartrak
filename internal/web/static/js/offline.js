@@ -15,13 +15,14 @@ export function cacheGet(k) {
 // Runs fn(); on a network failure (not a server error or a sign-out) returns the
 // remembered answer instead. staleSince is when that answer was saved, else null.
 export async function cachedEx(k, fn) {
+  const car = currentCar(); // the car this answer is for, fixed now: switching cars while it is on its way must not file it under the other car
   try {
     const value = await fn();
-    cacheSet(k, value);
+    if (currentCar() === car) cacheSet(k, value);
     return { value, staleSince: null };
   } catch (e) {
     if (!(e instanceof TypeError)) throw e; // fetch() rejects with TypeError when offline
-    const c = cacheGet(k);
+    const c = currentCar() === car ? cacheGet(k) : null;
     if (!c) throw e;
     return { value: c.v, staleSince: c.t };
   }

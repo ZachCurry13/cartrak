@@ -9,6 +9,9 @@
 ### 🔎 The debug report shows what was changed by hand
 - Each trip says when its distance was **corrected** (by hand, from the road or as the straight line) and what the odometer said. Corrections, category changes, deletions and closing a stuck trip are now logged as they happen, in the report's decisions section.
 
+### 🚘 One car's numbers never shown under another car
+- Every answer about a car now says which car it is, and the app refuses (with a message) an answer for a different car than the one on screen, instead of showing it. The remembered "last readings" are filed under the car that was on screen when the request was made, so switching cars while a refresh is on its way can no longer put one car's numbers under another's name. The debug report names the vehicle each car follows (the last six characters of its VIN) and the vehicles on the linked account, so a mix-up can be traced.
+
 ### 🧹 Consistency
 - Every page now has its title in the same place and style, and the link rows on Home, Insights, journeys and the guide share one style instead of copies of the same inline settings.
 

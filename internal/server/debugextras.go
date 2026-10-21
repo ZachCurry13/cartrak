@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"strings"
 	"time"
 
@@ -79,6 +80,13 @@ func onOff(b bool) string {
 func (s *Server) debugSettings() []string {
 	var out []string
 	add := func(f string, a ...any) { out = append(out, fmt.Sprintf(f, a...)) }
+	if l, ok := s.Link.(vehicleLister); ok {
+		var all []string
+		for _, v := range l.Vehicles() {
+			all = append(all, v.Label+" ending "+vinEnd(v.VIN))
+		}
+		add("Ford vehicle followed: ending %s (chosen: %v); the linked account lists: %s", vinEnd(s.S.GetKV(ford.SeenVINKey)), s.Cfg != nil && s.Cfg.Value("FORD_VIN") != "", strings.Join(all, ", "))
+	}
 	if s.P != nil {
 		add("polling: driving every %d s, charging every %d s, parked every %d s", int(s.P.Iv.Driving.Seconds()), int(s.P.Iv.Charging.Seconds()), int(s.P.Iv.Parked.Seconds()))
 	}
@@ -241,4 +249,15 @@ func (s *Server) awayDays(from, now time.Time) []string {
 		out = append(out, "  "+day+": "+how)
 	}
 	return out
+}
+
+// vinEnd is the last six characters of a VIN: enough to tell vehicles apart in a report without printing the VIN.
+func vinEnd(vin string) string {
+	if len(vin) > 6 {
+		return vin[len(vin)-6:]
+	}
+	if vin == "" {
+		return "?"
+	}
+	return vin
 }

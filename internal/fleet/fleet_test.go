@@ -425,3 +425,59 @@ func TestCarsOnOneFordAccountFollowDifferentVehicles(t *testing.T) {
 		t.Fatalf("a vehicle chosen for any other car is left to it: %v", got)
 	}
 }
+
+func TestTheLatestReadingOfOneCarIsNeverServedForAnother(t *testing.T) {
+	f, ts, _ := start(t)
+	ann := login(t, ts.URL, "ann")
+	if code, body := ann.do("POST", "/api/cars", `{"name":"SUV"}`, nil); code != 200 {
+		t.Fatalf("add car: %d %s", code, body)
+	}
+	f.Runtime(1).S.DB.Exec(`INSERT INTO samples(ts,soc_pct,energy_kwh) VALUES(?,75,61.5)`, time.Now().Unix())
+	_, one := ann.do("GET", "/api/latest", "", car("1"))
+	_, two := ann.do("GET", "/api/latest", "", car("2"))
+	_, three := ann.do("GET", "/api/latest?summary=1", "", car("2"))
+	if !strings.Contains(one, `"socPct":75`) {
+		t.Fatalf("car 1 reads 75%%: %.200s", one)
+	}
+	if strings.Contains(two, "61.5") || strings.Contains(two, `"socPct":75`) || strings.Contains(three, "61.5") {
+		t.Fatalf("car 2 must not get car 1's reading: %.200s | %.200s", two, three)
+	}
+}
+
+func TestEveryAnswerSaysWhichCarAnswered(t *testing.T) {
+	_, ts, _ := start(t)
+	ann := login(t, ts.URL, "ann")
+	if code, body := ann.do("POST", "/api/cars", `{"name":"SUV"}`, nil); code != 200 {
+		t.Fatalf("add car: %d %s", code, body)
+	}
+	for id, want := range map[string]string{"1": "1", "2": "2"} {
+		req, _ := http.NewRequest("GET", ts.URL+"/api/latest", nil)
+		req.Header.Set("X-Car", id)
+		resp, err := ann.c.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if got := resp.Header.Get("X-Car-Id"); got != want {
+			t.Fatalf("asked for car %s, the answer says car %q", id, got)
+		}
+	}
+}
+
+func TestInstallationWidePathsDoNotClaimACar(t *testing.T) {
+	_, ts, _ := start(t)
+	ann := login(t, ts.URL, "ann")
+	if code, body := ann.do("POST", "/api/cars", `{"name":"SUV"}`, nil); code != 200 {
+		t.Fatalf("add car: %d %s", code, body)
+	}
+	req, _ := http.NewRequest("GET", ts.URL+"/api/me", nil)
+	req.Header.Set("X-Car", "2")
+	resp, err := ann.c.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if got := resp.Header.Get("X-Car-Id"); got != "" {
+		t.Fatalf("who is signed in is the same for every car, so no car is named: %q", got)
+	}
+}

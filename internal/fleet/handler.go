@@ -34,6 +34,9 @@ func (f *Fleet) Handler() http.Handler {
 			_, _ = w.Write([]byte(`{"error":"no such car"}`))
 			return
 		}
+		if strings.HasPrefix(r.URL.Path, "/api/") && !isFront(r.URL.Path) && asked(r) != "" { // a car's own answer says which car it is, so the app can tell when it is not the one it asked about
+			w.Header().Set("X-Car-Id", strconv.FormatInt(rt.Car.ID, 10))
+		}
 		rt.h.ServeHTTP(w, r)
 	})
 }

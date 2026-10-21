@@ -33,6 +33,9 @@ export async function api(path, opts = {}) {
     showOffline(hit.t);
     return hit.v;
   }
+  // The server says which car answered. An answer for another car than the one asked about must never be shown or kept.
+  const answered = r.headers.get('X-Car-Id');
+  if (car && answered && answered !== car) throw new Error(`CarTrak answered for car ${answered}, but car ${car} was asked about. Reload the page.`);
   // 502, 503, 504 and Cloudflare's 52x: the server did not answer, usually because it is restarting after an update. A page
   // asks once more after a moment, then shows what this device kept; a save says so in words.
   if (r.status === 502 || r.status === 503 || r.status === 504 || (r.status >= 520 && r.status <= 527)) {
