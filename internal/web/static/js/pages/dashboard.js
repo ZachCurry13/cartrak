@@ -1,4 +1,5 @@
 import { remoteChip } from '../remotestart.js';
+import { tripPlaces } from '../tripplaces.js';
 import { homeCards } from '../homecards.js';
 import { h, stat, chip, nice, chargerType, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
@@ -55,6 +56,12 @@ function weekCard(w) {
   return card('Last 7 days', h('div', { class: 'grid' }, stat('Distance', dist(km, 0)), stat('Trips', trips),
     ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(all.reduce((n, x) => n + x.energyKm, 0), kwh))] : [])),
     h('p', { style: 'margin:10px 0 0' }, h('a', { href: '#/trips' }, 'See all trips')));
+}
+
+// "Around Buffalo · ", "Home → Gym · " or nothing
+function placesLine(t) {
+  const p = tripPlaces(t);
+  return p.around ? `Around ${p.to} · ` : p.from || p.to ? `${p.from || '…'} → ${p.to || '…'} · ` : '';
 }
 
 function card(title, ...kids) { return h('section', { class: 'card' }, h('h2', {}, title), ...kids); }
@@ -171,7 +178,7 @@ export default async function dashboard(root, _args, session) {
     if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));
     const lastTrip = trips[0];
     if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),
-      h('p', { class: 'muted' }, `${lastTrip.startPlace || lastTrip.endPlace ? `${lastTrip.startPlace || '…'} → ${lastTrip.endPlace || '…'} · ` : ''}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`),
+      h('p', { class: 'muted' }, `${placesLine(lastTrip)}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`),
       session.me.role === 'admin' && !lastTrip.open ? h('p', {}, h('a', { class: 'btn sec', href: `#/trip/${lastTrip.id}/share` }, 'Share this trip')) : null));
     if (veh.engine && latest.fuelPct != null && !fuelFirst) {
       out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),

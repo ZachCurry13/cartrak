@@ -74,3 +74,10 @@ func (s *Server) nameCities(ts []tripOut) {
 	}
 	c.lookupLater()
 }
+
+// withCity names the cities of one trip, as the list does, so the trip's own page can say "Around Buffalo" too.
+func (s *Server) withCity(o tripOut) tripOut {
+	one := []tripOut{o}
+	s.nameCities(one)
+	return one[0]
+}

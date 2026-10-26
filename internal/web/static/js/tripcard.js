@@ -1,4 +1,5 @@
 import { h, catChip, chip, dist, when, duration, pct } from './ui.js';
+import { tripPlaces } from './tripplaces.js';
 import { effSpan } from './energy.js';
 import { catColor } from './categories.js';
 import { economy } from './fuelunits.js';
@@ -59,10 +60,9 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
   const grade = kmPerKwh && avgKmPerKwh ? (kmPerKwh >= avgKmPerKwh * 1.08 ? 'good' : kmPerKwh <= avgKmPerKwh * 0.9 ? 'bad' : '') : '';
   const picked = sel.picked.has(t.id);
   // where it began and ended: a place you named, otherwise the city
-  const from = t.startPlace || t.startCity, to = t.endPlace || t.endCity;
+  const tp = tripPlaces(t);
   // two lines that wrap, so a long township name is never cut off; one line when it ended where it began
-  const end = to || (from && t.open ? 'on the way' : '');
-  const places = from && from === end ? [h('span', {}, `Around ${from}`)] : from || end ? [h('span', {}, from || '…'), h('span', {}, `→ ${end || '…'}`)] : null;
+  const places = tp.around ? [h('span', {}, `Around ${tp.to}`)] : tp.from || tp.to ? [h('span', {}, tp.from || '…'), h('span', {}, `→ ${tp.to || '…'}`)] : null;
   const share = admin && !t.open && !sel.state.on
     ? h('button', { class: 'ico sm', type: 'button', 'aria-label': 'Share this trip', title: 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } },
       (() => { const s = svgEl('svg', { viewBox: '0 0 24 24' }); s.append(svgEl('path', { d: 'M12 3v12M8 7l4-4 4 4M5 12v8h14v-8' })); return s; })()) : null;

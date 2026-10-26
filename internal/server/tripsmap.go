@@ -61,8 +61,8 @@ func (s *Server) estimateLater(ts []*store.Trip) {
 	if len(ts) == 0 || !s.routeLookupOn() || !s.routeBusy.CompareAndSwap(false, true) {
 		return
 	}
-	if len(ts) > 3 {
-		ts = ts[:3]
+	if len(ts) > 20 {
+		ts = ts[:20] // newest first, a few a second apart: the next view of the list draws the roads
 	}
 	go func() {
 		defer s.routeBusy.Store(false)

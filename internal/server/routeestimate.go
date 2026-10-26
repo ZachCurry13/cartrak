@@ -132,7 +132,7 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 	if len(recorded) < 2 {
 		return fail(routeFailure{Msg: "the car reported too few positions to route between"})
 	}
-	road, km, err := s.routeClient().Route(context.Background(), routeest.Via(recorded, 8))
+	road, km, err := s.routeClient().RouteNear(context.Background(), routeest.Via(recorded, 8), odoTarget(t))
 	if err != nil {
 		return fail(routeFailure{Msg: err.Error()})
 	}
@@ -199,4 +199,13 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done, "failures": failures})
+}
+
+// odoTarget is the length the road for a trip should be close to: what the odometer recorded, unless that was corrected by hand
+// (then the choice is the owner's) or is too small to mean anything.
+func odoTarget(t *store.Trip) float64 {
+	if t.DistanceSrc != "" || t.DistanceKm < 0.5 {
+		return 0
+	}
+	return t.DistanceKm
 }

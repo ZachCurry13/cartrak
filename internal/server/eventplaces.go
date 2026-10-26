@@ -40,11 +40,20 @@ func (s *Server) placeEvents(evs []history.Event, ts []*store.Trip, named []*sto
 		}
 		// a place you named wins, otherwise the city; Build leaves the start empty when it matches the end, so it is worked out again
 		from, to := places.Name(t.StartLat, t.StartLon, named), e.Place
+		fromNamed, toNamed := from != "", to != ""
+		fromCity := cities.name(t.StartLat, t.StartLon)
+		toCity := ""
+		if !t.Open {
+			toCity = cities.name(t.EndLat, t.EndLon)
+		}
 		if from == "" {
-			from = cities.name(t.StartLat, t.StartLon)
+			from = fromCity
 		}
 		if to == "" && !t.Open {
-			to = cities.name(t.EndLat, t.EndLon)
+			to = toCity
+		}
+		if fromCity != "" && fromCity == toCity && !(fromNamed && toNamed && from != to) { // stayed inside one city: "Around" it, unless both ends are places you named
+			from, to = fromCity, fromCity
 		}
 		b := baseAt(t.StartTS)
 		switch atStart, atEnd := b.near(t.StartLat, t.StartLon), b.near(t.EndLat, t.EndLon); {

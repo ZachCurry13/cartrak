@@ -5,6 +5,11 @@
 ### ⚡ Home opens sooner
 - **Home draws as soon as the latest reading is in.** The cards under the battery (service, setup, the day, the month) fill in when they arrive, with "Updating the day and the month…" in the meantime, instead of the whole page waiting for the slowest one.
 - The slowest question Home asks (**where the energy went**, about 4 seconds, up to 11) is now answered at once from the last result, and refreshed in the background for the next visit. Only the very first visit after CarTrak starts has to wait for it.
+n### 🗺️ Trips
+- **"Around Buffalo":** a drive that stayed inside one city says "Around" that city, on the trip list, the trip page, Home and the Day view, even when one end is a place you named. Two named places still read "Home → Gym".
+- **Estimated routes** now ask for the alternative roads and take the one closest to the odometer, instead of always the quickest, which could be the long way round.
+- More routes are estimated in the background each time the trip list is opened (up to 20, not 3), so fewer trips stay a dashed straight line.
+- A drive the car reported only after it was over (an impossible 900 mph average from a one-minute gap) no longer shows a time or speed, and says why. The distance stays the odometer’s.
 
 ## 0.56.3
 

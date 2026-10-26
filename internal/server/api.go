@@ -80,6 +80,7 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("samples") == "0" { // data saver: skip the (large) list of route points
 		one := s.withFuelOne(s.placeNames(withEnergy(t, s.capacityKwh())))
 		s.withTripCost(&one)
+		one = s.withCity(one)
 		ok(w, map[string]any{"trip": one, "samples": []any{}, "phone": []any{}, "samplesSkipped": true})
 		return
 	}
@@ -91,6 +92,7 @@ func (s *Server) tripDetail(w http.ResponseWriter, r *http.Request) {
 	}
 	one := s.withFuelOne(s.placeNames(withEnergy(t, s.capacityKwh())))
 	s.withTripCost(&one)
+	one = s.withCity(one)
 	ok(w, map[string]any{"trip": one, "samples": ss, "phone": phone, "estimate": est})
 }
 

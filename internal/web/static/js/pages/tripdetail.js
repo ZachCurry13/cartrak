@@ -1,4 +1,5 @@
 import { h, stat, catChip, dist, speed, when, duration, pct, num, isMetric } from '../ui.js';
+import { tripPlaces } from '../tripplaces.js';
 import { api } from '../api.js';
 import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
@@ -88,6 +89,11 @@ function fuelStats(t) {
     t.estCost != null ? stat('Fuel cost (estimate)', `≈ ${cur}${t.estCost.toFixed(2)}${t.distanceKm >= 1.6 ? ` (${cur}${(t.estCost / t.distanceKm * (isMetric() ? 1 : 1.609344)).toFixed(2)}/${isMetric() ? 'km' : 'mi'})` : ''}`) : null].filter(Boolean);
 }
 
+function placesBold(t) {
+  const p = tripPlaces(t);
+  return p.around ? h('p', {}, h('b', {}, `Around ${p.to}`)) : p.from || p.to ? h('p', {}, h('b', {}, `${p.from || '…'} → ${p.to || '…'}`)) : null;
+}
+
 export default async function tripDetail(root, [id, action], session) {
   const saver = isSaver();
   const [{ trip: t, ...data }, mc] = await Promise.all([api(`/api/trips/${encodeURIComponent(id)}${saver ? '?samples=0' : ''}`), mapConfig()]);
@@ -111,13 +117,16 @@ export default async function tripDetail(root, [id, action], session) {
   const avg = saver ? null : await versusAverage(t); // one extra request, skipped on data saver
   const why = saver || t.open ? null : await whyCard(t.id);
   const hours = t.endTs && t.startTs ? (t.endTs - t.startTs) / 3600 : 0;
-  const avgKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
+  const rawKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
+  const lateReport = rawKph != null && rawKph > 250; // no car does that: it reported the drive after it was over, so the time is not the drive's
+  const avgKph = lateReport ? null : rawKph;
   const hasStart = t.startLat != null && t.startLon != null;
   const hasEnd = t.endLat != null && t.endLon != null && !t.open;
   root.append(...[h('p', {}, h('a', { href: '#/trips' }, '← Trips'), ' · ', h('a', { href: `#/day/${new Date(t.startTs * 1000).toLocaleDateString('en-CA', t.tz ? { timeZone: t.tz } : {})}` }, 'See the whole day')),
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
-      t.startPlace || t.endPlace ? h('p', {}, h('b', {}, `${t.startPlace || '…'} → ${t.endPlace || '…'}`)) : null,
-      h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
+      placesBold(t),
+      lateReport ? h('p', { class: 'muted' }, 'The car reported this drive only after it was over, so its time and speed are not known. The distance is the odometer’s.') : null,
+      h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', lateReport ? '—' : duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
         ...(t.startFuel != null ? fuelStats(t) : [
         stat('Battery used', t.startSoc != null && t.endSoc != null ? num(t.startSoc - t.endSoc, 0, '%') : '—'), stat('Start', pct(t.startSoc)), stat('End', pct(t.endSoc)),
         stat('Energy used', kwhText(t.energyKwh, t.energyEstimated)), stat(t.energyEstimated ? 'Efficiency (estimate)' : 'Efficiency', effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : '')),

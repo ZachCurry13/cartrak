@@ -38,6 +38,13 @@ type answer struct {
 
 // Route is the driving route through the points in order, and its length in kilometers.
 func (c *Client) Route(ctx context.Context, via []Point) ([]Point, float64, error) {
+	return c.RouteNear(ctx, via, 0)
+}
+
+// RouteNear is Route that, between just two points, also asks for the alternative roads and takes the one whose length is
+// closest to targetKm (what the odometer said), instead of always the quickest, which can be a long way round. A target of zero
+// takes the first answer.
+func (c *Client) RouteNear(ctx context.Context, via []Point, targetKm float64) ([]Point, float64, error) {
 	if len(via) < 2 {
 		return nil, 0, fmt.Errorf("need at least two points")
 	}
@@ -50,6 +57,9 @@ func (c *Client) Route(ctx context.Context, via []Point) ([]Point, float64, erro
 		parts[i] = fmt.Sprintf("%.5f,%.5f", p[1], p[0]) // OSRM wants longitude first
 	}
 	url := base + "/route/v1/driving/" + strings.Join(parts, ";") + "?overview=full&geometries=geojson&steps=false"
+	if targetKm > 0 && len(via) == 2 {
+		url += "&alternatives=3"
+	}
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -77,6 +87,13 @@ func (c *Client) Route(ctx context.Context, via []Point) ([]Point, float64, erro
 		return nil, 0, fmt.Errorf("the routing service found no route (%s)", a.Code)
 	}
 	r := a.Routes[0]
+	if targetKm > 0 {
+		for _, alt := range a.Routes[1:] {
+			if len(alt.Geometry.Coordinates) >= 2 && math.Abs(alt.Distance/1000-targetKm) < math.Abs(r.Distance/1000-targetKm) {
+				r = alt
+			}
+		}
+	}
 	out := make([]Point, len(r.Geometry.Coordinates))
 	for i, c := range r.Geometry.Coordinates {
 		out[i] = Point{c[1], c[0]}
