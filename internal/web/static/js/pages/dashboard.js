@@ -158,9 +158,16 @@ export default async function dashboard(root, _args, session) {
         unlabelled ? h('a', { class: 'row', href: '#/review' }, h('span', { class: 'grow' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to label`), chip('work', 'review')) : null,
         ...short.slice(0, 3).map((x) => h('a', { class: 'row', href: `#/trip/${x.id}` }, h('span', { class: 'grow' }, `${when(x.startTs, x.tz)}: the distance looks too short`), chip('work', 'check')))));
     }
-    if (!staleSince) out.push(...(await careP).flat());
+    // The cards under the battery (service, setup, the day, the month) arrive on their own and fill their places when they do, so the
+    // page is up as soon as the reading is, instead of waiting for the slowest of them.
+    const careSlot = h('div');
+    if (!staleSince) { out.push(careSlot); careP.then((c) => careSlot.replaceChildren(...c.flat())).catch(() => null); }
     if (!staleSince && new Date().getDate() <= 7) out.push(wrappedTeaser()); // the first week of a month: last month's Wrapped
-    if (full) out.push(...await homeP); // the day so far and the month: skipped in Data saver
+    if (full) { // the day so far and the month: skipped in Data saver
+      const homeSlot = h('div', {}, h('p', { class: 'muted', role: 'status' }, 'Updating the day and the month…'));
+      out.push(homeSlot);
+      homeP.then((c) => homeSlot.replaceChildren(...c)).catch(() => homeSlot.replaceChildren());
+    }
     if (week && Object.values(week).reduce((n, x) => n + x.trips, 0) > 0) out.push(weekCard(week));
     const lastTrip = trips[0];
     if (lastTrip) out.push(card(lastTrip.open ? 'Trip in progress' : 'Last trip', h('a', { href: `#/trip/${lastTrip.id}` }, `${dist(lastTrip.distanceKm)} · ${lastTrip.category}`),

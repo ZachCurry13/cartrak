@@ -131,16 +131,45 @@ func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
 	if days < 7 || days > 365 {
 		days = 60
 	}
+	// Home asks for this on every visit and it takes seconds to work out, so an answer that is already known is given at once, even a
+	// few minutes old, and a fresh one is worked out in the background for the next visit. Only the very first call has to wait.
 	s.cc.reasonsMu.Lock()
-	defer s.cc.reasonsMu.Unlock()
-	if s.cc.reasonsOut != nil && s.cc.reasonsDays == days && time.Since(s.cc.reasonsAt) < 30*time.Minute {
-		ok(w, s.cc.reasonsOut)
+	out, at, same := s.cc.reasonsOut, s.cc.reasonsAt, s.cc.reasonsDays == days
+	refreshing := s.cc.reasonsBusy
+	if out != nil && same {
+		if time.Since(at) > 5*time.Minute && !refreshing {
+			s.cc.reasonsBusy = true
+			go func() {
+				fresh, err := s.computeReasons(days)
+				s.cc.reasonsMu.Lock()
+				s.cc.reasonsBusy = false
+				if err == nil {
+					s.cc.reasonsOut, s.cc.reasonsDays, s.cc.reasonsAt = fresh, days, time.Now()
+				}
+				s.cc.reasonsMu.Unlock()
+			}()
+		}
+		s.cc.reasonsMu.Unlock()
+		ok(w, out)
 		return
 	}
-	ts, err := s.S.ListTrips(store.TripFilter{From: time.Now().AddDate(0, 0, -days).Unix(), Limit: 400})
+	s.cc.reasonsMu.Unlock()
+	fresh, err := s.computeReasons(days)
 	if err != nil {
 		fail(w, 500, "db error")
 		return
+	}
+	s.cc.reasonsMu.Lock()
+	s.cc.reasonsOut, s.cc.reasonsDays, s.cc.reasonsAt = fresh, days, time.Now()
+	s.cc.reasonsMu.Unlock()
+	ok(w, fresh)
+}
+
+// computeReasons works out where the energy went over the last days: the speeds driven, the weather, and everything else.
+func (s *Server) computeReasons(days int) (map[string]any, error) {
+	ts, err := s.S.ListTrips(store.TripFilter{From: time.Now().AddDate(0, 0, -days).Unix(), Limit: 400})
+	if err != nil {
+		return nil, err
 	}
 	extra := map[string]float64{}
 	haveWind := false
@@ -175,7 +204,5 @@ func (s *Server) efficiencyReasons(w http.ResponseWriter, r *http.Request) {
 			items = append(items, map[string]any{"key": k, "kwh": extra[k], "pctOfUse": extra[k] / usual * 100})
 		}
 	}
-	s.cc.reasonsOut = map[string]any{"days": days, "trips": n, "usedKwh": used, "usualKwh": usual, "items": items}
-	s.cc.reasonsDays, s.cc.reasonsAt = days, time.Now()
-	ok(w, s.cc.reasonsOut)
+	return map[string]any{"days": days, "trips": n, "usedKwh": used, "usualKwh": usual, "items": items}, nil
 }

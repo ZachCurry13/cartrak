@@ -29,4 +29,5 @@ type carCaches struct {
 	reasonsAt   time.Time
 	reasonsDays int
 	reasonsOut  map[string]any
+	reasonsBusy bool // a fresh answer is being worked out in the background
 }

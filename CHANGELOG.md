@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.56.4
+
+### ⚡ Home opens sooner
+- **Home draws as soon as the latest reading is in.** The cards under the battery (service, setup, the day, the month) fill in when they arrive, with "Updating the day and the month…" in the meantime, instead of the whole page waiting for the slowest one.
+- The slowest question Home asks (**where the energy went**, about 4 seconds, up to 11) is now answered at once from the last result, and refreshed in the background for the next visit. Only the very first visit after CarTrak starts has to wait for it.
+
 ## 0.56.3
 
 ### 🛠️ Redo the days recorded before the fixes
