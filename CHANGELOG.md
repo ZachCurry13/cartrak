@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.56.1
+
+### 🔒 Harder to sign out by accident
+- **Sign out** is no longer in the More sheet, where a stray tap signed you out. It is at the bottom of **More → Everything else**, and takes two taps ("Tap again to sign out").
+
 ## 0.56.0
 
 ### 🐛 Fixes

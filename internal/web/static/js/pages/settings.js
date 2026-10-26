@@ -6,6 +6,22 @@ import { buildIndex, search } from '../searchindex.js';
 import { isFuelCar } from '../navlayout.js';
 
 // The More page: a short, grouped menu. Each row opens its own page.
+// Signing out takes two taps, a few seconds apart, so a stray tap never does it.
+function signOutButton(session) {
+  const label = `Sign out ${session.me.name}`;
+  let armed = null;
+  const b = h('button', { class: 'sec', onclick: async () => {
+    if (!armed) {
+      b.textContent = 'Tap again to sign out';
+      armed = setTimeout(() => { armed = null; b.textContent = label; }, 4000);
+      return;
+    }
+    clearTimeout(armed);
+    await api('/api/logout', { method: 'POST' }); await forgetOffline(); session.me = null; location.hash = '#/'; location.reload();
+  } }, label);
+  return b;
+}
+
 export default async function settings(root, _a, session) {
   const admin = session.me.role === 'admin';
   const site = session.me.siteRole === 'admin'; // the whole installation: people, sign-ins, remote access
@@ -55,8 +71,7 @@ export default async function settings(root, _a, session) {
           item('#/help', 'Help and tour', 'The tour, a guide to everything, and quick answers'),
           item('#/datacheck', 'Data check', 'Look for gaps and odd trips in your data'),
           item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
-    h('p', { class: 'signout' }, h('button', { class: 'sec', onclick: async () => { await api('/api/logout', { method: 'POST' }); await forgetOffline(); session.me = null; location.hash = '#/'; location.reload(); } },
-      `Sign out ${session.me.name}`)));
+    h('p', { class: 'signout' }, signOutButton(session)));
 }
 
 // finder is a search box. It suggests where a thing is, by name or by what it does ("vacation" finds Trip rules), and
