@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.56.3
+
+### 🛠️ Redo the days recorded before the fixes
+- This update changes how drives are found (an empty Ford answer no longer ends a drive, the highest odometer reading wins, a trip end the car never reported stays unknown), so **Home offers Fix a day once**. It redoes days recorded earlier from the stored readings, with a preview first.
+- **Fix a day** now also has a permanent place in **More → Everything else → Help** (admins), so it no longer has to be found through Data check.
+
 ## 0.56.2
 
 ### 📦 The right car in the fields export

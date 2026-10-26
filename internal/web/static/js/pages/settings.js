@@ -72,6 +72,7 @@ export default async function settings(root, _a, session) {
           item('#/setup', 'Setup checklist', 'Suggested next steps, all optional'),
           item('#/help', 'Help and tour', 'The tour, a guide to everything, and quick answers'),
           item('#/datacheck', 'Data check', 'Look for gaps and odd trips in your data'),
+          admin ? item('#/repair', 'Fix a day', 'Redo a day of trips and charging from the stored readings') : null,
           item('#/about', 'About and updates', a.update && a.update.available ? `Update available: v${a.update.latest}` : "What's new, version, update checks")))),
     h('p', { class: 'signout' }, signOutButton(session)));
 }
