@@ -15,7 +15,7 @@ export async function insightCard() {
   if (bands.length >= 2) {
     const best = bands.reduce((a, b) => (b.kmPerKwh > a.kmPerKwh ? b : a));
     const worst = bands.reduce((a, b) => (b.kmPerKwh < a.kmPerKwh ? b : a));
-    const pct = Math.round((1 - worst.kmPerKwh / best.kmPerKwh) * 100);
+    const pct = Math.round((best.kmPerKwh / worst.kmPerKwh - 1) * 100); // extra energy for the same distance
     if (pct >= 5) facts.push(`${tempBandLabel(worst.name)} weather costs you about ${pct}% more energy than ${tempBandLabel(best.name)}: ${efficiency(worst.kmPerKwh, 1)} against ${efficiency(best.kmPerKwh, 1)}.`);
   }
   const months = (d.months || []).filter((m) => m.trips >= 3 && m.kmPerKwh > 0);
