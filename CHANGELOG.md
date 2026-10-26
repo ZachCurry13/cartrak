@@ -12,6 +12,7 @@
 ### 🐛 More fixes
 - The Home "Did you know" and **Personal bests** now give the same most-efficient-drive figure (10 miles or more).
 - The Home Charging card hides voltage and current when nothing is charging (an idle charger read "1 V" and "0 A").
+- **Plan a trip** for a gas or hybrid car now plans fuel stops (from how far a tank goes in your own driving, keeping the low-fuel level in reserve) with nothing about charging or batteries, and the Home **Plan ahead** battery card no longer appears for such a car.
 
 ## 0.56.0
 

@@ -4,6 +4,7 @@ import { fitSpeedModel } from '../bestspeed.js';
 import { bestSpeedCard } from '../bestspeedcard.js';
 import { getReserve, getTarget } from '../charge.js';
 import { planTrip } from '../tripplan.js';
+import { isFuelCar } from '../navlayout.js';
 
 const KEY = 'cartrak.planKw';
 const saved = () => { try { return Number(localStorage.getItem(KEY)) || 0; } catch (e) { return 0; } };
@@ -12,7 +13,8 @@ const toKm = (v) => (isMetric() ? v : v * 1.609344);
 const hm = (m) => (m == null ? '—' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`);
 
 // How many charging stops does a trip need, and about where?
-export default async function plan(root) {
+export default async function plan(root, _a, session) {
+  if (session && isFuelCar(session)) return (await import('./planfuel.js')).default(root); // a gas or hybrid car plans fuel stops, not charging
   const latest = await api('/api/latest?summary=1').catch(() => null);
   const low = getReserve();
   const high = getTarget();
