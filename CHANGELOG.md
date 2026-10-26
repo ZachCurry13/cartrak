@@ -5,6 +5,18 @@
 ### 🐛 Fixes
 - **FedEx report** came up blank when **All categories** was chosen and no drive was a work trip. All categories now means all drives; the report still defaults to work trips only when no category is chosen at all.
 - **Debug report files** are now named after the car, the date and time, and how far back they look (for example `cartrak-debug-mustang-2026-10-23-0905-24h.txt`) instead of `cartrak-debug-report (3).txt`.
+- **A drive split in two** when Ford answered once with nothing in it (a 10 minute gap at 69 mph ended one drive and began another). An empty answer is now ignored instead of being read as "the car stopped".
+- **Leaving a place** is announced as soon as the odometer shows the car has gone, instead of when the car finally reports a new position (the old "Left X" alerts came an hour late, next to "Arrived at Y").
+- **Most and least efficient trips** only use drives of 10 miles or more whose distance was not corrected, and drop impossible results (11.9 mi/kWh from a short hop), like the records and trophies already did.
+- **The weather insight** said 19% more energy when it was 23%: it now gives the extra energy, not the range lost.
+- **Wrapped** compares small distances honestly ("about 23% of a marathon", not "1 marathon"), says "1 day" and minutes instead of "0 hours", and its savings and CO₂ now come from the same sums as the Charging page, so the two agree.
+- **Where the energy went** adds "From the battery" when the battery ended lower than it began, so the two sides add up.
+- **Home charging card:** a fast charge shows the current worked out from power and voltage (the car reports 0 A there), "DC fast" is written properly, the empty box under the percent buttons only appears for Other, and distances over a thousand have a comma (89,599 mi).
+- **Vehicle health 12 V:** a low charge reading from a parked car is a "Check", not "Act", once the car has charged the battery since. The chart's summary now matches the line it draws, its top gridline is never below the highest point, its label no longer runs under the axis numbers, and "0 days ago" says "today".
+- **Day view:** the Charged and Stops tiles read cleanly ("5 Charging stops"); trophy alerts say "Trophy earned." before what the trophy asked for.
+
+### 🔧 Housekeeping
+- The maintenance protocol is in `docs/MAINTENANCE.md`, with a key-free weekly audit (`audit.yml`) that keeps one open "Weekly audit" issue.
 
 ### 🔒 Security update
 - Built with Go 1.27.3, which fixes a certificate-checking flaw in the standard library, and a newer Cloudflare connector (2026.10.4) and JWT library. Nothing changes in how the app works.

@@ -1,6 +1,10 @@
 package analytics
 
-import "time"
+import (
+	"time"
+
+	"github.com/ZachCurry13/cartrak/internal/savings"
+)
 
 // Gas is the car CarTrak compares against, and the grid's CO2, for the recap's savings. Zero values leave savings out.
 type Gas struct {
@@ -8,8 +12,6 @@ type Gas struct {
 	PricePerLiter float64
 	GridKgPerKwh  float64
 }
-
-const kgCO2PerLiter = 2.31 // burning a liter of gasoline
 
 // Recap is a month or a year told in numbers, made to be shared.
 type Recap struct {
@@ -111,18 +113,23 @@ func PeriodRecap(period string, ts []Trip, cs []Charge, gas Gas, loc *time.Locat
 	if r.KwhCharged > 0 {
 		r.HomeShare = home / r.KwhCharged
 	}
-	if gas.LitersPerKm > 0 && gas.PricePerLiter > 0 && r.Km > 0 {
-		liters := r.Km * gas.LitersPerKm
-		g := liters * gas.PricePerLiter
-		r.GasCost = &g
-		if r.Cost > 0 && r.KmPerKwh > 0 {
-			saved := g - r.Cost/r.KwhCharged*(r.Km/r.KmPerKwh) // the cost of the energy this month's driving used
-			r.Saved = &saved
+	if gas.LitersPerKm > 0 && r.Km > 0 { // the same sums as the Charging page, so the two never disagree
+		in := savings.Input{Km: r.Km, ChargingCost: r.Cost, LitersPerKm: gas.LitersPerKm, PricePerLiter: gas.PricePerLiter, GridKgPerKwh: gas.GridKgPerKwh}
+		for _, c := range cs {
+			if c.Start < from || c.Start >= to || c.Kwh <= 0 {
+				continue
+			}
+			in.Sessions++
+			if c.Cost != nil {
+				in.Priced++
+			}
+			in.WallKwh += c.Kwh
+			if c.WallKwh > 0 {
+				in.WallKwh += c.WallKwh - c.Kwh
+			}
 		}
-		if gas.GridKgPerKwh >= 0 && r.KmPerKwh > 0 {
-			kg := liters*kgCO2PerLiter - r.Km/r.KmPerKwh*gas.GridKgPerKwh
-			r.KgCO2Saved = &kg
-		}
+		res := savings.Compute(in)
+		r.GasCost, r.Saved, r.KgCO2Saved = res.GasCost, res.Saved, res.CO2AvoidedKg
 	}
 	return r
 }

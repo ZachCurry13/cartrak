@@ -121,6 +121,19 @@ func (e *Engine) namedPlaces(st *ford.State, first bool) {
 	if e.inside == nil {
 		e.inside = map[int64]bool{}
 	}
+	// The car often repeats its last position for a whole drive, so how far the odometer has gone since the position last changed
+	// says it has left a place long before a new position arrives.
+	if !e.havePos || e.posLat != *st.Lat || e.posLon != *st.Lon {
+		e.posLat, e.posLon, e.havePos = *st.Lat, *st.Lon, true
+		e.posOdo = -1
+		if st.OdometerKm != nil {
+			e.posOdo = *st.OdometerKm
+		}
+	}
+	drivenM := 0.0
+	if e.posOdo >= 0 && st.OdometerKm != nil {
+		drivenM = (*st.OdometerKm - e.posOdo) * 1000
+	}
 	seen := map[int64]bool{}
 	for _, p := range all {
 		seen[p.ID] = true
@@ -128,9 +141,9 @@ func (e *Engine) namedPlaces(st *ford.State, first bool) {
 		was := e.inside[p.ID]
 		now := was
 		switch {
-		case !was && d <= p.RadiusM:
+		case !was && d <= p.RadiusM && drivenM <= p.RadiusM*leaveMargin+500: // a repeated old position is not an arrival
 			now = true
-		case was && d > p.RadiusM*leaveMargin:
+		case was && (d > p.RadiusM*leaveMargin || drivenM > p.RadiusM*leaveMargin+500):
 			now = false
 		}
 		e.inside[p.ID] = now

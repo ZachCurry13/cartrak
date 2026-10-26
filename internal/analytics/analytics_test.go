@@ -119,7 +119,7 @@ func TestMonthRecapWithSavings(t *testing.T) {
 		t.Fatalf("recap: %+v", r)
 	}
 	// gas: 120 km x 0.08 L x 1 = 9.60; electricity for 24 kWh at 0.15 = 3.60; saved 6.00
-	if math.Abs(*r.GasCost-9.6) > 1e-9 || math.Abs(*r.Saved-6) > 1e-9 || math.Abs(*r.KgCO2Saved-(9.6*2.31-24*0.4)) > 1e-9 {
+	if math.Abs(*r.GasCost-9.6) > 1e-9 || math.Abs(*r.Saved-6) > 1e-9 || math.Abs(*r.KgCO2Saved-(9.6*2.348-24*0.4)) > 1e-9 {
 		t.Fatalf("savings: %v %v %v", *r.GasCost, *r.Saved, *r.KgCO2Saved)
 	}
 	if PeriodRecap("2026-10", ts, cs, Gas{}, utc).Saved != nil {

@@ -21,7 +21,8 @@ function fitHeights(values, room, least = 28) {
 // Where the energy went: home and public charging on the left, into the battery, out to city and highway driving, the car's own
 // use, losses and what is still in the battery. Bands are as thick as the energy they carry.
 export function flowChart(f) {
-  const ins = [['Home', f.homeKwh, '#22c55e'], ['Public', f.publicKwh, '#3b82f6']].filter((x) => x[1] > 0.5);
+  // when the battery ended lower than it began, that stock fed the driving too: without it the two sides would not add up
+  const ins = [['Home', f.homeKwh, '#22c55e'], ['Public', f.publicKwh, '#3b82f6'], ['From the battery', -f.storedKwh, '#14b8a6']].filter((x) => x[1] > 0.5);
   const outs = [['Lost as heat', f.lostKwh, '#94a3b8'], ['City driving', f.cityKwh, '#f59e0b'], ['Highway', f.highwayKwh, '#f97316'], ['Climate, parked, the rest', f.otherKwh, '#a78bfa'],
     ...(f.storedKwh > 0.5 ? [['Still in the battery', f.storedKwh, '#14b8a6']] : [])].filter((x) => x[1] > 0.5);
   const total = ins.reduce((a, x) => a + x[1], 0);

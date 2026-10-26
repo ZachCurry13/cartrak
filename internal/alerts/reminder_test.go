@@ -449,3 +449,20 @@ func TestParkingMovesAreNotBumps(t *testing.T) {
 		t.Fatalf("a bump after the car has settled still alerts: %s", r.kinds())
 	}
 }
+
+func TestLeavingAPlaceIsAnnouncedFromTheOdometerWhenTheCarRepeatsItsOldPosition(t *testing.T) {
+	e, r, s := setup(t)
+	if err := s.SaveNamedPlace(&store.NamedPlace{Name: "Charger", Lat: 40, Lon: -75, RadiusM: 150}); err != nil {
+		t.Fatal(err)
+	}
+	at := func(min int, odoKm float64) {
+		e.Handle(reading(min, func(st *ford.State) { la, lo := 40.0001, -75.0; st.Lat, st.Lon, st.OdometerKm = &la, &lo, &odoKm }))
+	}
+	at(0, 1000)  // baseline: at the charger
+	at(5, 1000)  // still there
+	at(10, 1030) // 30 km later the car still repeats the charger's position
+	at(15, 1060)
+	if r.kinds() != "leave_place" || r.got[0].Title != "Left Charger" {
+		t.Fatalf("left once, without waiting for a new position, and no arrival from the old one: %s", r.kinds())
+	}
+}

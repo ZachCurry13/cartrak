@@ -35,3 +35,10 @@ func plugConnected(plug string) bool {
 	p := strings.ToLower(plug)
 	return strings.Contains(p, "connect") && !strings.Contains(p, "dis") && !strings.Contains(p, "not")
 }
+
+// Blank reports a reading that carries none of the fields that say what the car is doing: Ford answered, but with nothing in it.
+// Treating it as "the car stopped" would end a drive that is still going.
+func (s *State) Blank() bool {
+	return s.Ignition == "" && s.ChargeState == "" && s.Plug == "" && s.SpeedKph == nil && s.OdometerKm == nil && s.SoCPct == nil &&
+		s.EnergyKwh == nil && s.ChargeKw == nil && s.Lat == nil && s.FuelPct == nil
+}

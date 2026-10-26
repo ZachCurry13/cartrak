@@ -1,6 +1,6 @@
 import { remoteChip } from '../remotestart.js';
 import { homeCards } from '../homecards.js';
-import { h, stat, chip, nice, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
+import { h, stat, chip, nice, chargerType, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
 import { isSaver, effective } from '../mode.js';
@@ -26,6 +26,15 @@ let homeMap = null; // kept between refreshes
 let homeLink = null; // the map is a link: tap it to open the spot in Google Maps
 
 // Find a value in the flattened "extra" map by metric name (suffix match).
+// The charger's current. A DC fast charge reports 0 A there (that field is the car's own charger), so the figure is worked out from the
+// power and the voltage and marked as approximate.
+function chargeAmps(latest, x) {
+  const a = pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT'), v = pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT');
+  if (a != null && a > 0.5) return num(a, 0, ' A');
+  if (latest.chargeKw > 1 && v > 50) return `about ${Math.round((latest.chargeKw * 1000) / v)} A`;
+  return a != null ? num(a, 0, ' A') : null;
+}
+
 export function pick(extra, ...names) {
   for (const nm of names) {
     const l = nm.toLowerCase().replace(/_/g, '');
@@ -167,9 +176,9 @@ export default async function dashboard(root, _args, session) {
     if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', nice(latest.chargeState) || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', nice(latest.plug) || 'Unknown')),
       kv([['Power', latest.chargeKw != null ? num(latest.chargeKw, 1, ' kW') : null],
         ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null],
-        ['Current', pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT'), 0, ' A') : null],
+        ['Current', chargeAmps(latest, x)],
         ['Time to full', pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') != null ? duration(0, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') * 60) : null],
-        ['Station type', nice(pick(x, 'XEV_CHARGE_STATION_POWER_TYPE'))]]),
+        ['Station type', chargerType(pick(x, 'XEV_CHARGE_STATION_POWER_TYPE'))]]),
       charging ? chargeEtaBox(latest, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE')) : null));
 
     out.push(card('Vehicle',

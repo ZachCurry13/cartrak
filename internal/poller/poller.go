@@ -154,6 +154,10 @@ func (p *Poller) once(ctx context.Context, prev time.Duration) time.Duration {
 		p.set(func(s *Status) { s.LastError, s.RateLimited, s.FordTrouble = err.Error(), false, false })
 		return backoff(prev, p.Iv.Parked)
 	}
+	if st.Blank() { // Ford answered with nothing in it: not a reading, and certainly not "the car stopped"
+		p.record(PollRec{TS: now.Unix(), Result: "empty", NextSec: 60, Detail: "Ford answered with no data"})
+		return time.Minute
+	}
 	if _, err := p.S.SaveState(p.P.Name(), st); err != nil {
 		log.Printf("save failed: %v", err)
 	}

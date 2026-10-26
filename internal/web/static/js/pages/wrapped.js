@@ -18,6 +18,8 @@ function countUp(el, to) {
   requestAnimationFrame(step);
 }
 
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
 export default async function wrapped(root, args) {
   const period = args[0] || '';
   const w = await api(`/api/analytics/wrapped?period=${encodeURIComponent(period)}`);
@@ -39,7 +41,7 @@ export default async function wrapped(root, args) {
   const slides = [
     [h('div', { class: 'kick' }, 'CarTrak Wrapped'), h('div', { class: 'grow' }), h('div', { class: 'huge', style: 'font-size:3.4rem' }, title), h('div', { class: 'line' }, 'Your car’s story. Tap to begin.'), h('div', { class: 'wemoji' }, season ? `${THEMES[season.key][1]}🚗💨` : '🚗💨')],
     [h('div', { class: 'kick' }, `Your ${title}`), h('div', { class: 'grow' }), big, h('div', { class: 'line' }, `${distUnit()}. That’s ${compareDistance(r.km)}.`),
-      h('div', { class: 'small' }, `${r.trips} trips · ${Math.round(r.hours)} hours behind the wheel · ${r.daysDriven} days on the road${prev != null ? ` · ${prev >= 0 ? '▲' : '▼'} ${Math.abs(prev)}% on the one before` : ''}`)],
+      h('div', { class: 'small' }, `${r.trips} ${r.trips === 1 ? 'trip' : 'trips'} · ${r.hours < 1 ? plural(Math.round(r.hours * 60), 'minute') : plural(Math.round(r.hours), 'hour')} behind the wheel · ${plural(r.daysDriven, 'day')} on the road${prev != null ? ` · ${prev >= 0 ? '▲' : '▼'} ${Math.abs(prev)}% on the one before` : ''}`)],
     vs ? [h('div', { class: 'kick' }, 'How you compare'), h('div', { class: 'grow' }), h('div', { class: 'huge' }, vs.big), h('div', { class: 'line' }, vs.line),
       h('div', { class: 'small' }, `${milesOrKm(r.km / w.ring.days)} ${distUnit()} a day on average, against about ${milesOrKm(59.5)} for the average American driver (US Department of Transportation).`)] : null,
     p.length ? [h('div', { class: 'kick' }, 'Your car’s personality'), h('div', { class: 'wemoji big' }, p[0].emoji), h('div', { class: 'huge', style: 'font-size:2.6rem' }, p[0].name), h('div', { class: 'line' }, `${personalityLine(p[0])}.`),

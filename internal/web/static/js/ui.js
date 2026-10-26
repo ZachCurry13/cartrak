@@ -33,7 +33,8 @@ export function setMetric(m) {
 }
 const dash = '—';
 const n = (v) => v == null || Number.isNaN(Number(v));
-export const dist = (km, d = 1) => n(km) ? dash : metric ? `${(+km).toFixed(d)} km` : `${(km * 0.621371).toFixed(d)} mi`;
+const grouped = (v, d) => (+v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); // 89,599, not 89599
+export const dist = (km, d = 1) => n(km) ? dash : metric ? `${grouped(km, d)} km` : `${grouped(km * 0.621371, d)} mi`;
 export const speed = (kph) => n(kph) ? dash : metric ? `${Math.round(kph)} km/h` : `${Math.round(kph * 0.621371)} mph`;
 export const temp = (c) => n(c) ? dash : metric ? `${Math.round(c)}°C` : `${Math.round(c * 9 / 5 + 32)}°F`;
 // The server names weather groups in Celsius ("0 to 10 °C"). Say them in this device's units.
@@ -131,4 +132,6 @@ export const group = (title, ...items) => h('section', { class: 'group' },
   title ? h('h3', { class: 'gt' }, title) : null, h('div', { class: 'menu' }, ...items.filter(Boolean)));
 
 // Ford sends words like NOT_READY or DISCONNECTED; show them as plain words.
+// a charger's type the way it is written: "DC fast", "AC basic"
+export const chargerType = (v) => (v ? String(nice(v)).replace(/^(dc|ac)/i, (m) => m.toUpperCase()) : v);
 export const nice = (v) => (v ? String(v).replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase()) : v);

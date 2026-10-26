@@ -41,6 +41,9 @@ func charging(st *ford.State) bool { return st.Charging() }
 
 // Process applies one reading. Call it once per poll, oldest first.
 func (d *Detector) Process(st *ford.State) error {
+	if st.Blank() { // an empty answer (or an old stored one) says nothing about the car: it must not end a drive
+		return nil
+	}
 	defer func() {
 		d.lastReading = st.TS.Unix()
 		d.lastKw = 0

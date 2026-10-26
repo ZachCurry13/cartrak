@@ -10,6 +10,7 @@ export function chargeEtaBox(latest, fordMinutesToFull) {
     const t = getTarget();
     const other = !PRESETS.includes(t);
     input.value = other ? t : '';
+    input.hidden = !other; // an empty box only appears once Other is chosen
     const pick = (v) => () => { setTarget(v); draw(); };
     const r = chargeEta(latest, t, fordMinutesToFull);
     let line = 'Not enough data for an estimate.';
@@ -19,7 +20,7 @@ export function chargeEtaBox(latest, fordMinutesToFull) {
     box.replaceChildren(
       h('div', { class: 'muted' }, 'Time until'),
       h('p', { class: 'seg' }, ...PRESETS.map((p) => h('button', { class: p === t ? 'on' : '', onclick: pick(p) }, `${p}%`)),
-        h('button', { class: other ? 'on' : '', onclick: () => input.focus() }, 'Other'), input),
+        h('button', { class: other ? 'on' : '', onclick: () => { input.hidden = false; input.focus(); } }, 'Other'), input),
       h('div', {}, h('b', {}, line)));
   }
   input.addEventListener('change', () => { if (input.value) { setTarget(Number(input.value)); draw(); } });

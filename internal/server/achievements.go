@@ -63,7 +63,7 @@ func (s *Server) newBadges(ctx context.Context) {
 		}
 		have = append(have, b.Key)
 		if prev != "" && !known[b.Key] {
-			s.tell(ctx, push.Alert{Kind: push.Achievement, Title: "Achievement: " + b.Name + " " + b.Emoji, Body: b.About + ".", URL: "#/analytics"})
+			s.tell(ctx, push.Alert{Kind: push.Achievement, Title: "Achievement: " + b.Name + " " + b.Emoji, Body: "Trophy earned. " + b.About + ".", URL: "#/analytics"})
 		}
 	}
 	sort.Strings(have)

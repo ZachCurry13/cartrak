@@ -3,6 +3,7 @@
 package insights
 
 import (
+	"math"
 	"sort"
 	"time"
 
@@ -61,6 +62,9 @@ type Report struct {
 var bands = []Band{{Name: "Below freezing", Lo: -100, Hi: 0}, {Name: "0 to 10 °C", Lo: 0, Hi: 10}, {Name: "10 to 20 °C", Lo: 10, Hi: 20}, {Name: "20 °C and above", Lo: 20, Hi: 100}}
 
 // Build works out the report. temps maps a trip id to its average outside temperature when that is known.
+// recordKm is the shortest drive that can be a most or least efficient trip (10 mi): on a shorter one a rounded battery reading decides the answer.
+const recordKm = 16
+
 func Build(ts []*store.Trip, capacityKwh *float64, temps map[int64]float64, loc *time.Location) Report {
 	var rep Report
 	months := map[string]*Month{}
@@ -98,7 +102,9 @@ func Build(ts []*store.Trip, capacityKwh *float64, temps map[int64]float64, loc 
 				}
 			}
 		}
-		all = append(all, it)
+		if t.DistanceKm >= recordKm && t.DistanceSrc == "" { // short drives and corrected distances say little about efficiency
+			all = append(all, it)
+		}
 	}
 	for k, m := range months {
 		m.KmPerKwh = m.Km / m.Kwh
@@ -119,6 +125,12 @@ func Build(ts []*store.Trip, capacityKwh *float64, temps map[int64]float64, loc 
 		}
 	}
 	sort.Slice(all, func(i, j int) bool { return all[i].KmPerKwh > all[j].KmPerKwh })
+	if len(all) >= 5 { // one stale "energy left" reading makes a drive look nearly free; it must not top the list
+		ceiling := math.Min(15, 1.6*all[len(all)/2].KmPerKwh)
+		for len(all) > 0 && all[0].KmPerKwh > ceiling {
+			all = all[1:]
+		}
+	}
 	if len(all) >= 2*bestWorstOf {
 		rep.Best = append(rep.Best, all[:bestWorstOf]...)
 		rep.Worst = append(rep.Worst, all[len(all)-bestWorstOf:]...)

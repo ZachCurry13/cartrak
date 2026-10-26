@@ -49,7 +49,7 @@ export function battery(body) {
   const out = h('div');
   windowPicker(body, async (days) => {
     const d = await api(`/api/analytics/battery?days=${days}`);
-    const ago = (ts) => `${Math.round((Date.now() / 1000 - ts) / 86400)} days ago`;
+    const ago = (ts) => { const d = Math.round((Date.now() / 1000 - ts) / 86400); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
     const fromDay = (s) => new Date(`${s}T12:00`).getTime() / 1000;
     const level = d.days.map((x) => ({ x: fromDay(x.date), y: x.end }));
     const cap = d.capacity || [], v12 = d.volts12 || [];

@@ -69,10 +69,10 @@ export default async function day(root, [date, action], session) {
     for (const v of x.events) if (v.kind !== 'driving' && v.kind !== 'remote' && !v.base && !v.cont && !road.hidden.has(v) && v.lat != null && v.lon != null) stopNo.set(v, ++n);
     const tiles = h('div', { class: 'dtiles day' },
       stat('🛣️ Distance', dist(t.km, 0)), stat('⏱️ Driving', hm(t.drivingSec)),
-      e.addedKwh > 0 ? stat('⚡ Charged', `${num(e.addedKwh, 0, ' kWh')} · ${hm(t.chargingSec)}`) : null,
+      e.addedKwh > 0 ? stat(`⚡ Charged · ${hm(t.chargingSec)}`, num(e.addedKwh, 0, ' kWh')) : null,
       e.cost > 0 ? stat('💲 Charging cost', money(x.currency, e.cost)) : null,
       e.usedKwh > 0 ? stat('🔋 Efficiency', effSpan(e.usedKm, e.usedKwh)) : null,
-      stat('🛑 Stops', roadCharges ? `${roadCharges} charging` : String(stops.filter((v) => v.kind !== 'charging').length || stops.length)));
+      roadCharges ? stat('🛑 Charging stops', String(roadCharges)) : stat('🛑 Stops', String(stops.filter((v) => v.kind !== 'charging').length || stops.length)));
     let map = null;
     if (mc.enabled && x.routes.length) {
       const m = createMap(mc, { height: 340 });

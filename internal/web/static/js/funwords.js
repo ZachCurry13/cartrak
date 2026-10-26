@@ -25,7 +25,7 @@ export function compareDistance(km) {
     if (r < 1.15) return `about ${one}`;
     return `${r < 10 ? Math.round(r * 10) / 10 : Math.round(r)} ${many}`;
   }
-  return `${Math.max(1, Math.round(km / 42.195))} marathon${km >= 63 ? 's' : ''}`;
+  return `${Math.max(1, Math.round((km / 42.195) * 100))}% of a marathon`; // under 40% of one: the honest answer is a small share, not "1 marathon"
 }
 
 // energy in everyday terms: an average home uses about 29 kWh a day, a phone charge is about 0.015 kWh

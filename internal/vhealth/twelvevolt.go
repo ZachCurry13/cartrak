@@ -4,12 +4,25 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/store"
 )
+
+// rechargedRecently says the daily readings of the last three days include one from a running car (a charging system reads 13 V or
+// more), so a low reading from when it was parked is not the whole story.
+func rechargedRecently(days []store.Day) bool {
+	for i := max(0, len(days)-3); i < len(days); i++ {
+		if days[i].Max >= 13.2 {
+			return true
+		}
+	}
+	return false
+}
 
 // twelveVolt is the small battery that runs the electronics. Its charge is the car's own estimate, not a
 // test, and a parked car often reads lowish until it next wakes and recharges it, so the lines for a
 // warning are deliberately low. A shop test the owner has recorded as good silences the warnings.
 func twelveVolt(f map[string]any, t Trends, opts Options) Section {
+	recharged := rechargedRecently(t["battery12v"])
 	v := num(f, "Voltage", "volts", "batteryVoltage")
 	if v != nil {
 		switch {
@@ -26,6 +39,8 @@ func twelveVolt(f map[string]any, t Trends, opts Options) Section {
 	c := num(f, "Charge", "pct", "batteryStateOfCharge")
 	if c != nil {
 		switch {
+		case *c.Num < 30 && recharged:
+			c.with("warn", "Low charge reading, but the car has charged this battery since (it read above 13 V while running in the last few days). A parked car reads low until it wakes, so look again after the next drive.")
 		case *c.Num < 30:
 			c.with("bad", "Low charge. Have the 12 V battery tested.")
 		case *c.Num < 50:

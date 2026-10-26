@@ -48,22 +48,24 @@ type Engine struct {
 	BumpLevel       func() float64                       // the motion level that counts as a bump while parked; 0 or nil is off
 	Loc             func() *time.Location
 
-	mu           sync.Mutex
-	prev         *ford.State
-	started      bool // the first reading only sets the baseline: nothing is "new" after a restart
-	openTrip     int64
-	tireProblem  bool
-	unlockedFrom time.Time
-	unlockedSent bool
-	silentSent   bool
-	inside       map[int64]bool // which named places the car is inside
-	lastBump     time.Time
-	lastDrive    time.Time   // the last reading with the ignition on or the car moving
-	restVec      *[3]float64 // the previous parked reading of the motion sensors
-	lowSent      bool
-	lowFuelSent  bool
-	openFrom     time.Time
-	openSent     bool
+	mu                     sync.Mutex
+	prev                   *ford.State
+	started                bool // the first reading only sets the baseline: nothing is "new" after a restart
+	openTrip               int64
+	tireProblem            bool
+	unlockedFrom           time.Time
+	unlockedSent           bool
+	silentSent             bool
+	inside                 map[int64]bool // which named places the car is inside
+	posLat, posLon, posOdo float64        // the last position the car reported, and the odometer when it first reported it
+	havePos                bool
+	lastBump               time.Time
+	lastDrive              time.Time   // the last reading with the ignition on or the car moving
+	restVec                *[3]float64 // the previous parked reading of the motion sensors
+	lowSent                bool
+	lowFuelSent            bool
+	openFrom               time.Time
+	openSent               bool
 }
 
 func (e *Engine) now() time.Time {

@@ -21,9 +21,11 @@ export function lineChart({ points, xFmt, yFmt, xTicks, summary, xTitle, yTitle,
   const W = 320, H = height, L = 40, R = 10, T = 22, B = 34; // room at the top for the y title above the highest label
   const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
   const x0 = Math.min(...xs), x1 = Math.max(...xs);
-  const yMax = Math.max(...ys), yLo = Math.min(yMin, ...ys);
-  const span = yMax - yLo || 1;
-  const roomy = yLo + Math.ceil((span * 1.08) / niceStep(span)) * niceStep(span);
+  const yMax = Math.max(...ys);
+  const lowest = Math.min(yMin, ...ys);
+  const step = niceStep(yMax - lowest || 1); // one step for the gridlines and for the top, so the highest point always sits under the top line
+  const yLo = Math.floor(lowest / step + 1e-9) * step;
+  const roomy = yLo + Math.ceil(((yMax - yLo) * 1.08) / step) * step;
   const top = yCap != null && yMax <= yCap ? Math.min(roomy, yCap) : roomy;
   const sx = (x) => L + ((x - x0) / (x1 - x0 || 1)) * (W - L - R);
   const sy = (y) => T + (1 - (y - yLo) / (top - yLo || 1)) * (H - T - B);
@@ -32,7 +34,6 @@ export function lineChart({ points, xFmt, yFmt, xTicks, summary, xTitle, yTitle,
   const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': yTitle ? `${yTitle} chart` : 'Chart' });
   svg.style.touchAction = 'pan-y';
 
-  const step = niceStep(top - yLo);
   for (let v = yLo; v <= top + 1e-9; v += step) {
     svg.append(mk('line', { x1: L, x2: W - R, y1: sy(v), y2: sy(v), stroke: 'currentColor', 'stroke-opacity': '.14' }));
     svg.append(mk('text', { x: L - 5, y: sy(v) + 4, 'text-anchor': 'end', 'font-size': '11', fill: 'currentColor', 'fill-opacity': '.75' }, yFmt(v, true)));
@@ -50,7 +51,8 @@ export function lineChart({ points, xFmt, yFmt, xTicks, summary, xTitle, yTitle,
 
   const peak = points.reduce((a, p) => (p.y > a.y ? p : a), points[0]);
   svg.append(mk('circle', { cx: sx(peak.x), cy: sy(peak.y), r: 4.5, fill: color }));
-  const pl = mk('text', { x: Math.min(Math.max(sx(peak.x), 60), W - 60), y: Math.max(sy(peak.y) - 8, 12), 'text-anchor': 'middle', 'font-size': '11', 'font-weight': '700', fill: 'currentColor' }, `high ${yFmt(peak.y)}`);
+  const px = sx(peak.x), side = px < L + 45 ? 'start' : px > W - R - 45 ? 'end' : 'middle'; // the label never runs under the y axis numbers
+  const pl = mk('text', { x: side === 'start' ? Math.max(px - 4, L + 2) : side === 'end' ? Math.min(px + 4, W - R) : px, y: Math.max(sy(peak.y) - 8, 12), 'text-anchor': side, 'font-size': '11', 'font-weight': '700', fill: 'currentColor' }, `high ${yFmt(peak.y)}`);
   svg.append(pl);
 
   const cross = mk('line', { y1: T, y2: H - B, stroke: 'currentColor', 'stroke-opacity': '.5', 'stroke-dasharray': '3 3', visibility: 'hidden' });
