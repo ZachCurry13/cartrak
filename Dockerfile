@@ -2,7 +2,7 @@
 # CarTrak runs it for you when remote access is switched on in the app.
 # The version is written out so Dependabot can propose newer ones. An admin can also install a newer
 # connector from the app (Remote access) without rebuilding this image.
-FROM cloudflare/cloudflared:2026.10.1 AS cloudflared
+FROM cloudflare/cloudflared:2026.10.4 AS cloudflared
 
 FROM golang:1.27-alpine AS build
 WORKDIR /src

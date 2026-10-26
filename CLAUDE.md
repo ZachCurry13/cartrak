@@ -33,3 +33,6 @@ mobile-first PWA. Runs as a TrueNAS custom app behind a Cloudflare tunnel.
 
 ## Users
 Admin (manages everything) and viewer (read-only). No kid accounts or age groups.
+
+## Maintenance
+Security audits, dependency and cloudflared bumps follow `docs/MAINTENANCE.md`. Patches go on a branch; never release or merge without the user's OK.

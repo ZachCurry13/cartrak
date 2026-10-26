@@ -2,6 +2,9 @@
 
 ## 0.56.0
 
+### 🔒 Security update
+- Built with Go 1.27.3, which fixes a certificate-checking flaw in the standard library, and a newer Cloudflare connector (2026.10.4) and JWT library. Nothing changes in how the app works.
+
 ### 🪜 Trophies that stack
 - Trophies that are rungs of one climb are now **ladders**: you see the rung you are on in full, the ones you have passed are checked off above it, and finishing one opens the next. Distance driven (100 miles up to around the world), trips (up to 5,000), the odometer (50,000, 100,000, 150,000), energy charged (1, 10 and 100 MWh), driving streaks (7, 30, 100 days) and a regular place (20, 50, 100 visits). The collection is shorter and reads like a climb.
 - Under a ladder, a line puts the rung in perspective: **"enough electricity to run a home for 11 months"**, and for the biggest rung also **"or New York City for about a minute"**; distance rungs compare with a marathon, Route 66, the Moon. (New York is roughly 5.7 GW on average, so it is approximate.)
