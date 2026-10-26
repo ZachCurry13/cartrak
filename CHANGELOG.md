@@ -2,6 +2,12 @@
 
 ## 0.56.1
 
+### 🔔 Notifications and trips
+- **Notification icon:** the small icon in the status bar is now a proper single-colour car, so notifications no longer show a white square on Android.
+- **A drive that ended with an old odometer reading** (0.0 mi but 59 mph top speed) now keeps its real distance: the highest odometer reading wins.
+- **A trip whose end the car never reported** shows "→ …" instead of repeating where it began, and takes the first new position the car reports afterward.
+- **Trip "why this efficiency" firmness** uses the accelerator pedal (far finer than the torque field) and counts regenerative braking, so "0% firm" readings should be rare.
+
 ### 🔒 Harder to sign out by accident
 - **Sign out** is no longer in the More sheet, where a stray tap signed you out. It is at the bottom of **More → Everything else**, and takes two taps ("Tap again to sign out").
 

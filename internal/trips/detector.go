@@ -18,6 +18,8 @@ type Detector struct {
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
 	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
 
+	endlessTrip    int64 // a trip just closed with no end position, waiting for the car to report one, and when it closed
+	endlessAt      int64
 	lastReading    int64    // time of the previous reading this detector saw
 	lastDisconnect int64    // the last time a reading showed the cable unplugged
 	lastKw         float64  // the charging power the previous reading reported
@@ -55,7 +57,10 @@ func (d *Detector) Process(st *ford.State) error {
 	if st.Plug != "" && !st.PlugConnected() {
 		d.lastDisconnect = st.TS.Unix()
 	}
-	err := d.trip(st)
+	err := d.settleEnd(st)
+	if err == nil {
+		err = d.trip(st)
+	}
 	if st.OdometerKm != nil {
 		d.lastOdo = st.OdometerKm
 	}
@@ -129,7 +134,7 @@ func (d *Detector) trip(st *ford.State) error {
 		return nil
 	}
 	open.EndLat, open.EndLon, open.EndOdo, open.EndSoC = pick(st.Lat, open.EndLat), pick(st.Lon, open.EndLon),
-		pick(st.OdometerKm, open.EndOdo), pick(st.SoCPct, open.EndSoC)
+		pickOdo(st.OdometerKm, open.EndOdo), pick(st.SoCPct, open.EndSoC)
 	open.EndKwh = pick(st.EnergyKwh, open.EndKwh)
 	if st.SpeedKph != nil && *st.SpeedKph > open.MaxSpeedKph {
 		open.MaxSpeedKph = *st.SpeedKph
@@ -142,6 +147,10 @@ func (d *Detector) trip(st *ford.State) error {
 			d.S.LogDecision("trip_discarded", fmt.Sprintf("trip %d thrown away as a blip: %.2f mi (%.2f km) in %d s, top speed %.0f mph (%.0f km/h)", open.ID, open.DistanceKm/1.609344, open.DistanceKm, now-open.StartTS, open.MaxSpeedKph/1.609344, open.MaxSpeedKph))
 			return d.S.DeleteTrip(open.ID) // an ignition blip, or sitting in the car with it on: not a trip
 		}
+	}
+	if !open.Open && staleEnd(open) {
+		open.EndLat, open.EndLon = nil, nil
+		d.endlessTrip, d.endlessAt = open.ID, now
 	}
 	return d.S.UpdateTrip(open)
 }

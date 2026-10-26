@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
@@ -28,20 +29,25 @@ func (s *Server) driveTorque(t *store.Trip) []smooth.Point {
 		if json.Unmarshal(x.Extra, &f) != nil {
 			continue
 		}
-		a := ford.Number(f, "torqueAtTransmission")
-		if a == nil {
+		// The accelerator pedal says how hard the driver pushed far more finely than the torque field does (hundreds of values against a few
+		// dozen), so it is used when the car sends it. Braking counts the friction brakes and also regeneration, which shows as negative torque.
+		tq := ford.Number(f, "torqueAtTransmission")
+		pedal := ford.Number(f, "acceleratorPedalPosition")
+		if tq == nil && pedal == nil {
 			continue
 		}
 		p := smooth.Point{}
-		if *a > 0 {
-			p.Accel = *a
+		switch {
+		case pedal != nil:
+			p.Accel = max(0, *pedal)
+		case *tq > 0:
+			p.Accel = *tq
+		}
+		if tq != nil && *tq < 0 {
+			p.Brake = -*tq
 		}
 		if b := ford.Number(f, "brakeTorque"); b != nil {
-			if *b < 0 {
-				p.Brake = -*b
-			} else {
-				p.Brake = *b
-			}
+			p.Brake = max(p.Brake, math.Abs(*b))
 		}
 		out = append(out, p)
 	}
