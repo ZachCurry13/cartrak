@@ -1,4 +1,5 @@
 import { h, dist, num } from '../ui.js';
+import { carWords } from '../carwords.js';
 import { api } from '../api.js';
 import { withCar } from '../car.js';
 import { runControls, standardTab, customTab, download } from '../reportbuilder.js';
@@ -12,14 +13,15 @@ const downloadTile = (href, title, text) => h('a', { class: 'card', href: withCa
 // Everything that adds your driving, charging and costs up. At the top, a report you can download: the usual mileage log, or a
 // custom one, for the categories and days you choose.
 export default async function reports(root, _a, session) {
+  const W = carWords(session);
   const admin = session.me.role === 'admin';
   const [year, sum, opts] = await Promise.all([api('/api/report/year').catch(() => null), api('/api/charges/summary').catch(() => null), api('/api/reports/options')]);
-  const yearLine = year && year.driving ? `${dist(year.odometerKm || year.driving.km, 0)} in ${year.driving.trips} trips so far` : 'Miles, energy and charging for the year';
+  const yearLine = year && year.driving ? `${dist(year.odometerKm || year.driving.km, 0)} in ${year.driving.trips} trips so far` : W.year;
   const m = sum && sum.thisMonth;
   const monthLine = m && m.kwh > 0 ? `${num(m.kwh, 0, ' kWh')} charged this month${m.cost > 0 ? `, ${sum.currency}${m.cost.toFixed(2)}` : ''}` : 'Cost and energy by month, and by where you charge';
 
   const builder = h('section', { class: 'card' });
-  const controls = runControls(opts.categories);
+  const controls = runControls(opts.categories, W.fuel);
   let tab = 'standard';
   let editing = null;
   const status = h('p', { class: 'muted', role: 'status' });
@@ -65,20 +67,20 @@ export default async function reports(root, _a, session) {
     builder,
     group(`${year ? year.year : 'This year'} and beyond`,
       tile('#/year', 'Year in review', yearLine, 'Copy a summary to share'),
-      tile('#/stats', 'Statistics', 'Bars by day, month and year, and where you charge'),
-      tile('#/history', 'History', 'Driving, charging and parked time as one feed'),
+      tile('#/stats', 'Statistics', W.stats),
+      tile('#/history', 'History', W.history),
       tile('#/time', 'Time', 'Where the car spends its time')),
     group('Driving and efficiency',
-      tile('#/insights', 'Efficiency insights', 'What changes your miles per kWh: weather, speed, habits'),
+      tile('#/insights', 'Efficiency insights', W.insightsLong),
       tile('#/compare', 'Compare two trips', 'Side by side, with what made the difference'),
       tile('#/day', 'Day view', 'A whole day on one map, with a written summary'),
-      tile('#/plan', 'Road-trip planner', 'How many charging stops a trip needs')),
+      tile('#/plan', 'Road-trip planner', W.plan)),
     group('Money and business',
-      tile('#/charging', 'Charging cost', monthLine),
+      W.fuel ? null : tile('#/charging', 'Charging cost', monthLine),
       admin ? tile('#/mileage', 'Mileage log', 'Business miles by week, ready to copy') : null),
     group('Quick downloads',
-      downloadTile('/api/export/charging.csv', 'Charging (spreadsheet)', 'Every session with energy, cost and charger type'),
+      W.fuel ? null : downloadTile('/api/export/charging.csv', 'Charging (spreadsheet)', 'Every session with energy, cost and charger type'),
       downloadTile('/api/export/service.csv', 'Service history (spreadsheet)', 'Every service visit with what was done and what it cost'),
-      admin ? downloadTile('/api/export/all.zip', 'Everything (zip)', 'Trips, charging, places and service reminders') : null,
+      admin ? downloadTile('/api/export/all.zip', 'Everything (zip)', (W.fuel ? 'Trips, places and service reminders' : 'Trips, charging, places and service reminders')) : null,
       admin ? downloadTile('/api/export/fields.zip?days=7', 'Car fields over time (zip)', 'Every field the car sends and every change, last 7 days') : null));
 }

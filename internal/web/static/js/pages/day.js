@@ -1,3 +1,4 @@
+import { carWords } from '../carwords.js';
 import { h, stat, dist, num, speed, pct, emptyState, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
@@ -84,7 +85,7 @@ export default async function day(root, [date, action], session) {
       m.show({ routes, markers });
       map = h('div', {}, m.el, x.routes.some((r) => r.kind === 'estimate') ? h('div', { class: 'legend' }, h('span', {}, h('i'), 'recorded route'), h('span', {}, h('i', { class: 'dot' }), 'estimated road')) : null);
     } else if (x.routes.length) map = h('p', { class: 'muted' }, 'Maps are switched off, so only the list is shown.');
-    const list = x.events.length ? x.events.filter((v) => !road.hidden.has(v)).flatMap((v) => [road.legBefore.get(v), ...expandable(eventRow(v, x.tz, x.currency, stopNo.get(v), road.extra.get(v)), v, x.currency, admin)].filter(Boolean)).concat(road.lastLeg ? [road.lastLeg] : []) : [emptyState('Nothing on this day', 'No trips or charging were recorded.')];
+    const list = x.events.length ? x.events.filter((v) => !road.hidden.has(v)).flatMap((v) => [road.legBefore.get(v), ...expandable(eventRow(v, x.tz, x.currency, stopNo.get(v), road.extra.get(v)), v, x.currency, admin)].filter(Boolean)).concat(road.lastLeg ? [road.lastLeg] : []) : [emptyState('Nothing on this day', carWords(session).fuel ? 'No trips were recorded.' : 'No trips or charging were recorded.')];
     const finished = x.events.some((v) => v.kind === 'driving') && !x.events.some((v) => v.kind === 'driving' && v.end == null);
     const share = admin && finished ? shareCard('day', x.date.replace(/-/g, ''), label) : null;
     const goShare = () => { const t = share && share.querySelector('#sht'); if (t) { share.scrollIntoView({ block: 'start' }); t.focus(); } };

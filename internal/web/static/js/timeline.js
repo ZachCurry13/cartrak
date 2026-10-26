@@ -9,7 +9,7 @@ const el = (tag, attrs) => {
 
 // A day at a glance: the battery percentage as a line, with bands for when the car was driving
 // (blue) or charging (green). Tap or click anywhere to jump to that moment. No chart library.
-export function timelineChart(points, from, to, markTs, onPick) {
+export function timelineChart(points, from, to, markTs, onPick, fuel = false) {
   const w = 400;
   const ht = 130;
   const x = (ts) => ((ts - from) / (to - from)) * w;
@@ -36,5 +36,5 @@ export function timelineChart(points, from, to, markTs, onPick) {
   });
   svg.style.cursor = 'pointer';
   return h('div', { class: 'tlwrap' }, svg, h('div', { class: 'muted tllegend' },
-    h('b', {}, 'Line: battery %'), ' ', h('span', { class: 'chip ok' }, 'charging'), ' ', h('span', { class: 'chip personal' }, 'driving'), '  Tap the chart to jump to a moment.'));
+    h('b', {}, fuel ? 'Line: fuel %' : 'Line: battery %'), ' ', fuel ? null : h('span', { class: 'chip ok' }, 'charging'), fuel ? null : ' ', h('span', { class: 'chip personal' }, 'driving'), '  Tap the chart to jump to a moment.'));
 }

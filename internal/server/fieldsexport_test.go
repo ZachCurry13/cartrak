@@ -85,3 +85,11 @@ func TestTheCarFieldsExportHasEveryFieldAndEveryChange(t *testing.T) {
 		t.Fatal("nothing to export says so")
 	}
 }
+
+func TestFileSlugIsSafeForFileNames(t *testing.T) {
+	for in, want := range map[string]string{"My Mach-E": "my-mach-e", "  ": "car", "Escape (hybrid)!": "escape-hybrid"} {
+		if got := fileSlug(in); got != want {
+			t.Errorf("%q: %q, want %q", in, got, want)
+		}
+	}
+}

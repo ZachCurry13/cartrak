@@ -1,3 +1,4 @@
+import { carWords } from '../carwords.js';
 import { h, emptyState, dist, num, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { tapBars } from '../chart.js';
@@ -19,15 +20,16 @@ function metrics(cur) {
 }
 
 // Distance, cost, energy and driving time as bars by day, month or year, and where the charging happened.
-export default async function stats(root) {
+export default async function stats(root, _a, session) {
+  const fuelCar = carWords(session).fuel;
   let period = 'month', at = '', metric = 'km';
   const box = h('div'), segP = h('div', { class: 'seg' }), segM = h('div', { class: 'seg' });
-  root.append(h('p', {}, h('a', { href: '#/charging' }, '← Charging')), h('div', { class: 'page-title' }, h('h2', {}, 'Statistics')), segM, segP, box);
+  root.append(h('p', {}, fuelCar ? h('a', { href: '#/settings' }, '← More') : h('a', { href: '#/charging' }, '← Charging')), h('div', { class: 'page-title' }, h('h2', {}, 'Statistics')), segM, segP, box);
 
   async function load() {
     const d = await api(`/api/stats?period=${period}${at && period !== 'year' ? `&at=${at}` : ''}`);
     const s = d.stats;
-    const ms = metrics(d.currency);
+    const ms = metrics(d.currency).filter((m) => !(fuelCar && (m.key === 'kwh' || m.key === 'cost'))); // a gas car has no kWh or charging cost
     const cur = ms.find((m) => m.key === metric);
     // The server says which month or year this is, so a device in another time zone cannot land in the wrong one.
     const [ay, am] = d.at.split('-').map(Number);
@@ -48,7 +50,7 @@ export default async function stats(root) {
         h('button', { class: 'sec', 'aria-label': 'Later', onclick: () => shift(1) }, '›')) : null,
       h('section', { class: 'card' },
         h('div', { class: 'hbig' }, h('b', {}, cur.text(total)), h('span', { class: 'muted' }, ` total${active.length ? ` · about ${cur.text(Object.fromEntries(Object.entries(total).map(([k, v]) => [k, v / active.length])))} per ${period === 'day' ? 'active day' : period === 'month' ? 'active month' : 'year'}` : ''}`)),
-        empty ? emptyState('Nothing recorded', 'No trips or charging in this period.') : tapBars(items, { height: 150, summary: `Tap a bar to read it.` })),
+        empty ? emptyState('Nothing recorded', fuelCar ? 'No trips in this period.' : 'No trips or charging in this period.') : tapBars(items, { height: 150, summary: `Tap a bar to read it.` })),
       placeDonut(s.kinds, d.currency)].filter(Boolean));
   }
   await load();

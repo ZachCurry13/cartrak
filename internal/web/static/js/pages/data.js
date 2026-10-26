@@ -1,5 +1,7 @@
 import { h, ago } from '../ui.js';
 import { api } from '../api.js';
+import { currentCar } from '../car.js';
+import { carWords } from '../carwords.js';
 import { isSaver } from '../mode.js';
 import { dataRow } from '../datarows.js';
 import { timelineChart } from '../timeline.js';
@@ -13,15 +15,22 @@ const dayRange = (ts) => { const d = new Date(ts * 1000); d.setHours(0, 0, 0, 0)
 const stamp = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
 // Every field, and every moment one changed, as spreadsheets in a zip. Admins only: it is the raw data.
-function exportCard() {
+function exportCard(session) {
   const days = h('select', { id: 'xd' }, ...[['1', 'Last 24 hours'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['90', 'Last 90 days']].map(([v, t]) => h('option', { value: v }, t)));
   days.value = '7';
   const priv = h('input', { type: 'checkbox', id: 'xp' });
-  const link = h('a', { class: 'btn', href: '/api/export/fields.zip?days=7' }, 'Download the zip');
-  const set = () => { link.href = `/api/export/fields.zip?days=${days.value}${priv.checked ? '&private=1' : ''}`; };
-  days.addEventListener('change', set); priv.addEventListener('change', set);
+  // A download is opened by the browser itself and cannot say which car, so the car is named in the address. Without it the first car
+  // answers, which is how an export meant for the second car came back with the first one's data.
+  const cars = (session && session.cars) || [];
+  const car = h('select', { id: 'xc', 'aria-label': 'Which car' }, ...cars.map((c) => h('option', { value: String(c.id) }, c.name)));
+  car.value = currentCar() || (cars[0] ? String(cars[0].id) : '');
+  const link = h('a', { class: 'btn', href: '#' }, 'Download the zip');
+  const set = () => { link.href = `/api/export/fields.zip?days=${days.value}${priv.checked ? '&private=1' : ''}${car.value ? `&car=${encodeURIComponent(car.value)}` : ''}`; };
+  days.addEventListener('change', set); priv.addEventListener('change', set); car.addEventListener('change', set);
+  set();
   return h('section', { class: 'card' }, h('h2', {}, 'Export every field over time'),
     h('p', { class: 'muted' }, 'A zip of spreadsheets: every field of the newest reading, the fields that never changed, and a table with a row each time anything changed. Nothing is cut off, unlike printing this page.'),
+    cars.length > 1 ? h('p', {}, h('label', { for: 'xc' }, 'Which car'), car) : null,
     h('label', { for: 'xd' }, 'How far back'), days,
     h('p', {}, h('label', { for: 'xp' }, priv, ' Include positions and the VIN (they are left out otherwise, so the file is safe to send)')), h('p', {}, link));
 }
@@ -64,7 +73,7 @@ export default async function data(root, _a, session) {
       h('div', { class: 'cols2' }, h('div', {}, h('label', {}, 'Day'), date), h('div', {}, h('label', {}, 'Time'), time)),
       h('p', {}, h('button', { class: 'sec', onclick: go }, 'Show the car at this time'),
         h('span', { class: 'muted' }, ' It shows the last reading CarTrak had by then.')),
-      line && line.points.length > 1 ? timelineChart(line.points, from, to, d.ts, (t) => load(t)) : null));
+      line && line.points.length > 1 ? timelineChart(line.points, from, to, d.ts, (t) => load(t), carWords(session).fuel) : null));
   }
 
   function drawBody() {
@@ -92,7 +101,7 @@ export default async function data(root, _a, session) {
         list.replaceChildren(...(rows.length ? rows.map(([k, v]) => h('div', { class: 'row' }, h('span', { class: 'grow muted' }, k), h('b', {}, String(v)))) : [h('p', { class: 'muted' }, 'No matches.')]));
       };
       find.addEventListener('input', draw);
-      body.replaceChildren(session && session.me.role === 'admin' ? exportCard() : null, h('p', { class: 'muted' }, 'The raw list exactly as Ford sent it, for reference. The other tabs explain these in plain words.'), find, h('div', { style: 'height:8px' }), list);
+      body.replaceChildren(session && session.me.role === 'admin' ? exportCard(session) : null, h('p', { class: 'muted' }, 'The raw list exactly as Ford sent it, for reference. The other tabs explain these in plain words.'), find, h('div', { style: 'height:8px' }), list);
       draw();
     };
     if (isSaver()) {

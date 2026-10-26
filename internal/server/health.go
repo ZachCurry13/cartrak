@@ -107,7 +107,7 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 	}
 	if s.Push != nil {
 		if subs, err := s.core().ListPushSubs(0); err == nil {
-			add(alertsItem(len(subs)))
+			add(alertsItem(len(subs), s.fuelCar()))
 		}
 	}
 
@@ -169,9 +169,13 @@ func phoneItem(ds []store.Device, now int64) healthItem {
 }
 
 // alertsItem says whether any device is set up for notifications (optional).
-func alertsItem(n int) healthItem {
+func alertsItem(n int, fuel bool) healthItem {
 	if n == 0 {
-		return healthItem{"alerts", "Alerts", "No device gets alerts. Optional: a notification when charging finishes, a tire is low or the car is left unlocked.", "info", "#/notifications", "Set up alerts"}
+		what := "charging finishes"
+		if fuel {
+			what = "fuel is low"
+		}
+		return healthItem{"alerts", "Alerts", "No device gets alerts. Optional: a notification when " + what + ", a tire is low or the car is left unlocked.", "info", "#/notifications", "Set up alerts"}
 	}
 	word := "devices get"
 	if n == 1 {

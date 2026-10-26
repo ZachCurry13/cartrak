@@ -13,7 +13,7 @@ const PRESETS = [
 ];
 
 // Which categories, which days or weeks, and which file: the part of a report that is chosen every time it is run.
-function runControls(categories) {
+function runControls(categories, fuel = false) {
   const all = h('input', { type: 'checkbox', id: 'rc-all', checked: true });
   const boxes = categories.map((c) => ({ c, el: h('input', { type: 'checkbox', id: `rc-${c.key}` }) }));
   const sync = (changed) => {
@@ -38,7 +38,7 @@ function runControls(categories) {
   const el = h('div', {}, h('h3', { style: 'margin:6px 0' }, 'Categories'), line(all, 'All categories', 'rc-all'), ...boxes.map((b) => line(b.el, b.c.label, `rc-${b.c.key}`)),
     h('h3', { style: 'margin:14px 0 6px' }, 'Days'), h('label', { for: 'rm' }, 'Choose by'), mode, dates, wk,
     h('h3', { style: 'margin:14px 0 6px' }, 'File'), fmt,
-    h('label', { for: 'reff' }, 'Efficiency shown as'), eff);
+    fuel ? null : h('label', { for: 'reff' }, 'Efficiency shown as'), fuel ? null : eff); // a gas car has no kWh to show it in
   const params = () => {
     const p = new URLSearchParams();
     const picked = boxes.filter((b) => b.el.checked).map((b) => b.c.key);

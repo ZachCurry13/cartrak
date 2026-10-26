@@ -40,3 +40,9 @@ func (s *Server) vehicleInfo() vehicleInfo {
 }
 
 func (s *Server) vehicle(w http.ResponseWriter, r *http.Request) { ok(w, s.vehicleInfo()) }
+
+// fuelCar is a gas or hybrid car: one with an engine that is not an electric car. Screens for such a car speak of fuel, not of charging.
+func (s *Server) fuelCar() bool {
+	v := s.vehicleInfo()
+	return v.Engine && v.Powertrain != "" && v.Powertrain != "ev"
+}

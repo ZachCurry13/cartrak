@@ -65,7 +65,18 @@ func (s *Server) reportOptions(w http.ResponseWriter, r *http.Request) {
 		_ = json.Unmarshal([]byte(t.Config), &c)
 		out = append(out, tpl{t.ID, t.Name, c})
 	}
-	ok(w, map[string]any{"columns": report.Columns, "categories": cats, "templates": out})
+	cols := report.Columns
+	if s.fuelCar() { // no kWh, battery or charging-cost columns to offer a gas or hybrid car
+		cols = nil
+		for _, c := range report.Columns {
+			switch c.Key {
+			case "energy", "efficiency", "energycost", "costper", "mpge", "socstart", "socend":
+			default:
+				cols = append(cols, c)
+			}
+		}
+	}
+	ok(w, map[string]any{"columns": cols, "categories": cats, "templates": out})
 }
 
 // saveReportTemplate: POST /api/reports/templates {id?, name, config}. Admin only.

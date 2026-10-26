@@ -42,7 +42,7 @@ type TimePoint struct {
 // Timeline returns the readings between from and to (unix seconds) from the small trends table,
 // thinned to at most max points (always keeping the first and last). It never reads the big rows.
 func (s *Store) Timeline(from, to int64, max int) ([]TimePoint, error) {
-	rows, err := s.DB.Query(`SELECT ts,soc,range_km,odometer_km,speed_kph,outside_c,driving,charging FROM trends WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
+	rows, err := s.DB.Query(`SELECT ts,COALESCE(fuel_pct,soc),range_km,odometer_km,speed_kph,outside_c,driving,charging FROM trends WHERE ts BETWEEN ? AND ? ORDER BY ts`, from, to)
 	if err != nil {
 		return nil, err
 	}

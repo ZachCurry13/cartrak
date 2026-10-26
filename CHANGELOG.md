@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.56.2
+
+### 📦 The right car in the fields export
+- **Export every field over time** now has a **Which car** choice (with more than one car), and the file name says the car and the date. Before, the download always came from the first car, which is why an export meant for the second car held the first one's data.
+
+### ⛽ Gas and hybrid cars: no EV wording
+- More, Reports, Setup, Status, History, Time, Statistics, the Day view and the Data page now speak of fuel for a gas or hybrid car: no kWh, charging stops, charging cost or battery efficiency, no "Charging" tab or chips, and the Data tab is called **Fuel and battery**.
+- The Data timeline plots the fuel level for such a car, and the report column list leaves out the energy and battery columns.
+
 ## 0.56.1
 
 ### 🔔 Notifications and trips

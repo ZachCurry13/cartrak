@@ -117,7 +117,7 @@ func (s *Server) exportFields(w http.ResponseWriter, r *http.Request) {
 	sort.Strings(constants)
 
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="cartrak-fields-%s.zip"`, time.Now().In(loc).Format("2006-01-02")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="cartrak-fields-%s-%s.zip"`, fileSlug(s.carName()), time.Now().In(loc).Format("2006-01-02")))
 	zw := zip.NewWriter(w)
 	defer zw.Close()
 	if f, err := zw.Create("README.txt"); err == nil {

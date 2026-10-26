@@ -1,4 +1,5 @@
 import { h, chip, ago, item, group } from '../ui.js';
+import { carWords } from '../carwords.js';
 import { api } from '../api.js';
 import { forgetOffline } from '../offlinestore.js';
 import { notices } from '../notice.js';
@@ -23,6 +24,7 @@ function signOutButton(session) {
 }
 
 export default async function settings(root, _a, session) {
+  const W = carWords(session);
   const admin = session.me.role === 'admin';
   const site = session.me.siteRole === 'admin'; // the whole installation: people, sign-ins, remote access
   const [st, remote, users, health, phones] = await Promise.all([
@@ -53,10 +55,10 @@ export default async function settings(root, _a, session) {
           item('#/ford', 'Ford connection', p.linked ? `Updated ${ago(p.lastOk)}` : 'Not linked yet', chip(p.linked ? 'ok' : 'bad', p.linked ? 'Linked' : 'Not linked')),
           site ? item('#/remote', 'Remote access', remote && remote.connectorUpdate ? 'A newer Cloudflare connector is available' : 'Cloudflare tunnel for use away from home', remoteChip) : null,
           admin ? item('#/phone', 'Phone tracking', 'Automatic trip start and a finer route from your phone', phones && phones.devices.length ? chip('ok', String(phones.devices.length)) : chip('work', 'Optional')) : null) : null,
-        admin ? group('Trips', item('#/plan', 'Road-trip planner', 'How many charging stops a trip needs'), item('#/maintenance', 'Maintenance', 'Service reminders by distance or time'), item('#/places', 'Places', 'Name Home, the office and other places'), item('#/insights', 'Efficiency insights', 'What changes your miles per kWh'), item('#/year', 'Year in review', 'Miles, energy and charging for the year'), item('#/history', 'History', 'Driving, charging and parked time as one feed'), item('#/stats', 'Statistics', 'Bars by day, month and year, and where you charge'), item('#/time', 'Time', 'Parked, driving and charging, and where'), item('#/parkedwatch', 'Parked watch', 'Bumps and alarms on a parked car (experimental)'), item('#/rules', 'Trip rules', 'Label trips work or personal automatically'),
-          admin ? item('#/mileage', 'Mileage log', 'Copy a business mileage log by week') : null) : group('Trips', item('#/plan', 'Road-trip planner', 'How many charging stops a trip needs'), item('#/insights', 'Efficiency insights', 'What changes your miles per kWh'), item('#/year', 'Year in review', 'Miles, energy and charging for the year'), item('#/history', 'History', 'Driving, charging and parked time as one feed'), item('#/stats', 'Statistics', 'Bars by day, month and year, and where you charge'), item('#/time', 'Time', 'Parked, driving and charging, and where')),
+        admin ? group('Trips', item('#/plan', 'Road-trip planner', W.plan), item('#/maintenance', 'Maintenance', 'Service reminders by distance or time'), item('#/places', 'Places', 'Name Home, the office and other places'), item('#/insights', 'Efficiency insights', W.insights), item('#/year', 'Year in review', W.year), item('#/history', 'History', W.history), item('#/stats', 'Statistics', W.stats), item('#/time', 'Time', W.time), item('#/parkedwatch', 'Parked watch', 'Bumps and alarms on a parked car (experimental)'), item('#/rules', 'Trip rules', 'Label trips work or personal automatically'),
+          admin ? item('#/mileage', 'Mileage log', 'Copy a business mileage log by week') : null) : group('Trips', item('#/plan', 'Road-trip planner', W.plan), item('#/insights', 'Efficiency insights', W.insights), item('#/year', 'Year in review', W.year), item('#/history', 'History', W.history), item('#/stats', 'Statistics', W.stats), item('#/time', 'Time', W.time)),
         group('This device', item('#/display', 'Display and data', 'Units, theme, trip times, data use'),
-          item('#/notifications', 'Notifications', 'Alerts for charging, tires, trips and more'))),
+          item('#/notifications', 'Notifications', (W.fuel ? 'Alerts for fuel, tires, trips and more' : 'Alerts for charging, tires, trips and more')))),
       h('div', {},
         admin ? group('Admin',
           site ? item('#/people', 'People', `${users.length} ${users.length === 1 ? 'account' : 'accounts'}`) : null,

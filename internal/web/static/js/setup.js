@@ -1,3 +1,4 @@
+import { carWords } from './carwords.js';
 import { h, chip } from './ui.js';
 import { api } from './api.js';
 import { startTour } from './tourui.js';
@@ -14,16 +15,19 @@ export function setupItems(st, session) {
   const all = [
     { key: 'install', done: standalone(), title: 'Put CarTrak on your home screen', body: 'It opens like an app and keeps you signed in. In the browser menu choose Install app or Add to Home screen.' },
     { key: 'tour', done: toured(), title: 'Take the two-minute tour', body: 'A quick walk through each part of CarTrak.', action: h('button', { type: 'button', class: 'sec', onclick: () => startTour(session) }, 'Start') },
-    { key: 'alerts', done: st.alerts, title: 'Turn on alerts on this phone', body: 'Charging done, plug in tonight, a low tire and more.', action: link('#/notifications', 'Choose') },
+    { key: 'alerts', done: st.alerts, title: 'Turn on alerts on this phone', body: carWords(session).alerts, action: link('#/notifications', 'Choose') },
   ];
   if (admin) all.push(
-    { key: 'home', done: st.home, title: 'Name Home', body: 'Trips read "Home → Work", and charging at home is priced and counted as home.', action: link('#/places', 'Places') },
+    { key: 'home', done: st.home, title: 'Name Home', body: carWords(session).fuel ? 'Trips read "Home → Work".' : 'Trips read "Home → Work", and charging at home is priced and counted as home.', action: link('#/places', 'Places') },
     { key: 'price', done: st.price, title: 'Set your electricity price', body: 'See what charging costs and your cost per mile.', action: link('#/charging-settings', 'Open') },
     { key: 'gas', done: st.gas, title: 'Compare with a gas car', body: 'Enter a gas price and the economy of the car you would drive instead, to see what you save.', action: link('#/charging-settings', 'Open') },
     { key: 'placeprice', done: st.placePrice, title: 'Price the chargers you use often', body: 'A place with its own price per kWh makes every charge there exact. You can also set it from a charge on the Day view.', action: link('#/places', 'Places') },
     { key: 'phone', done: st.phone, title: 'Track trips with your phone', body: 'Trips start sooner and follow the roads more closely.', action: link('#/phone', 'Set up') },
     { key: 'service', done: st.maintenance, title: 'Add a service reminder', body: 'Tire rotation, cabin filter and so on, by distance or time.', action: link('#/maintenance', 'Add') },
     { key: 'backup', done: st.backup, title: 'Make a backup', body: 'Download a copy of your data so a failed disk cannot lose it.', action: link('#/backup', 'Open') });
+  if (carWords(session).fuel) { // a gas or hybrid car has no electricity price, chargers or gas car to compare with
+    for (const k of ['price', 'gas', 'placeprice']) { const i = all.findIndex((x) => x.key === k); if (i >= 0) all.splice(i, 1); }
+  }
   const skipped = new Set(st.skipped || []);
   for (const it of all) it.skipped = !it.done && skipped.has(it.key);
   return all;

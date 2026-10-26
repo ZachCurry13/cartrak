@@ -97,7 +97,7 @@ func (s *Server) planAhead(w http.ResponseWriter, r *http.Request) {
 	}
 	x, _ := s.S.LatestSample()
 	capacity := s.capacityKwh()
-	if v := s.vehicleInfo(); v.Engine && v.Powertrain != "" && v.Powertrain != "ev" { // a gas or hybrid car has no battery to plan around: no "plug in tonight"
+	if s.fuelCar() { // a gas or hybrid car has no battery to plan around: no "plug in tonight"
 		ok(w, map[string]any{"ready": false})
 		return
 	}

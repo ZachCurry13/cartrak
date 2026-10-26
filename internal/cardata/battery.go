@@ -43,5 +43,8 @@ func (s src) battery() Tab {
 		s.num("Voltage", "volts", "Around 12.4 to 12.8 V when the car is resting is healthy. Lower can mean it needs charging or testing.", "batteryVoltage"),
 		s.num("Charge", "pct", "How full the small battery is.", "batteryStateOfCharge"),
 		s.text("Load", "Whether the electronics are drawing a normal amount of power.", "batteryLoadStatus"))
+	if s.pt.HasEngine() && !s.pt.CanPlug() { // a gas or hybrid car without a plug: the tank and the small battery, no charging
+		return tab("battery", "Fuel and battery", "The fuel tank, the engine and the batteries.", engine, main, small)
+	}
 	return tab("battery", "Battery and charging", "Everything about the batteries and charging.", main, small, charge, engine)
 }
