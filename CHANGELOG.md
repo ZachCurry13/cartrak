@@ -7,6 +7,11 @@
 
 ### 📍 Where a trip began
 - When the car does not say where a trip began, it is now taken to have begun where the car was last seen parked, instead of leaving the start blank.
+- Trips that already had no start position are filled in the same way, once, when CarTrak starts.
+
+### 🐛 More fixes
+- The Home "Did you know" and **Personal bests** now give the same most-efficient-drive figure (10 miles or more).
+- The Home Charging card hides voltage and current when nothing is charging (an idle charger read "1 V" and "0 A").
 
 ## 0.56.0
 

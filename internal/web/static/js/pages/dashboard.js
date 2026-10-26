@@ -32,7 +32,7 @@ function chargeAmps(latest, x) {
   const a = pick(x, 'XEV_BATTERY_CHARGER_CURRENT_OUTPUT'), v = pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT');
   if (a != null && a > 0.5) return num(a, 0, ' A');
   if (latest.chargeKw > 1 && v > 50) return `about ${Math.round((latest.chargeKw * 1000) / v)} A`;
-  return a != null ? num(a, 0, ' A') : null;
+  return null; // nothing flowing: no figure, rather than 0 A
 }
 
 export function pick(extra, ...names) {
@@ -175,7 +175,7 @@ export default async function dashboard(root, _args, session) {
     const charging = isCharging(latest);
     if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', nice(latest.chargeState) || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', nice(latest.plug) || 'Unknown')),
       kv([['Power', latest.chargeKw != null ? num(latest.chargeKw, 1, ' kW') : null],
-        ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') != null ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null],
+        ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') > 50 ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null], // an idle charger reads about 1 V
         ['Current', chargeAmps(latest, x)],
         ['Time to full', pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') != null ? duration(0, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE') * 60) : null],
         ['Station type', chargerType(pick(x, 'XEV_CHARGE_STATION_POWER_TYPE'))]]),

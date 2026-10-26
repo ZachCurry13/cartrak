@@ -127,7 +127,9 @@ func openFile(dir, name string) (*Store, error) {
 	if err := migrate(db); err != nil {
 		return nil, err
 	}
-	return &Store{DB: db, Path: path}, nil
+	st := &Store{DB: db, Path: path}
+	st.fillTripStarts()
+	return st, nil
 }
 
 func (s *Store) GetKV(k string) string {

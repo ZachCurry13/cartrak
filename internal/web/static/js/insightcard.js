@@ -8,7 +8,7 @@ const REASON = { speed: 'Driving fast', temperature: 'Weather', wind: 'Wind', ot
 // One thing worth knowing about how the car is driven, taken from the efficiency insights. It changes each day, and tapping it
 // opens all of them.
 export async function insightCard() {
-  const [d, why] = await Promise.all([api('/api/insights').catch(() => null), api('/api/efficiency-reasons?days=60').catch(() => null)]);
+  const [d, why, recs] = await Promise.all([api('/api/insights').catch(() => null), api('/api/efficiency-reasons?days=60').catch(() => null), api('/api/analytics/records').catch(() => null)]);
   if (!d || d.trips < 3) return null;
   const facts = [];
   const bands = (d.bands || []).filter((b) => b.trips >= 2 && b.kmPerKwh > 0);
@@ -23,7 +23,8 @@ export async function insightCard() {
     const best = months.reduce((a, b) => (b.kmPerKwh > a.kmPerKwh ? b : a));
     facts.push(`Your most efficient month was ${monthName(best.month)}, at ${efficiency(best.kmPerKwh, 1)} over ${best.trips} trips.`);
   }
-  if (d.best && d.best[0]) facts.push(`Your most efficient trip so far got ${efficiency(d.best[0].kmPerKwh, 1)}.`);
+  const rec = recs && (recs.records || []).find((x) => x.key === 'efficient'); // the same figure as Personal bests
+  if (rec) facts.push(`Your most efficient drive of 10 miles or more got ${efficiency(rec.value * 100, 100)}.`);
   if (why && why.items) {
     const top = why.items.filter((i) => i.kwh >= 1).sort((a, b) => b.kwh - a.kwh)[0];
     if (top) facts.push(`${REASON[top.key] || top.key} used about ${Math.round(top.kwh)} kWh more than your usual over the last ${why.days} days (${Math.round(top.pctOfUse)}% of what you used).`);
