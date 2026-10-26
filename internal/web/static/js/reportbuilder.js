@@ -69,7 +69,7 @@ function customTab(opts, run, admin, reload, edit) {
   const desc = h('input', { id: 'fxd', value: 'Customer Visits', maxlength: 60, 'aria-label': 'Description column' });
   const round = h('select', { id: 'fxr', 'aria-label': 'Rounding' }, h('option', { value: 'up' }, 'Round each trip up to the next mile'), h('option', { value: 'nearest' }, 'Round the day to the nearest mile'));
   const fedex = h('section', { class: 'card', style: 'margin:0 0 10px' }, h('b', {}, 'FedEx report'),
-    h('div', { class: 'muted' }, 'The mileage log: one row a day with the origin city, the cities the car was parked in, a description and the miles, and the total. Work trips unless you choose other categories below.'),
+    h('div', { class: 'muted' }, 'The mileage log: one row a day with the origin city, the cities the car was parked in, a description and the miles, and the total. Work trips unless you choose All categories or others below.'),
     h('label', { for: 'fxd' }, 'Description column'), desc, h('label', { for: 'fxr' }, 'Miles'), round,
     h('p', {}, h('button', { onclick: () => run({ template: 'fedex', description: desc.value.trim(), rounding: round.value }) }, 'Run the FedEx report')));
   return h('div', {}, h('p', { class: 'muted' }, 'Each custom report keeps its own layout. Run it for the categories and days chosen below.'), fedex,

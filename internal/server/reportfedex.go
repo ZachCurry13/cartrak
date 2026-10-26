@@ -32,7 +32,7 @@ func (s *Server) tripsOf(start, end time.Time, want map[string]bool) ([]*store.T
 // a description and the miles, as a spreadsheet. Work trips unless other categories are chosen.
 func (s *Server) downloadMileageLog(w http.ResponseWriter, r *http.Request, start, end time.Time, want map[string]bool, loc *time.Location) {
 	q := r.URL.Query()
-	if len(want) == 0 {
+	if len(want) == 0 && q.Get("categories") == "" { // "all" is a choice; only no choice at all means work trips
 		want = map[string]bool{"work": true}
 	}
 	picked, err := s.tripsOf(start, end, want)
@@ -73,7 +73,7 @@ func (s *Server) lookupReportPlaces(w http.ResponseWriter, r *http.Request) {
 			want[k] = true
 		}
 	}
-	if q.Get("template") == "fedex" && len(want) == 0 {
+	if q.Get("template") == "fedex" && len(want) == 0 && q.Get("categories") == "" {
 		want["work"] = true
 	}
 	picked, err := s.tripsOf(start, end, want)

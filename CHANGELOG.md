@@ -2,6 +2,10 @@
 
 ## 0.56.0
 
+### 🐛 Fixes
+- **FedEx report** came up blank when **All categories** was chosen and no drive was a work trip. All categories now means all drives; the report still defaults to work trips only when no category is chosen at all.
+- **Debug report files** are now named after the car, the date and time, and how far back they look (for example `cartrak-debug-mustang-2026-10-23-0905-24h.txt`) instead of `cartrak-debug-report (3).txt`.
+
 ### 🔒 Security update
 - Built with Go 1.27.3, which fixes a certificate-checking flaw in the standard library, and a newer Cloudflare connector (2026.10.4) and JWT library. Nothing changes in how the app works.
 

@@ -1,6 +1,7 @@
 import { h } from '../ui.js';
 import { api } from '../api.js';
 import { phoneSection } from '../errlog.js';
+import { currentCar } from '../car.js';
 
 // A plain-text report to copy and send when something looks wrong. It has no positions, sign-ins, keys or VIN.
 export default async function debug(root, _a, session) {
@@ -17,12 +18,21 @@ export default async function debug(root, _a, session) {
   const msg = h('p', { class: 'muted', role: 'status' });
   const copy = h('button', { class: 'sec', disabled: true, onclick: async () => { try { await navigator.clipboard.writeText(box.value); msg.textContent = 'Copied'; } catch (e) { box.select(); msg.textContent = 'Select all and copy (the browser blocked the button)'; } } }, 'Copy');
   const save = h('a', { class: 'btn sec', hidden: true, download: 'cartrak-debug-report.txt' }, 'Download .txt');
+  // cartrak-debug-<car>-<date>-<time>-<how far back>.txt, so a pile of reports sorts by day and says which car it is about
+  function fileName() {
+    const id = which.value === 'all' ? null : which.value ? Number(which.value.slice(4)) : Number(currentCar());
+    const car = which.value === 'all' ? 'all-cars' : (cars.find((c) => c.id === id) || {}).name || 'car';
+    const slug = String(car).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'car';
+    const d = new Date(), p = (n) => String(n).padStart(2, '0');
+    return `cartrak-debug-${slug}-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}-${hours.value}h.txt`;
+  }
   async function make() {
     msg.textContent = 'Building the report…';
     try {
       const d = await api(`/api/debug-report?hours=${encodeURIComponent(hours.value)}${which.value === 'all' ? '&all=1' : which.value ? `&car=${which.value.slice(4)}` : ''}`);
       const text = d.text + phoneSection();
       box.value = text; copy.disabled = false;
+      save.download = fileName();
       save.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' })); save.hidden = false;
       msg.textContent = `${d.readings} readings. Read it before you send it, and delete anything you would rather not share.`;
     } catch (e) { msg.textContent = e.message; }
