@@ -5,6 +5,9 @@
 ### 🔒 Harder to sign out by accident
 - **Sign out** is no longer in the More sheet, where a stray tap signed you out. It is at the bottom of **More → Everything else**, and takes two taps ("Tap again to sign out").
 
+### 📍 Where a trip began
+- When the car does not say where a trip began, it is now taken to have begun where the car was last seen parked, instead of leaving the start blank.
+
 ## 0.56.0
 
 ### 🐛 Fixes

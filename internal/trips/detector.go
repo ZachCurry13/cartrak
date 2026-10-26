@@ -113,11 +113,15 @@ func (d *Detector) trip(st *ford.State) error {
 	}
 	now := st.TS.Unix()
 	if Driving(st) && open == nil && moving(st) && d.leftTheSpot(st) {
-		t := &store.Trip{StartTS: now, StartLat: st.Lat, StartLon: st.Lon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
+		startLat, startLon := st.Lat, st.Lon
+		if startLat == nil || startLon == nil { // the car did not say where it began: it began where it was last seen parked
+			startLat, startLon = d.S.LastPositionBefore(now)
+		}
+		t := &store.Trip{StartTS: now, StartLat: startLat, StartLon: startLon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		var rid *int64
-		loc := d.zone(st.Lat, st.Lon)
+		loc := d.zone(startLat, startLon)
 		t.TZ = loc.String()
-		t.Category, rid, t.CategorySource = d.classify(now, st.Lat, st.Lon, loc)
+		t.Category, rid, t.CategorySource = d.classify(now, startLat, startLon, loc)
 		t.RuleID = rid
 		return d.S.CreateTrip(t)
 	}

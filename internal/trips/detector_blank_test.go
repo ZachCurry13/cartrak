@@ -32,3 +32,31 @@ func TestAnEmptyAnswerFromFordDoesNotEndADriveInProgress(t *testing.T) {
 		t.Fatalf("one drive of 40 km, not two: %+v", trips)
 	}
 }
+
+func TestATripWithNoStartPositionBeginsWhereTheCarWasLastParked(t *testing.T) {
+	s, err := store.Open(t.TempDir())
+	t.Cleanup(func() { s.Close() })
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := &Detector{S: s, TZ: time.UTC}
+	t0 := time.Date(2026, 10, 22, 8, 0, 0, 0, time.UTC)
+	lat, lon := 45.5, -84.7
+	parked := reading(t0, "OFF", 1000, 80)
+	parked.Lat, parked.Lon = &lat, &lon
+	if _, err := s.SaveState("ford", parked); err != nil {
+		t.Fatal(err)
+	}
+	for _, st := range []*ford.State{parked, reading(t0.Add(time.Hour), "ON", 1000, 80), reading(t0.Add(70*time.Minute), "ON", 1010, 77), reading(t0.Add(80*time.Minute), "OFF", 1015, 75)} {
+		if _, err := s.SaveState("ford", st); err != nil {
+			t.Fatal(err)
+		}
+		if err := d.Process(st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	trips, _ := s.ListTrips(store.TripFilter{})
+	if len(trips) != 1 || trips[0].StartLat == nil || *trips[0].StartLat != lat || *trips[0].StartLon != lon {
+		t.Fatalf("it began where it was parked: %+v", trips)
+	}
+}
