@@ -62,6 +62,10 @@ Still stuck? Open an issue at https://github.com/ZachCurry13/cartrak/issues. Do 
 
 **More, Debug report** makes a text report of the car on screen for the last 6 hours to 14 days. If you administer the whole installation and have more than one car, pick any car from the list (yours or, for an administrator of the whole installation, anyone's), or choose **Every car, together** to get one report with each car under its own heading. It lists the readings, trips, charging, polling, alerts and the settings that shape behavior, and has no positions, people's or cars' names, keys or VIN. Read it before sending it and delete anything you would rather not share.
 
+## Developer and Tracking
+
+**More, Developer** holds the Debug report, Field check and the Field watcher. **Tracking** there records everything while you use the app: start it, use the app, stop it, then download the zip. It has the readings with every raw field, the trips and charging sessions, CarTrak's decisions, the alerts sent, every request the app made (status and time, never the request), the pages and buttons you used (by their label, never what you typed), errors, settings changes (names only) and your Field check answers. A checkbox decides whether positions and the VIN are in it; the zip says which. It stops by itself after the hours you choose, and nothing is recorded while it is off.
+
 ## Field check
 
 **More, Field check** is a short list of things to try in the car and on your phone, each with what should happen. Tap Works, Problem or Skipped, add a note, then Copy results to paste them to whoever is helping. The top of the page also reports what the app can see for itself: the version, whether alerts are set up on this device, how quick the Savings page is, whether live gas prices are on for this car, and how many work stops were found. Your answers are kept on this device only, until you tap Start over.

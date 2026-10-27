@@ -22,6 +22,8 @@ export const CHECKS = [
     expect: 'Everything from the first time the car leaves Home until it is back is Work, whatever the time. The later trip is Personal. Say if a lunch at Home split the day.' },
   { id: 'this-outing', title: 'This outing (weekend or happy hour)', steps: 'On Home, tap Work under This outing before or during a trip that is not on a work day, then drive and come home.',
     expect: 'Every trip of that outing is Work, and the next outing is back to the rules.' },
+  { id: 'tracking', title: 'Tracking', steps: 'More → Developer → Start tracking. Use the app for a few minutes (open pages, tap buttons, change something harmless), then Stop tracking and Download everything.',
+    expect: 'A zip downloads. Its requests.csv and app-events.csv list what you did, and readings-raw.jsonl has the car\'s readings for that time.' },
   { id: 'late-drive', title: 'A drive the car reported late', steps: 'After a drive where the car had no signal, look at Trips.',
     expect: 'The drive is there, starting at the last reading before it. Note the date if it is missing.' },
   { id: 'restore', title: 'Restore from a backup', steps: 'Data → Backup: download a backup, then open the Restore check.',

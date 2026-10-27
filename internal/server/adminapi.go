@@ -126,6 +126,7 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 	for _, k := range b.Clear {
 		_ = s.Cfg.Set(k, "")
 	}
+	s.logSettingChange(b.Values, b.Clear)
 	ok(w, map[string]any{"settings": s.settingsView(r.URL.Query().Get("group")), "suggestedRedirect": s.origin(r) + "/ford/callback"})
 }
 

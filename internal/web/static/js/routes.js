@@ -47,6 +47,7 @@ export const routes = {
   fuel: () => import('./pages/fuel.js'),
   stops: () => import('./pages/stops.js'),
   fieldcheck: () => import('./pages/fieldcheck.js'),
+  developer: () => import('./pages/developer.js'),
   trophies: () => import('./pages/trophies.js'),
   about: () => import('./pages/about.js'),
   status: () => import('./pages/status.js'),

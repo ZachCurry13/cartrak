@@ -6,6 +6,7 @@ import { startRefresh, effective } from './mode.js';
 import { cached } from './offline.js';
 import { setCarReserve } from './charge.js';
 import { watchErrors } from './errlog.js';
+import { trackCheck } from './tracker.js';
 
 watchErrors();
 import { startTour } from './tourui.js';
@@ -108,6 +109,7 @@ async function render() {
   const exact = [...tabs.querySelectorAll('a')].find((a) => a.getAttribute('href') === `#/${name}`); // a page put in the bar lights up itself
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', exact ? a === exact : a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   noteVisit(name);
+  if (session.me && session.me.role === 'admin') trackCheck();
   const carsel = document.getElementById('carsel');
   if (carsel && !carsel.hidden) carsel.value = name === 'fleet' ? 'all' : currentCar(); // All cars shows in the picker while it is open
   const modP = (routes[name] || routes[''])(); // the page's code loads while the first answers are on their way
@@ -119,6 +121,7 @@ async function render() {
       setBirthday(session.me.birthday);
       applySeason();
       await loadCars();
+      if (session.me.role === 'admin') trackCheck(true);
       if (!session.cars.length) { // a person who may bring a car but has none yet
         tabs.hidden = true;
         if (name !== 'cars') { location.hash = '#/cars'; return; }

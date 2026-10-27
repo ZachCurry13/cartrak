@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.62.0
+
+### 🛠️ Developer
+- **More → Developer** is one place for the Debug report, Field check and the Field watcher. It replaces the separate Debug report and Field check links on the More page.
+- **Field check answers are kept on the server** as well as on the phone, so the **Debug report now has a FIELD CHECK section** and nothing has to be pasted.
+
+### 🔴 Tracking
+- On the Developer page, **Start tracking**, use the app, then **Stop tracking** and **Download everything (.zip)**. While it is on, a red **Tracking** button shows on every page of the phone, and it stops by itself after the hours you choose (1 to 12, 4 by default; Add an hour extends it).
+- The zip holds everything in that stretch: the Debug report, every reading the car sent with all its raw fields (and as columns), the trips and charging sessions, what CarTrak decided (including each settings change, by name and never the value), the alerts sent, every request the app made with its status and time (never the request itself), the pages opened, the buttons tapped by their label (never what was typed), errors on the phone, and the Field check answers.
+- A checkbox decides whether positions and the VIN are included (on by default, since it is for you). The file says which it is.
+- Tracking records the car on screen. Nothing is recorded when it is off.
+
 ## 0.61.2
 
 ### 📅 Day breaks in Trips

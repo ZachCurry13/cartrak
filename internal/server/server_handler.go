@@ -80,5 +80,5 @@ func (s *Server) Handler() http.Handler {
 
 	static, _ := fs.Sub(web.Files, "static")
 	m.Handle("/", s.staticHandler(static))
-	return recoverer(timed(secHeaders(gzipHandler(m))))
+	return recoverer(timed(s.tracked(secHeaders(gzipHandler(m)))))
 }
