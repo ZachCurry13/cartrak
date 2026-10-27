@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.58.1
+
+### 🐞 Bug reports know about live gas prices
+- The **debug report** now says whether the gas car comparison is on, whether live gas prices are on, whether an EIA key is set (never the key itself), how many place adjustments there are (never the place names), and whether US units are in use, so a savings question can be answered from the report alone.
+
+### 🧹 Tidying
+- Two old changelog examples named a real town; they now use a made-up one.
+- Two long server files were split into smaller ones (no change in behavior).
+
 ## 0.58.0
 
 ### 🔧 The EIA key box was missing
@@ -108,7 +117,7 @@
 - Under a ladder, a line puts the rung in perspective: **"enough electricity to run a home for 11 months"**, and for the biggest rung also **"or New York City for about a minute"**; distance rungs compare with a marathon, Route 66, the Moon. (New York is roughly 5.7 GW on average, so it is approximate.)
 
 ### 📍 Where you earned it
-- An earned trophy says where: a place you named, else the town, of the trip or charge that finished at that moment ("Long day · Oct 18, 2026 · Escanaba"). Towns are the ones already looked up. Trophies already reached when CarTrak began have no place, and nothing about places goes into anything you share.
+- An earned trophy says where: a place you named, else the town, of the trip or charge that finished at that moment ("Long day · Oct 18, 2026 · Springfield"). Towns are the ones already looked up. Trophies already reached when CarTrak began have no place, and nothing about places goes into anything you share.
 
 ## 0.55.0
 
@@ -366,7 +375,7 @@ A new **Insights** section (More, Insights, and on the Reports page) makes your 
 
 ### 📍 The day says where things happened
 - Each row of **Day view** (and the **History** feed) now says where it was: a drive reads **Traverse City → Glen Arbor**, a stop or a charge shows its place, using a place you named or else the city. A drive that began and ended in the same town reads **Around** it.
-- Drives also show their **average speed** and **efficiency**, and charges their **average power** ("about 9 kW on average"). A charge reads **Public · Escanaba Super Charger** instead of just Public.
+- Drives also show their **average speed** and **efficiency**, and charges their **average power** ("about 9 kW on average"). A charge reads **Public · Springfield Super Charger** instead of just Public.
 
 ### 🧹 A tidy-up after a review of the whole app
 - **What's new** shows **bold** text as bold instead of with asterisks around it.
