@@ -67,6 +67,7 @@ func (d *Detector) charge(st *ford.State) error {
 
 // Reclassify re-runs the rules over every trip that was not set by hand.
 func (d *Detector) Reclassify() error {
+	_ = d.S.FillTripStarts() // so the trips read as places, not as "…"
 	ts, err := d.S.ListTrips(store.TripFilter{Limit: 1000})
 	if err != nil {
 		return err

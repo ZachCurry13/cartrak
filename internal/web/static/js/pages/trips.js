@@ -2,6 +2,7 @@ import { h, emptyState, stat, catChip, chip, dist, when, duration, pct } from '.
 import { api } from '../api.js';
 import { categoryList, catLabel } from '../categories.js';
 import { tripCard, colorKey } from '../tripcard.js';
+import { withDayBreaks } from '../tripdays.js';
 import { isSaver } from '../mode.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
@@ -53,7 +54,7 @@ export default async function trips(root, _a, session) {
   }
   function paintList() {
     sel.state.shown = lastTs;
-    list.replaceChildren(...(lastTs.length ? lastTs.map(row) : [emptyState('No trips in this range', 'Try a wider range. Trips appear after the car drives and Ford reports the trip.')]));
+    list.replaceChildren(...(lastTs.length ? withDayBreaks(lastTs, row) : [emptyState('No trips in this range', 'Try a wider range. Trips appear after the car drives and Ford reports the trip.')]));
     selectRow.replaceChildren(sel.button(admin && lastTs.length > 1) || '');
     sel.paintBar();
   }

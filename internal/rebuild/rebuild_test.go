@@ -230,3 +230,36 @@ func TestRebuildStopsBeforeAChargeThatIsStillGoing(t *testing.T) {
 		t.Fatal("a stretch wholly inside an open charge is refused")
 	}
 }
+
+// A rebuilt trip is classified knowing the trips of the day that stay as they are: an evening trip after the work day ended
+// at Home is personal, even though the morning's trips were left alone and are not part of the plan.
+func TestARebuiltTripKnowsTheDaysTripsThatWereLeftAlone(t *testing.T) {
+	s, d, t0 := seed(t)
+	if err := s.SaveNamedPlace(&store.NamedPlace{Name: "Home", Lat: 44, Lon: -93, RadiusM: 150}); err != nil {
+		t.Fatal(err)
+	}
+	d.Work = func() trips.WorkDay { return trips.WorkDay{On: true, Days: 0b1111111, StaySec: 45 * 60} }
+	day := t0.Add(-24 * time.Hour).Truncate(24 * time.Hour)
+	kept := &store.Trip{StartTS: day.Add(8 * time.Hour).Unix(), Category: "work", CategorySource: "workday"}
+	if err := s.CreateTrip(kept); err != nil {
+		t.Fatal(err)
+	}
+	e := day.Add(15*time.Hour + 30*time.Minute).Unix()
+	kept.EndTS, kept.EndLat, kept.EndLon, kept.DistanceKm, kept.Open = &e, f(44), f(-93), 30, false // back at Home
+	if err := s.UpdateTrip(kept); err != nil {
+		t.Fatal(err)
+	}
+	evening := &store.Trip{StartTS: day.Add(17 * time.Hour).Unix(), StartLat: f(44), StartLon: f(-93), Category: "work", CategorySource: "default"}
+	ee := evening.StartTS + 600
+	evening.EndTS, evening.DistanceKm = &ee, 4
+	p := &Plan{From: day.Unix(), To: day.Add(18 * time.Hour).Unix(), NewTrips: []*store.Trip{evening}}
+	if err := Apply(s, d, p); err != nil {
+		t.Fatal(err)
+	}
+	all, _ := s.ListTrips(store.TripFilter{})
+	for _, x := range all {
+		if x.StartTS == evening.StartTS && x.Category != "personal" {
+			t.Fatalf("the evening trip follows a work day that ended at Home: %q", x.Category)
+		}
+	}
+}

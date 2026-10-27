@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.61.2
+
+### 📅 Day breaks in Trips
+- The Trips list now has a heading each time the day changes, such as "Tuesday, Oct 27 · 8 trips · 70 mi", so a long list reads day by day. The counts are for the trips shown in the list.
+
+### 🏙️ Fewer missing cities
+- Trips made by Fix a day, or by the new hidden-hop detection, could show "…" as the start because the rebuild had no start position to give them. Fix a day and Re-apply now fill the start from where the car was last seen, as new trips always have.
+
+### 🏷️ Fix a day labels trips knowing the whole day
+- A rebuilt trip was classified without the day's trips that were left alone, so an evening trip after the work day (back at Home) could come out as Work. It now follows the trips of the day that stay, and comes out Personal. Tap Re-apply on Trip rules to correct trips already recorded. Hand labels are never changed.
+
 ## 0.61.1
 
 ### 🚗 The start of a drive is counted

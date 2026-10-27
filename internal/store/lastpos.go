@@ -20,11 +20,17 @@ func (s *Store) fillTripStarts() {
 	if s.GetKV(flag) != "" {
 		return
 	}
+	if s.FillTripStarts() == nil {
+		_ = s.SetKV(flag, "1")
+	}
+}
+
+// FillTripStarts is that backfill without the once-only flag, for trips made since (a rebuild replays readings without their
+// positions, so the trips it makes can lack a start place).
+func (s *Store) FillTripStarts() error {
 	_, err := s.DB.Exec(`UPDATE trips SET
 		start_lat = (SELECT lat FROM samples WHERE ts < trips.start_ts AND lat IS NOT NULL AND lon IS NOT NULL ORDER BY ts DESC LIMIT 1),
 		start_lon = (SELECT lon FROM samples WHERE ts < trips.start_ts AND lat IS NOT NULL AND lon IS NOT NULL ORDER BY ts DESC LIMIT 1)
 		WHERE (start_lat IS NULL OR start_lon IS NULL)`)
-	if err == nil {
-		_ = s.SetKV(flag, "1")
-	}
+	return err
 }

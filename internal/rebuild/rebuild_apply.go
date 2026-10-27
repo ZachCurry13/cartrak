@@ -13,8 +13,10 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 	if len(p.Blockers) > 0 {
 		return fmt.Errorf("%s", p.Blockers[0])
 	}
-	// The trips of the day before the stretch, so an outing that began earlier is known; each new trip is added as it is classified.
-	earlier := tripsBefore(s, p.From)
+	// Each new trip is classified knowing the trips before it: the ones that stay (the stretch is widened to whole trips, and a trip
+	// that already matches is left alone, so it is neither old nor new) and the new ones classified so far.
+	fixed := keptTrips(s, p)
+	var news []*store.Trip
 	for _, n := range p.NewTrips {
 		var best *store.Trip
 		var bestOv int64
@@ -23,7 +25,7 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 				best, bestOv = o, ov
 			}
 		}
-		d.ClassifyTripAfter(n, earlier)
+		d.ClassifyTripAfter(n, before(fixed, news, n.StartTS))
 		if best != nil {
 			n.Notes = best.Notes
 			// a distance the owner corrected carries over when the new trip is the same drive, not a merge or a split of it
@@ -34,7 +36,7 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 				n.Category, n.CategorySource, n.RuleID = best.Category, "manual", nil
 			}
 		}
-		earlier = append(earlier, n)
+		news = append(news, n)
 	}
 	for _, n := range p.NewCharges {
 		var best *store.Charge
@@ -61,7 +63,10 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 	for _, c := range p.OldCharges {
 		oc = append(oc, c.ID)
 	}
-	return s.ReplaceRange(ot, oc, p.NewTrips, p.NewCharges)
+	if err := s.ReplaceRange(ot, oc, p.NewTrips, p.NewCharges); err != nil {
+		return err
+	}
+	return s.FillTripStarts() // the replay had no positions of its own to start the new trips from
 }
 
 // Fill turns missing lists into empty ones so the plan always serialises as lists, never null.
@@ -83,15 +88,35 @@ func (p *Plan) Fill() {
 	}
 }
 
-// tripsBefore are the stored trips in the day and a half before ts, oldest first.
-func tripsBefore(s *store.Store, ts int64) []*store.Trip {
-	ps, err := s.ListTrips(store.TripFilter{From: ts - 36*3600, To: ts, All: true})
+// keptTrips are the stored trips in the day and a half up to the end of the stretch that the plan does not replace, oldest first.
+func keptTrips(s *store.Store, p *Plan) []*store.Trip {
+	ps, err := s.ListTrips(store.TripFilter{From: p.From - 36*3600, To: p.To + 1, All: true})
 	if err != nil {
 		return []*store.Trip{}
 	}
-	sort.Slice(ps, func(i, j int) bool { return ps[i].StartTS < ps[j].StartTS })
-	if ps == nil {
-		ps = []*store.Trip{}
+	gone := map[int64]bool{}
+	for _, o := range p.OldTrips {
+		gone[o.ID] = true
 	}
-	return ps
+	out := []*store.Trip{}
+	for _, t := range ps {
+		if !gone[t.ID] {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// before are the trips that start before ts, oldest first: the kept ones and the new ones so far.
+func before(kept, news []*store.Trip, ts int64) []*store.Trip {
+	out := []*store.Trip{}
+	for _, list := range [][]*store.Trip{kept, news} {
+		for _, t := range list {
+			if t.StartTS < ts {
+				out = append(out, t)
+			}
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].StartTS < out[j].StartTS })
+	return out
 }
