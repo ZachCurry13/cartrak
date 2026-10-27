@@ -6,8 +6,20 @@
 - Twice a day CarTrak fetches again the live gas prices it has been using (when they are more than 12 hours old), so a new weekly average appears without anyone opening a page. The EIA publishes it each Monday.
 - **Status** has a new **Live gas prices** line when an EIA key is set: when the prices were last updated, a clear message if the last update failed (for example a refused key), or why live prices are not working (city lookup off, or metric units).
 
+### 🐞 Bug reports say how the gas price updates went
+- The debug report now also says when live gas prices were last updated and why the last update failed, if it did (never the key), so a problem with them can be seen from the logs.
+
+### 🏠 Gas today on Home
+- When live gas prices are on, Home's **This month** card shows the current gas price where the car is. On the Charging page the savings card reads shorter: the explanation of how the saving was worked out is shown once, under this month, and the year keeps just its figures. The week is written as a date ("week of Oct 26").
+
+### 🔑 One EIA key for every car
+- The EIA key and the place adjustments are now shared: enter them once and every car uses them (a car can still set its own). The remembered prices are shared too, so two cars do not fetch the same thing twice.
+
 ### 🚗 Trip fuel cost on a gas or hybrid car
 - A trip's fuel cost uses the price from your fill-ups when you have logged any. Until you do, it now uses the live average price where the drive started, that week, so trips get a cost from day one.
+
+### 🛡️ Safer upgrades
+- A new test upgrades a database that lacks each column added by a later version, one by one, and checks that the column comes back and the data is kept. A security scan of the code and its libraries found nothing that affects CarTrak (one note about an unmaintained library that CarTrak does not use).
 
 ### 🧪 More trip detection tests
 - Two more replayed failures: a drive with no start position begins where the car was parked, and a stale position is not taken as the end of a drive until the car says where it is.

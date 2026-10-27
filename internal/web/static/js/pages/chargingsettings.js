@@ -8,7 +8,7 @@ const SECTIONS = [
   ['Accuracy', 'How much of the energy from a home charger reaches the battery.', ['CARTRAK_CHARGE_EFFICIENCY']],
   ['Compared with a gas car', 'The gas car you would otherwise drive. With these, CarTrak shows what you save and the CO2 you avoid. Leave them empty to turn the comparison off.',
     ['CARTRAK_FUEL_UNITS', 'CARTRAK_GAS_PRICE', 'CARTRAK_GAS_ECONOMY', 'CARTRAK_GRID_CO2']],
-  ['Live gas prices (optional)', 'With a free EIA key, CarTrak compares each charge with the average price of gas where and when it happened. Your gas price above is used until a live price is known, or without a key. Set per car.',
+  ['Live gas prices (optional)', 'With a free EIA key, CarTrak compares each charge with the average price of gas where and when it happened. Your gas price above is used until a live price is known, or without a key. The key and the place adjustments start the same for every car; a car can set its own.',
     ['CARTRAK_EIA_KEY', 'CARTRAK_GAS_ADJUST']],
   ['Alerts about charging', 'Each person still chooses which alerts reach their own device under More, Notifications.',
     ['CARTRAK_PLUG_REMINDER_TIME', 'CARTRAK_PLUG_REMINDER_BELOW', 'CARTRAK_LOW_BATTERY', 'CARTRAK_CHARGE_BUDGET']],

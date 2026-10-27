@@ -38,7 +38,7 @@ func (s *Server) gasService() *gasprice.Service {
 	s.gasLive.mu.Lock()
 	defer s.gasLive.mu.Unlock()
 	if s.gasLive.svc == nil {
-		s.gasLive.svc = &gasprice.Service{KV: s.S, BaseURL: s.GasURL}
+		s.gasLive.svc = &gasprice.Service{KV: s.core(), BaseURL: s.GasURL} // one set of remembered prices for every car
 	}
 	return s.gasLive.svc
 }

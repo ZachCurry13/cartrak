@@ -2,7 +2,7 @@ import { h, dist, num } from './ui.js';
 import { api } from './api.js';
 import { insightCard } from './insightcard.js';
 import { planCard } from './plancard.js';
-import { periodLines } from './savingscard.js';
+import { periodLines, gasTodayLines } from './savingscard.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const hm = (sec) => (sec < 3600 ? `${Math.max(1, Math.round(sec / 60))} min` : `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`);
@@ -25,9 +25,10 @@ async function todayCard() {
 
 // What charging has added up to this month, and the next service coming.
 async function monthCard(maint) {
-  const [sum, sav] = await Promise.all([api('/api/charges/summary').catch(() => null), api('/api/savings').catch(() => null)]);
+  const [sum, sav, gn] = await Promise.all([api('/api/charges/summary').catch(() => null), api('/api/savings').catch(() => null), api('/api/gasnow').catch(() => null)]);
   const m = sum && sum.thisMonth;
-  const saved = sav && sav.month.km > 0 ? periodLines(sav.currency, sav.month, sav.gasSet) : [];
+  const saved = sav && sav.month.km > 0 ? periodLines(sav.currency, sav.month, sav.gasSet, null, true) : [];
+  const gas = sav && sav.gasSet ? gasTodayLines(gn).slice(0, 1) : [];
   const next = ((maint && maint.items) || []).filter((i) => i.state === 'ok' && (i.kmLeft != null || i.daysLeft != null))
     .sort((a, b) => (a.kmLeft ?? 1e9) - (b.kmLeft ?? 1e9) || (a.daysLeft ?? 1e9) - (b.daysLeft ?? 1e9))[0];
   if (!(m && m.kwh > 0) && !next && !saved.length) return null;
@@ -35,6 +36,7 @@ async function monthCard(maint) {
   return link('#/stats', 'This month',
     m && m.kwh > 0 ? h('p', {}, `${num(m.kwh, 0, ' kWh')} charged${m.cost > 0 ? `, ${money(sum.currency, m.cost)}` : ''}`) : null,
     ...saved,
+    ...gas,
     next ? h('p', { class: 'muted' }, `Next service: ${next.name} ${left}`) : null);
 }
 

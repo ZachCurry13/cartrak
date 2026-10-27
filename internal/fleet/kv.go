@@ -19,7 +19,7 @@ var globalKeys = []string{"vapid_private", "vapid_public", "update_check", "onbo
 var inheritedKeys = []string{"setting:FORD_CLIENT_ID", "setting:FORD_CLIENT_SECRET", "setting:FORD_REDIRECT_URL", "setting:FORD_AUTH_URL",
 	"setting:CARTRAK_TZ", "setting:CARTRAK_GEOCODE_ENABLED", "setting:CARTRAK_GEOCODE_URL", "setting:CARTRAK_MAP_ENABLED",
 	"setting:CARTRAK_MAP_TILE_URL", "setting:CARTRAK_MAP_ATTRIBUTION", "setting:CARTRAK_ROUTE_LOOKUP", "setting:CARTRAK_ROUTE_URL",
-	"setting:CARTRAK_WEATHER_LOOKUP", "setting:CARTRAK_CURRENCY"}
+	"setting:CARTRAK_WEATHER_LOOKUP", "setting:CARTRAK_CURRENCY", "setting:CARTRAK_EIA_KEY", "setting:CARTRAK_GAS_ADJUST"}
 
 // GlobalKeys is what ImportIdentity copies from the first car's database: the global keys and the inherited defaults.
 func GlobalKeys() []string { return append(append([]string{}, globalKeys...), inheritedKeys...) }

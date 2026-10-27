@@ -22,7 +22,7 @@ Cut 1.0 after about two weeks with no data-correctness fix, on every car.
 
 ## 3. Operations
 - [ ] Restore test: back up, wipe, restore, everything comes back.
-- [ ] Upgrade test: migrations run on a copy of a real database from an older version.
+- [x] Upgrade test: every migration upgrades a database that lacks its column, with data kept (0.59.0, internal/store/migrate_test.go). Still worth doing once: open a copy of the real database from an older version.
 - [ ] Ford API change or outage: visible on Status, with an alert, no silent gaps.
 - [ ] Documented limits (Ford gives live state only, so gaps cannot be recovered).
 
@@ -32,5 +32,5 @@ Cut 1.0 after about two weeks with no data-correctness fix, on every car.
 - [ ] Shelved ideas (ChargePoint, AI, 2FA, comma 4, OBD-II) listed as not in 1.0.
 
 ## 5. Housekeeping
-- [ ] Security and dependency audit per docs/MAINTENANCE.md.
+- [x] Security and dependency audit per docs/MAINTENANCE.md: run 2026-10-27, govulncheck found nothing that affects CarTrak (GO-2026-5932, golang.org/x/crypto/openpgp, unmaintained, not used, no fix available). Repeat before 1.0.
 - [ ] README and docs match the app; a short "what 1.0 promises" section (data format and exports stay stable).

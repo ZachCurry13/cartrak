@@ -37,6 +37,17 @@ func (s *Server) debugSettings() []string {
 			key = "key set"
 		}
 		add("gas comparison: %s; live gas prices %s (%s, %d place adjustments), US units %v", onOff(s.Cfg.Gas().Set()), onOff(s.liveGasOn()), key, len(s.Cfg.GasAdjusts()), s.Cfg.LiveGasUnits())
+		if s.liveGasOn() {
+			st := s.gasService().Status()
+			last, errText := "never", "none"
+			if st.OK > 0 {
+				last = ago(time.Now().Unix() - st.OK)
+			}
+			if st.Err != "" {
+				errText = st.Err
+			}
+			add("live gas prices: last updated %s, last error: %s", last, errText)
+		}
 		add("time zone: %s", s.Cfg.Location())
 	}
 	vi := s.vehicleInfo()

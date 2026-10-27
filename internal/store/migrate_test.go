@@ -47,3 +47,39 @@ func TestMigrationAddsTripTimeZone(t *testing.T) {
 		t.Fatalf("zone not stored: %q", got.TZ)
 	}
 }
+
+// Every column a later version added must be added again to a database made before it, with the data kept. The test makes that
+// database by dropping each migrated column from a current one, then opening it the way an upgrade would.
+func TestEveryMigrationUpgradesADatabaseThatLacksItsColumn(t *testing.T) {
+	skipped := 0
+	for _, m := range migrations {
+		dir := t.TempDir()
+		s, err := Open(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := s.CreateTrip(&Trip{StartTS: 1700000000, Category: "work", CategorySource: "default"}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := s.DB.Exec(`ALTER TABLE ` + m.table + ` DROP COLUMN ` + m.column); err != nil {
+			skipped++ // SQLite cannot drop an indexed column; that one is covered by the older-schema test above
+			s.Close()
+			continue
+		}
+		s.Close()
+		up, err := Open(dir)
+		if err != nil {
+			t.Fatalf("upgrading a database without %s.%s: %v", m.table, m.column, err)
+		}
+		if has, err := hasColumn(up.DB, m.table, m.column); err != nil || !has {
+			t.Fatalf("%s.%s was not added back: %v", m.table, m.column, err)
+		}
+		if ts, err := up.ListTrips(TripFilter{}); err != nil || len(ts) != 1 || ts[0].Category != "work" {
+			t.Fatalf("the data survived the upgrade of %s.%s: %v %+v", m.table, m.column, err, ts)
+		}
+		up.Close()
+	}
+	if skipped == len(migrations) {
+		t.Fatal("no column could be dropped, so nothing was tested")
+	}
+}
