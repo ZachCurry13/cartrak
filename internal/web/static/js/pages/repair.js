@@ -37,9 +37,10 @@ export default async function repair(root, _a, session) {
       const p = await api('/api/repair/preview', { method: 'POST', body: { from: secs(from), to: secs(to) } });
       msg.textContent = '';
       if (p.blockers.length) return out.replaceChildren(...p.blockers.map((b) => h('p', { class: 'banner' }, b)));
+      const note = p.note ? h('p', { class: 'banner notice' }, p.note) : null;
       const kept = p.unchangedTrips + p.unchangedCharges;
       const keptText = kept ? `${p.unchangedTrips} trip${p.unchangedTrips === 1 ? '' : 's'} and ${p.unchangedCharges} charging session${p.unchangedCharges === 1 ? '' : 's'} already match the stored readings and will be left alone.` : '';
-      if (!p.oldTrips.length && !p.oldCharges.length && !p.newTrips.length && !p.newCharges.length) return out.replaceChildren(h('p', { class: 'banner notice' }, `Nothing needs fixing here. ${keptText}`));
+      if (!p.oldTrips.length && !p.oldCharges.length && !p.newTrips.length && !p.newCharges.length) return out.replaceChildren(...[note, h('p', { class: 'banner notice' }, `Nothing needs fixing here. ${keptText}`)].filter(Boolean));
       const word = h('input', { id: 'rw', placeholder: 'Type REBUILD', autocomplete: 'off', 'aria-label': 'Type REBUILD to confirm' });
       const go = h('button', { class: 'danger', disabled: true, onclick: apply }, 'Rebuild');
       word.addEventListener('input', () => { go.disabled = word.value.trim() !== 'REBUILD'; });
@@ -53,12 +54,12 @@ export default async function repair(root, _a, session) {
           msg.textContent = '';
         } catch (e) { msg.textContent = e.message; go.disabled = false; }
       }
-      out.replaceChildren(
+      out.replaceChildren(...[note,
         h('p', { class: 'muted' }, `Widened to whole trips: ${when(p.from)} to ${when(p.to)}. ${p.readings} stored readings. ${keptText}`),
         h('div', { class: 'cols' }, column('Now', p.oldTrips, p.oldCharges), column('After rebuilding', p.newTrips, p.newCharges)),
         h('section', { class: 'card' },
           h('p', { class: 'muted' }, 'This replaces the trips and charging sessions on the left with the ones on the right. Notes, categories you chose by hand and charger kWh you typed in are kept. Public links to the old trips stop working. Make a backup first if you want to be able to undo it.'),
-          h('label', { for: 'rw' }, 'To confirm, type REBUILD'), word, h('p', {}, go)));
+          h('label', { for: 'rw' }, 'To confirm, type REBUILD'), word, h('p', {}, go))].filter(Boolean));
     } catch (e) { msg.textContent = e.message; }
   }
 

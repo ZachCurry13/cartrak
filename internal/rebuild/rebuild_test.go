@@ -200,3 +200,33 @@ func TestRebuildingAgainLeavesWhatAlreadyMatchesAlone(t *testing.T) {
 		}
 	}
 }
+
+// A charge still in progress is left out, and the stretch stops where it began, so the day's drives can be fixed while plugged in.
+func TestRebuildStopsBeforeAChargeThatIsStillGoing(t *testing.T) {
+	s, d, t0 := seed(t)
+	start := t0.Add(200 * time.Minute).Unix()
+	if err := s.CreateCharge(&store.Charge{StartTS: start, StartKwh: f(40), PeakKw: 7}); err != nil {
+		t.Fatal(err)
+	}
+	p, err := Compute(s, d, t0.Unix(), t0.Add(4*time.Hour).Unix(), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, b := range p.Blockers {
+		if strings.Contains(b, "charging session") {
+			t.Fatalf("an open charge at the end must not block: %v", p.Blockers)
+		}
+	}
+	if p.To != start-1 || p.Note == "" {
+		t.Fatalf("the stretch stops before the charge: to %d want %d, note %q", p.To, start-1, p.Note)
+	}
+	for _, c := range p.OldCharges {
+		if c.Open {
+			t.Fatal("the open charge is not part of the plan")
+		}
+	}
+	// A charge that began before the stretch and is still going leaves nothing to rebuild.
+	if p, _ := Compute(s, d, t0.Add(210*time.Minute).Unix(), t0.Add(4*time.Hour).Unix(), time.Now()); len(p.Blockers) == 0 {
+		t.Fatal("a stretch wholly inside an open charge is refused")
+	}
+}

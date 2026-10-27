@@ -30,6 +30,7 @@ type Plan struct {
 	NewTrips   []*store.Trip   `json:"newTrips"`
 	NewCharges []*store.Charge `json:"newCharges"`
 	Blockers   []string        `json:"blockers"`
+	Note       string          `json:"note,omitempty"` // something the person should know about the stretch, such as a charge left out
 	// UnchangedTrips and UnchangedCharges are the ones the replay recorded exactly as they are stored. They are left alone and
 	// are in neither list above.
 	UnchangedTrips   int `json:"unchangedTrips"`
@@ -48,6 +49,16 @@ func cEnd(c *store.Charge) int64 {
 		return *c.EndTS
 	}
 	return c.StartTS
+}
+
+// openCharge is a charging session that has not ended, or nil.
+func openCharge(cs []*store.Charge) *store.Charge {
+	for _, c := range cs {
+		if c.Open {
+			return c
+		}
+	}
+	return nil
 }
 
 // Compute works out the plan for [from, to] without changing anything.
@@ -74,6 +85,16 @@ func Compute(s *store.Store, d *trips.Detector, from, to int64, now time.Time) (
 		cs, err := s.ChargesTouching(p.From, p.To)
 		if err != nil {
 			return nil, err
+		}
+		if c := openCharge(cs); c != nil && p.To >= c.StartTS {
+			// The car is still charging. That session is being kept live, so the stretch stops where it began instead of refusing.
+			if c.StartTS-1 <= p.From {
+				p.Blockers = append(p.Blockers, "A charging session that began before that stretch is still in progress, so there is nothing before it to rebuild.")
+				return p, nil
+			}
+			p.To = c.StartTS - 1
+			p.Note = "The car is charging, so the stretch ends where that charge began. The charge in progress is left alone."
+			continue
 		}
 		p.OldTrips, p.OldCharges = ts, cs
 		f, t := p.From, p.To
