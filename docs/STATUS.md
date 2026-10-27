@@ -1,5 +1,6 @@
 # Status
 
+- Released: v0.59.1 (2026-10-27, image :0.59.1 and :latest): database library update (SQLite 3.54.1). Next: the user updates the server, checks Home and Trips speed, adds the EIA key and pulls logs.
 - Released: v0.59.0 (2026-10-27, image :0.59.0 and :latest), one combined release: Work stops, gas prices refreshed twice a day with a Status line, one EIA key for every car, Gas today on Home, upgrade test for every migration. Next: the user updates the server, adds the EIA key and pulls logs; then docs/ROAD_TO_1.0.md.
 - Released: v0.58.1 (2026-10-27, image :0.58.1 and :latest): debug report lists live gas prices, neutral changelog examples, long files split. Next: 0.59.0 (weekly gas price refresh and Status line, trip fuel cost from the local price, more replay scenarios).
 - Released: v0.58.0 (2026-10-27, image :0.58.0 and :latest): Gas today, fill-up price vs area average, replay tests for trip detection, and the EIA key box on Charging settings. Next: more replay scenarios and docs/ROAD_TO_1.0.md; the user adds the EIA key.
