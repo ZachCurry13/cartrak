@@ -63,7 +63,10 @@ func (f *Fleet) build(c store.Car, primary bool) (*Runtime, error) {
 	if err != nil {
 		return nil, err
 	}
-	det := &trips.Detector{S: st, TZ: f.Cfg.TZ, TZFn: cfgs.Location}
+	det := &trips.Detector{S: st, TZ: f.Cfg.TZ, TZFn: cfgs.Location, Work: func() trips.WorkDay {
+		on, days, stay := cfgs.WorkDay()
+		return trips.WorkDay{On: on, Days: days, StaySec: int64(stay) * 60}
+	}}
 	p := poller.New(prov, st, det, poller.Intervals{Driving: f.Cfg.PollDriving, Charging: f.Cfg.PollCharge, Parked: f.Cfg.PollParked, Live: f.Cfg.PollLive})
 	srv := &server.Server{S: st, Core: f.Core, CarID: c.ID, P: p, D: det, Link: link, Version: f.Version, Upd: f.Upd, Cfg: cfgs, Prober: prober, Redirects: redirects,
 		Tunnel: f.Tun, Conn: f.Conn, Port: f.Cfg.Addr[strings.LastIndex(f.Cfg.Addr, ":")+1:], TrustProxy: f.Cfg.TrustProxy, SessionDays: f.Cfg.SessionDays,

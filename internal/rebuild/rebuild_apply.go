@@ -2,6 +2,7 @@ package rebuild
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
 	"github.com/ZachCurry13/cartrak/internal/trips"
@@ -12,6 +13,8 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 	if len(p.Blockers) > 0 {
 		return fmt.Errorf("%s", p.Blockers[0])
 	}
+	// The trips of the day before the stretch, so an outing that began earlier is known; each new trip is added as it is classified.
+	earlier := tripsBefore(s, p.From)
 	for _, n := range p.NewTrips {
 		var best *store.Trip
 		var bestOv int64
@@ -20,7 +23,7 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 				best, bestOv = o, ov
 			}
 		}
-		d.ClassifyTrip(n)
+		d.ClassifyTripAfter(n, earlier)
 		if best != nil {
 			n.Notes = best.Notes
 			// a distance the owner corrected carries over when the new trip is the same drive, not a merge or a split of it
@@ -31,6 +34,7 @@ func Apply(s *store.Store, d *trips.Detector, p *Plan) error {
 				n.Category, n.CategorySource, n.RuleID = best.Category, "manual", nil
 			}
 		}
+		earlier = append(earlier, n)
 	}
 	for _, n := range p.NewCharges {
 		var best *store.Charge
@@ -77,4 +81,17 @@ func (p *Plan) Fill() {
 	if p.Blockers == nil {
 		p.Blockers = []string{}
 	}
+}
+
+// tripsBefore are the stored trips in the day and a half before ts, oldest first.
+func tripsBefore(s *store.Store, ts int64) []*store.Trip {
+	ps, err := s.ListTrips(store.TripFilter{From: ts - 36*3600, To: ts, All: true})
+	if err != nil {
+		return []*store.Trip{}
+	}
+	sort.Slice(ps, func(i, j int) bool { return ps[i].StartTS < ps[j].StartTS })
+	if ps == nil {
+		ps = []*store.Trip{}
+	}
+	return ps
 }

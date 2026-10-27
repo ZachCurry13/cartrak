@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.61.0
+
+### 🏠 The work day, from leaving home to getting back
+- New **Work days** setting on **More → Trip rules** (off until you turn it on). On a work day (Monday to Friday unless you change it), everything from the first time the car leaves Home until it is back counts as work, whatever the clock says: 8 to 3:30, or 8 to 10 pm. Outings later that day count as personal, so a pizza run at 4:45 no longer needs relabeling. Getting home for lunch and leaving again within 45 minutes (you can change it) is still the same work day.
+- A trip that carries on from another without the car being at Home in between takes that trip's category, so a drive from one customer to the next stays in the outing. Your hand labels, vacations and trip modes still win, and the old time-of-day rules apply wherever this rule has nothing to say (a weekend, no place named Home, or a trip with no end position). A place named Home or Home 2 counts as home.
+
+### 🎫 This outing
+- A **This outing** card on Home, for admins: **Work** or **Personal** relabels the trips of the outing so far (from leaving Home) and sets the ones to come, until the car is back at Home. For a weekend concert or a work happy hour, tap Work. **Automatic** goes back to the rules. A forgotten setting lapses after 18 hours.
+- **Re-apply** on Trip rules, and Fix a day, now sort a day's trips oldest first so each follows the outing before it. Hand labels are never changed.
+
 ## 0.60.1
 
 ### 🧮 Does the day add up?

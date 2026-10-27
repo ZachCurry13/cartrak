@@ -2,6 +2,7 @@ package trips
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -70,11 +71,16 @@ func (d *Detector) Reclassify() error {
 	if err != nil {
 		return err
 	}
-	for _, t := range ts {
+	sort.Slice(ts, func(i, j int) bool { return ts[i].StartTS < ts[j].StartTS }) // oldest first: an outing depends on the trips before it
+	for i, t := range ts {
 		if t.CategorySource == "manual" {
 			continue
 		}
-		cat, rid, src := d.classify(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t))
+		from := i
+		for from > 0 && t.StartTS-ts[from-1].StartTS < priorWindowSec {
+			from--
+		}
+		cat, rid, src := d.classifyAfter(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t), ts[from:i])
 		t.Category, t.RuleID, t.CategorySource = cat, rid, src
 		if err := d.S.UpdateTrip(t); err != nil {
 			return err
@@ -95,7 +101,12 @@ func (d *Detector) loc() *time.Location {
 
 // ClassifyTrip sets a trip's category from the rules, as it would be when the trip is first recorded.
 func (d *Detector) ClassifyTrip(t *store.Trip) {
-	t.Category, t.RuleID, t.CategorySource = d.classify(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t))
+	d.ClassifyTripAfter(t, nil)
+}
+
+// ClassifyTripAfter is ClassifyTrip with the trips before it given, oldest first (nil reads them from the store).
+func (d *Detector) ClassifyTripAfter(t *store.Trip, prior []*store.Trip) {
+	t.Category, t.RuleID, t.CategorySource = d.classifyAfter(t.StartTS, t.StartLat, t.StartLon, d.tripZone(t), prior)
 }
 
 // stationOf is the kind of charger the car reports, but only while it is actually charging: the field keeps its last

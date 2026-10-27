@@ -13,6 +13,7 @@ type Detector struct {
 	S    *store.Store
 	TZ   *time.Location
 	TZFn func() *time.Location // optional: read the zone live (admin panel); wins over TZ
+	Work func() WorkDay        // optional: the "first outing of a work day is work" rule, read live; nil leaves it off
 
 	maxOdo   *float64 // the highest odometer seen: an old lower value on one reading is not a car that went back
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
@@ -130,7 +131,11 @@ func (d *Detector) trip(st *ford.State) error {
 		open.EndLat, open.EndLon = nil, nil
 		d.endlessTrip, d.endlessAt = open.ID, now
 	}
-	return d.S.UpdateTrip(open)
+	if err := d.S.UpdateTrip(open); err != nil {
+		return err
+	}
+	d.endOuting(open)
+	return nil
 }
 
 // moving says a trip should begin: the car is actually going somewhere. Sitting in the car with the ignition or

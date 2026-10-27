@@ -158,7 +158,7 @@ func replay(rows []store.ReplayRow, d *trips.Detector) ([]*store.Trip, []*store.
 		return nil, nil, err
 	}
 	defer tmp.Close()
-	det := &trips.Detector{S: tmp, TZ: d.TZ, TZFn: d.TZFn}
+	det := &trips.Detector{S: tmp, TZ: d.TZ, TZFn: d.TZFn} // no work day rule here: Apply classifies against the real store
 	for _, r := range rows {
 		st := &ford.State{TS: time.Unix(r.TS, 0), OdometerKm: r.OdometerKm, SoCPct: r.SoC, Lat: r.Lat, Lon: r.Lon, SpeedKph: r.SpeedKph,
 			Ignition: r.Ignition, ChargeState: r.ChargeState, ChargeKw: r.ChargeKw, EnergyKwh: r.EnergyKwh, Plug: r.Plug}

@@ -75,3 +75,9 @@ Waiting in a customer's parking lot adds no miles, but it is time on the job. **
 - **Time parked** shows the work time and the total for 7, 30 or 90 days, and for each day. The **Day view** has a **Parked time** card with that day's stops. **Export CSV** gives the date, start, end, minutes, place, category and note for a spreadsheet.
 - CarTrak knows the car was parked there, not whether you were sitting in it or inside the building.
 - Notes stay on your server. Viewers can see the stops but not change them.
+
+## The work day rule
+
+**More, Trip rules, Work days** makes the first outing of a work day, from leaving Home until the car is back, count as work whatever the time. Later outings that day are personal. Getting home for lunch and leaving again within the chosen minutes keeps the work day going. A trip that carries on from another away from Home takes its category. Your own labels, vacation and trip modes win, and the time-of-day rules still apply where this rule has nothing to say.
+
+For a weekend concert or a happy hour on a non-work day, tap **Work** under **This outing** on Home. It relabels the trips so far and covers the rest of the outing until the car is back at Home. A place named Home (or Home 2) is needed.

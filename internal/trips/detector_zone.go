@@ -27,6 +27,12 @@ func (d *Detector) tripZone(t *store.Trip) *time.Location {
 }
 
 func (d *Detector) classify(startTS int64, lat, lon *float64, loc *time.Location) (string, *int64, string) {
+	return d.classifyAfter(startTS, lat, lon, loc, nil)
+}
+
+// classifyAfter is classify with the trips before this one given (oldest first), for a caller that has them in memory and whose
+// store does not hold them yet; nil reads them from the store.
+func (d *Detector) classifyAfter(startTS int64, lat, lon *float64, loc *time.Location, prior []*store.Trip) (string, *int64, string) {
 	// A vacation or a work trip wins over the rules: no manual relabelling of every trip for a week away. A trip the owner
 	// set by hand is never classified at all, so it still wins over this.
 	switch kind := d.S.TimeOffKind(time.Unix(startTS, 0).In(loc).Format("2006-01-02")); {
@@ -34,6 +40,20 @@ func (d *Detector) classify(startTS int64, lat, lon *float64, loc *time.Location
 		return Personal, nil, "vacation"
 	case kind != "" && d.S.CategoryExists(kind):
 		return kind, nil, "mode"
+	}
+	if c := d.outingOverride(startTS); c != "" {
+		return c, nil, "outing"
+	}
+	if d.Work != nil {
+		if w := d.Work(); w.On {
+			if prior == nil {
+				prior = d.priorTrips(startTS)
+			}
+			ps, _ := d.S.ListNamedPlaces()
+			if cat, ok := workDayCategory(w, homeSpots(ps), loc, prior, startTS); ok {
+				return cat, nil, "workday"
+			}
+		}
 	}
 	rules, err := d.S.ListRules()
 	if err == nil {

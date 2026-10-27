@@ -111,6 +111,8 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
 	m.HandleFunc("GET /api/savings", s.auth(false, s.savingsView))
 	m.HandleFunc("GET /api/gasnow", s.auth(false, s.gasNow))
+	m.HandleFunc("GET /api/outing", s.auth(false, s.outingView))
+	m.HandleFunc("POST /api/outing", s.auth(true, s.setOuting))
 	m.HandleFunc("GET /api/stops", s.auth(false, s.stopsList))
 	m.HandleFunc("GET /api/stops.csv", s.auth(false, s.stopsCSV))
 	m.HandleFunc("PUT /api/stops/{id}", s.auth(true, s.stopsLabel))

@@ -1,6 +1,7 @@
 import { remoteChip } from '../remotestart.js';
 import { tripPlaces } from '../tripplaces.js';
 import { homeCards } from '../homecards.js';
+import { outingCard } from '../outingcard.js';
 import { h, stat, chip, nice, chargerType, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
@@ -72,6 +73,7 @@ export default async function dashboard(root, _args, session) {
     if (strip) out.push(strip);
     const vac = await vacP;
     if (vac) out.push(vac);
+    if (session.me.role === 'admin') out.push(outingCard());
     if (!latest) {
       out.push(h('p', { class: 'muted' }, 'No readings yet. Data appears after the first successful sync.'));
       return box.replaceChildren(...out);
