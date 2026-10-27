@@ -46,6 +46,7 @@ type Server struct {
 	routeFail    map[int64]routeFailure // trips whose road estimate failed lately
 	routeBusy    atomic.Bool            // background road estimates are running
 	routeRetried atomic.Bool            // old give-ups were forgotten once this run
+	savingsKept  savingsCache           // the savings page answer, kept briefly
 	TrustProxy   bool                   // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For
 	SessionDays  int                    // "keep me signed in" length; 0 = 30
 	Upd          *updater.Checker       // nil disables update checks

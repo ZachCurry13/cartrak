@@ -65,6 +65,7 @@ export default async function settings(root, _a, session) {
           item('#/cars', 'Cars', `${session.cars.length} ${session.cars.length === 1 ? 'car' : 'cars'}`, session.cars.length > 1 ? chip('work', 'Switch') : null),
           site ? item('#/security', 'Sign-ins and devices', 'Who signed in, from where, and every signed-in device') : null,
           item('#/debug', 'Debug report', 'Copy what the car reported, to send when something looks wrong'),
+          item('#/fieldcheck', 'Field check', 'Things to try in the car and on your phone, with one button to copy the results'),
           item('#/backup', 'Backup', 'Download a copy of your data'),
           item('#/admin', 'Settings', 'Ford credentials, time zone, city names, diagnostics')) : null,
         group('Help',

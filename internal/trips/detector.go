@@ -6,7 +6,6 @@ import (
 
 	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
-	"github.com/ZachCurry13/cartrak/internal/tzlookup"
 )
 
 // Detector opens and closes trips and charge sessions from successive readings.
@@ -73,44 +72,6 @@ func (d *Detector) Process(st *ford.State) error {
 	return d.charge(st)
 }
 
-// zone is the time zone where a trip started: found from its location, else the
-// default time zone setting. So "weekdays 8am-5pm" means 8 to 5 wherever you are driving.
-func (d *Detector) zone(lat, lon *float64) *time.Location {
-	if lat != nil && lon != nil {
-		return tzlookup.Location(*lat, *lon, d.loc())
-	}
-	return d.loc()
-}
-
-// tripZone prefers the zone stored with the trip over looking it up again.
-func (d *Detector) tripZone(t *store.Trip) *time.Location {
-	if t.TZ != "" {
-		if l, err := time.LoadLocation(t.TZ); err == nil {
-			return l
-		}
-	}
-	return d.zone(t.StartLat, t.StartLon)
-}
-
-func (d *Detector) classify(startTS int64, lat, lon *float64, loc *time.Location) (string, *int64, string) {
-	// A vacation or a work trip wins over the rules: no manual relabelling of every trip for a week away. A trip the owner
-	// set by hand is never classified at all, so it still wins over this.
-	switch kind := d.S.TimeOffKind(time.Unix(startTS, 0).In(loc).Format("2006-01-02")); {
-	case kind == store.KindVacation:
-		return Personal, nil, "vacation"
-	case kind != "" && d.S.CategoryExists(kind):
-		return kind, nil, "mode"
-	}
-	rules, err := d.S.ListRules()
-	if err == nil {
-		at := time.Unix(startTS, 0).In(loc)
-		if cat, id, ok := Classify(rules, at, lat, lon); ok {
-			return cat, &id, "rule"
-		}
-	}
-	return Personal, nil, "default"
-}
-
 func (d *Detector) trip(st *ford.State) error {
 	open, err := d.S.OpenTrip()
 	if err != nil {
@@ -129,6 +90,20 @@ func (d *Detector) trip(st *ford.State) error {
 		t.Category, rid, t.CategorySource = d.classify(now, startLat, startLon, loc)
 		t.RuleID = rid
 		return d.S.CreateTrip(t)
+	}
+	if open == nil && d.missedDrive(st) {
+		t := &store.Trip{StartTS: d.lastReading, StartOdo: d.lastOdo, StartSoC: d.lastSoC, StartKwh: d.lastKwh}
+		t.StartLat, t.StartLon = d.S.LastPositionBefore(now)
+		loc := d.zone(t.StartLat, t.StartLon)
+		t.TZ = loc.String()
+		var rid *int64
+		t.Category, rid, t.CategorySource = d.classify(t.StartTS, t.StartLat, t.StartLon, loc)
+		t.RuleID = rid
+		d.S.LogDecision("trip_late", fmt.Sprintf("the car was first seen on and stopped %.1f km further on than the reading %d min before, so a drive that was never reported moving was started at that earlier reading", *st.OdometerKm-*d.lastOdo, (now-d.lastReading)/60))
+		if err := d.S.CreateTrip(t); err != nil {
+			return err
+		}
+		open = t
 	}
 	if open == nil {
 		return nil

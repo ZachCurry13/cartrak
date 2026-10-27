@@ -87,6 +87,10 @@ func (s *Server) savingsByDistance(ss []charging.Session, from, to time.Time) *f
 // savingsView is the month and the year so far: what charging cost per distance, and what driving electric saved against the
 // gas car set in the charging settings.
 func (s *Server) savingsView(w http.ResponseWriter, r *http.Request) {
+	if out, hit := s.savingsKept.get(); hit {
+		ok(w, out)
+		return
+	}
 	loc, now := s.defaultLoc(), time.Now()
 	local := now.In(loc)
 	monthStart := time.Date(local.Year(), local.Month(), 1, 0, 0, 0, 0, loc)
@@ -97,6 +101,9 @@ func (s *Server) savingsView(w http.ResponseWriter, r *http.Request) {
 	eq := s.gasEquivalents(ss)
 	out := map[string]any{"currency": s.currency(), "gasSet": gasSet, "live": s.liveGasOn(), "month": s.savingsFor(ss, eq, monthStart, end), "year": s.savingsFor(ss, eq, yearStart, end),
 		"before": map[string]*float64{"month": s.savingsByDistance(ss, monthStart, end), "year": s.savingsByDistance(ss, yearStart, end)}}
+	if !s.stillUsingOwnPrice(eq) {
+		s.savingsKept.put(out)
+	}
 	ok(w, out)
 }
 

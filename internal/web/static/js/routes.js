@@ -46,6 +46,7 @@ export const routes = {
   phone: () => import('./pages/phone.js'),
   fuel: () => import('./pages/fuel.js'),
   stops: () => import('./pages/stops.js'),
+  fieldcheck: () => import('./pages/fieldcheck.js'),
   trophies: () => import('./pages/trophies.js'),
   about: () => import('./pages/about.js'),
   status: () => import('./pages/status.js'),

@@ -7,7 +7,7 @@ import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, cl
 import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
 import { batteryRing } from '../ring.js';
-import { pick } from './dashboard.js';
+import { pick } from '../pick.js';
 import { powerTile, fitText } from '../livepower.js';
 import { isCharging } from '../chargestate.js';
 

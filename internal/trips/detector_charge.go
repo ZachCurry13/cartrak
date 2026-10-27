@@ -121,6 +121,17 @@ func (d *Detector) leftTheSpot(st *ford.State) bool {
 	return d.lastOdo != nil && *st.OdometerKm-*d.lastOdo >= 0.1
 }
 
+// missedDrive is for a car first seen with the ignition on and stopped, whose odometer is well past the last reading: it was
+// driven, and nothing reported it moving (a long silence, or a phone-less stretch with no signal). The drive is started back at
+// the last reading, which is the nearest honest start. The rise has to be a believable speed for the time that passed.
+func (d *Detector) missedDrive(st *ford.State) bool {
+	if !Driving(st) || moving(st) || st.SpeedKph == nil || st.OdometerKm == nil || d.lastOdo == nil || d.lastReading == 0 {
+		return false
+	}
+	rise, gap := *st.OdometerKm-*d.lastOdo, st.TS.Unix()-d.lastReading
+	return rise >= 1 && gap > 0 && rise/(float64(gap)/3600) <= 200
+}
+
 // resumeWithin is how long a charging session can stay paused and still be the same session when charging resumes.
 const resumeWithin = 20 * 60
 

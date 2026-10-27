@@ -46,6 +46,18 @@ var replayScenarios = []struct {
 15 ON 1000 0
 30 ON 1000 0
 31 OFF 1000`, nil, false},
+	{"a drive first seen at its end, car on and stopped, still makes its trip", `
+0 OFF 1000
+30 ON 1012 0
+35 OFF 1012`, []float64{12}, false},
+	{"a car that only woke up a little further on is not a trip", `
+0 OFF 1000
+30 ON 1000.4 0
+35 OFF 1000.4`, nil, false},
+	{"an odometer jump too big for the time is not a trip", `
+0 OFF 1000
+2 ON 1500 0
+5 OFF 1500`, nil, false},
 	{"a brief ignition blip is not a trip", `
 0 OFF 1000
 1 ON 1000 0
