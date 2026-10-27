@@ -1,5 +1,6 @@
 # Status
 
+- Released: v0.58.1 (2026-10-27, image :0.58.1 and :latest): debug report lists live gas prices, neutral changelog examples, long files split. Next: 0.59.0 (weekly gas price refresh and Status line, trip fuel cost from the local price, more replay scenarios).
 - Released: v0.58.0 (2026-10-27, image :0.58.0 and :latest): Gas today, fill-up price vs area average, replay tests for trip detection, and the EIA key box on Charging settings. Next: more replay scenarios and docs/ROAD_TO_1.0.md; the user adds the EIA key.
 - Released: v0.57.1 (2026-10-27, image :0.57.1 and :latest): how to get the EIA key, in the setting and the docs. Next: replay-fixture suite and docs/ROAD_TO_1.0.md.
 - Released: v0.57.0 (2026-10-27, image :0.57.0 and :latest): savings per charge, optional EIA live gas prices by charge location, quiet everyday alerts. Next: replay-fixture suite and docs/ROAD_TO_1.0.md; verify EIA series with a real key.
