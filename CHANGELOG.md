@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.59.1
+
+### 🧰 Database library update
+- The built-in database library moved to its newest release (SQLite 3.54.1), along with two small supporting libraries. Nothing changes in the app. It was checked with the full test suite, including the tests that upgrade older databases, and a security scan found nothing that affects CarTrak.
+
 ## 0.59.0
 
 ### 🅿️ Work stops
