@@ -32,8 +32,8 @@ function gapRow(g, refresh, say) {
       g.edge ? null : h('button', { class: 'sec', onclick: () => add('personal') }, 'Add as personal trip')));
 }
 
-export function checkCard(params, refresh) {
-  const box = h('section', { class: 'card' }, h('h2', {}, 'Does it add up?'), h('p', { class: 'muted' }, 'Checking the car’s odometer…'));
+export function checkCard(params, refresh, title = 'Does it add up?') {
+  const box = h('section', { class: 'card' }, h('h2', {}, title), h('p', { class: 'muted' }, 'Checking the car’s odometer…'));
   const say = (t) => { msg.textContent = t; };
   const msg = h('p', { class: 'muted', role: 'status' });
   const q = new URLSearchParams();
@@ -43,9 +43,9 @@ export function checkCard(params, refresh) {
       ? h('p', { class: 'muted' }, 'CarTrak has no odometer readings for this period, so it cannot check it.')
       : h('p', {}, c.ok ? chip('ok', 'Matches') : chip('work', `${dist(c.missingKm, 1)} missing`), ' ',
         `The car’s odometer moved ${dist(c.drivenKm, 1)}. Trips recorded by CarTrak cover ${dist(c.coveredKm, 1)}.`);
-    box.replaceChildren(h('h2', {}, 'Does it add up?'), summary,
+    box.replaceChildren(h('h2', {}, title), summary,
       ...c.gaps.map((g) => gapRow(g, refresh, say)), msg,
       h('p', { class: 'muted' }, 'This compares every kind of trip, work and personal, not only the ones in the log above. The odometer total is exact; Ford reports it only when the car wakes, so the times inside a gap are approximate.'));
-  }).catch((e) => box.replaceChildren(h('h2', {}, 'Does it add up?'), h('p', { class: 'muted' }, e.message)));
+  }).catch((e) => box.replaceChildren(h('h2', {}, title), h('p', { class: 'muted' }, e.message)));
   return box;
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.60.1
+
+### 🧮 Does the day add up?
+- The **Day view** now has a **Day mileage** card (admins): the miles the car's odometer moved that day against the miles the recorded trips cover, with **Matches** or how many miles are missing. Any gap lists where it was and can be added with one tap, as in the Mileage log. The odometer is exact, so this is the figure to trust for a working day, from leaving home to getting back.
+- **Field check** shows the same check for today and yesterday at the top, and has a card for checking a working day at its end.
+
 ## 0.60.0
 
 ### ✅ Field check

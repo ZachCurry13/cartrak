@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { dist } from './ui.js';
 
 // The checks only a person with the car and a phone can finish. Each has what to do and what should happen. The automatic ones
 // run when the page opens and say what they found.
@@ -15,6 +16,8 @@ export const CHECKS = [
     expect: 'The label stays after a reload, and the CSV has the note in its own column.' },
   { id: 'fix-day', title: 'Fix a day', steps: 'Open the day you wanted corrected (Oct 22 to 24) in Day view and run Fix a day.',
     expect: 'The trips for that day come out as you remember them: the right number, no split or merged drives.' },
+  { id: 'day-mileage', title: 'A working day adds up', steps: 'At the end of a working day open Day view and look at Day mileage. Compare with the miles you know you drove, from leaving home to getting back.',
+    expect: 'Day mileage says Matches. If it lists miles missing, add them with one tap and note which stop they were.' },
   { id: 'late-drive', title: 'A drive the car reported late', steps: 'After a drive where the car had no signal, look at Trips.',
     expect: 'The drive is there, starting at the last reading before it. Note the date if it is missing.' },
   { id: 'restore', title: 'Restore from a backup', steps: 'Data → Backup: download a backup, then open the Restore check.',
@@ -25,6 +28,16 @@ export const CHECKS = [
 const ms = async (path) => { const t = performance.now(); await api(path); return Math.round(performance.now() - t); };
 const safe = async (f) => { try { return await f(); } catch (e) { return { ok: false, text: `could not check (${e.message || e})` }; } };
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// The car's odometer is exact, so a day is right when the trips recorded cover the miles it moved.
+async function dayMileage(back) {
+  const d = new Date();
+  d.setDate(d.getDate() - back);
+  const day = ymd(d);
+  const { check: c } = await api(`/api/mileage/check?from=${day}&to=${day}`);
+  if (c.readings < 2) return { ok: true, text: 'no odometer readings that day' };
+  return { ok: c.ok, text: c.ok ? `matches (${dist(c.drivenKm, 1)})` : `${dist(c.missingKm, 1)} missing: the odometer moved ${dist(c.drivenKm, 1)}, trips cover ${dist(c.coveredKm, 1)}` };
+}
 
 // AUTO is what the app can see for itself on this device: [name, function(session) -> { ok, text }].
 export const AUTO = [
@@ -43,4 +56,6 @@ export const AUTO = [
     const d = await api(`/api/stops?from=${ymd(from)}&to=${ymd(to)}`);
     return { ok: true, text: `${d.stops.length} stop${d.stops.length === 1 ? '' : 's'}, ${Math.round(d.minutes)} min parked` };
   }],
+  ['Mileage today, odometer against trips', (session) => dayMileage(0)],
+  ['Mileage yesterday, odometer against trips', (session) => dayMileage(1)],
 ].map(([name, fn]) => [name, (session) => safe(() => fn(session))]);
