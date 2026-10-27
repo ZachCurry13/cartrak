@@ -14,6 +14,7 @@ type Detector struct {
 	TZ   *time.Location
 	TZFn func() *time.Location // optional: read the zone live (admin panel); wins over TZ
 
+	maxOdo   *float64 // the highest odometer seen: an old lower value on one reading is not a car that went back
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
 	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
 
@@ -62,6 +63,9 @@ func (d *Detector) Process(st *ford.State) error {
 	}
 	if st.OdometerKm != nil {
 		d.lastOdo = st.OdometerKm
+		if d.maxOdo == nil || *st.OdometerKm > *d.maxOdo {
+			d.maxOdo = st.OdometerKm
+		}
 	}
 	if st.SpeedKph != nil {
 		d.sawSpeed = true
@@ -91,19 +95,15 @@ func (d *Detector) trip(st *ford.State) error {
 		t.RuleID = rid
 		return d.S.CreateTrip(t)
 	}
-	if open == nil && d.missedDrive(st) {
-		t := &store.Trip{StartTS: d.lastReading, StartOdo: d.lastOdo, StartSoC: d.lastSoC, StartKwh: d.lastKwh}
-		t.StartLat, t.StartLon = d.S.LastPositionBefore(now)
-		loc := d.zone(t.StartLat, t.StartLon)
-		t.TZ = loc.String()
-		var rid *int64
-		t.Category, rid, t.CategorySource = d.classify(t.StartTS, t.StartLat, t.StartLon, loc)
-		t.RuleID = rid
-		d.S.LogDecision("trip_late", fmt.Sprintf("the car was first seen on and stopped %.1f km further on than the reading %d min before, so a drive that was never reported moving was started at that earlier reading", *st.OdometerKm-*d.lastOdo, (now-d.lastReading)/60))
-		if err := d.S.CreateTrip(t); err != nil {
-			return err
+	missed := false
+	if open == nil {
+		if rise := d.missedRise(st); rise > 0 {
+			t, err := d.lateTrip(st, rise)
+			if err != nil {
+				return err
+			}
+			open, missed = t, true
 		}
-		open = t
 	}
 	if open == nil {
 		return nil
@@ -116,6 +116,9 @@ func (d *Detector) trip(st *ford.State) error {
 	}
 	open.EndTS = &now
 	open.DistanceKm = d.distance(open)
+	if missed {
+		open.Open = false // seen only at its end: it is over
+	}
 	if !Driving(st) {
 		open.Open = false
 		if (open.DistanceKm < 0.3 && now-open.StartTS < 120) || (open.DistanceKm < 0.2 && open.MaxSpeedKph < 8) {

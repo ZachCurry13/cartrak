@@ -6,8 +6,9 @@
 - A new page, **More → Field check**, lists the things only a person with the car and a phone can try (alert sounds, the app icon badge, live gas prices on every car, a work stop, Fix a day, a restore). Each has what to do and what should happen. Tap **Works**, **Problem** or **Skipped**, add a note, then **Copy results** to paste them to whoever is helping.
 - The top of the page also checks a few things for you: this version, whether alerts are set up on this device, how fast the Savings page is, whether live gas prices are on for this car, and how many work stops were found.
 
-### 🚗 A drive the car reported late still makes a trip
-- If the car is first seen with the ignition on and stopped, but its odometer is well past the last reading (nothing ever reported it moving), a trip is now started back at that last reading, as long as the speed it implies is believable. Before, such a drive was lost. The Debug report notes it as `trip_late`.
+### 🚗 Short hops between stops are no longer lost
+- A parked car is asked about only every ten minutes, so a short drive between two customers can start and end between two readings, with the car never reported moving. The odometer still shows it, so when the next reading is a kilometer or more past the highest one before it (at a speed a car can really do), a trip is now recorded for that drive, ending at the reading that showed it. The trip is placed as late as its distance allows inside the silence, so the parked time before it is kept. Fix a day recovers hops from earlier days the same way. The Debug report notes each one as `trip_late`.
+- An old lower odometer on a single reading is still ignored.
 
 ### ⚡ Savings page is quicker
 - The Savings figures are kept for 45 seconds and are worked out again straight away when you save a charge, a place or a setting. Prices still being fetched are never kept, so the page does not stay stuck on your own price.

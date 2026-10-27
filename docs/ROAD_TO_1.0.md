@@ -7,7 +7,7 @@ Cut 1.0 after about two weeks with no data-correctness fix, on every car.
 
 ## 1. Data you can trust
 - [ ] Replay fixtures: each past trip-detection bug becomes a small synthetic replay test. Started in 0.58.0 (internal/trips/replay_test.go and replay_scenarios_test.go: blank answer, odometer regression, quiet gap, two drives, sitting in the car, ignition blip); 0.59.0 added the missing start and stale position; 0.60.0 added the late-reported drive; still to add: endless trip. Synthetic values only; never real positions, odometers or VINs from a user's export.
-- [x] A drive Ford reports only after it ended: a car first seen on and stopped, with the odometer 1 km or more past the last reading at a believable speed, now starts its trip at that last reading (0.60.0, `trip_late`). Still to confirm on a real drive with no signal.
+- [x] A drive Ford reports only after it ended: a car first seen on and stopped, with the odometer 1 km or more past the last reading at a believable speed, or an ignition-off reading shows the same, now gets a trip placed late in the silence (0.60.0, `trip_late`); the Oct 27 hops between customers are the real case. Still to confirm on a real drive with no signal.
 - [ ] Fix a day verified on real data (Oct 22 to 24).
 - [ ] Escape trip distance (8.0 mi against 2.5 mi on the odometer) explained.
 - [ ] Trips that still draw as dashed straight lines explained (pending or implausible).

@@ -50,6 +50,25 @@ var replayScenarios = []struct {
 0 OFF 1000
 30 ON 1012 0
 35 OFF 1012`, []float64{12}, false},
+	{"a hop between two polls, car parked at both ends, still makes its trip", `
+0 OFF 1000
+10 OFF 1000
+20 OFF 1005
+30 OFF 1005`, []float64{5}, false},
+	{"three hidden hops between customers are three trips", `
+0 OFF 1000
+10 OFF 1000
+20 OFF 1002
+30 OFF 1002
+40 OFF 1005
+50 OFF 1005
+60 OFF 1006`, []float64{2, 3, 1}, false},
+	{"an old lower odometer on one reading is not a drive when the right one returns", `
+0 OFF 1000
+1 ON 1000 80
+10 ON 1019 80
+20 OFF 1000
+30 OFF 1019`, []float64{19}, false},
 	{"a car that only woke up a little further on is not a trip", `
 0 OFF 1000
 30 ON 1000.4 0
