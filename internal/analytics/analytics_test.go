@@ -113,12 +113,13 @@ func TestMonthRecapWithSavings(t *testing.T) {
 		{ID: 2, Start: at("2026-10-01 18:00"), End: at("2026-10-01 18:30"), Km: 20, Kwh: 4},
 		{ID: 3, Start: at("2026-09-20 08:00"), End: at("2026-09-20 09:00"), Km: 50, Kwh: 10},
 	}
-	cs := []Charge{{Start: at("2026-10-02 22:00"), Kwh: 24, Cost: fp(3.6), Where: "home"}}
+	// the 24 kWh added would take the car 120 km (5 km per kWh), which the gas car burns 9.6 L for at 1 a liter
+	cs := []Charge{{Start: at("2026-10-02 22:00"), Kwh: 24, Cost: fp(3.6), Where: "home", GasOK: true, GasKm: 120, GasLiters: 9.6, GasCost: 9.6}}
 	r := PeriodRecap("2026-10", ts, cs, Gas{LitersPerKm: 0.08, PricePerLiter: 1, GridKgPerKwh: 0.4}, utc)
 	if r.Trips != 2 || r.Km != 120 || r.DaysDriven != 1 || r.Longest.ID != 1 || *r.PrevKm != 50 || r.KmPerKwh != 5 || r.HomeShare != 1 {
 		t.Fatalf("recap: %+v", r)
 	}
-	// gas: 120 km x 0.08 L x 1 = 9.60; electricity for 24 kWh at 0.15 = 3.60; saved 6.00
+	// gas for the energy charged: 9.60; electricity for 24 kWh at 0.15 = 3.60; saved 6.00
 	if math.Abs(*r.GasCost-9.6) > 1e-9 || math.Abs(*r.Saved-6) > 1e-9 || math.Abs(*r.KgCO2Saved-(9.6*2.348-24*0.4)) > 1e-9 {
 		t.Fatalf("savings: %v %v %v", *r.GasCost, *r.Saved, *r.KgCO2Saved)
 	}

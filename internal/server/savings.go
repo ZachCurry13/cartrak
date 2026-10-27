@@ -11,12 +11,15 @@ import (
 )
 
 // savingsFor is the charging cost, cost per distance and saving against the gas car for sessions that started in [from, to).
-func (s *Server) savingsFor(ss []charging.Session, from, to time.Time) savings.Result {
+// eq holds each charge's gas-car equivalent (see gasEquivalents); the saving is worked out charge by charge from it.
+func (s *Server) savingsFor(ss []charging.Session, eq map[int64]chargeGas, from, to time.Time) savings.Result {
 	in := savings.Input{GridKgPerKwh: 0.37}
 	if s.Cfg != nil {
-		p := s.Cfg.Gas()
-		in.LitersPerKm, in.PricePerLiter, in.GridKgPerKwh = p.LitersPerKm, p.PricePerLiter, s.Cfg.GridCO2()
+		in.GridKgPerKwh = s.Cfg.GridCO2()
 	}
+	var e savings.Equiv
+	sources := map[string]int{}
+	var wall float64
 	for _, c := range ss {
 		if c.Open || c.AddedKwh == nil || c.StartTS < from.Unix() || c.StartTS >= to.Unix() {
 			continue
@@ -26,16 +29,61 @@ func (s *Server) savingsFor(ss []charging.Session, from, to time.Time) savings.R
 			in.Priced++
 			in.ChargingCost += *c.Cost
 		}
+		w := *c.AddedKwh
 		if c.WallKwh != nil {
-			in.WallKwh += *c.WallKwh
-		} else {
-			in.WallKwh += *c.AddedKwh
+			w = *c.WallKwh
+		}
+		in.WallKwh += w
+		if eq == nil {
+			continue
+		}
+		g, ok := eq[c.ID]
+		if !ok {
+			e.Skipped++
+			continue
+		}
+		wall += w
+		e.Km += g.Km
+		e.Liters += g.Liters
+		sources[g.Source]++
+		if c.Cost != nil {
+			e.GasCost += g.GasCost
+			e.Paid += *c.Cost
+			e.Priced++
 		}
 	}
 	if pts, err := s.S.OdoBetween(from.Unix(), to.Unix()); err == nil && len(pts) > 1 {
 		in.Km = pts[len(pts)-1].Km - pts[0].Km
 	}
+	if eq != nil {
+		e.Sources = sourcesOf(sources)
+		in.Equiv, in.WallKwh = &e, wall
+	}
 	return savings.Compute(in)
+}
+
+// savingsByDistance is the saving the way versions before 0.57 worked it out: the distance driven, at the owner's own gas
+// price. It is kept so the page can show how the change moved the figure.
+func (s *Server) savingsByDistance(ss []charging.Session, from, to time.Time) *float64 {
+	if s.Cfg == nil || !s.Cfg.Gas().Set() {
+		return nil
+	}
+	g := s.Cfg.Gas()
+	in := savings.Input{LitersPerKm: g.LitersPerKm, PricePerLiter: g.PricePerLiter}
+	for _, c := range ss {
+		if c.Open || c.AddedKwh == nil || c.StartTS < from.Unix() || c.StartTS >= to.Unix() {
+			continue
+		}
+		in.Sessions++
+		if c.Cost != nil {
+			in.Priced++
+			in.ChargingCost += *c.Cost
+		}
+	}
+	if pts, err := s.S.OdoBetween(from.Unix(), to.Unix()); err == nil && len(pts) > 1 {
+		in.Km = pts[len(pts)-1].Km - pts[0].Km
+	}
+	return savings.Compute(in).Saved
 }
 
 // savingsView is the month and the year so far: what charging cost per distance, and what driving electric saved against the
@@ -48,7 +96,9 @@ func (s *Server) savingsView(w http.ResponseWriter, r *http.Request) {
 	end := now.Add(time.Hour)
 	gasSet := s.Cfg != nil && s.Cfg.Gas().Set()
 	ss, _, _ := s.chargeSessionsEff(1000)
-	out := map[string]any{"currency": s.currency(), "gasSet": gasSet, "month": s.savingsFor(ss, monthStart, end), "year": s.savingsFor(ss, yearStart, end)}
+	eq := s.gasEquivalents(ss)
+	out := map[string]any{"currency": s.currency(), "gasSet": gasSet, "live": s.liveGasOn(), "month": s.savingsFor(ss, eq, monthStart, end), "year": s.savingsFor(ss, eq, yearStart, end),
+		"before": map[string]*float64{"month": s.savingsByDistance(ss, monthStart, end), "year": s.savingsByDistance(ss, yearStart, end)}}
 	ok(w, out)
 }
 

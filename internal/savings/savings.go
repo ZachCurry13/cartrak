@@ -14,6 +14,20 @@ type Input struct {
 	LitersPerKm   float64 // the gas car; zero when not set
 	PricePerLiter float64
 	GridKgPerKwh  float64
+	// Equiv, when set, prices the saving charge by charge: each session's energy turned into the gas that would have gone as
+	// far, at the gas price where it happened. Km is then only used for the cost per distance.
+	Equiv *Equiv
+}
+
+// Equiv is the gas-car equivalent of a set of charging sessions, worked out by the caller one session at a time.
+type Equiv struct {
+	Km      float64  // distance the energy added would go, all included sessions
+	Liters  float64  // gas that distance takes, all included sessions
+	GasCost float64  // what that gas costs, priced sessions only
+	Paid    float64  // what those same sessions cost
+	Priced  int      // sessions in GasCost and Paid
+	Skipped int      // sessions left out: no energy figure, or the car has no trips to judge its efficiency by
+	Sources []string // where the gas prices came from, most used first
 }
 
 // Result is what the period comes to. Pointers are nil when they cannot be told.
@@ -26,6 +40,9 @@ type Result struct {
 	Saved        *float64 `json:"saved"`     // gas cost minus charging cost
 	GasLiters    *float64 `json:"gasLiters"`
 	CO2AvoidedKg *float64 `json:"co2AvoidedKg"`
+	EquivKm      *float64 `json:"equivKm,omitempty"` // the distance the energy charged would go; set when saved charge by charge
+	Skipped      int      `json:"skipped,omitempty"` // charges left out of that
+	Sources      []string `json:"sources,omitempty"` // where the gas prices came from
 }
 
 // Compute fills in a Result. The saving needs at least one priced session and a gas car; the CO2 needs only the gas car.
@@ -34,6 +51,9 @@ func Compute(in Input) Result {
 	if in.Km > 0 && in.Priced > 0 && in.Priced == in.Sessions {
 		c := in.ChargingCost / in.Km
 		r.CostPerKm = &c
+	}
+	if in.Equiv != nil {
+		return withEquiv(r, in)
 	}
 	if in.Km <= 0 || in.LitersPerKm <= 0 {
 		return r

@@ -57,8 +57,10 @@ type Server struct {
 	Exit         func()        // stops CarTrak so a confirmed restore can be applied at the next start (nil in tests)
 	TileClient   *http.Client  // optional, for tests
 	Push         *push.Service // Web Push alerts (nil in some tests)
+	GasURL       string        // live gas price service; empty uses the EIA (tests point it at a fake)
 	GeoGap       time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo          geoState
+	gasLive      gasLiveState
 	CityLookups  bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
 	cityBusy     atomic.Bool // such a lookup is running
 	tiles        tileFlight

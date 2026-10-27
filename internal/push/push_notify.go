@@ -100,7 +100,11 @@ func (s *Service) SendTo(ctx context.Context, sub *store.PushSub, a Alert) error
 	if err != nil {
 		return err
 	}
-	body, _ := json.Marshal(map[string]string{"title": a.Title, "body": a.Body, "tag": a.Kind, "url": a.URL})
+	msg := map[string]string{"title": a.Title, "body": a.Body, "tag": a.Kind, "url": a.URL}
+	if Quiet(a.Kind) {
+		msg["quiet"] = "1"
+	}
+	body, _ := json.Marshal(msg)
 	hc := s.HTTP
 	if hc == nil {
 		hc = &http.Client{Timeout: 15 * time.Second}

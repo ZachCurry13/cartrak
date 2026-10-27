@@ -48,17 +48,48 @@ func (c *Client) City(ctx context.Context, lat, lon float64) (string, error) {
 			return city, nil
 		}
 	}
-	city, err := c.fetch(ctx, lat, lon)
+	city, state, err := c.fetch(ctx, lat, lon)
 	if err != nil {
 		return "", err
 	}
 	if c.Cache != nil {
 		_ = c.Cache.SetPlace(key, city)
+		_ = c.Cache.SetPlace(stateKey(key), state)
 	}
 	return city, nil
 }
 
-func (c *Client) fetch(ctx context.Context, lat, lon float64) (string, error) {
+func stateKey(key string) string { return "st:" + key }
+
+// State is the two-letter code of the US state at the place ("MN"), "" outside the US or when the service knows none.
+// It is remembered next to the city, so a place already looked up for its city costs no second request.
+func (c *Client) State(ctx context.Context, lat, lon float64) (string, error) {
+	key := Key(lat, lon)
+	if c.Cache != nil {
+		if st, ok := c.Cache.GetPlace(stateKey(key)); ok {
+			return st, nil
+		}
+	}
+	city, state, err := c.fetch(ctx, lat, lon)
+	if err != nil {
+		return "", err
+	}
+	if c.Cache != nil {
+		_ = c.Cache.SetPlace(key, city)
+		_ = c.Cache.SetPlace(stateKey(key), state)
+	}
+	return state, nil
+}
+
+// CachedState returns a remembered state without asking the service.
+func (c *Client) CachedState(lat, lon float64) (string, bool) {
+	if c.Cache == nil {
+		return "", false
+	}
+	return c.Cache.GetPlace(stateKey(Key(lat, lon)))
+}
+
+func (c *Client) fetch(ctx context.Context, lat, lon float64) (string, string, error) {
 	c.mu.Lock() // one lookup at a time, spaced out
 	defer c.mu.Unlock()
 	gap := c.MinGap
@@ -69,7 +100,7 @@ func (c *Client) fetch(ctx context.Context, lat, lon float64) (string, error) {
 		select {
 		case <-time.After(wait):
 		case <-ctx.Done():
-			return "", ctx.Err()
+			return "", "", ctx.Err()
 		}
 	}
 	c.last = time.Now()
@@ -82,7 +113,7 @@ func (c *Client) fetch(ctx context.Context, lat, lon float64) (string, error) {
 		"lat": {fmt.Sprintf("%.3f", lat)}, "lon": {fmt.Sprintf("%.3f", lon)}}
 	req, err := http.NewRequestWithContext(ctx, "GET", base+"/reverse?"+q.Encode(), nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	req.Header.Set("User-Agent", c.UserAgent)
 	hc := c.HTTP
@@ -91,19 +122,27 @@ func (c *Client) fetch(ctx context.Context, lat, lon float64) (string, error) {
 	}
 	resp, err := hc.Do(req)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("the place lookup answered HTTP %d", resp.StatusCode)
+		return "", "", fmt.Errorf("the place lookup answered HTTP %d", resp.StatusCode)
 	}
 	var out struct {
 		Address map[string]string `json:"address"`
 	}
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&out); err != nil {
-		return "", err
+		return "", "", err
 	}
-	return pickCity(out.Address), nil
+	return pickCity(out.Address), pickState(out.Address), nil
+}
+
+// pickState reads the US state code from the ISO 3166-2 field ("US-MN"); other countries give "".
+func pickState(a map[string]string) string {
+	if v := strings.TrimSpace(a["ISO3166-2-lvl4"]); strings.HasPrefix(v, "US-") && len(v) == 5 {
+		return v[3:]
+	}
+	return ""
 }
 
 // pickCity prefers the most specific named settlement. Nominatim calls it city, town, village or

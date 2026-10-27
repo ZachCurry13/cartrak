@@ -20,6 +20,13 @@ type Charge struct {
 	Place   string   // a named place, or "" (then Where names it)
 	PeakKw  float64
 	Eff     *float64 // measured share that reached the battery, when the charger's kWh was entered
+	// What the energy added would have cost in the gas car (see the server's gasEquivalents). GasOK is false when it could
+	// not be judged, for instance before the car has any trips to measure its efficiency by.
+	GasOK     bool
+	GasKm     float64
+	GasLiters float64
+	GasCost   float64
+	GasSource string
 }
 
 // ChargeMonth is one month of charging, home and public apart.

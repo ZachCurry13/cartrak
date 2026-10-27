@@ -28,6 +28,16 @@ func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAGasCar(t *testing
 			t.Fatal(err)
 		}
 	}
+	// a drive that used 25 kWh over 100 km: the car goes 4 km on each kWh
+	tripEnd, e0, e1 := monthStart.Add(40*time.Minute).Unix(), 50.0, 25.0
+	tr := &store.Trip{StartTS: monthStart.Add(10 * time.Minute).Unix(), StartKwh: &e0, Category: "personal", CategorySource: "manual"}
+	if err := srv.S.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	tr.EndTS, tr.DistanceKm, tr.Open, tr.EndKwh = &tripEnd, 100, false, &e1
+	if err := srv.S.UpdateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
 	for i := 0; i < 2; i++ {
 		from, to := 40.0, 60.0
 		c := &store.Charge{StartTS: monthStart.Add(time.Duration(3+i) * time.Hour).Unix(), StartKwh: &from, PeakKw: 7}
@@ -57,8 +67,9 @@ func TestSavingsViewWorksOutCostPerDistanceAndTheSavingAgainstAGasCar(t *testing
 	if !v.GasSet || math.Abs(v.Month.Km-100) > 0.01 || v.Month.CostPerKm == nil || math.Abs(*v.Month.CostPerKm-0.0667) > 0.001 {
 		t.Fatalf("cost per km: %s", body)
 	}
-	// 100 km at 25 mpg is 2.486 gallons, 8.70 at 3.50; saved = 8.70 - 6.67
-	if v.Month.Saved == nil || math.Abs(*v.Month.Saved-2.03) > 0.05 || v.Month.CO2 == nil || *v.Month.CO2 <= 0 {
+	// the two charges added 40 kWh, which at 4 km per kWh is 160 km: 99.4 miles at 25 mpg is 3.977 gallons, 13.92 at 3.50;
+	// saved = 13.92 - 6.67, whatever the distance driven was
+	if v.Month.Saved == nil || math.Abs(*v.Month.Saved-7.25) > 0.05 || v.Month.CO2 == nil || *v.Month.CO2 <= 0 {
 		t.Fatalf("saving: %s", body)
 	}
 }

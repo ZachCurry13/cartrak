@@ -32,6 +32,7 @@ func (s *Server) analyticsCharges(from int64) ([]analytics.Charge, error) {
 		return nil, err
 	}
 	named, _ := s.S.ListNamedPlaces()
+	eq := s.gasEquivalents(sessions)
 	var out []analytics.Charge
 	for _, c := range sessions {
 		if c.Open || c.EndTS == nil || c.StartTS < from || c.AddedKwh == nil {
@@ -43,6 +44,9 @@ func (s *Server) analyticsCharges(from int64) ([]analytics.Charge, error) {
 		}
 		if c.Measured {
 			a.Eff = c.Efficiency
+		}
+		if g, ok := eq[c.ID]; ok {
+			a.GasOK, a.GasKm, a.GasLiters, a.GasCost, a.GasSource = true, g.Km, g.Liters, g.GasCost, g.Source
 		}
 		if a.Place == "" && c.Where != "home" {
 			a.Place = places.Name(c.Lat, c.Lon, named)

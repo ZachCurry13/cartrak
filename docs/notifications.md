@@ -31,6 +31,8 @@ CarTrak can send a notification to your phone or computer when something happens
 
 A new device starts with Charging complete, Low tire pressure and Low 12 V battery. Each device has its own choices, and each can set **quiet hours** (for example 22:00 to 07:00) when nothing is sent. Quiet hours follow the car time zone from Settings.
 
+**Quiet alerts:** the everyday alerts (trip started and ended, plugged in and unplugged, arrived at and left a named place, achievements, the monthly recap and the weekly summary) arrive silently, with no sound or buzz, and still show in the notification shade. Alerts that need action keep their sound.
+
 ### Holiday touches
 Around a holiday (Halloween, Thanksgiving, Christmas, New Year, Valentine's, St. Patrick's, Easter and the Fourth of July, on the
 same dates as the [seasonal themes](live-and-data-saver.md#seasonal-themes)), the friendly alerts start with the holiday's emoji, such

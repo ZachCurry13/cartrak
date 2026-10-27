@@ -113,8 +113,8 @@ func PeriodRecap(period string, ts []Trip, cs []Charge, gas Gas, loc *time.Locat
 	if r.KwhCharged > 0 {
 		r.HomeShare = home / r.KwhCharged
 	}
-	if gas.LitersPerKm > 0 && r.Km > 0 { // the same sums as the Charging page, so the two never disagree
-		in := savings.Input{Km: r.Km, ChargingCost: r.Cost, LitersPerKm: gas.LitersPerKm, PricePerLiter: gas.PricePerLiter, GridKgPerKwh: gas.GridKgPerKwh}
+	if gas.LitersPerKm > 0 { // the same sums as the Charging page, so the two never disagree
+		in := savings.Input{Km: r.Km, ChargingCost: r.Cost, GridKgPerKwh: gas.GridKgPerKwh, Equiv: &savings.Equiv{}}
 		for _, c := range cs {
 			if c.Start < from || c.Start >= to || c.Kwh <= 0 {
 				continue
@@ -123,9 +123,21 @@ func PeriodRecap(period string, ts []Trip, cs []Charge, gas Gas, loc *time.Locat
 			if c.Cost != nil {
 				in.Priced++
 			}
-			in.WallKwh += c.Kwh
+			if !c.GasOK {
+				in.Equiv.Skipped++
+				continue
+			}
+			wall := c.Kwh
 			if c.WallKwh > 0 {
-				in.WallKwh += c.WallKwh - c.Kwh
+				wall = c.WallKwh
+			}
+			in.WallKwh += wall
+			in.Equiv.Km += c.GasKm
+			in.Equiv.Liters += c.GasLiters
+			if c.Cost != nil {
+				in.Equiv.GasCost += c.GasCost
+				in.Equiv.Paid += *c.Cost
+				in.Equiv.Priced++
 			}
 		}
 		res := savings.Compute(in)

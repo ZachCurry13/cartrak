@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.57.0
+
+### 💰 Savings are worked out charge by charge
+- **What you save is now based on what you charged, not how far you drove.** For each charge, CarTrak takes the energy that went into the battery, turns it into the distance it would go at the car's own efficiency over the 30 days before that charge, works out the gas a gas car would burn for that distance, and compares its cost with what you paid. Add 37 kWh at 0.42 and it compares exactly that.
+- A charge with no price is left out, never counted as free. A charge from before the car has any trips to judge its efficiency by is left out too, and the card says how many.
+- The CO2 figure uses the same distance, so the cost and the CO2 always agree, on Charging, Home, the monthly recap and Wrapped.
+- Under the figure, a line says how the saving was worked out, and what the old way (distance driven at your gas price) would have said, so you can see how much it moved.
+
+### ⛽ Real gas prices where you charged (optional)
+- With a free **EIA key** (More, Charging settings), CarTrak looks up the weekly average price of regular gas for the state where each charge happened, as of that week. States the EIA does not cover on their own use their region (for example the Midwest). Older charges are priced with the week they happened in, so earlier months are corrected too.
+- Your own gas price stays as the fallback: no key, no place, or no answer yet, and it is used. Each figure says which price it used ("Minnesota average", "Midwest average", "your gas price").
+- **Gas price by place** (optional) lets you add a percentage for somewhere that costs more or less than the average, for example "Springfield +15%".
+- Needs city lookup on (it names the state) and US units. The key stays on the server and never reaches the browser or the logs.
+
+### 🔔 Quieter everyday alerts
+- Trip started and ended, plugged in and unplugged, arriving and leaving a named place, and achievements, the monthly recap and the weekly summary now arrive **without a sound or buzz**. They still show in the notification shade. Anything that needs you (charging complete, a low tire, the alarm, low battery, a fault, a door left open) keeps its sound.
+
 ## 0.56.4
 
 ### ⚡ Home opens sooner
