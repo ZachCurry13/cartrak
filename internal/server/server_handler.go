@@ -149,6 +149,7 @@ func (s *Server) Handler() http.Handler {
 	m.HandleFunc("GET /api/export/fields.zip", s.auth(true, s.exportFields))
 	m.HandleFunc("GET /api/charges/summary", s.auth(false, s.chargeSummary))
 	m.HandleFunc("GET /api/savings", s.auth(false, s.savingsView))
+	m.HandleFunc("GET /api/gasnow", s.auth(false, s.gasNow))
 	m.HandleFunc("GET /api/plan-ahead", s.auth(false, s.planAhead))
 	m.HandleFunc("GET /api/datacheck", s.auth(false, s.dataCheck))
 	m.HandleFunc("GET /api/reports/options", s.auth(false, s.reportOptions))

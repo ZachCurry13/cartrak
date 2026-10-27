@@ -56,33 +56,50 @@ func (s *Server) liveGasOn() bool {
 	return s.Cfg != nil && s.Cfg.EIAKey() != "" && s.Cfg.LiveGasUnits() && s.geoClient() != nil
 }
 
-// gasPriceAt is the gas price per liter that applies to a charge and where it came from: the EIA average for the state
-// (or its region) that week with the owner's adjustment for the place, else the owner's own price.
-func (s *Server) gasPriceAt(c charging.Session, manual float64) (float64, string) {
-	own := func() (float64, string) { return manual, "your gas price" }
-	if !s.liveGasOn() || c.Lat == nil || c.Lon == nil {
-		return own()
+const ownGasSource = "your gas price"
+
+// gasQuote is the live price of a gallon at a place and time, and where it came from.
+type gasQuote struct {
+	PerGallon float64
+	Source    string // "Minnesota average", with the owner's adjustment when there is one
+	Week      string
+	OK        bool // false when live prices are off, the place or state is not known yet, or the EIA has nothing for that week
+}
+
+// gasQuote looks up the EIA average for the state (or its region) that week, with the owner's adjustment for the place.
+func (s *Server) gasQuote(lat, lon *float64, ts int64) gasQuote {
+	if !s.liveGasOn() || lat == nil || lon == nil {
+		return gasQuote{}
 	}
 	geo := s.geoClient()
-	state, ok := geo.CachedState(*c.Lat, *c.Lon)
+	state, ok := geo.CachedState(*lat, *lon)
 	if !ok {
-		s.queueState(*c.Lat, *c.Lon)
-		return own()
+		s.queueState(*lat, *lon)
+		return gasQuote{}
 	}
-	p, ok := s.gasService().At(s.Cfg.EIAKey(), gasprice.ForState(state), c.StartTS)
+	p, ok := s.gasService().At(s.Cfg.EIAKey(), gasprice.ForState(state), ts)
 	if !ok {
-		return own()
+		return gasQuote{}
 	}
-	price, src := p.PerGallon/litersPerGallon, p.Area
-	city, _ := geo.Cached(*c.Lat, *c.Lon)
+	q := gasQuote{PerGallon: p.PerGallon, Source: p.Area, Week: p.Week, OK: true}
+	city, _ := geo.Cached(*lat, *lon)
 	for _, a := range s.Cfg.GasAdjusts() {
 		if strings.EqualFold(a.Area, city) || strings.EqualFold(a.Area, state) {
-			price *= 1 + a.Pct/100
-			src = fmt.Sprintf("%s %+g%%", src, a.Pct)
+			q.PerGallon *= 1 + a.Pct/100
+			q.Source = fmt.Sprintf("%s %+g%%", q.Source, a.Pct)
 			break
 		}
 	}
-	return price, src
+	return q
+}
+
+// gasPriceAt is the gas price per liter that applies to a charge and where it came from: the live price when there is one,
+// else the owner's own.
+func (s *Server) gasPriceAt(lat, lon *float64, ts int64, manual float64) (float64, string) {
+	if q := s.gasQuote(lat, lon, ts); q.OK {
+		return q.PerGallon / litersPerGallon, q.Source
+	}
+	return manual, ownGasSource
 }
 
 // queueState looks up the state of a place in the background, a few at a time, so a page never waits on the lookup service.
@@ -159,7 +176,7 @@ func (s *Server) gasEquivalents(ss []charging.Session) map[int64]chargeGas {
 		if perKwh <= 0 {
 			continue
 		}
-		price, src := s.gasPriceAt(c, gas.PricePerLiter)
+		price, src := s.gasPriceAt(c.Lat, c.Lon, c.StartTS, gas.PricePerLiter)
 		km := *c.AddedKwh * perKwh
 		liters, cost := savings.Gas(km, gas.LitersPerKm, price)
 		out[c.ID] = chargeGas{Km: km, Liters: liters, GasCost: cost, Source: src}

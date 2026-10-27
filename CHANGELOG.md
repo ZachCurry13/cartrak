@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.58.0
+
+### ⛽ Gas today
+- With a live gas price key set up, the Charging page's savings card now opens with **Gas today**: what a gallon costs where the car is, how much it moved since last week, and what a mile costs in the electric car against the gas car you compare with.
+- On a gas or hybrid car's **Fuel** page, each fill-up says how its price compared with the average that week where it was bought ("8¢ a gallon under the Minnesota average").
+- Both come from prices CarTrak has already remembered, so they never slow a page down.
+
+### 🧪 Safer trip detection
+- Trip detection now has a set of replayed readings: small made-up sequences shaped like the real failures (an empty answer in the middle of a drive, an old odometer on the last reading, a quiet half hour, two drives in a row, sitting in the car with the engine on). A future change that splits, merges or loses a drive fails a test instead of reaching a car.
+
 ## 0.57.1
 
 ### 📖 Getting the EIA key

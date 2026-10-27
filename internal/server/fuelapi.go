@@ -18,6 +18,9 @@ type fillOut struct {
 	Cost     *float64 `json:"cost"`
 	Km       float64  `json:"km"`       // driven since the fill-up before, by the odometer
 	KmPerGal float64  `json:"kmPerGal"` // how far a gallon went since the fill-up before; 0 when it cannot be told
+	// The live average price of a gallon where and when it was bought, when live gas prices are on.
+	AreaPerGal *float64 `json:"areaPerGal"`
+	AreaSource string   `json:"areaSource,omitempty"`
 }
 
 type fuelMonth struct {
@@ -40,6 +43,12 @@ func (s *Server) fuelPage(w http.ResponseWriter, r *http.Request) {
 	months := map[string]*fuelMonth{}
 	for i, f := range fills {
 		o := fillOut{Fill: f, Cost: f.Cost()}
+		if f.PricePerGal != nil {
+			lat, lon := s.S.LastPositionBefore(f.TS)
+			if q := s.gasQuote(lat, lon, f.TS); q.OK {
+				o.AreaPerGal, o.AreaSource = &q.PerGallon, q.Source
+			}
+		}
 		if i > 0 {
 			o.Km, _, o.KmPerGal = fuel.Between(fills[i-1], f, tank)
 		}

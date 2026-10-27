@@ -20,9 +20,18 @@ export function periodLines(cur, r, gasSet, before) {
   return out;
 }
 
+// Gas today: the live price where the car is, how it moved this week, and what a mile costs electric against the gas car.
+export function gasTodayLines(g) {
+  if (!g || !g.live || !g.ready) return [];
+  const cents = g.change == null ? '' : `, ${g.change >= 0 ? 'up' : 'down'} ${Math.round(Math.abs(g.change) * 100)}¢ since last week`;
+  const out = [h('p', {}, 'Gas today: ', h('b', {}, `${g.currency}${fmt(g.perGallon, 2)} a gallon`), h('span', { class: 'muted' }, ` (${g.area}, week of ${g.week}${cents})`))];
+  if (g.electricPerKm != null && g.gasPerKm != null) out.push(h('p', {}, 'Per distance: electric ', h('b', {}, perDistance(g.currency, g.electricPerKm)), ', gas car ', h('b', {}, perDistance(g.currency, g.gasPerKm))));
+  return out;
+}
+
 // Costs and savings, for the Charging page: this month and the year so far.
 export async function savingsCard(admin) {
-  const v = await api('/api/savings').catch(() => null);
+  const [v, gn] = await Promise.all([api('/api/savings').catch(() => null), api('/api/gasnow').catch(() => null)]);
   if (!v || !(v.month.km > 0 || v.year.km > 0)) return null;
   const cur = v.currency;
   const month = periodLines(cur, v.month, v.gasSet, v.before && v.before.month), year = periodLines(cur, v.year, v.gasSet, v.before && v.before.year);
@@ -30,6 +39,7 @@ export async function savingsCard(admin) {
   return h('section', { class: 'card' }, h('h2', {}, 'Cost per distance and savings'),
     v.gasSet ? null : h('p', { class: 'muted' }, 'Set the gas price and your gas car\'s economy in Charging settings to see what you save against it and the CO2 you avoid.', admin ? [' ', h('a', { href: '#/charging-settings' }, 'Open Charging settings')] : ''),
     v.gasSet && !v.live && admin ? h('p', { class: 'muted' }, 'Add a free EIA key in Charging settings to use the real average gas price where you charged, week by week.') : null,
+    ...gasTodayLines(gn),
     month.length ? h('div', {}, h('h3', {}, 'This month'), ...month) : null,
     year.length ? h('div', {}, h('h3', {}, 'This year so far'), ...year) : null);
 }

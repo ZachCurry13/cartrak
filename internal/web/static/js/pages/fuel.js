@@ -50,12 +50,20 @@ function addForm(reload) {
     } }, 'Save fill-up')), msg);
 }
 
+// How the price paid compares with the average that week where the car was, when live gas prices are on.
+function vsArea(f) {
+  if (f.areaPerGal == null || f.pricePerGal == null) return null;
+  const c = Math.round((f.pricePerGal - f.areaPerGal) * 100);
+  if (c === 0) return `the same as the ${f.areaSource}`;
+  return `${Math.abs(c)}¢ a gallon ${c < 0 ? 'under' : 'over'} the ${f.areaSource}`;
+}
+
 function fillRow(f, cur, admin, reload) {
   const eco = f.kmPerGal > 0 ? `${economy(f.kmPerGal, 1)} since the last fill-up` : '';
   const del = admin ? h('button', { type: 'button', class: 'danger sm', 'aria-label': 'Delete this fill-up', onclick: async () => { if (confirm('Delete this fill-up?')) { await api(`/api/fuel/fills/${f.id}`, { method: 'DELETE' }); reload(); } } }, 'Delete') : null;
   return h('div', { class: 'row', style: 'align-items:flex-start;flex-wrap:wrap' },
     h('span', { class: 'grow', style: 'flex-basis:12em;min-width:0' }, h('b', {}, volText(f.gallons)), ' ', h('span', { class: 'muted' }, f.pricePerGal != null ? priceText(cur, f.pricePerGal) : 'no price'),
-      h('div', { class: 'muted' }, `${when(f.ts)}${f.startPct || f.endPct ? ` · ${pct(f.startPct)} → ${pct(f.endPct)}` : ''}`), eco ? h('div', { class: 'muted' }, eco) : null),
+      h('div', { class: 'muted' }, `${when(f.ts)}${f.startPct || f.endPct ? ` · ${pct(f.startPct)} → ${pct(f.endPct)}` : ''}`), eco ? h('div', { class: 'muted' }, eco) : null, vsArea(f) ? h('div', { class: 'muted' }, vsArea(f)) : null),
     h('span', {}, f.cost != null ? h('b', {}, `${cur}${f.cost.toFixed(2)}`) : null), del);
 }
 
