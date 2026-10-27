@@ -45,3 +45,17 @@ func (d *Detector) lateTrip(st *ford.State, rise float64) (*store.Trip, error) {
 	d.S.LogDecision("trip_late", fmt.Sprintf("the car was first seen %.1f km further on than the highest reading before it, %d min earlier, and no reading showed it moving: a drive between the two was recorded", rise, (now-d.lastReading)/60))
 	return t, d.S.CreateTrip(t)
 }
+
+// leadOdo is the odometer a trip starts from. A parked car is asked about every ten minutes, so the first reading that shows it
+// moving can come after the first stretch of the drive; the odometer at the reading before it is where the drive began. It is
+// used when the rise is a short, believable one, and the car's own reading otherwise.
+func (d *Detector) leadOdo(st *ford.State) *float64 {
+	if st.OdometerKm == nil || d.maxOdo == nil || d.lastReading == 0 {
+		return st.OdometerKm
+	}
+	rise, gap := *st.OdometerKm-*d.maxOdo, float64(st.TS.Unix()-d.lastReading)
+	if rise <= 0 || rise > 10 || gap <= 0 || rise/(gap/3600) > 150 {
+		return st.OdometerKm
+	}
+	return d.maxOdo
+}

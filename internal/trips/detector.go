@@ -88,7 +88,7 @@ func (d *Detector) trip(st *ford.State) error {
 		if startLat == nil || startLon == nil { // the car did not say where it began: it began where it was last seen parked
 			startLat, startLon = d.S.LastPositionBefore(now)
 		}
-		t := &store.Trip{StartTS: now, StartLat: startLat, StartLon: startLon, StartOdo: st.OdometerKm, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
+		t := &store.Trip{StartTS: now, StartLat: startLat, StartLon: startLon, StartOdo: d.leadOdo(st), StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		var rid *int64
 		loc := d.zone(startLat, startLon)
 		t.TZ = loc.String()

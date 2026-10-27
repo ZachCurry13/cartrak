@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.61.1
+
+### 🚗 The start of a drive is counted
+- A parked car is asked about only every ten minutes, so the first reading that shows it moving can come a little after the drive began, and the first stretch (half a mile, say) was left out of the trip. A trip now starts from the odometer at the reading before it, when the rise is short and believable, so the day adds up. Day mileage no longer reports that stretch as missing. Fix a day applies it to earlier days.
+
 ## 0.61.0
 
 ### 🏠 The work day, from leaving home to getting back

@@ -69,6 +69,16 @@ var replayScenarios = []struct {
 10 ON 1019 80
 20 OFF 1000
 30 OFF 1019`, []float64{19}, false},
+	{"a drive first seen moving a stretch after it began counts that stretch", `
+0 OFF 1000
+10 ON 1002 60
+20 ON 1004 60
+30 OFF 1005`, []float64{5}, false},
+	{"a first moving reading far past the last one does not borrow the gap", `
+0 OFF 1000
+10 ON 1050 60
+20 ON 1052 60
+30 OFF 1053`, []float64{3}, false},
 	{"a car that only woke up a little further on is not a trip", `
 0 OFF 1000
 30 ON 1000.4 0
