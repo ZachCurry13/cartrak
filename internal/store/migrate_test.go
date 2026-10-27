@@ -83,3 +83,29 @@ func TestEveryMigrationUpgradesADatabaseThatLacksItsColumn(t *testing.T) {
 		t.Fatal("no column could be dropped, so nothing was tested")
 	}
 }
+
+func TestAStopLabelIsKeptReplacedAndRemovedWithItsTripOrWhenEmpty(t *testing.T) {
+	s, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	tr := &Trip{StartTS: 1700000000, Category: "work", CategorySource: "default"}
+	if err := s.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	_ = s.SetStopLabel(tr.ID, StopLabel{Category: "personal", Note: "lunch"})
+	_ = s.SetStopLabel(tr.ID, StopLabel{Note: "Acme"})
+	if got, _ := s.StopLabels(); got[tr.ID] != (StopLabel{Note: "Acme"}) {
+		t.Fatalf("the label is replaced: %+v", got)
+	}
+	_ = s.SetStopLabel(tr.ID, StopLabel{})
+	if got, _ := s.StopLabels(); len(got) != 0 {
+		t.Fatalf("an empty label is removed: %+v", got)
+	}
+	_ = s.SetStopLabel(tr.ID, StopLabel{Note: "x"})
+	_ = s.DeleteTrip(tr.ID)
+	if got, _ := s.StopLabels(); len(got) != 0 {
+		t.Fatalf("a label goes with its trip: %+v", got)
+	}
+}

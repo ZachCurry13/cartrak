@@ -16,6 +16,7 @@ export const PAGES = [
   ['insights', '#/analytics', 'Insights', 'M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z'],
   ['reports', '#/reports', 'Reports', 'M4 20V10M10 20V4M16 20v-7M22 20H2'],
   ['day', '#/day', 'Day view', 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4'],
+  ['stops', '#/stops', 'Work stops', 'M12 7v5l3 3|o12,12,9'],
   ['history', '#/history', 'History', 'M12 7v5l3 3|o12,12,9'],
   ['places', '#/places', 'Places', 'M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z|o12,10,2.5'],
   ['plan', '#/plan', 'Plan a trip', 'M4 19l5-14 6 9 5-5M4 19h16'],
@@ -31,7 +32,7 @@ export const isFuelCar = (session) => !!(session.vehicle && session.vehicle.engi
 
 export const defaults = (admin, fuelCar = false) => ({
   bar: admin ? ['home', 'trips', 'live', fuelCar ? 'fuel' : 'charging', 'health', 'data'] : ['home', 'trips', 'live', fuelCar ? 'fuel' : 'charging', 'insights'],
-  tiles: admin ? ['insights', 'reports', 'day', 'places', 'plan', 'settings'] : ['reports', 'day', 'places', 'plan', 'history', 'display'],
+  tiles: admin ? ['insights', 'reports', 'day', 'stops', 'places', 'plan', 'settings'] : ['reports', 'day', 'stops', 'places', 'plan', 'history', 'display'],
   auto: false,
 });
 

@@ -105,6 +105,8 @@ CREATE TABLE IF NOT EXISTS refuels (
   id INTEGER PRIMARY KEY, ts INTEGER NOT NULL, start_pct REAL NOT NULL DEFAULT 0, end_pct REAL NOT NULL DEFAULT 0, odo_km REAL,
   gallons REAL, price_per_gal REAL, status TEXT NOT NULL DEFAULT 'pending', source TEXT NOT NULL DEFAULT 'auto');
 CREATE INDEX IF NOT EXISTS refuels_ts ON refuels(ts);
+CREATE TABLE IF NOT EXISTS stop_labels (
+  trip_id INTEGER PRIMARY KEY, category TEXT NOT NULL DEFAULT '', note TEXT NOT NULL DEFAULT '');
 `
 
 // Open opens (or creates) a car's database in dir.

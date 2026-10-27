@@ -2,6 +2,11 @@
 
 ## 0.59.0
 
+### 🅿️ Work stops
+- **More, Work stops** shows the time the car sat parked between trips, such as in a customer's parking lot: how long, where, and a note. A stop is the gap between two trips (10 minutes to 8 hours). It takes the category of the trip that arrived there, so a work drive to a customer makes a work stop, and an admin can change it or add the customer's name under **Label this stop**.
+- It works out earlier days too, because stops come from the trips already recorded. Stops at Home, while charging, or over 8 hours are left out.
+- Totals of work time and all parked time for 7, 30 or 90 days and for each day, a **Parked time** card in the Day view, and an **Export CSV** for a spreadsheet. Notes in the export are never read as formulas.
+
 ### ⛽ Live gas prices stay current by themselves
 - Twice a day CarTrak fetches again the live gas prices it has been using (when they are more than 12 hours old), so a new weekly average appears without anyone opening a page. The EIA publishes it each Monday.
 - **Status** has a new **Live gas prices** line when an EIA key is set: when the prices were last updated, a clear message if the last update failed (for example a refused key), or why live prices are not working (city lookup off, or metric units).
