@@ -70,7 +70,7 @@ When the distance is **drastically** short (the start and end alone are much far
 ## Work stops: time parked between trips
 Waiting in a customer's parking lot adds no miles, but it is time on the job. **More, Work stops** lists the time the car sat parked between trips, with how long, where, and a note.
 
-- A **stop** is the gap between the end of one trip and the start of the next, from 10 minutes up to 8 hours. It is worked out from the trips already recorded, so earlier days have stops too. Stops at Home, stops where the car charged, and parked time over 8 hours (overnight) are left out.
+- A **stop** is the gap between the end of one trip and the start of the next, from 10 minutes up to 8 hours. It begins when the car stopped moving, so waiting with the engine on before switching it off counts as part of the stop. It is worked out from the trips already recorded, so earlier days have stops too. Stops at Home, stops where the car charged, and parked time over 8 hours (overnight) are left out.
 - A stop takes the **category of the trip that arrived there**, so a work drive to a customer makes a work stop. An admin can open **Label this stop** to set Work, Personal or another category, and to add a short note such as the customer's name.
 - **Time parked** shows the work time and the total for 7, 30 or 90 days, and for each day. The **Day view** has a **Parked time** card with that day's stops. **Export CSV** gives the date, start, end, minutes, place, category and note for a spreadsheet.
 - CarTrak knows the car was parked there, not whether you were sitting in it or inside the building.

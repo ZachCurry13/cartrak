@@ -466,3 +466,38 @@ func TestLeavingAPlaceIsAnnouncedFromTheOdometerWhenTheCarRepeatsItsOldPosition(
 		t.Fatalf("left once, without waiting for a new position, and no arrival from the old one: %s", r.kinds())
 	}
 }
+
+func TestTheSameOldUnlockedReportIsNotAnnouncedAgainAfterARestart(t *testing.T) {
+	e, r, s := setup(t)
+	old := func(s *ford.State) {
+		f := false
+		s.Locked = &f
+		s.Extra["telemetry.metrics.doorLockStatus[0].value"] = "UNLOCKED"
+		s.Extra["telemetry.metrics.doorLockStatus[0].vehicleDoor"] = "ALL_DOORS"
+		s.Extra["telemetry.metrics.doorLockStatus[0].updateTime"] = t0.Add(-48 * time.Hour).UTC().Format(time.RFC3339)
+	}
+	for i := 0; i < 5; i++ {
+		e.Handle(reading(i*4, old))
+	}
+	if r.kinds() != "unlocked" {
+		t.Fatalf("announced once: %s", r.kinds())
+	}
+	// every update restarts CarTrak: a new engine, the same database, the same sleeping car repeating its old report
+	r2 := &rec{}
+	e2 := &Engine{S: s, N: r2}
+	for i := 0; i < 5; i++ {
+		e2.Handle(reading(300+i*4, old))
+	}
+	if len(r2.got) != 0 {
+		t.Fatalf("the same report is not announced again: %s", r2.kinds())
+	}
+	// a fresh report of an unlocked car, after it was locked in between, is news
+	tr := true
+	e2.Handle(reading(330, func(s *ford.State) { s.Locked = &tr }))
+	for i := 0; i < 5; i++ {
+		e2.Handle(reading(340+i*4, old))
+	}
+	if r2.kinds() != "unlocked" {
+		t.Fatalf("locked in between, so the next one is announced: %s", r2.kinds())
+	}
+}

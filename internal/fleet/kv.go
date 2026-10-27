@@ -24,6 +24,18 @@ var inheritedKeys = []string{"setting:FORD_CLIENT_ID", "setting:FORD_CLIENT_SECR
 // GlobalKeys is what ImportIdentity copies from the first car's database: the global keys and the inherited defaults.
 func GlobalKeys() []string { return append(append([]string{}, globalKeys...), inheritedKeys...) }
 
+// ShareInherited copies the first car's inherited settings to the installation when the installation has none yet. A setting that
+// became inherited in a later version (the EIA key) was saved on the first car alone, so the other cars would never see it.
+func ShareInherited(car, core *store.Store) {
+	for _, k := range inheritedKeys {
+		if core.GetKV(k) == "" {
+			if v := car.GetKV(k); v != "" {
+				_ = core.SetKV(k, v)
+			}
+		}
+	}
+}
+
 func in(list []string, k string) bool {
 	for _, x := range list {
 		if x == k {

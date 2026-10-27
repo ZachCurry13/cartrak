@@ -28,7 +28,7 @@ func (s *Server) stopsFor(from, to int64) ([]stops.Stop, error) {
 		if t.EndTS != nil && !t.Open {
 			end = *t.EndTS
 		}
-		in = append(in, stops.Trip{ID: t.ID, StartTS: t.StartTS, EndTS: end, EndLat: t.EndLat, EndLon: t.EndLon, Category: t.Category})
+		in = append(in, stops.Trip{ID: t.ID, StartTS: t.StartTS, EndTS: end, EndLat: t.EndLat, EndLon: t.EndLon, Category: t.Category, LastMoving: s.lastMoving(t.StartTS, end)})
 	}
 	labels, err := s.S.StopLabels()
 	if err != nil {
@@ -66,6 +66,27 @@ func (s *Server) stopsFor(from, to int64) ([]stops.Stop, error) {
 		out = append(out, st)
 	}
 	return out, nil
+}
+
+// lastMoving is when the car was last seen moving (over 5 km/h) in the hour before a trip ended, 0 when there is no such reading.
+func (s *Server) lastMoving(start, end int64) int64 {
+	if end == 0 {
+		return 0
+	}
+	from := end - 3600
+	if from < start {
+		from = start
+	}
+	pts, err := s.S.TrackBetween(from, end)
+	if err != nil {
+		return 0
+	}
+	for i := len(pts) - 1; i >= 0; i-- {
+		if pts[i].SpeedKph != nil && *pts[i].SpeedKph > 5 {
+			return pts[i].TS
+		}
+	}
+	return 0
 }
 
 // stopsRange reads ?from=YYYY-MM-DD&to=YYYY-MM-DD (the last 30 days by default) as the instants [from, to) in the car's time zone.

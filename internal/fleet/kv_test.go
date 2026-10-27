@@ -35,3 +35,24 @@ func TestTheEIAKeyEnteredOnTheFirstCarIsUsedByTheOthers(t *testing.T) {
 		t.Fatal("the gas price stays with its car")
 	}
 }
+
+func TestAKeySavedOnTheFirstCarBeforeItWasSharedReachesTheInstallationAtStart(t *testing.T) {
+	core, _ := store.Open(t.TempDir())
+	first, _ := store.Open(t.TempDir())
+	second, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { core.Close(); first.Close(); second.Close() })
+	_ = first.SetKV("setting:CARTRAK_EIA_KEY", "old-key") // saved by a version where the key was not shared
+	b := &CarKV{Car: second, Core: core}
+	if b.GetKV("setting:CARTRAK_EIA_KEY") != "" {
+		t.Fatal("the second car has nothing yet")
+	}
+	ShareInherited(first, core)
+	if got := b.GetKV("setting:CARTRAK_EIA_KEY"); got != "old-key" {
+		t.Fatalf("the second car now uses it: %q", got)
+	}
+	_ = core.SetKV("setting:CARTRAK_EIA_KEY", "newer")
+	ShareInherited(first, core)
+	if core.GetKV("setting:CARTRAK_EIA_KEY") != "newer" {
+		t.Fatal("a value already in the installation is never overwritten")
+	}
+}

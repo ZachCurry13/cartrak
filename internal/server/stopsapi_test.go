@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ZachCurry13/cartrak/internal/ford"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
@@ -105,5 +106,48 @@ func TestStopsCsvHasTheNoteButNeverAFormula(t *testing.T) {
 	}
 	if strings.Contains(body, ",=HYPERLINK") || !strings.Contains(body, "'=HYPERLINK") {
 		t.Fatalf("a note that starts with = must not be a formula: %q", body)
+	}
+}
+
+func TestAStopBeginsWhenTheCarStoppedMovingNotWhenTheEngineWasSwitchedOff(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	t0 := time.Now().Add(-5 * time.Hour).Truncate(time.Minute)
+	a := addStopTrip(t, srv, t0, 20, 12.3, 23.4, "work") // moving until minute 8, then sitting with the engine on until minute 20
+	addStopTrip(t, srv, t0.Add(50*time.Minute), 10, 12.9, 23.9, "work")
+	for m := 0; m <= 20; m += 2 {
+		sp := 60.0
+		if m > 8 {
+			sp = 0
+		}
+		odo := 1000.0 + float64(m)
+		if _, err := srv.S.SaveState("t", &ford.State{TS: t0.Add(time.Duration(m) * time.Minute), SpeedKph: &sp, OdometerKm: &odo, Raw: []byte(`{}`)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_, body := do(t, admin, "GET", ts.URL+"/api/stops", "", nil)
+	var v struct {
+		Stops []struct {
+			TripID  int64 `json:"tripId"`
+			Start   int64 `json:"start"`
+			Minutes int   `json:"minutes"`
+		} `json:"stops"`
+	}
+	if err := json.Unmarshal([]byte(body), &v); err != nil {
+		t.Fatal(err)
+	}
+	var got *struct {
+		TripID  int64 `json:"tripId"`
+		Start   int64 `json:"start"`
+		Minutes int   `json:"minutes"`
+	}
+	for i := range v.Stops {
+		if v.Stops[i].TripID == a.ID {
+			got = &v.Stops[i]
+		}
+	}
+	// it stopped moving at minute 8 and the next trip began at minute 50: 42 minutes, not the 30 after the engine went off
+	if got == nil || got.Start != t0.Add(8*time.Minute).Unix() || got.Minutes != 42 {
+		t.Fatalf("the wait with the engine on counts: %+v in %s", got, body)
 	}
 }

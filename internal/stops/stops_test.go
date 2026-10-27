@@ -73,3 +73,20 @@ func TestTotalsAddUpByDayAndWorkSeparately(t *testing.T) {
 		t.Fatalf("totals: %+v", got)
 	}
 }
+
+func TestAWaitWithTheEngineOnAtTheEndOfATripBelongsToTheStop(t *testing.T) {
+	// the car stopped moving at 1000 and the engine was switched off 13 minutes later; the next trip starts 20 minutes after that
+	trips := []Trip{
+		{ID: 1, StartTS: 0, EndTS: 1000 + 13*m, LastMoving: 1000, Category: "work"},
+		{ID: 2, StartTS: 1000 + 33*m, EndTS: 1000 + 40*m, Category: "work"},
+	}
+	got := Build(trips, nil, nil, 1000+41*m)
+	if len(got) < 1 || got[0].Start != 1000 || got[0].Minutes != 33 {
+		t.Fatalf("the stop starts when the car stopped moving and lasts 33 minutes: %+v", got)
+	}
+	// a wait of under two minutes is just parking
+	trips[0].LastMoving = trips[0].EndTS - 60
+	if got := Build(trips, nil, nil, 1000+41*m); got[0].Start != trips[0].EndTS || got[0].Minutes != 20 {
+		t.Fatalf("a short wait changes nothing: %+v", got[0])
+	}
+}

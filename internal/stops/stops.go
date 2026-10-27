@@ -11,6 +11,8 @@ const (
 	MinSec = 10 * 60
 	// MaxSec is the longest: a car that sat for more than 8 hours was parked, not worked in.
 	MaxSec = 8 * 60 * 60
+	// MinIdleSec is how long the car must have sat still, engine on, before a trip ended for that wait to count as part of the stop.
+	MinIdleSec = 2 * 60
 )
 
 // Trip is what a stop needs to know about a trip.
@@ -21,6 +23,9 @@ type Trip struct {
 	EndLat   *float64
 	EndLon   *float64
 	Category string
+	// LastMoving is when the car was last seen moving before the trip ended, 0 when unknown. A driver who waits with the engine on
+	// ends the trip only when it is switched off; the wait belongs to the stop, so the stop begins here.
+	LastMoving int64
 }
 
 // Label is what a person said about a stop, kept against the trip that arrived there.
@@ -60,11 +65,15 @@ func Build(trips []Trip, labels map[int64]Label, skip Skip, now int64) []Stop {
 		if i+1 < len(ts) {
 			end, open = ts[i+1].StartTS, false
 		}
-		gap := end - t.EndTS
-		if gap < MinSec || gap > MaxSec || (skip != nil && skip(t.EndLat, t.EndLon, t.EndTS, end)) {
+		from := t.EndTS
+		if t.LastMoving > t.StartTS && t.LastMoving <= t.EndTS-MinIdleSec {
+			from = t.LastMoving
+		}
+		gap := end - from
+		if gap < MinSec || gap > MaxSec || (skip != nil && skip(t.EndLat, t.EndLon, from, end)) {
 			continue
 		}
-		s := Stop{TripID: t.ID, Start: t.EndTS, End: end, Minutes: int(gap / 60), Lat: t.EndLat, Lon: t.EndLon, Category: t.Category, Open: open}
+		s := Stop{TripID: t.ID, Start: from, End: end, Minutes: int(gap / 60), Lat: t.EndLat, Lon: t.EndLon, Category: t.Category, Open: open}
 		if l, ok := labels[t.ID]; ok {
 			s.Note = l.Note
 			if l.Category != "" {

@@ -28,7 +28,7 @@ export function charging(body) {
     const cur = d.currency || '$';
     if (!d.sessions) { out.replaceChildren(h('p', { class: 'muted' }, 'No charging sessions in this stretch.')); return; }
     const money = (v) => `${cur}${v.toFixed(2)}`;
-    const avg = d.months.reduce((a, m) => a + m.homeCost + m.publicCost, 0) / Math.max(1, d.kwh);
+    const avg = (d.months || []).reduce((a, m) => a + m.homeCost + m.publicCost, 0) / Math.max(1, d.kwh);
     const plugTop = WEEK.map((w, r) => d.plugIn[r].map((v, c) => [v, r, c])).flat().sort((a, b) => b[0] - a[0])[0];
     out.replaceChildren(
       card('In this stretch', h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, num(d.kwh, 0, ' kWh')), h('span', {}, `${d.sessions} sessions`)), h('div', {}, h('b', {}, money(d.cost)), h('span', {}, 'charging cost')),
@@ -50,6 +50,7 @@ export function driving(body) {
   const out = h('div');
   windowPicker(body, async (days) => {
     const d = await api(`/api/analytics/driving?days=${days}`);
+    d.lengths = d.lengths || []; d.speed = d.speed || []; // an empty list can arrive as null
     if (!d.trips) { out.replaceChildren(h('p', { class: 'muted' }, 'No trips in this stretch.')); return; }
     const f = d.tempFit; // km/kWh = a + b·°C
     const at = (c) => (f ? eff(f[0] + f[1] * c) : '—');

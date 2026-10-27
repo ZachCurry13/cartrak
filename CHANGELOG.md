@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.59.2
+
+### 🔕 No more repeated "Car left unlocked" alerts
+- Every update restarts CarTrak, and a sleeping car keeps repeating its last report for days, so an old "unlocked" report was announced again after each restart, with a sound. The same report is now announced once, and remembered across restarts. Locking the car and unlocking it again is still news.
+
+### 🅿️ Work stops count the wait with the engine on
+- A stop now begins when the car stopped moving, not when the engine was switched off. Waiting in a customer's lot with the engine running used to be counted as the end of the trip; it now counts as parked time. Distances and trip lengths are unchanged.
+
+### 🔑 The EIA key reaches every car
+- A key saved on the first car before it became shared is now copied to the installation when CarTrak starts, so the other cars find it. (Nothing is overwritten if the installation already has one.)
+
+### 🛠️ Insights
+- The driving insights no longer break when a list comes back empty.
+
 ## 0.59.1
 
 ### 🧰 Database library update
