@@ -1,5 +1,6 @@
 # Status
 
+- Released: v0.58.0 (2026-10-27, image :0.58.0 and :latest): Gas today, fill-up price vs area average, replay tests for trip detection, and the EIA key box on Charging settings. Next: more replay scenarios and docs/ROAD_TO_1.0.md; the user adds the EIA key.
 - Released: v0.57.1 (2026-10-27, image :0.57.1 and :latest): how to get the EIA key, in the setting and the docs. Next: replay-fixture suite and docs/ROAD_TO_1.0.md.
 - Released: v0.57.0 (2026-10-27, image :0.57.0 and :latest): savings per charge, optional EIA live gas prices by charge location, quiet everyday alerts. Next: replay-fixture suite and docs/ROAD_TO_1.0.md; verify EIA series with a real key.
 - Released: v0.56.4 (2026-10-26, image :0.56.4 and :latest) on top of 0.56.3: Home draws first and fills its cards in, efficiency-reasons served from the last answer, "Around <city>" rule everywhere, route estimates choose the alternative nearest the odometer (up to 20 estimated per list view), late-reported drives hide time and speed. Next: Escape fields export and debug report; the user runs Fix a day for Oct 22 to 24. Android shell declined.
