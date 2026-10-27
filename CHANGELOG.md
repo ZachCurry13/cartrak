@@ -2,6 +2,9 @@
 
 ## 0.58.0
 
+### 🔧 The EIA key box was missing
+- **Charging settings now shows the EIA key and Gas price by place**, in a new "Live gas prices" box under "Compared with a gas car". In 0.57 they were added but never listed on the page, so there was nowhere to enter the key. The key box hides what you type and says "Saved" once set. These settings belong to each car, so a second car needs its own entry. A test now fails if a charging setting is left off that page.
+
 ### ⛽ Gas today
 - With a live gas price key set up, the Charging page's savings card now opens with **Gas today**: what a gallon costs where the car is, how much it moved since last week, and what a mile costs in the electric car against the gas car you compare with.
 - On a gas or hybrid car's **Fuel** page, each fill-up says how its price compared with the average that week where it was bought ("8¢ a gallon under the Minnesota average").
