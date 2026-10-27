@@ -21,7 +21,7 @@ type AreaAdjust struct {
 func init() {
 	Defs = append(Defs,
 		Def{Key: EIAKeyKey, Label: "EIA key (live gas prices)", Secret: true,
-			Help: "Optional. A free key from the US Energy Information Administration (eia.gov/opendata) lets CarTrak look up the weekly average gas price where each charge happened, and compare it with what you paid. Stored on the server only. Without it, your gas price above is used."},
+			Help: "Optional. Lets CarTrak look up the weekly average gas price where each charge happened, and compare it with what you paid. To get a free key: open eia.gov/opendata, choose Register, fill in the short form, and paste the key EIA gives you here. Stored on the server only. Without it, your gas price above is used."},
 		Def{Key: GasAdjustKey, Label: "Gas price by place (optional)", Placeholder: "Springfield +15%; Hillcrest -5%",
 			Help: "Places that cost more or less than the area average. A city or a two-letter state, then a percentage, separated by semicolons."})
 	validators[GasAdjustKey] = func(v string) error {

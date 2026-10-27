@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.57.1
+
+### 📖 Getting the EIA key
+- The **EIA key** setting now says how to get the free key (eia.gov/opendata, Register, then paste the key), and the charging guide has the same steps.
+
 ## 0.57.0
 
 ### 💰 Savings are worked out charge by charge
