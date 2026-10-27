@@ -63,3 +63,31 @@ func TestReplayedFailuresMakeTheTripsAPersonWouldExpect(t *testing.T) {
 		})
 	}
 }
+
+func TestAReplayedDriveWithNoStartPositionBeginsWhereTheCarWasParked(t *testing.T) {
+	trips := replay(t, `
+0 OFF 1000 @45.5,-84.7
+60 ON 1000 80
+70 ON 1010 80
+80 OFF 1015`)
+	if len(trips) != 1 || trips[0].StartLat == nil || *trips[0].StartLat != 45.5 || *trips[0].StartLon != -84.7 {
+		t.Fatalf("the drive began where it was parked: %+v", trips)
+	}
+}
+
+func TestAReplayedStalePositionIsNotTheEndOfTheDriveUntilTheCarSaysWhere(t *testing.T) {
+	r := newReplayer(t)
+	r.feed(`
+0 OFF 1000 @45.5,-84.7
+1 ON 1000 80 @45.5,-84.7
+10 ON 1019 80 @45.5,-84.7
+20 OFF 1000 @45.5,-84.7`) // the car still reports where it started, and an old odometer
+	trips := r.trips()
+	if len(trips) != 1 || trips[0].DistanceKm != 19 || trips[0].EndLat != nil {
+		t.Fatalf("19 km and the end unknown, not the start again: %+v", trips)
+	}
+	r.feed("25 OFF 1019 @45.9,-84.1")
+	if got := r.trips(); got[0].EndLat == nil || *got[0].EndLat != 45.9 {
+		t.Fatalf("the first new position becomes the end: %+v", got[0].EndLat)
+	}
+}

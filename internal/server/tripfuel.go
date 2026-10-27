@@ -105,8 +105,14 @@ func (s *Server) withFuel(out []tripOut) {
 		}
 		if g, ok := fuel.Used(tank, start, end); ok {
 			o.FuelGal = &g
-			if price != nil {
-				c := g * *price
+			p := price
+			if p == nil { // no fill-up has a price yet: the live average where and when the drive started
+				if q := s.gasQuote(o.StartLat, o.StartLon, o.StartTS); q.OK {
+					p = &q.PerGallon
+				}
+			}
+			if p != nil {
+				c := g * *p
 				o.EstCost, o.Currency = &c, s.currency()
 			}
 		}

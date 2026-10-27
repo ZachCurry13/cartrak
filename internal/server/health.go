@@ -124,6 +124,11 @@ func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// 5b. Live gas prices, when a key is set
+	if it, show := s.gasHealth(now); show {
+		add(it)
+	}
+
 	// 6. Updates
 	if s.Upd != nil {
 		if u := s.Upd.Info(); u.Available {

@@ -39,8 +39,9 @@ type Service struct {
 	BaseURL string       // empty means DefaultURL
 	Now     func() time.Time
 
-	mu   sync.Mutex
-	busy map[string]bool
+	mu    sync.Mutex
+	busy  map[string]bool
+	known map[string]bool // areas in use, kept so they can be refreshed on a schedule
 }
 
 func (s *Service) now() time.Time {
@@ -62,6 +63,7 @@ func (s *Service) load(a Area) blob {
 func (s *Service) Refresh(ctx context.Context, key string, a Area) error {
 	since, _ := time.Parse("2006-01-02", historyFrom)
 	pts, err := Fetch(ctx, s.HTTP, s.BaseURL, key, a, since)
+	s.note(err)
 	if err != nil {
 		return err
 	}
@@ -78,6 +80,7 @@ func (s *Service) At(key string, a Area, ts int64) (Price, bool) {
 	if key == "" {
 		return Price{}, false
 	}
+	s.remember(a)
 	b := s.load(a)
 	if s.now().Sub(time.Unix(b.Fetched, 0)) > refreshAfter {
 		s.refreshLater(key, a)

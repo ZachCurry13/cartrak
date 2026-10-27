@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.59.0
+
+### ⛽ Live gas prices stay current by themselves
+- Twice a day CarTrak fetches again the live gas prices it has been using (when they are more than 12 hours old), so a new weekly average appears without anyone opening a page. The EIA publishes it each Monday.
+- **Status** has a new **Live gas prices** line when an EIA key is set: when the prices were last updated, a clear message if the last update failed (for example a refused key), or why live prices are not working (city lookup off, or metric units).
+
+### 🚗 Trip fuel cost on a gas or hybrid car
+- A trip's fuel cost uses the price from your fill-ups when you have logged any. Until you do, it now uses the live average price where the drive started, that week, so trips get a cost from day one.
+
+### 🧪 More trip detection tests
+- Two more replayed failures: a drive with no start position begins where the car was parked, and a stale position is not taken as the end of a drive until the car says where it is.
+
 ## 0.58.1
 
 ### 🐞 Bug reports know about live gas prices
