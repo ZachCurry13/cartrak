@@ -149,7 +149,7 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 	trip := s.dayCosts(&sum, from, used, usedKm, bases)
 	ok(w, map[string]any{"date": from.Format("2006-01-02"), "summary": sum, "tz": loc.String(), "events": keep, "routes": routes, "currency": s.currency(),
 		"totals": history.Sum(base, from.Unix(), to.Unix()-1, now),
-		"energy": map[string]any{"usedKwh": used, "usedKm": usedKm, "addedKwh": kwhAdded, "cost": costSum}, "trip": trip})
+		"energy": map[string]any{"usedKwh": used, "usedKm": usedKm, "addedKwh": kwhAdded, "cost": costSum}, "trip": trip, "savings": s.daySavings(from, to)})
 }
 
 // daySummary is the day in numbers for a plain-English paragraph: how long was driven and stood still, how many stops,

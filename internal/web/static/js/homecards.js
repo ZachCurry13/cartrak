@@ -17,6 +17,7 @@ async function todayCard() {
   const bits = [];
   if (s.trips) bits.push(`${s.trips} ${s.trips === 1 ? 'trip' : 'trips'}, ${dist(t.km, 0)} in ${hm(t.drivingSec)}`);
   if (e.addedKwh > 0) bits.push(`charged ${num(e.addedKwh, 0, ' kWh')}${e.cost > 0 ? ` (${money(x.currency, e.cost)})` : ''}`);
+  if (x.savings && x.savings.saved != null && e.addedKwh > 0) bits.push(x.savings.saved >= 0 ? `saved ${money(x.currency, x.savings.saved)} against gas` : `${money(x.currency, -x.savings.saved)} more than gas`);
   if (!bits.length) return null;
   const yest = new Date(); yest.setDate(yest.getDate() - 1);
   return h('section', { class: 'card' }, h('h2', {}, 'Today'), h('p', {}, bits.join(' · ')),

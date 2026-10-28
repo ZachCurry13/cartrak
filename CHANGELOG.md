@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.62.1
+
+### ⛽ A day's charging against the gas car
+- The **Day view summary** now says what the day's charging would have cost in the gas car: the distance the energy added would go, the gas price where each charge happened, and what that saved (or cost more). Before, only the month and year figures on Home and Charging made the comparison.
+- The **Today** card on Home adds "saved $X against gas" next to what was charged.
+- It is worked out charge by charge like the month figure, so a day with no charging shows nothing.
+
 ## 0.62.0
 
 ### 🛠️ Developer

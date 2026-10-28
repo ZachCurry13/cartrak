@@ -37,6 +37,11 @@ function summaryCard(x, road) {
       const out = s.lastEnd - s.firstStart;
       lines.push(`On the road for ${hm(out)}, ${hm(road.roadChargeSec)} of it charging (${Math.round((road.roadChargeSec / out) * 100)}%). The longest stretch between charges was ${dist(road.longestKm, 0)}.`);
     }
+    const sv = x.savings;
+    if (sv && sv.gasCost != null && sv.saved != null) { // the same range in the gas car, from the gas price where each charge happened
+      const src = sv.sources && sv.sources.length ? ` (${sv.sources.join(', ')})` : '';
+      lines.push(`The ${num(e.addedKwh, 0, ' kWh')} would go about ${dist(sv.equivKm || 0, 0)}. In the gas car that range would have cost about ${money(cur, sv.gasCost)}${src}, so charging ${sv.saved >= 0 ? `saved about ${money(cur, sv.saved)}` : `cost about ${money(cur, -sv.saved)} more`}.`);
+    }
     if (s.unpriced) lines.push(`${plural(s.unpriced, 'session')} could not be priced. Set your price per kWh in More, Settings, or enter what you paid on the Charging page.`);
   }
   const bits = [
