@@ -33,7 +33,7 @@ field-check.txt      the Field check answers saved at the time of the export
 `
 
 const trackReadmePrivate = "Positions and the VIN are INCLUDED in this export. Keep it private.\n"
-const trackReadmeClean = "Positions, the VIN and vehicle ids were left out of this export.\n"
+const trackReadmeClean = "Positions, the VIN and vehicle ids were left out of the readings and records. The names of pages and buttons you tapped, which can include a place name, are kept.\n"
 
 func clock(loc *time.Location, ts int64) (string, string) {
 	t := time.Unix(ts, 0)

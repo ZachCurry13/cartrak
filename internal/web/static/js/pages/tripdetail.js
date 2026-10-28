@@ -146,7 +146,7 @@ export default async function tripDetail(root, [id, action], session) {
     admin ? h('section', { class: 'card' }, h('h2', {}, 'Classify this trip'),
       h('label', { for: 'nt' }, 'Notes'), (notes.id = 'nt', notes),
       h('p', { class: 'seg' }, ...categoryList().map((c) => h('button', { class: c.key === t.category ? '' : 'sec', onclick: set(c.key) }, c.label))),
-      h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null,
+      h('p', { class: 'muted' }, t.categorySource === 'manual' ? 'Set by you; rules will not change it.' : t.categorySource === 'rule' ? 'Set by a rule. Choosing here overrides it.' : t.categorySource === 'workday' ? 'Set by the work day rule (⌂): the first outing of a work day is work, later ones are personal. Choosing here overrides it.' : t.categorySource === 'outing' ? 'Set by This outing (⇄) on Home. Choosing here overrides it.' : t.categorySource === 'mode' || t.categorySource === 'vacation' ? 'Set by a trip mode or vacation. Choosing here overrides it.' : 'Default. Choose to override.'), msg) : null,
     admin && !shortOdometer(t) ? tripDistanceCard(t) : null,
     admin ? tripFixCard(t) : null].filter(Boolean));
   if (action === 'share') { // opened from the Share button on Home: bring the share box into view

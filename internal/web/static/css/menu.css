@@ -54,7 +54,7 @@ section.card>.drow:first-of-type,section.card>h2+.drow,section.card>p+.drow{bord
 .drow .dn{flex-basis:100%;font-size:.85rem}
 .drow .drhelp{flex-basis:100%;font-size:.9rem;background:var(--bg);border-radius:8px;padding:8px 10px}
 .drow .raw{font-size:.8rem;opacity:.8;margin-top:4px;overflow-wrap:anywhere}
-.why{width:32px;height:32px;margin:-6px 0;min-height:0;padding:0;border-radius:50%;font-size:.8rem;line-height:1;background:var(--bg);color:var(--accent);border:1px solid var(--line);cursor:pointer;vertical-align:middle}
+.why{width:40px;height:40px;margin:-10px 0;min-height:0;padding:0;border-radius:50%;font-size:.8rem;line-height:1;background:var(--bg);color:var(--accent);border:1px solid var(--line);cursor:pointer;vertical-align:middle}
 .tlwrap{margin-top:8px;color:var(--text)}
 svg.tl{display:block;width:100%;height:auto;border-radius:12px}
 .tllegend{font-size:.8rem;margin-top:4px}

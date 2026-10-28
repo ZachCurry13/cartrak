@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.62.3
+
+### 🔍 From a review of the whole app
+- **Trip labels explain themselves.** A trip labeled by the work day rule now shows a ⌂ mark, and one set by This outing shows ⇄ (like ✎ for your own label and ⚙ for a rule). The trip page said "Default. Choose to override." for them, which was wrong; it now says what set the label.
+- **Easier to tap on a phone.** The back link at the top of every page (← Trips, ← More and so on) was 21 px tall and is now a full 44 px target, and the small ? help buttons on Car data grew from 32 to 40 px.
+- **Private answers are never cached.** Every answer from the app's own API now says Cache-Control: no-store (map pictures still cache), so a browser or a proxy does not keep vehicle data.
+- **The tracking export's README** says that the names of pages and buttons you tapped, which can include a place name, are kept even when positions are left out.
+- Checked on all 56 pages at phone width: nothing scrolls sideways, there are no script errors, and every control has a name.
+
 ## 0.62.2
 
 ### ⛽ Each charge against gas, in the Day view

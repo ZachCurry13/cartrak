@@ -79,7 +79,7 @@ let cats = {};
 export function setCategories(list) { cats = Object.fromEntries(list.map((c) => [c.key, c])); }
 export const catChip = (t) => {
   const c = cats[t.category];
-  const e = chip(t.category, (c ? c.label : t.category) + (t.categorySource === 'manual' ? ' ✎' : t.categorySource === 'rule' ? ' ⚙' : t.categorySource === 'vacation' ? ' · vacation' : t.categorySource === 'mode' ? ' · mode' : ''));
+  const e = chip(t.category, (c ? c.label : t.category) + (t.categorySource === 'manual' ? ' ✎' : t.categorySource === 'rule' ? ' ⚙' : t.categorySource === 'workday' ? ' ⌂' : t.categorySource === 'outing' ? ' ⇄' : t.categorySource === 'vacation' ? ' · vacation' : t.categorySource === 'mode' ? ' · mode' : ''));
   if (c && c.color) { e.style.color = c.color; e.style.borderColor = c.color; }
   return e;
 };

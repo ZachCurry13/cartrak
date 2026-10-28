@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func secHeaders(next http.Handler) http.Handler {
@@ -12,6 +13,9 @@ func secHeaders(next http.Handler) http.Handler {
 		h.Set("X-Frame-Options", "DENY")
 		h.Set("Referrer-Policy", "same-origin")
 		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'")
+		if strings.HasPrefix(r.URL.Path, "/api/") { // private vehicle data: never kept by a browser or a proxy unless a handler says otherwise (map tiles do)
+			h.Set("Cache-Control", "no-store")
+		}
 		next.ServeHTTP(w, r)
 	})
 }
