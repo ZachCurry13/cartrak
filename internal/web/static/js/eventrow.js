@@ -75,7 +75,7 @@ export function eventRow(e, tz, cur, stopNumber, extra = {}) {
   const shown = detail.filter(Boolean);
   const used = e.kind === 'remote' && e.energyKwh > 0 ? num(e.energyKwh, 1, ' kWh') : '';
   const right = e.kind === 'remote' ? used : e.kind === 'charging' ? (e.cost != null ? money(cur, e.cost) : e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '') : e.kind === 'driving' ? dist(e.distanceKm, 1) : '';
-  const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? num(e.addedKwh, 1, ' kWh') : '';
+  const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? `${num(e.addedKwh, 1, ' kWh')}${e.gas ? ` · gas ${money(cur, e.gas.cost)}` : ''}` : '';
   const lv = levels(e);
   const body = [
     h('div', { class: 'hrow1' }, h('span', { class: `hico ${e.kind}${stopNumber != null ? ' num' : ''}`, 'aria-hidden': 'true' }, stopNumber != null ? stopNumber : GLYPH[e.kind]),

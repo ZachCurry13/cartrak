@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.62.2
+
+### ⛽ Each charge against gas, in the Day view
+- Every charging row in the **Day view** now shows what the same range would have cost in the gas car next to what you paid ("27.0 kWh · gas $9.20"), and opening the charge says how much it saved. It uses what you paid when you entered it, the estimate from your price otherwise, and the gas price where the charge happened.
+
 ## 0.62.1
 
 ### ⛽ A day's charging against the gas car

@@ -53,7 +53,9 @@ function chargePanel(e, cur, admin) {
   const lines = [e.addedKwh != null ? `${num(e.addedKwh, 1, ' kWh')} added` : null, e.cost != null ? `${cur}${e.cost.toFixed(2)}` : null, where, `battery ${pct(e.startSoc)} to ${pct(e.endSoc)}`].filter(Boolean);
   const curve = e.end == null ? h('p', { class: 'muted' }, 'Still charging. The power curve appears when it ends.') : curveBox(e.id);
   if (curve.tagName === 'DETAILS') curve.open = true;
-  return [h('p', {}, lines.join(' · ')), admin && e.where !== 'home' && !e.costActual && e.lat != null ? placePrice(e, cur) : null, curve, h('p', {}, h('a', { href: '#/charging' }, 'Open Charging, to enter what you paid'))];
+  const g = e.gas && e.cost != null ? e.gas : null; // what the same range would have cost in the gas car
+  const gasLine = g ? h('p', {}, `The same ${dist(g.km, 0)} in the gas car would have cost about ${cur}${g.cost.toFixed(2)}${g.source ? ` (${g.source})` : ''}, so ${g.cost >= e.cost ? `this charge saved about ${cur}${(g.cost - e.cost).toFixed(2)}` : `this charge cost about ${cur}${(e.cost - g.cost).toFixed(2)} more`}.`) : null;
+  return [h('p', {}, lines.join(' · ')), gasLine, admin && e.where !== 'home' && !e.costActual && e.lat != null ? placePrice(e, cur) : null, curve, h('p', {}, h('a', { href: '#/charging' }, 'Open Charging, to enter what you paid'))];
 }
 
 // Turns a row of the day into one that opens its details just below it, so nothing takes you off the day.

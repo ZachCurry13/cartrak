@@ -43,6 +43,13 @@ func TestADayShowsWhatItsChargingSavedAgainstTheGasCar(t *testing.T) {
 
 	_, body := do(t, admin, "GET", ts.URL+"/api/day?date="+start.Format("2006-01-02"), "", nil)
 	var v struct {
+		Events []struct {
+			Kind string `json:"kind"`
+			Gas  *struct {
+				Cost float64 `json:"cost"`
+				Km   float64 `json:"km"`
+			} `json:"gas"`
+		} `json:"events"`
 		Savings *struct {
 			GasCost *float64 `json:"gasCost"`
 			Saved   *float64 `json:"saved"`
@@ -55,6 +62,15 @@ func TestADayShowsWhatItsChargingSavedAgainstTheGasCar(t *testing.T) {
 	// 20 kWh at 4 km/kWh is 80 km: 49.7 miles at 25 mpg is 1.988 gallons at 4.00
 	if want := 1.988 * 4.00; math.Abs(*v.Savings.GasCost-want) > 0.1 || *v.Savings.EquivKm < 79 || *v.Savings.EquivKm > 81 {
 		t.Fatalf("gas cost %.2f (want about %.2f), range %.1f km", *v.Savings.GasCost, want, *v.Savings.EquivKm)
+	}
+	withGas := 0
+	for _, e := range v.Events {
+		if e.Kind == "charging" && e.Gas != nil && math.Abs(e.Gas.Cost-1.988*4.00) < 0.1 && e.Gas.Km > 79 && e.Gas.Km < 81 {
+			withGas++
+		}
+	}
+	if withGas != 1 {
+		t.Fatalf("the charge itself carries the comparison: %s", body)
 	}
 	// a day with no charging has none
 	_, body = do(t, admin, "GET", ts.URL+"/api/day?date="+start.AddDate(0, 0, -1).Format("2006-01-02"), "", nil)

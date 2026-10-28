@@ -27,27 +27,35 @@ type Charge struct {
 
 // Event is one row of the feed.
 type Event struct {
-	Kind       string   `json:"kind"` // driving, charging, parked or remote (a remote start)
-	ID         int64    `json:"id"`   // trip or session id; 0 for parked
-	Start      int64    `json:"start"`
-	End        *int64   `json:"end"` // nil while it is still going
-	StartSoC   *float64 `json:"startSoc"`
-	EndSoC     *float64 `json:"endSoc"`
-	DistanceKm float64  `json:"distanceKm"`
-	AddedKwh   *float64 `json:"addedKwh"`
-	Cost       *float64 `json:"cost"`
-	Place      string   `json:"place"`     // where it happened (the end, for a drive)
-	FromPlace  string   `json:"fromPlace"` // where a drive began, when it differs
-	Where      string   `json:"where"`     // charging: home, public or ""
-	Lat        *float64 `json:"lat"`       // where it happened (the end of a drive), for a map
-	Lon        *float64 `json:"lon"`
-	EnergyKwh  *float64 `json:"energyKwh,omitempty"`  // a drive's energy use, for its efficiency
-	Base       bool     `json:"base,omitempty"`       // at the base of a trip away: not counted as a stop
-	CostActual bool     `json:"costActual,omitempty"` // a charge's cost is from a receipt
-	WallKwh    *float64 `json:"wallKwh,omitempty"`    // what the charger delivered, for the price per kWh
-	TempC      *float64 `json:"tempC,omitempty"`      // a remote start: the temperature outside
-	Restarts   int      `json:"restarts,omitempty"`   // a remote start: times it was started again
-	Cont       bool     `json:"cont,omitempty"`       // parked: the rest of a stop that a remote start split, not a stop of its own
+	Kind       string      `json:"kind"` // driving, charging, parked or remote (a remote start)
+	ID         int64       `json:"id"`   // trip or session id; 0 for parked
+	Start      int64       `json:"start"`
+	End        *int64      `json:"end"` // nil while it is still going
+	StartSoC   *float64    `json:"startSoc"`
+	EndSoC     *float64    `json:"endSoc"`
+	DistanceKm float64     `json:"distanceKm"`
+	AddedKwh   *float64    `json:"addedKwh"`
+	Cost       *float64    `json:"cost"`
+	Place      string      `json:"place"`     // where it happened (the end, for a drive)
+	FromPlace  string      `json:"fromPlace"` // where a drive began, when it differs
+	Where      string      `json:"where"`     // charging: home, public or ""
+	Lat        *float64    `json:"lat"`       // where it happened (the end of a drive), for a map
+	Lon        *float64    `json:"lon"`
+	EnergyKwh  *float64    `json:"energyKwh,omitempty"`  // a drive's energy use, for its efficiency
+	Base       bool        `json:"base,omitempty"`       // at the base of a trip away: not counted as a stop
+	CostActual bool        `json:"costActual,omitempty"` // a charge's cost is from a receipt
+	WallKwh    *float64    `json:"wallKwh,omitempty"`    // what the charger delivered, for the price per kWh
+	TempC      *float64    `json:"tempC,omitempty"`      // a remote start: the temperature outside
+	Restarts   int         `json:"restarts,omitempty"`   // a remote start: times it was started again
+	Cont       bool        `json:"cont,omitempty"`       // parked: the rest of a stop that a remote start split, not a stop of its own
+	Gas        *GasCompare `json:"gas,omitempty"`        // a charge: the same range in the gas car
+}
+
+// GasCompare is what the distance a charge added would have cost in the gas car, and where the gas price came from.
+type GasCompare struct {
+	Cost   float64 `json:"cost"`
+	Km     float64 `json:"km"`
+	Source string  `json:"source"`
 }
 
 // minParked is the shortest gap worth showing as its own row.
