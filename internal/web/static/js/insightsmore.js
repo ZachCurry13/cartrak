@@ -56,8 +56,8 @@ export function driving(body) {
     const at = (c) => (f ? eff(f[0] + f[1] * c) : '—');
     const cold = isMetric() ? -5 : (20 - 32) * 5 / 9, warm = isMetric() ? 20 : (70 - 32) * 5 / 9;
     const lengthLabels = d.lengths.map((b, i) => (b.toKm ? `<${dist(b.toKm, 0).replace(/ (mi|km)/, '')}` : `${dist(d.lengths[i - 1].toKm, 0).replace(/ (mi|km)/, '')}+`));
-    const busiest = d.lengths.reduce((a, b, i) => (b.trips > d.lengths[a].trips ? i : a), 0);
-    const bestSpeed = d.speed.reduce((a, s) => (!a || s.kmPerKwh > a.kmPerKwh ? s : a), null);
+    const busiest = (d.lengths || []).reduce((a, b, i) => (b.trips > d.lengths[a].trips ? i : a), 0);
+    const bestSpeed = (d.speed || []).reduce((a, s) => (!a || s.kmPerKwh > a.kmPerKwh ? s : a), null);
     out.replaceChildren(
       card('Efficiency and the weather', h('p', { class: 'muted' }, 'Every trip by the outside temperature. The dashed line is your own trend.'),
         scatter(d.temp.map((p) => ({ x: p.tempC, y: p.kmPerKwh, size: p.km, text: `${temp(p.tempC)} · ${eff(p.kmPerKwh)} · ${dist(p.km)}`, href: `#/trip/${p.id}` })),

@@ -10,7 +10,7 @@ const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new 
 // How efficiently the car has been driven, and what makes the difference.
 export default async function insights(root) {
   const d = await api('/api/insights');
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Efficiency insights')));
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Efficiency details')));
   if (d.trips < 3) {
     return root.append(h('p', { class: 'muted' }, 'CarTrak needs a few trips with an energy reading (at least 3 miles each) before it can find patterns. Come back after some driving.'));
   }

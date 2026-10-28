@@ -72,6 +72,7 @@ export function sessionCard(c, cur, admin, reload) {
     h('div', { class: 'tside' },
       h('div', { class: 'ccost' }, c.cost != null ? h('b', {}, money(cur, c.cost)) : h('span', { class: 'muted' }, 'no price'),
         perKwh != null ? h('div', { class: 'muted' }, `${money(cur, perKwh)}/kWh`) : null,
+        c.gas && c.cost != null ? h('div', { class: 'muted', title: `The same range in the gas car${c.gas.source ? ` (${c.gas.source})` : ''}` }, `gas ${money(cur, c.gas.cost)}`) : null,
         c.cost != null ? chip(c.costActual ? 'ok' : 'work', c.costActual ? 'receipt' : FROM[c.priceFrom] || 'estimate') : null),
       editBtn),
     h('div', { class: 'cfoot' }, c.open ? null : curveBox(c.id), edit));

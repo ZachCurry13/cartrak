@@ -15,14 +15,19 @@ export default async function developer(root, _a, session) {
   const priv = h('input', { type: 'checkbox', id: 'trk-private', checked: true });
   const hours = h('select', { id: 'trk-hours', 'aria-label': 'Stop by itself after' }, ...HOURS.map((n) => h('option', { value: n, selected: n === 4 }, `${n} hour${n === 1 ? '' : 's'}`)));
   let timer = null;
+  // An administrator of the whole installation with more than one car can track every car at once.
+  const many = session.me.siteRole === 'admin' && (session.cars || []).length > 1;
+  const allBox = many ? h('input', { type: 'checkbox', id: 'trk-all' }) : null;
+  const allRow = many ? h('label', { for: 'trk-all', style: 'display:flex;gap:10px;align-items:center;min-height:44px' }, allBox, ' Every car, not only this one') : null;
+  const q = () => (allBox && allBox.checked ? 'all=1' : '');
 
   async function act(path, body) {
     msg.textContent = '';
-    try { await api(path, { method: 'POST', body: body || {} }); await trackCheck(true); await draw(); } catch (e) { msg.textContent = e.message; }
+    try { await api(path + (q() ? `?${q()}` : ''), { method: 'POST', body: body || {} }); await trackCheck(true); await draw(); } catch (e) { msg.textContent = e.message; }
   }
   async function draw() {
     const s = await api('/api/track', { noOffline: true });
-    const kids = [h('h2', {}, 'Tracking')];
+    const kids = [h('h2', {}, 'Tracking'), allRow];
     if (s.active) {
       kids.push(h('p', {}, `On since ${clock(s.from)}. It stops by itself at ${clock(s.until)}. ${s.events} thing${s.events === 1 ? '' : 's'} recorded so far.`),
         h('p', { class: 'seg' }, h('button', { onclick: () => act('/api/track/stop') }, 'Stop tracking'), h('button', { class: 'sec', onclick: () => act('/api/track/extend') }, 'Add an hour')));
@@ -33,10 +38,10 @@ export default async function developer(root, _a, session) {
     if (s.has && !s.active) {
       kids.push(h('h3', {}, 'Last session'), h('p', {}, `${clock(s.from)} to ${clock(s.to)}, ${s.events} app event${s.events === 1 ? '' : 's'}.`),
         h('label', { for: 'trk-private', style: 'display:flex;gap:10px;align-items:center;min-height:44px' }, priv, ' Include positions and the VIN (keep the file private)'),
-        h('p', {}, h('a', { class: 'btn', href: '#', onclick: (e) => { e.preventDefault(); location.href = withCar(`/api/track/export?private=${priv.checked ? 1 : 0}`); } }, 'Download everything (.zip)')));
+        h('p', {}, h('a', { class: 'btn', href: '#', onclick: (e) => { e.preventDefault(); location.href = withCar(`/api/track/export?private=${priv.checked ? 1 : 0}${q() ? `&${q()}` : ''}`); } }, 'Download everything (.zip)')));
     }
     kids.push(msg);
-    box.replaceChildren(...kids);
+    box.replaceChildren(...kids.filter(Boolean));
   }
 
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Developer')),

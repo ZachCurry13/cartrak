@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/charging"
+	"github.com/ZachCurry13/cartrak/internal/history"
 )
 
 const kvHomeLat, kvHomeLon = "home_lat", "home_lon"
@@ -100,7 +101,14 @@ func (s *Server) listCharges(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
-	ok(w, s.withPlaces(ss))
+	out := s.withPlaces(ss)
+	eq := s.gasEquivalents(ss)
+	for i := range out {
+		if g, ok := eq[out[i].ID]; ok {
+			out[i].Gas = &history.GasCompare{Cost: g.GasCost, Km: g.Km, Source: g.Source}
+		}
+	}
+	ok(w, out)
 }
 
 type monthOut struct {

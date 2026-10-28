@@ -71,7 +71,7 @@ export default async function reports(root, _a, session) {
       tile('#/history', 'History', W.history),
       tile('#/time', 'Time', 'Where the car spends its time')),
     group('Driving and efficiency',
-      tile('#/insights', 'Efficiency insights', W.insightsLong),
+      tile('#/insights', 'Efficiency details', W.insightsLong),
       tile('#/compare', 'Compare two trips', 'Side by side, with what made the difference'),
       tile('#/day', 'Day view', 'A whole day on one map, with a written summary'),
       tile('#/plan', 'Road-trip planner', W.plan)),

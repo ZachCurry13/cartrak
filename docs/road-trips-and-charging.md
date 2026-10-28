@@ -66,8 +66,8 @@ A road trip or a work day with several stops is many trips. On **Trips**, admins
 
 You can remove a trip from a journey, rename it, or **Ungroup trips**. The trips themselves are never deleted, and they keep counting in the mileage log and every total as before.
 
-## Efficiency insights
-**More, Efficiency insights** shows what changes your miles per kWh, from the last year of finished trips of at least 3 miles that have an energy reading:
+## Efficiency details
+**More, Efficiency details** shows what changes your miles per kWh, from the last year of finished trips of at least 3 miles that have an energy reading:
 - **By temperature:** below freezing, 0 to 10 °C, 10 to 20 °C and 20 °C and above, each with its efficiency and a bar.
 - **By month:** efficiency and average outside temperature, so you can see the winter dip and summer recovery.
 - **Most and least efficient trips** (needs at least six trips), each linking to the trip.
@@ -104,7 +104,7 @@ If your electricity plan has cheaper hours, set **Cheaper home price** and **Che
 Set **Mileage deduction per mile** in More, Settings. The Mileage log then shows an estimated deduction under the work-trip total, and Year in review shows it for the year. It is an estimate for your own planning, not tax advice.
 
 ## Charging curves, speed and the reasons behind a trip
-Under a charging session, **Charging curve** shows power against battery level. **Fast chargers compared** (Charging page) groups sessions that reached 40 kW by named place; name a place under More, Places to see it by name. The road-trip planner starts its charging power from your own fast-charge average. **Efficiency insights, By speed** shows your efficiency at each speed. A trip's page has **Why this efficiency?** and the best and worst trips show reason chips (cold weather, highway speed, stop and go, idling and climate, hard braking, quick starts, or gentle driving). The reasons compare the trip with your own driving; braking and starts are inferred from speed changes between readings and are a guide only.
+Under a charging session, **Charging curve** shows power against battery level. **Fast chargers compared** (Charging page) groups sessions that reached 40 kW by named place; name a place under More, Places to see it by name. The road-trip planner starts its charging power from your own fast-charge average. **Efficiency details, By speed** shows your efficiency at each speed. A trip's page has **Why this efficiency?** and the best and worst trips show reason chips (cold weather, highway speed, stop and go, idling and climate, hard braking, quick starts, or gentle driving). The reasons compare the trip with your own driving; braking and starts are inferred from speed changes between readings and are a guide only.
 
 ## What you paid, and paused charges
 On the Charging page each finished session has boxes for the **kWh the charger reported** and **what you paid**. Fill them from the receipt (the Tesla, Electrify America and Red E apps all show both) and CarTrak shows the real cost and, from the kWh, how much of the energy reached the battery. A session with a receipt cost is marked, and its cost replaces the flat price in the totals. Fast charging often costs more or less per kWh than your flat price, so this is where the true monthly cost comes from.
@@ -114,7 +114,7 @@ A charge that pauses and resumes within 20 minutes, at the same place with the c
 ## Best speed for a trip
 Under the plan, **Best speed for this trip** gives the total time at each cruising speed: driving, charging for the extra energy a faster speed needs, and a few minutes lost at each stop (you can change that, five minutes by default). The speed with the shortest total is named, and the next faster speed is compared with it, so you can see when five more miles an hour stops paying for itself. The energy use at each speed is fitted to your own drives (it needs a few speed ranges with some distance in each), and the weather you picked in the plan carries over. Speeds you have not driven are estimates.
 
-The same comparison is on Efficiency insights, under By speed, with a trip length you can change.
+The same comparison is on Efficiency details, under By speed, with a trip length you can change.
 
 The **Compare** boxes put any two speeds side by side (70 and 75 mph to begin with; type any speed), with one hour of driving at each: distance, energy and the fast-charging time to replace it. The charging speed the planner starts from is measured from your own fast-charging sessions between the reserve and the charge target, so a trip that charges from 20% to 80% is judged on how quickly your car really climbs between those levels, not on its peak power.
 

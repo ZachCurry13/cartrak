@@ -84,6 +84,15 @@ func (s *Server) trackView(w http.ResponseWriter, r *http.Request) {
 	ok(w, map[string]any{"active": s.trackOn(), "from": from, "to": to, "until": until, "events": n, "has": have})
 }
 
+// trackEach runs fn on this car, or on every car when ?all=1 is asked for by an administrator of the whole installation.
+func (s *Server) trackEach(r *http.Request, fn func(c *Server)) {
+	if r.URL.Query().Get("all") == "1" && s.Cars != nil && siteAdmin(r) {
+		s.Cars.EachCar(func(_ int64, c *Server) { fn(c) })
+		return
+	}
+	fn(s)
+}
+
 func (s *Server) trackStart(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Hours int `json:"hours"`
@@ -93,25 +102,31 @@ func (s *Server) trackStart(w http.ResponseWriter, r *http.Request) {
 		in.Hours = trackDefault
 	}
 	now := time.Now().Unix()
-	s.setTrack(now, now+int64(in.Hours)*3600, 0)
-	s.S.LogDecision("tracking", fmt.Sprintf("tracking started for up to %d hours", in.Hours))
+	s.trackEach(r, func(c *Server) {
+		c.setTrack(now, now+int64(in.Hours)*3600, 0)
+		c.S.LogDecision("tracking", fmt.Sprintf("tracking started for up to %d hours", in.Hours))
+	})
 	s.trackView(w, r)
 }
 
 func (s *Server) trackStop(w http.ResponseWriter, r *http.Request) {
-	from, until, stopAt := s.trackWindow()
-	if from > 0 && stopAt == 0 {
-		s.setTrack(from, until, min(until, time.Now().Unix()))
-		s.S.LogDecision("tracking", "tracking stopped")
-	}
+	s.trackEach(r, func(c *Server) {
+		from, until, stopAt := c.trackWindow()
+		if from > 0 && stopAt == 0 {
+			c.setTrack(from, until, min(until, time.Now().Unix()))
+			c.S.LogDecision("tracking", "tracking stopped")
+		}
+	})
 	s.trackView(w, r)
 }
 
 func (s *Server) trackExtend(w http.ResponseWriter, r *http.Request) {
-	from, until, stopAt := s.trackWindow()
-	if s.trackOn() {
-		s.setTrack(from, min(until+3600, time.Now().Unix()+trackMaxHours*3600), stopAt)
-	}
+	s.trackEach(r, func(c *Server) {
+		from, until, stopAt := c.trackWindow()
+		if c.trackOn() {
+			c.setTrack(from, min(until+3600, time.Now().Unix()+trackMaxHours*3600), stopAt)
+		}
+	})
 	s.trackView(w, r)
 }
 

@@ -3,6 +3,11 @@ nav#tabs a{font-size:.78rem;padding:14px 2px}
 
 /* the back link at the top of a page: a full-size tap target */
 main>p:first-child>a:only-child{display:inline-flex;align-items:center;min-height:44px}
+/* links inside a sentence: the tap area grows above and below without moving the lines; a summary row is a full-size target */
+main p a:not(.btn),main li a:not(.btn){padding:.45em 0}
+main summary{padding-block:11px}
+/* long text reads best in lines of about 70 characters, on a wide screen as much as a narrow one */
+main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
 @media (min-width:760px){
   main{max-width:1180px}
   .dash{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}

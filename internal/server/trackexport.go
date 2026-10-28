@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/fieldwatch"
-	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 const trackReadme = `CarTrak tracking export
@@ -47,21 +46,50 @@ func numText(p *float64) string {
 	return strconv.FormatFloat(*p, 'f', -1, 64)
 }
 
-// trackExport: GET /api/track/export?private=1. A zip of everything in the last tracking session. Admin only.
+// trackExport: GET /api/track/export?private=1. A zip of everything in the last tracking session. Admin only. With all=1 (an
+// administrator of the whole installation) it holds every car, each in a folder named by its number.
 func (s *Server) trackExport(w http.ResponseWriter, r *http.Request) {
-	from, to, have := s.trackSpan()
+	private := r.URL.Query().Get("private") == "1"
+	all := r.URL.Query().Get("all") == "1" && s.Cars != nil && siteAdmin(r)
+	from, _, have := s.trackSpan()
+	name := fmt.Sprintf("cartrak-tracking-%s-%s.zip", fileSlug(s.carName()), time.Unix(from, 0).In(s.defaultLoc()).Format("2006-01-02-1504"))
+	if all {
+		name = fmt.Sprintf("cartrak-tracking-all-cars-%s.zip", time.Now().In(s.defaultLoc()).Format("2006-01-02-1504"))
+		have = true
+	}
 	if !have {
 		fail(w, 404, "there is no tracking session yet")
 		return
 	}
-	private := r.URL.Query().Get("private") == "1"
-	loc := s.defaultLoc()
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="cartrak-tracking-%s-%s.zip"`, fileSlug(s.carName()), time.Unix(from, 0).In(loc).Format("2006-01-02-1504")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, name))
 	zw := zip.NewWriter(w)
 	defer zw.Close()
+	metric := metricReq(r)
+	if !all {
+		s.writeTrackZip(zw, "", private, metric, r)
+		return
+	}
+	if f, err := zw.Create("README.txt"); err == nil {
+		_, _ = f.Write([]byte("CarTrak tracking export, every car. Each car has a folder named by its number with the files described in its own README.\nThe requests and the pages, taps and errors of the phone are recorded by the car that was on screen at the time.\n"))
+	}
+	s.Cars.EachCar(func(id int64, c *Server) {
+		c.writeTrackZip(zw, fmt.Sprintf("car-%d/", id), private, metric, r)
+	})
+}
+
+// writeTrackZip writes this car's tracking files into zw, each under prefix.
+func (s *Server) writeTrackZip(zw *zip.Writer, prefix string, private, metric bool, r *http.Request) {
+	from, to, have := s.trackSpan()
+	loc := s.defaultLoc()
+	if !have {
+		if f, err := zw.Create(prefix + "NO-SESSION.txt"); err == nil {
+			_, _ = f.Write([]byte("tracking was never started on this car\n"))
+		}
+		return
+	}
 	file := func(name string, fill func(io.Writer)) {
-		if f, err := zw.Create(name); err == nil {
+		if f, err := zw.Create(prefix + name); err == nil {
 			fill(f)
 		}
 	}
@@ -84,7 +112,7 @@ func (s *Server) trackExport(w http.ResponseWriter, r *http.Request) {
 	})
 	file("debug-report.txt", func(f io.Writer) {
 		hours := min(336, int((time.Now().Unix()-from)/3600)+2)
-		text, _, _ := s.DebugText(hours, metricReq(r))
+		text, _, _ := s.DebugText(hours, metric)
 		fmt.Fprintf(f, "TRACKING: the stretch is %s to %s. The report below also covers some time before it.\n\n%s", time.Unix(from, 0).In(loc).Format("01-02 15:04:05"), time.Unix(to, 0).In(loc).Format("01-02 15:04:05"), text)
 	})
 	file("readings-raw.jsonl", func(f io.Writer) {
@@ -162,37 +190,5 @@ func (s *Server) trackExport(w http.ResponseWriter, r *http.Request) {
 			t = "no Field check answers were saved\n"
 		}
 		_, _ = f.Write([]byte(t))
-	})
-}
-
-// trackRecords writes the trips and charging sessions that overlap the stretch, one JSON object per line.
-func (s *Server) trackRecords(file func(string, func(io.Writer)), from, to int64, private bool) {
-	file("trips.jsonl", func(f io.Writer) {
-		ts, _ := s.S.ListTrips(store.TripFilter{From: from - 6*3600, To: to + 1, All: true})
-		for i := len(ts) - 1; i >= 0; i-- {
-			t := *ts[i]
-			if t.EndTS != nil && *t.EndTS < from {
-				continue
-			}
-			if !private {
-				t.StartLat, t.StartLon, t.EndLat, t.EndLon = nil, nil, nil, nil
-			}
-			b, _ := json.Marshal(t)
-			_, _ = f.Write(append(b, '\n'))
-		}
-	})
-	file("charges.jsonl", func(f io.Writer) {
-		cs, _ := s.S.ListCharges(300)
-		for i := len(cs) - 1; i >= 0; i-- {
-			c := *cs[i]
-			if c.StartTS > to || (c.EndTS != nil && *c.EndTS < from) {
-				continue
-			}
-			if !private {
-				c.Lat, c.Lon = nil, nil
-			}
-			b, _ := json.Marshal(c)
-			_, _ = f.Write(append(b, '\n'))
-		}
 	})
 }

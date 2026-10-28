@@ -12,7 +12,6 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/gasprice"
 	"github.com/ZachCurry13/cartrak/internal/geocode"
 	"github.com/ZachCurry13/cartrak/internal/savings"
-	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 const litersPerGallon = 3.785411784
@@ -139,25 +138,6 @@ func (s *Server) queueState(lat, lon float64) {
 			}
 		}
 	}()
-}
-
-// efficiencyFor builds the car's distance-per-kWh history from its finished trips.
-func (s *Server) efficiencyFor() *savings.Efficiency {
-	ts, err := s.S.ListTrips(store.TripFilter{All: true})
-	if err != nil {
-		return savings.NewEfficiency(nil)
-	}
-	capacity := s.capacityKwh()
-	var ds []savings.Drive
-	for _, t := range ts {
-		if t.Open || t.EndTS == nil {
-			continue
-		}
-		if o := withEnergy(t, capacity); o.EnergyKwh != nil {
-			ds = append(ds, savings.Drive{TS: t.StartTS, Km: t.DistanceKm, Kwh: *o.EnergyKwh})
-		}
-	}
-	return savings.NewEfficiency(ds)
 }
 
 // gasEquivalents works out, for every finished charge that added energy, what the same range would have cost in the gas

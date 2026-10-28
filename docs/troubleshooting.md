@@ -64,7 +64,7 @@ Still stuck? Open an issue at https://github.com/ZachCurry13/cartrak/issues. Do 
 
 ## Developer and Tracking
 
-**More, Developer** holds the Debug report, Field check and the Field watcher. **Tracking** there records everything while you use the app: start it, use the app, stop it, then download the zip. It has the readings with every raw field, the trips and charging sessions, CarTrak's decisions, the alerts sent, every request the app made (status and time, never the request), the pages and buttons you used (by their label, never what you typed), errors, settings changes (names only) and your Field check answers. A checkbox decides whether positions and the VIN are in it; the zip says which. It stops by itself after the hours you choose, and nothing is recorded while it is off.
+**More, Developer** holds the Debug report, Field check and the Field watcher. **Tracking** there records everything while you use the app: start it, use the app, stop it, then download the zip. It has the readings with every raw field, the trips and charging sessions, CarTrak's decisions, the alerts sent, every request the app made (status and time, never the request), the pages and buttons you used (by their label, never what you typed), errors, settings changes (names only) and your Field check answers. With more than one car, an administrator of the whole installation can tick Every car to track and download all of them (a folder for each). A checkbox decides whether positions and the VIN are in it; the zip says which. It stops by itself after the hours you choose, and nothing is recorded while it is off.
 
 ## Field check
 

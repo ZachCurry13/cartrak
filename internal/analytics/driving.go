@@ -67,7 +67,7 @@ var speedEdges = []float64{0, 30, 50, 70, 90, 110, 200}
 
 // Driving builds the report from finished trips.
 func Driving(ts []Trip, loc *time.Location) DrivingReport {
-	r := DrivingReport{}
+	r := DrivingReport{Temp: []Point{}, Speed: []SpeedBin{}, Days: []DayKm{}} // empty lists, not null: the page reads them as lists
 	for _, b := range lengthBins {
 		r.Lengths = append(r.Lengths, LengthBin{ToKm: b})
 	}

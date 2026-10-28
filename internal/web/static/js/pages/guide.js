@@ -17,7 +17,7 @@ export const GROUPS = [
   ['Planning', [
     ['#/plan', 'Road-trip planner', 'How many charging stops a trip needs, and where, for the weather you pick.'],
     ['#/time', 'Time', 'How much of the time the car was parked, driving or charging, and where it was parked.'],
-    ['#/insights', 'Efficiency insights', 'What changes your miles per kWh: temperature, month, best and worst trips.'],
+    ['#/insights', 'Efficiency details', 'What changes your miles per kWh: temperature, month, best and worst trips.'],
     ['#/maintenance', 'Maintenance', 'Service reminders by distance or time.'],
     ['#/trophies', 'Trophies', 'Your collection of achievements: the ones earned and, grayed out, how far along the rest are.'],
     ['#/fuel', 'Fuel', 'For a gas or hybrid car: fill-ups with the gallons and the price per gallon, the tank size CarTrak works out, and what fuel costs.'],

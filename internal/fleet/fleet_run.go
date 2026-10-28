@@ -13,6 +13,7 @@ func (f *Fleet) start(ctx context.Context, r *Runtime) {
 	go r.P.Run(ctx)
 	go r.Srv.CleanupLoop(ctx)
 	go r.Srv.GasPricesRun(ctx)
+	go r.Srv.ReasonsWarmup(ctx)
 	go r.Eng.Run(ctx)
 	upTo := r.S.LatestSampleID() // readings after this are seen live for remote starts
 	go func() {                  // copy the charted values of older readings into the small trends table, gently, then find old remote starts

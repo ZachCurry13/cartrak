@@ -126,6 +126,15 @@ func (f *Fleet) Inbox(userID int64, limit int) []server.InboxItem {
 	return out
 }
 
+// EachCar calls fn with every car's server, lowest id first.
+func (f *Fleet) EachCar(fn func(id int64, s *server.Server)) {
+	runtimes := f.all()
+	sort.Slice(runtimes, func(i, j int) bool { return runtimes[i].Car.ID < runtimes[j].Car.ID })
+	for _, r := range runtimes {
+		fn(r.Car.ID, r.Srv)
+	}
+}
+
 // AllDebugReports is the debug report of every car, one after the other, each under a heading with its number (never its name).
 func (f *Fleet) AllDebugReports(hours int, metric bool) (string, int) {
 	runtimes := f.all()

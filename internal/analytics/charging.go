@@ -75,7 +75,7 @@ func monthOf(ts int64, loc *time.Location) string { return time.Unix(ts, 0).In(l
 
 // Charging builds the report from finished sessions.
 func Charging(cs []Charge, loc *time.Location) ChargingReport {
-	var r ChargingReport
+	r := ChargingReport{Months: []ChargeMonth{}, Places: []ChargePlace{}, Fastest: []FastCharge{}} // lists, never null
 	months := map[string]*ChargeMonth{}
 	paid := map[string][2]float64{} // month: cost, charger kWh of the priced sessions
 	effs := map[string][2]float64{} // month: sum, count

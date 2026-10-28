@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.63.0
+
+### 🔴 Track every car at once
+- On **More → Developer**, an administrator of the whole installation with more than one car gets an **Every car, not only this one** box. With it ticked, Start, Add an hour, Stop and Download apply to every car. The zip then has a folder for each car (car-1, car-2 and so on), each with its own files. The requests and the pages and taps of the phone are recorded by the car that was on screen at the time.
+
+### ⚡ Faster and steadier
+- **What costs you the most** (Home) is worked out shortly after CarTrak starts, so the first visit after an update no longer waits ten seconds for it. If it is still being worked out, the card stays away until the next visit instead of holding the page up.
+- The kilometers per kWh figure that the savings use is kept for a minute, so the Savings, Day view and Charging pages share one calculation.
+
+### 🐞 Fixed
+- **Insights** could stop with "Cannot read properties of null (reading 'reduce')" on a car with little data, because the driving, charging and battery reports sent a missing list as null. They now send empty lists, and the page also copes with a missing one. A test now checks every report for it.
+
+### ⛽ Gas comparison on the Charging page
+- Each charging session card shows what the same range would have cost in the gas car, under what you paid ("gas $9.20"), as the Day view already does.
+
+### 🧭 Names, reading width and tap targets
+- **Efficiency insights** is now **Efficiency details**, so it is not confused with the Insights tab.
+- Paragraphs are no longer stretched across a wide screen: lines stop at about 70 characters.
+- Links inside a sentence and the "Add a fill-up by hand" style rows have a larger tap area without moving the text.
+- **app.js** is back under 200 lines (the update notice moved to its own file).
+- Checked with awkward data: 150 trips over 30 days with very long place names and notes, a 14-trip day, 40 charges. Nothing overflowed on a phone.
+
 ## 0.62.3
 
 ### 🔍 From a review of the whole app

@@ -44,7 +44,7 @@ const maxGap = 6 * 3600
 
 // Battery builds the report from readings, oldest first.
 func Battery(rs []Reading, loc *time.Location) BatteryReport {
-	var r BatteryReport
+	r := BatteryReport{Days: []SocDay{}, Bands: []SocBand{}} // lists, never null: the page reads them as lists
 	sort.Slice(rs, func(i, j int) bool { return rs[i].TS < rs[j].TS })
 	secs := make([]float64, len(socEdges)-1)
 	var total, weighted float64

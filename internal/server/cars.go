@@ -19,6 +19,7 @@ type CarManager interface {
 	BackupAll(tmpDir string, w io.Writer) error           // a zip of the core database and every car's database
 	Inbox(userID int64, limit int) []InboxItem            // the latest alerts about the cars a person can open
 	AllDebugReports(hours int, metric bool) (string, int) // every car's debug report in one text, and the readings they cover
+	EachCar(fn func(id int64, s *Server))                 // every car's server, in order of id
 	AdminViews(id int64) map[string]int64                 // administrators who opened the car without having been given access, by name, when last
 }
 

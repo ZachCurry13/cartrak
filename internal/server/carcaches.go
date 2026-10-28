@@ -29,5 +29,5 @@ type carCaches struct {
 	reasonsAt   time.Time
 	reasonsDays int
 	reasonsOut  map[string]any
-	reasonsBusy bool // a fresh answer is being worked out in the background
+	reasonsBusy chan struct{} // closed when the answer being worked out in the background is ready; nil when none is
 }

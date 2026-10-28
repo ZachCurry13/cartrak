@@ -8,6 +8,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/chargecurve"
 	"github.com/ZachCurry13/cartrak/internal/charging"
 	"github.com/ZachCurry13/cartrak/internal/ford"
+	"github.com/ZachCurry13/cartrak/internal/history"
 	"github.com/ZachCurry13/cartrak/internal/places"
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -67,7 +68,8 @@ func (s *Server) chargeCurve(w http.ResponseWriter, r *http.Request) {
 
 type chargeOut struct {
 	charging.Session
-	Place string `json:"place"`
+	Place string              `json:"place"`
+	Gas   *history.GasCompare `json:"gas,omitempty"` // the same range in the gas car, when a gas car is set
 }
 
 // withPlaces adds the name of the named place each session was at.
