@@ -92,7 +92,7 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 	var sum daySummary
 	for _, c := range sessions {
 		c := c
-		if c.StartTS < from.Unix() || c.StartTS >= to.Unix() {
+		if c.StartTS < from.Unix() || c.StartTS >= to.Unix() || c.Remote { // a remote start is shown as itself, not as a charge
 			continue
 		}
 		charges = append(charges, history.Charge{ID: c.ID, Start: c.StartTS, End: c.EndTS, StartSoC: c.StartSoC, EndSoC: c.EndSoC,

@@ -60,9 +60,10 @@ type Session struct {
 	Where      string   `json:"where"`     // home, public, or "" when it cannot be told
 	Place      string   `json:"place"`     // the named place it was at, when that place sets its own price or counts as home
 	Cost       *float64 `json:"cost"`
-	CostActual bool     `json:"costActual"` // the cost is what the owner paid, not worked out from a price
-	PriceFrom  string   `json:"priceFrom"`  // where the cost came from: receipt, place, home, home+night, public, or "" when unpriced
-	Efficiency *float64 `json:"efficiency"` // added / delivered, only when the charger's number was entered
+	CostActual bool     `json:"costActual"`       // the cost is what the owner paid, not worked out from a price
+	PriceFrom  string   `json:"priceFrom"`        // where the cost came from: receipt, place, home, home+night, public, or "" when unpriced
+	Efficiency *float64 `json:"efficiency"`       // added / delivered, only when the charger's number was entered
+	Remote     bool     `json:"remote,omitempty"` // a remote start with the car plugged in, not a charge (set by the server)
 	Measured   bool     `json:"measured"`
 }
 

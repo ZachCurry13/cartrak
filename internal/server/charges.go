@@ -103,6 +103,7 @@ func (s *Server) computeSessions(limit int) ([]charging.Session, effInfo, error)
 			out = enrich()
 		}
 	}
+	s.markRemote(out)
 	return out, info, nil
 }
 
@@ -136,6 +137,7 @@ func (s *Server) chargeSummary(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
+	ss = withoutRemote(ss)
 	loc := s.defaultLoc()
 	months := charging.ByMonth(ss, func(ts int64) string { return time.Unix(ts, 0).In(loc).Format("2006-01") })
 	if len(months) > 12 {
