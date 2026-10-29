@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -59,4 +60,24 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	ok(w, map[string]any{"enabled": true, "done": done, "failed": failed, "pending": len(pending) - done, "failures": failures})
+}
+
+// dismissRoutes: POST /api/trips/no-route {"ids": [..]}. The owner accepts that these trips stay a straight line, so they are no
+// longer offered for a road estimate.
+func (s *Server) dismissRoutes(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		IDs []int64 `json:"ids"`
+	}
+	if decode(r, &in) != nil || len(in.IDs) == 0 || len(in.IDs) > 500 {
+		fail(w, 400, "choose the trips to dismiss")
+		return
+	}
+	n := 0
+	for _, id := range in.IDs {
+		if t, err := s.S.GetTrip(id); err == nil && t != nil && !t.Open && s.S.SaveNoRoute(id) == nil {
+			n++
+		}
+	}
+	s.S.LogDecision("road_dismissed", fmt.Sprintf("%d trips left as a straight line by hand", n))
+	ok(w, map[string]any{"dismissed": n})
 }

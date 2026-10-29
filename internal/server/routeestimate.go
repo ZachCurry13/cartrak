@@ -128,6 +128,7 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 		return nil
 	}
 	if len(recorded) < 2 {
+		_ = s.S.SaveNoRoute(t.ID) // the car will not report more positions for a finished trip: stop offering it
 		return fail(routeFailure{Msg: "the car reported too few positions to route between"})
 	}
 	road, km, err := s.routeClient().RouteNear(context.Background(), routeest.Via(recorded, 8), odoTarget(t))

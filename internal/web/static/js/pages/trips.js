@@ -30,17 +30,20 @@ export default async function trips(root, _a, session) {
   function seg(el, items, get, set) {
     el.replaceChildren(...items.map(([k, label]) => h('button', { class: get() === k ? 'on' : '', onclick: () => { set(k); draw(); } }, label)));
   }
-  async function draw() {
-    seg(segCat, [['', 'All'], ...categoryList().map((c) => [c.key, c.label])], () => cat, (v) => { cat = v; });
-    seg(segRange, [['week', '7 days'], ['month', '30 days'], ['year', 'Year'], ['all', 'All']], () => range, (v) => { range = v; });
-    if (mc.enabled) seg(segView, [['list', 'List'], ['map', 'Map']], () => view, (v) => { view = v; });
-    const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=[\w-]+&?/, '')}`)]);
+  function paintSummary(s) {
     const keys = categoryList().map((c) => c.key).filter((k) => k === 'work' || k === 'personal' || (s[k] && s[k].trips > 0));
     const all = Object.values(s);
     const kwh = all.reduce((n, x) => n + x.kwh, 0), energyKm = all.reduce((n, x) => n + x.energyKm, 0);
     sum.replaceChildren(h('div', { class: 'grid' }, ...keys.map((k) => stat(catLabel(k), dist(s[k] ? s[k].distanceKm : 0, 0))), ...keys.map((k) => stat(`${catLabel(k)} trips`, s[k] ? s[k].trips : 0)),
       ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(energyKm, kwh))] : [])),
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
+  }
+  async function draw() {
+    seg(segCat, [['', 'All'], ...categoryList().map((c) => [c.key, c.label])], () => cat, (v) => { cat = v; });
+    seg(segRange, [['week', '7 days'], ['month', '30 days'], ['year', 'Year'], ['all', 'All']], () => range, (v) => { range = v; });
+    if (mc.enabled) seg(segView, [['list', 'List'], ['map', 'Map']], () => view, (v) => { view = v; });
+    const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=[\w-]+&?/, '')}`)]);
+    paintSummary(s);
     lastTs = ts;
     const unlabelled = ts.filter((x) => !x.open && x.categorySource === 'default').length;
     review.replaceChildren(...(admin && unlabelled ? [h('a', { class: 'banner notice', href: '#/review', style: 'display:block' }, `${unlabelled} trip${unlabelled === 1 ? '' : 's'} to review. Tap to label them.`)] : []));
@@ -74,7 +77,7 @@ export default async function trips(root, _a, session) {
   }
   let thumbs = null;
   const avgEfficiency = () => { let km = 0, kwh = 0; for (const x of lastTs) if (x.energyKwh > 0 && x.distanceKm > 1) { km += x.distanceKm; kwh += x.energyKwh; } return kwh > 0 ? km / kwh : null; };
-  const row = (x) => tripCard(x, { sel, admin, thumbs, avgKmPerKwh: avgEfficiency() });
+  const row = (x) => tripCard(x, { sel, admin, thumbs, avgKmPerKwh: avgEfficiency(), onChange: () => { paintList(); api(`/api/summary?${q().replace(/category=[\w-]+&?/, '')}`).then(paintSummary).catch(() => {}); } });
   const selectRow = h('p');
   const review = h('div');
   const estBar = h('div');

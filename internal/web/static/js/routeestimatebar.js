@@ -13,6 +13,8 @@ export async function routeEstimateBar() {
   // updated late, so the owner can choose the road's length instead.
   const failRow = (f) => {
     const li = h('li', {}, h('a', { href: `#/trip/${f.id}` }, when(f.startTs)), `: ${f.why}. `);
+    li.dataset.id = f.id;
+    const gone = h('button', { class: 'sec', style: 'min-height:36px;padding:2px 10px', title: 'Leave this trip as a straight line and stop offering it', onclick: () => dismiss([f.id]) }, 'Dismiss');
     if (f.roadKm > 0) {
       const use = h('button', { class: 'sec', style: 'min-height:36px;padding:2px 10px', onclick: async () => {
         use.disabled = true;
@@ -20,13 +22,25 @@ export async function routeEstimateBar() {
       } }, `Use ${dist(f.roadKm, 1)}`);
       li.append(use);
     }
+    li.append(gone);
     return li;
   };
-  const box = h('div', { class: 'banner notice', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, msg, btn, list);
+  // The owner accepts that these stay a straight line, so they are not offered again.
+  async function dismiss(ids) {
+    try {
+      await api('/api/trips/no-route', { method: 'POST', body: { ids } });
+      for (const id of ids) { failed.delete(id); const li = list.querySelector(`li[data-id="${id}"]`); if (li) li.remove(); }
+      if (!failed.size) { box.remove(); return; }
+      dismissAll.hidden = failed.size < 2;
+    } catch (e) { msg.textContent = e.message; }
+  }
+  const failed = new Map();
+  const dismissAll = h('button', { class: 'sec', hidden: true, onclick: () => dismiss([...failed.keys()]) }, 'Dismiss all');
+  const box = h('div', { class: 'banner notice', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, msg, btn, dismissAll, list);
   btn.addEventListener('click', async () => {
     btn.disabled = true;
     let left = d.pending, guard = 0;
-    const failed = new Map();
+    failed.clear();
     while (left > 0 && guard++ < 30) {
       msg.textContent = `Estimating… ${left} to go.`;
       const r = await api('/api/trips/estimate-routes?limit=10', { method: 'POST' }).catch(() => null);
@@ -34,12 +48,14 @@ export async function routeEstimateBar() {
       if (!r || (r.done === 0 && r.failed > 0 && r.pending >= left)) {
         msg.textContent = failed.size ? 'Some trips could not be estimated, so they stay as a straight line:' : 'The routing service did not answer. Try again later.';
         list.replaceChildren(...[...failed.values()].map(failRow));
+        dismissAll.hidden = failed.size < 2;
         btn.hidden = !!failed.size && r && r.pending <= failed.size; btn.disabled = false; return;
       }
       left = r.pending;
     }
     msg.textContent = left > 0 ? `${left} more can be done later.` : failed.size ? 'Done, except these trips, which stay as a straight line:' : 'Done. Open a trip to see its estimated road.';
     list.replaceChildren(...[...failed.values()].map(failRow));
+    dismissAll.hidden = failed.size < 2;
     btn.hidden = true;
   });
   return box;

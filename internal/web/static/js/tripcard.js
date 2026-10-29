@@ -1,4 +1,5 @@
 import { h, catChip, chip, dist, when, duration, pct } from './ui.js';
+import { catPicker } from './catpicker.js';
 import { tripPlaces } from './tripplaces.js';
 import { effSpan } from './energy.js';
 import { catColor } from './categories.js';
@@ -53,7 +54,7 @@ export function colorKey() {
 }
 
 // One drive in the Trips list: its route, how far and how long, where, how much battery it took and how efficient it was against the rest.
-export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
+export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh, onChange }) {
   const color = catColor(t.category);
   const effText = effSpan(t.distanceKm, t.energyKwh, t.energyEstimated ? '≈ ' : '');
   const kmPerKwh = t.energyKwh > 0 && t.distanceKm > 1 ? t.distanceKm / t.energyKwh : null;
@@ -66,6 +67,7 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
   const share = admin && !t.open && !sel.state.on
     ? h('button', { class: 'ico sm', type: 'button', 'aria-label': 'Share this trip', title: 'Share this trip', onclick: (e) => { e.preventDefault(); e.stopPropagation(); location.hash = `#/trip/${t.id}/share`; } },
       (() => { const s = svgEl('svg', { viewBox: '0 0 24 24' }); s.append(svgEl('path', { d: 'M12 3v12M8 7l4-4 4 4M5 12v8h14v-8' })); return s; })()) : null;
+  const pick = admin && !t.open && !sel.state.on ? catPicker(t, onChange) : null; // the purpose, changeable right on the card
   return h('a', { class: `tcard${picked ? ' picked' : ''}`, style: `--cc:${color}${sel.state.on && !sel.eligible(t) ? ';opacity:.5' : ''}`, href: sel.state.on ? '#' : `#/trip/${t.id}`,
     onclick: sel.state.on ? (e) => { e.preventDefault(); if (sel.eligible(t)) sel.toggle(t); } : null },
   thumb(thumbs && thumbs.get(t.id), color),
@@ -76,6 +78,7 @@ export function tripCard(t, { sel, admin, thumbs, avgKmPerKwh }) {
     places ? h('div', { class: 'muted tplaces' }, ...places) : null,
     h('div', { class: 'tline' }, battery(t) || fuelBar(t), kmPerKwh ? h('span', { class: `pill ${grade}` }, effText) : null,
       !kmPerKwh && t.fuelGal > 0 ? h('span', { class: 'pill', title: 'From the tank gauge, so an estimate' }, `≈ ${economy(t.distanceKm, t.fuelGal)}`) : null),
-    t.notes ? h('div', { class: 'muted' }, t.notes) : null),
-  h('div', { class: 'tside' }, catChip(t), share));
+    t.notes ? h('div', { class: 'muted' }, t.notes) : null,
+    pick ? pick.panel : null),
+  h('div', { class: 'tside' }, pick ? pick.button : catChip(t), share));
 }

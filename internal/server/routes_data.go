@@ -47,6 +47,7 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /api/trips/routes", s.auth(false, s.tripRoutes))
 	m.HandleFunc("GET /api/trips/estimate-routes", s.auth(true, s.estimateRoutes))
 	m.HandleFunc("POST /api/trips/estimate-routes", s.auth(true, s.estimateRoutes))
+	m.HandleFunc("POST /api/trips/no-route", s.auth(true, s.dismissRoutes))
 	m.HandleFunc("GET /api/trips/{id}", s.auth(false, s.tripDetail))
 	m.HandleFunc("GET /api/trips/{id}/why", s.auth(false, s.tripWhy))
 	m.HandleFunc("GET /api/insights", s.auth(false, s.efficiencyInsights))

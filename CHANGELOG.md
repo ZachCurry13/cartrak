@@ -2,6 +2,12 @@
 
 ## 0.63.1
 
+### ✏️ Change a trip's purpose right on its card
+- On the **Trips** list, tap the purpose chip (Work, Personal and so on) on any finished trip and a row of your categories appears. Tap one and it is saved at once, with no need to open the trip. The chip then shows ✎ (set by you), the notes you wrote are kept, and the totals at the top update. Admins only; a trip still in progress has no picker.
+
+### 🙈 Dismiss trips that cannot get a road estimate
+- The "Some trips could not be estimated" box now has a **Dismiss** button on each trip and **Dismiss all**. A dismissed trip stays a straight line and is not offered again. A trip that the car reported too few positions for is now left alone automatically after the first try, since the car will never send more.
+
 ### 🐞 Fixed
 - **A remote start showed twice in the Day view** (same times, same kWh). Every time CarTrak restarted, as it does with an update, a background pass went over readings that had already been seen live and recorded the same remote start again. A start that is already recorded is now never added twice, and a pair left by an earlier version is tidied the next time CarTrak starts.
 - **Day headings sat in the middle of the grid on a wide screen.** On a computer the Trips list is laid out in columns, and a day's heading took one cell, so "Tuesday, Oct 27" could appear between Wednesday's cards. A heading now spans the whole row and each day starts on a new row.
