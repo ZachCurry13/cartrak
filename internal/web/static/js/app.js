@@ -103,10 +103,17 @@ function seasonOnHome() {
   setTimeout(() => playSeason(THEMES[t.key][8], t.day), 600);
 }
 
+let lastTab = null; // the tab the person was on before this page
+let moreAt = 0; // when something in the More sheet was last tapped
+document.addEventListener('click', (e) => { if (e.target instanceof Element && e.target.closest('.sheet.more')) moreAt = Date.now(); }, true);
+
 async function render() {
   if (stopRefresh) { stopRefresh(); stopRefresh = null; }
   const [name, ...args] = (location.hash.replace(/^#\/?/, '') || '').split('/');
-  const tab = ['', 'trips', 'live', 'charging', 'health', 'data'].includes(name) ? name : name === 'stats' ? 'charging' : name === 'fields' ? 'data' : name === 'trip' || name === 'history' || name === 'day' || name === 'journey' || name === 'review' ? 'trips' : 'settings';
+  let tab = ['', 'trips', 'live', 'charging', 'health', 'data'].includes(name) ? name : name === 'stats' ? 'charging' : name === 'fields' ? 'data' : name === 'trip' || name === 'history' || name === 'day' || name === 'journey' || name === 'review' ? 'trips' : 'settings';
+  // A page that belongs to no tab (Plan a trip, say) keeps the tab the person was on, unless they came from the More sheet.
+  if (tab === 'settings' && name !== 'settings' && lastTab !== null && lastTab !== 'settings' && Date.now() - moreAt > 2000) tab = lastTab;
+  lastTab = tab;
   const exact = [...tabs.querySelectorAll('a')].find((a) => a.getAttribute('href') === `#/${name}`); // a page put in the bar lights up itself
   tabs.querySelectorAll('a').forEach((a) => a.classList.toggle('on', exact ? a === exact : a.getAttribute('href') === `#/${tab}` || (tab === '' && a.getAttribute('href') === '#/')));
   noteVisit(name);
