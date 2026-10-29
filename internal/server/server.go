@@ -47,6 +47,7 @@ type Server struct {
 	routeBusy    atomic.Bool            // background road estimates are running
 	routeRetried atomic.Bool            // old give-ups were forgotten once this run
 	tracking     trackSession           // the tracking session started on the Developer page
+	sessKept     sessionsCache          // the priced charging sessions, shared for a few seconds
 	effKept      effCache               // the km per kWh figure the savings use, kept for a minute
 	savingsKept  savingsCache           // the savings page answer, kept briefly
 	TrustProxy   bool                   // believe CF-Connecting-IP / X-Real-IP / X-Forwarded-For

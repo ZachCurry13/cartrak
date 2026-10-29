@@ -71,6 +71,14 @@ func (e *Engine) parkedWatch(st *ford.State, first bool) {
 	if st.Driving() {
 		e.lastDrive = st.TS
 	}
+	// A short drive between two readings (the car is only asked about every ten minutes when parked) never shows the ignition on, but
+	// the odometer is further on than at the reading before: the car was in use, and the jolt of parking is not a bump.
+	if st.OdometerKm != nil {
+		if e.lastOdo != nil && *st.OdometerKm >= *e.lastOdo+0.9 {
+			e.lastDrive = st.TS
+		}
+		e.lastOdo = st.OdometerKm
+	}
 	if e.BumpLevel == nil || st.Driving() {
 		e.restVec = nil // the resting reading is learned again once the car is parked
 		return

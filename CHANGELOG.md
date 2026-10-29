@@ -14,6 +14,8 @@
 - **The Charging page now has the same day headings** ("Tuesday, Oct 27 · 2 charges · 28.9 kWh") above its sessions.
 - **Plan a trip from the Charging tab jumped to the More tab.** A page that belongs to no tab (Plan a trip, Trip rules and so on) lit up More even when you had opened it from Charging or Trips. It now keeps the tab you were on. Opening it from the More sheet or the More page still shows More, and a page opened directly by its address also shows More.
 - **The cost row on a charging session was squeezed on a phone** ("Edi t", "$5.8 7", "$0.15/kW h"), because the gas line added in 0.63 made the row too wide. The row now wraps: the price, the price per kWh and the gas figure stay on one line when they fit, and the "home price" label drops below when they don't. The Edit button keeps its size.
+- **A "Bump while parked" alert after a short drive.** The car is only asked about every ten minutes when parked, so a drive between two readings never showed the ignition on, and the jolt of parking looked like a bump (it fired at the same moment as the plug-in on Oct 29). An odometer that is further on than at the reading before now counts as the car being in use.
+- **Home loaded slowly while a charge was going or right after a trip.** The page asks for a dozen things at once, and half of them each read and priced every charging session, one after another (the database answers one question at a time). The priced sessions are now shared for a few seconds between those requests and refreshed when you save a charge, a place or a setting.
 - **The remote start icon was a box with an x** on phones whose font lacks the power character. It is now a drawn power symbol.
 
 ## 0.63.0

@@ -450,6 +450,34 @@ func TestParkingMovesAreNotBumps(t *testing.T) {
 	}
 }
 
+// A drive that fits between two readings never shows the ignition on, but the odometer moved: the jolt of parking is not a bump.
+func TestParkingAfterADriveBetweenTwoReadingsIsNotABump(t *testing.T) {
+	e, r, _ := setup(t)
+	e.BumpLevel = func() float64 { return 1.0 }
+	at := func(sec int, odoKm, x, y float64) {
+		e.Handle(reading(0, func(st *ford.State) {
+			st.TS = t0.Add(time.Duration(sec) * time.Second)
+			st.Ignition = "OFF"
+			speed := 0.0
+			st.SpeedKph, st.OdometerKm = &speed, &odoKm
+			st.Extra["telemetry.metrics.acceleration.value.x"] = x
+			st.Extra["telemetry.metrics.acceleration.value.y"] = y
+			st.Extra["telemetry.metrics.acceleration.value.z"] = 0.0
+		}))
+	}
+	at(0, 1000, 0.0, -0.05)   // parked
+	at(600, 1007, 0.0, -0.05) // seven kilometers further on, never seen moving
+	at(601, 1007, 1.8, 0.9)   // the first fresh accelerometer value after that drive
+	if len(r.got) != 0 {
+		t.Fatalf("parking after an unseen drive is not a bump: %s", r.kinds())
+	}
+	at(1300, 1007, 0.0, -0.05)
+	at(1900, 1007, 1.9, 1.0) // a real jump, well after parking
+	if r.kinds() != "bump_parked" {
+		t.Fatalf("a bump after the car has settled still alerts: %s", r.kinds())
+	}
+}
+
 func TestLeavingAPlaceIsAnnouncedFromTheOdometerWhenTheCarRepeatsItsOldPosition(t *testing.T) {
 	e, r, s := setup(t)
 	if err := s.SaveNamedPlace(&store.NamedPlace{Name: "Charger", Lat: 40, Lon: -75, RadiusM: 150}); err != nil {

@@ -65,6 +65,18 @@ func (s *Server) chargeSessions(limit int) ([]charging.Session, error) {
 }
 
 func (s *Server) chargeSessionsEff(limit int) ([]charging.Session, effInfo, error) {
+	if ss, info, ok := s.sessKept.get(limit); ok {
+		return ss, info, nil
+	}
+	ss, info, err := s.computeSessions(limit)
+	if err == nil {
+		s.sessKept.put(limit, ss, info)
+	}
+	return ss, info, err
+}
+
+// computeSessions reads and prices the charging sessions (see sessionsCache for why the result is shared).
+func (s *Server) computeSessions(limit int) ([]charging.Session, effInfo, error) {
 	cs, err := s.S.ListCharges(limit)
 	if err != nil {
 		return nil, effInfo{}, err

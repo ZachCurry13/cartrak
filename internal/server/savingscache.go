@@ -42,6 +42,7 @@ func (s *Server) forgetSavings(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		h(w, r)
 		s.savingsKept.drop()
+		s.sessKept.drop()
 	}
 }
 

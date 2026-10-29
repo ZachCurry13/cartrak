@@ -62,7 +62,8 @@ type Engine struct {
 	posLat, posLon, posOdo float64        // the last position the car reported, and the odometer when it first reported it
 	havePos                bool
 	lastBump               time.Time
-	lastDrive              time.Time   // the last reading with the ignition on or the car moving
+	lastDrive              time.Time   // the last reading with the ignition on or the car moving, or whose odometer was further on than the one before
+	lastOdo                *float64    // the odometer at the previous reading, to see that the car was driven between two readings
 	restVec                *[3]float64 // the previous parked reading of the motion sensors
 	lowSent                bool
 	lowFuelSent            bool
