@@ -13,6 +13,7 @@
 - **Day headings sat in the middle of the grid on a wide screen.** On a computer the Trips list is laid out in columns, and a day's heading took one cell, so "Tuesday, Oct 27" could appear between Wednesday's cards. A heading now spans the whole row and each day starts on a new row.
 - **The Charging page now has the same day headings** ("Tuesday, Oct 27 · 2 charges · 28.9 kWh") above its sessions.
 - **Plan a trip from the Charging tab jumped to the More tab.** A page that belongs to no tab (Plan a trip, Trip rules and so on) lit up More even when you had opened it from Charging or Trips. It now keeps the tab you were on. Opening it from the More sheet or the More page still shows More, and a page opened directly by its address also shows More.
+- **The cost row on a charging session was squeezed on a phone** ("Edi t", "$5.8 7", "$0.15/kW h"), because the gas line added in 0.63 made the row too wide. The row now wraps: the price, the price per kWh and the gas figure stay on one line when they fit, and the "home price" label drops below when they don't. The Edit button keeps its size.
 - **The remote start icon was a box with an x** on phones whose font lacks the power character. It is now a drawn power symbol.
 
 ## 0.63.0
