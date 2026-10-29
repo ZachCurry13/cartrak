@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ZachCurry/cartrak/internal/charging"
+	"github.com/ZachCurry13/cartrak/internal/charging"
 )
 
 func TestThePricedSessionsAreSharedBrieflyAndOnlyAsCopies(t *testing.T) {
