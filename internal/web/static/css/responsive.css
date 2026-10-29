@@ -15,6 +15,7 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
   .dash>.banner,.dash>a.card,.dash>p,.dash>.notice{grid-column:1/-1;margin:0}
   .cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
   .cols>.card,.cols>.tcard{margin:0}
+  .cols>.daybreak{grid-column:1/-1;margin:14px 0 0}
   .login{margin-top:8vh}
 }
 @media (min-width:1100px){

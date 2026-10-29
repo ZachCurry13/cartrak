@@ -1,6 +1,7 @@
 import { savingsCard, perDistance } from '../savingscard.js';
 import { h, emptyState, num, dist } from '../ui.js';
 import { sessionCard } from '../chargesession.js';
+import { withDayBreaks } from '../tripdays.js';
 import { coachCard } from '../coachcard.js';
 import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
@@ -31,7 +32,7 @@ export default async function charging(root, _a, session) {
   async function load() {
     const [cs, sum, savings, tips] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin), coachCard()]);
     if (!cs.length) return box.replaceChildren(emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
-    box.replaceChildren(...[summaryCard(sum), tips, savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...cs.map((c) => sessionCard(c, sum.currency, admin, load)))].filter(Boolean));
+    box.replaceChildren(...[summaryCard(sum), tips, savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV')), h('h2', {}, 'Sessions'), h('div', { class: 'cols' }, ...withDayBreaks(cs, (c) => sessionCard(c, sum.currency, admin, load), 'charge'))].filter(Boolean));
   }
   await load();
   return { cleanup: now.stop };

@@ -4,6 +4,8 @@
 
 ### 🐞 Fixed
 - **A remote start showed twice in the Day view** (same times, same kWh). Every time CarTrak restarted, as it does with an update, a background pass went over readings that had already been seen live and recorded the same remote start again. A start that is already recorded is now never added twice, and a pair left by an earlier version is tidied the next time CarTrak starts.
+- **Day headings sat in the middle of the grid on a wide screen.** On a computer the Trips list is laid out in columns, and a day's heading took one cell, so "Tuesday, Oct 27" could appear between Wednesday's cards. A heading now spans the whole row and each day starts on a new row.
+- **The Charging page now has the same day headings** ("Tuesday, Oct 27 · 2 charges · 28.9 kWh") above its sessions.
 - **The remote start icon was a box with an x** on phones whose font lacks the power character. It is now a drawn power symbol.
 
 ## 0.63.0
