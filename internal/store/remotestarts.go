@@ -35,7 +35,14 @@ func (s *Store) remote() *remoteState {
 // ensureRemote makes the table once per database.
 func (s *Store) ensureRemote() error {
 	rs := s.remote()
-	rs.table.Do(func() { _, rs.err = s.DB.Exec(remoteDDL) })
+	rs.table.Do(func() {
+		if _, rs.err = s.DB.Exec(remoteDDL); rs.err != nil {
+			return
+		}
+		// A remote start was once recorded twice when CarTrak restarted (the background pass went over readings that had been seen live).
+		// Keep the first record of each start.
+		_, _ = s.DB.Exec(`DELETE FROM remote_starts WHERE id NOT IN (SELECT MIN(id) FROM remote_starts GROUP BY start_ts)`)
+	})
 	return rs.err
 }
 
@@ -96,6 +103,10 @@ func (s *Store) saveRemote(x *remotestart.Session) {
 		end = x.End
 	}
 	if x.ID == 0 {
+		var have int64
+		if s.DB.QueryRow(`SELECT id FROM remote_starts WHERE start_ts BETWEEN ? AND ? LIMIT 1`, x.Start-60, x.Start+60).Scan(&have) == nil {
+			return // this start is already recorded: going over the same readings again must not add it twice
+		}
 		r, err := s.DB.Exec(`INSERT INTO remote_starts(start_ts,end_ts,start_soc,end_soc,start_kwh,end_kwh,temp_c,restarts,drove,last_ts,last_left) VALUES(?,?,?,?,?,?,?,?,?,?,?)`,
 			x.Start, end, x.StartSoC, x.EndSoC, x.StartKwh, x.EndKwh, x.TempC, x.Restarts, b2i(x.Drove), x.LastTS, x.LastLeft)
 		if err == nil {

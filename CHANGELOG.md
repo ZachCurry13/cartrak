@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.63.1
+
+### 🐞 Fixed
+- **A remote start showed twice in the Day view** (same times, same kWh). Every time CarTrak restarted, as it does with an update, a background pass went over readings that had already been seen live and recorded the same remote start again. A start that is already recorded is now never added twice, and a pair left by an earlier version is tidied the next time CarTrak starts.
+- **The remote start icon was a box with an x** on phones whose font lacks the power character. It is now a drawn power symbol.
+
 ## 0.63.0
 
 ### 🔴 Track every car at once

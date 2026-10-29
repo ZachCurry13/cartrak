@@ -1,7 +1,21 @@
 import { h, dist, num, speed, pct, temp } from './ui.js';
 import { effSpan } from './energy.js';
 
-const GLYPH = { charging: '⚡', driving: '↗', parked: 'P', remote: '⏻' };
+const GLYPH = { charging: '⚡', driving: '↗', parked: 'P' };
+
+// The power symbol is drawn, not typed: the character for it (U+23FB) is missing from many phone fonts and shows as a box with an x.
+function powerIcon() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', 'M12 3v8M6.4 6.6a8 8 0 1 0 11.2 0');
+  for (const [k, v] of Object.entries({ fill: 'none', stroke: 'currentColor', 'stroke-width': '2.4', 'stroke-linecap': 'round' })) path.setAttribute(k, v);
+  svg.append(path);
+  return svg;
+}
 const WHERE = { home: 'Home', public: 'Public' };
 export const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 
@@ -78,7 +92,7 @@ export function eventRow(e, tz, cur, stopNumber, extra = {}) {
   const sub = e.kind === 'charging' && e.cost != null && e.addedKwh != null ? `${num(e.addedKwh, 1, ' kWh')}${e.gas ? ` · gas ${money(cur, e.gas.cost)}` : ''}` : '';
   const lv = levels(e);
   const body = [
-    h('div', { class: 'hrow1' }, h('span', { class: `hico ${e.kind}${stopNumber != null ? ' num' : ''}`, 'aria-hidden': 'true' }, stopNumber != null ? stopNumber : GLYPH[e.kind]),
+    h('div', { class: 'hrow1' }, h('span', { class: `hico ${e.kind}${stopNumber != null ? ' num' : ''}`, 'aria-hidden': 'true' }, stopNumber != null ? stopNumber : e.kind === 'remote' ? powerIcon() : GLYPH[e.kind]),
       h('b', {}, `${clock(e.start, tz)} – ${e.end == null ? 'Now' : clock(e.end, tz)}`), h('span', { class: 'muted grow', title: span(secs) }, short(secs)),
       lv ? h('span', { class: 'hdelta' }, lv) : null),
     levelBar(e),
