@@ -6,7 +6,13 @@ import { categoryList } from './categories.js';
 // saves it. Everything here stops the tap from also opening the trip (the card is a link). Admins only.
 export function catPicker(t, onChange) {
   const msg = h('span', { class: 'muted', role: 'status' });
-  const panel = h('div', { class: 'catrow', hidden: true, role: 'group', 'aria-label': 'Change the purpose of this trip', style: 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px' });
+  // The row is shown and hidden through its display, not the hidden attribute: a style that sets display would override that attribute
+  // and leave the row open on every card.
+  const panel = h('div', { class: 'catrow', role: 'group', 'aria-label': 'Change the purpose of this trip', style: 'display:none;flex-wrap:wrap;gap:6px;margin-top:8px' });
+  const setOpen = (open) => {
+    panel.style.display = open ? 'flex' : 'none';
+    button.setAttribute('aria-expanded', String(open));
+  };
   const button = h('button', { type: 'button', class: 'catbtn', 'aria-haspopup': 'true', 'aria-expanded': 'false', title: 'Change the purpose of this trip',
     style: 'background:none;border:0;padding:0;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;color:inherit' });
   const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
@@ -16,21 +22,19 @@ export function catPicker(t, onChange) {
       onclick: (e) => { stop(e); pick(c.key); } }, c.label)), msg);
   };
   async function pick(key) {
-    if (key === t.category) { panel.hidden = true; button.setAttribute('aria-expanded', 'false'); return; }
+    if (key === t.category) { setOpen(false); return; }
     msg.textContent = 'Saving…';
     try {
       await api(`/api/trips/${t.id}`, { method: 'PATCH', body: { category: key, notes: t.notes || '' } }); // the notes are sent back so they are kept
       t.category = key;
       t.categorySource = 'manual';
-      panel.hidden = true;
-      button.setAttribute('aria-expanded', 'false');
+      setOpen(false);
       if (onChange) onChange(t); else draw();
     } catch (err) { msg.textContent = err.message; }
   }
   button.addEventListener('click', (e) => {
     stop(e);
-    panel.hidden = !panel.hidden;
-    button.setAttribute('aria-expanded', String(!panel.hidden));
+    setOpen(panel.style.display === 'none');
   });
   draw();
   return { button, panel };

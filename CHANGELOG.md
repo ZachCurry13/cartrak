@@ -2,6 +2,10 @@
 
 ## 0.63.2
 
+### 🐞 Fixed in the trip purpose picker (from 0.63.1)
+- **The row of category buttons showed on every trip card all the time** (Personal, Work, Medical, Charity), which made the list far too busy. It should have stayed hidden until you tap the purpose chip. The row is now hidden at rest: the card shows only the chip (Work ⌂), a tap opens the choices and a tap on one saves it and closes the row again.
+- A page-wide rule now makes anything marked hidden stay hidden whatever else its style says, so this cannot happen on another screen.
+
 ### 🔌 A remote start while plugged in is not a charge
 - When you remote start the car while it is plugged in, the car runs the heater or cooler from the charger and reports it as charging: a few minutes at a few kW that add nothing to the battery (for example "Charging, 8 min, 95% → 95%, no price"). Those sessions are now shown as **Remote start** on the Charging page, with "heating or cooling, not a charge" instead of "no price".
 - The **Day view** no longer lists them as a charge (the remote start row is already there), so "You charged 2 times" counts only real charges, and the Charging page's monthly totals leave them out.
