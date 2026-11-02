@@ -51,10 +51,30 @@ export function noteRendered(title, root) {
 
 // The page's "← More" line and its title become one header: a back arrow and the title beside it, the same on every page.
 function topbar(root) {
-  const a = [...root.querySelectorAll('p > a[href^="#/"]')].find((x) => /^←/.test(x.textContent.trim()) && x.parentElement.children.length === 1);
-  const title = a && a.parentElement.nextElementSibling;
+  let a = [...root.querySelectorAll('p > a[href^="#/"]')].find((x) => /^←/.test(x.textContent.trim()) && x.parentElement.children.length === 1);
+  let title = a && a.parentElement.nextElementSibling;
+  let label;
+  if (!a) { // a page with a title but no back link of its own: an arrow to the page before it, when there is one (not on the tab pages)
+    title = [...root.children].find((c) => c.classList && c.classList.contains('page-title'));
+    const before = idx > 0 && !TABS[here()] ? stack[idx - 1] : '';
+    if (!title || !before || title.closest('.topbar')) return;
+    label = name(before) || 'the previous page';
+    a = document.createElement('a');
+    a.href = before;
+    const bar = document.createElement('div');
+    bar.className = 'topbar';
+    title.replaceWith(bar);
+    a.className = 'back';
+    a.setAttribute('aria-label', `Back to ${label}`);
+    const hidden = document.createElement('span');
+    hidden.className = 'vh';
+    hidden.textContent = label;
+    a.append(document.createTextNode('←'), hidden);
+    bar.append(a, title);
+    return;
+  }
   if (!title || !title.classList.contains('page-title') || title.closest('.topbar')) return;
-  const label = a.textContent.replace(/^←\s*/, '').trim();
+  label = a.textContent.replace(/^←\s*/, '').trim();
   a.className = 'back';
   a.setAttribute('aria-label', `Back to ${label}`);
   const hidden = document.createElement('span');

@@ -72,8 +72,8 @@ export default async function remote(root, _a, session) {
   }
   const paintAll = () => { paintStatus(); paintForm(); };
 
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')),
-    h('section', { class: 'card' }, h('h2', {}, 'Remote access (Cloudflare Tunnel)'), statusBox,
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Remote access')),
+    h('section', { class: 'card' }, h('h3', {}, 'Cloudflare Tunnel'), statusBox,
       h('p', { class: 'muted' }, 'Use CarTrak away from home through a free Cloudflare Tunnel, with no router changes. CarTrak runs the connector for you.'),
       h('p', {}, toggleSteps), steps,
       h('label', { for: 'rt' }, 'Tunnel token'), token,

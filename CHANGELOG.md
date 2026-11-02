@@ -4,6 +4,7 @@
 
 ### 🎨 A steadier look (the first step of the cleanup)
 - **One page header everywhere.** The "← More" line and the page title are now one header: a finger-sized back arrow with the title beside it, on every page that has a back link. (The arrow goes where Back goes, see below.)
+- **Pages with a title but no back link of their own** (Notifications, Help, Year in review, Data check, All cars) get the same arrow, to the page you came from.
 - **Links that stand alone on a line** are finger-sized rows without an underline, and **number tiles never leave one alone** on a phone: an odd one out spans the row.
 - **"car reported just now"** shows on Home and Live only, not under every header.
 - **Trips has a title**, like Charging.
