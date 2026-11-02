@@ -19,6 +19,16 @@
 - The optional wind lookup is now the **Weather lookup for trips** in Settings (wind, rain and snow, still off by default, still only a map cell about 30 miles wide and the date).
 - Also fixed: the weather answers kept for a day are asked for again once, to get the rain figures; after that they are kept.
 
+### 🧭 Plan a route with stops
+- **The road-trip planner takes up to ten destinations**, not just a distance. Type an address and tap Find, or pick one of your named places. For each leg it shows the distance and time, the battery you would arrive with, the forecast for the hours you would be on it (rain, snow, temperature, sun, headwind or tailwind), and how much energy it uses. The energy is how your own car drives at that speed and in that temperature, plus the wind and rain effect. It adds a charging stop where the battery would fall below your reserve.
+- **A day of customers:** tick **Find the best order** and the destinations are put in the order that takes the least driving (it checks every order, so it is exact, and says how much time it saves), and **Come back to the start** ends the day at home.
+- **Open this route in Google Maps** sends the whole route, in order, to Google Maps. A route with more stops than Google accepts becomes parts, each carrying on from the last. Nothing is sent anywhere until you tap the link.
+- The planner needs the **Weather lookup** (for the forecast) and **Road estimate** (for real roads) in Settings; without them it says so and uses the temperature now and straight lines made 30% longer.
+
+### 🌦️ Wet roads and sun
+- A road that is **still wet after the rain stops** now counts (about as much as a drizzle), so a trip just after a shower no longer looks dry. Trips that are neither clearly wet nor clearly dry are left out when CarTrak learns what rain costs your car.
+- The Weather line also says **sunny or some sun** (information only, no energy effect claimed, because hot weather is already part of the temperature figure).
+
 ### 🎬 Wrapped file name
 - The picture you share or download from Wrapped is named by its period, such as **2026.10 CarTrak Wrapped.jpg** (a year is **2026 CarTrak Wrapped.jpg**), so they sort in order in your photos and downloads.
 

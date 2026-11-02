@@ -28,6 +28,7 @@ function say(f, facts) {
     case 'snow': {
       const w = facts.weather;
       const what = w ? w.label.toLowerCase() : f.key;
+      if (w && w.damp && w.wetShare < 0.05) return 'The road was still wet from rain in the hours before. A wet road adds a little rolling resistance even after the rain stops.';
       return `${f.key === 'snow' ? 'Snow' : 'Rain'} on the road (${what}, for ${Math.round((w ? w.wetShare : 1) * 100)}% of the time moving). A wet or snowy road adds rolling resistance and spray drag, and the heater and demister work harder.`;
     }
     default:
@@ -41,7 +42,7 @@ function say(f, facts) {
 function weatherBlock(d) {
   const f = d.facts, w = f.weather;
   if (!w && f.tempC == null) return null;
-  const bits = [w ? w.label : null, f.tempC != null ? temp(f.tempC) : null,
+  const bits = [w ? w.label : null, w && w.sun ? w.sun.toLowerCase() : null, f.tempC != null ? temp(f.tempC) : null,
     f.wind && Math.abs(f.wind.headKph) >= 5 ? `${speed(Math.abs(f.wind.headKph))} ${f.wind.headKph >= 0 ? 'head' : 'tail'}wind` : null].filter(Boolean);
   const total = w && Math.abs(w.totalPct) >= 3 ? `Together the weather ${w.totalPct > 0 ? 'cost about' : 'saved about'} ${Math.abs(Math.round(w.totalPct))}% ${w.totalPct > 0 ? 'more' : 'less'} energy than a trip of your usual weather.` : (w ? 'The weather made little difference to the energy used.' : null);
   const how = w && !w.dry ? (w.learned ? `The ${w.snowy ? 'snow' : 'rain'} figure is measured from your own ${w.wetTrips} wet-weather trips.` : 'The rain figure is an estimate until CarTrak has measured enough of your own wet and dry trips.') : null;

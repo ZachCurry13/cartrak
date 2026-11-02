@@ -23,11 +23,13 @@ type Hour struct {
 	GustKm  float64 `json:"gustKph"`
 	// What was asked for: V is 2 on every hour of an answer that asked about rain and snow, so a day saved before then (V 0) is
 	// asked for again, while a service that sends no rain figures is not asked again and again.
-	V      int     `json:"v,omitempty"`
-	Wx     bool    `json:"wx,omitempty"`
-	RainMm float64 `json:"rainMm,omitempty"` // precipitation in the hour, millimeters (rain and melted snow)
-	SnowCm float64 `json:"snowCm,omitempty"` // snowfall in the hour, centimeters
-	Code   int     `json:"code,omitempty"`   // WMO weather code: 61 rain, 71 snow, 95 thunderstorm, and so on
+	V      int      `json:"v,omitempty"`
+	Wx     bool     `json:"wx,omitempty"`
+	RainMm float64  `json:"rainMm,omitempty"` // precipitation in the hour, millimeters (rain and melted snow)
+	SnowCm float64  `json:"snowCm,omitempty"` // snowfall in the hour, centimeters
+	Sun    float64  `json:"sun,omitempty"`    // sunshine on the ground, watts per square meter (0 at night)
+	TempC  *float64 `json:"tempC,omitempty"`  // air temperature, for a forecast
+	Code   int      `json:"code,omitempty"`   // WMO weather code: 61 rain, 71 snow, 95 thunderstorm, and so on
 }
 
 // Cell is a map cell about fifty kilometers wide (half a degree): the only form of a position that is ever sent.
@@ -58,6 +60,8 @@ type answer struct {
 		Rain []float64 `json:"precipitation"`
 		Snow []float64 `json:"snowfall"`
 		Code []float64 `json:"weather_code"`
+		Sun  []float64 `json:"shortwave_radiation"`
+		Temp []float64 `json:"temperature_2m"`
 	} `json:"hourly"`
 }
 
@@ -75,7 +79,7 @@ func (c *Client) Day(ctx context.Context, lat, lon float64, day time.Time) ([]Ho
 		}
 	}
 	d := day.UTC().Format("2006-01-02")
-	q := url.Values{"latitude": {fmt.Sprintf("%.1f", lat)}, "longitude": {fmt.Sprintf("%.1f", lon)}, "hourly": {"wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,snowfall,weather_code"},
+	q := url.Values{"latitude": {fmt.Sprintf("%.1f", lat)}, "longitude": {fmt.Sprintf("%.1f", lon)}, "hourly": {"wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,snowfall,weather_code,shortwave_radiation,temperature_2m"},
 		"wind_speed_unit": {"kmh"}, "timezone": {"UTC"}, "start_date": {d}, "end_date": {d}}
 	req, err := http.NewRequestWithContext(ctx, "GET", base+"?"+q.Encode(), nil)
 	if err != nil {
@@ -121,6 +125,13 @@ func Parse(body []byte) ([]Hour, error) {
 			h.Wx, h.RainMm, h.SnowCm = true, a.Hourly.Rain[i], a.Hourly.Snow[i]
 			if i < len(a.Hourly.Code) {
 				h.Code = int(a.Hourly.Code[i])
+			}
+			if i < len(a.Hourly.Sun) {
+				h.Sun = a.Hourly.Sun[i]
+			}
+			if i < len(a.Hourly.Temp) {
+				t := a.Hourly.Temp[i]
+				h.TempC = &t
 			}
 		}
 		out = append(out, h)

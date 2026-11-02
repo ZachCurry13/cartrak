@@ -53,6 +53,8 @@ type Weather struct {
 	RainMmH   float64 `json:"rainMmH"`
 	SnowCmH   float64 `json:"snowCmH"`
 	WetShare  float64 `json:"wetShare"`
+	Damp      bool    `json:"damp"`      // dry now, but the road was wet from rain in the hours before
+	Sun       string  `json:"sun"`       // "Sunny", "Some sun" or ""
 	EffectPct float64 `json:"effectPct"` // extra energy the rain or snow cost
 	TotalPct  float64 `json:"totalPct"`  // temperature, wind and rain or snow together
 	Learned   bool    `json:"learned"`   // the rain figure comes from the owner's own wet and dry trips

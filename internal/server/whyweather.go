@@ -18,6 +18,7 @@ const (
 	backfillPerRun  = 12  // days of weather asked for in one run, so the free service is never hammered
 	backfillEvery   = 30 * time.Minute
 	backfillSpacing = 1200 * time.Millisecond
+	wetFromMm       = 0.5 // as weather.LearnRain: the average rain that makes a trip wet
 )
 
 // rainLearn is what the owner's own wet and dry trips say about rain, kept for a few hours.
@@ -82,9 +83,12 @@ func (s *Server) rainDuring(lat, lon float64, start, end int64) (float64, bool) 
 	if !ok {
 		return 0, false
 	}
-	var sum float64
+	var sum, before float64
 	n := 0
 	for _, h := range hs {
+		if h.TS+3600 <= start && h.TS+3*3600 > start { // the hours just before the trip
+			before += h.RainMm
+		}
 		if h.TS+3600 <= start || h.TS > end {
 			continue
 		}
@@ -97,7 +101,10 @@ func (s *Server) rainDuring(lat, lon float64, start, end int64) (float64, bool) 
 	if n == 0 {
 		return 0, false
 	}
-	return sum / float64(n), true
+	if mm := sum / float64(n); mm >= wetFromMm || before < 0.5 {
+		return mm, true
+	}
+	return 0, false // dry now but the road was wet: neither a wet trip nor a dry one
 }
 
 // tripWeather is the rain or snow met on a trip and what it cost, or nil when the weather lookup is off or has no answer.
@@ -113,7 +120,7 @@ func (s *Server) tripWeather(pts []windPoint, look hourLook) *tripwhy.Weather {
 	if !ok {
 		return nil
 	}
-	w := &tripwhy.Weather{Label: c.Label, Dry: c.Dry, Snowy: c.Snowy, RainMmH: c.RainMmH, SnowCmH: c.SnowCmH, WetShare: c.WetShare}
+	w := &tripwhy.Weather{Label: c.Label, Dry: c.Dry, Snowy: c.Snowy, RainMmH: c.RainMmH, SnowCmH: c.SnowCmH, WetShare: c.WetShare, Damp: c.Damp, Sun: c.Sun}
 	scale := 1.0
 	if l, learned := s.learnedRain(); learned && !c.Snowy { // what the owner's own trips measured replaces the fixed estimate for rain
 		scale, w.Learned, w.WetTrips = l.Scale, true, l.WetTrips

@@ -42,3 +42,21 @@ func TestABadAnswerIsAnErrorAndImplausibleLengthsAreRejected(t *testing.T) {
 		t.Fatalf("via keeps the ends: %v", v)
 	}
 }
+
+func TestDriveGivesKilometersAndMinutesWithoutTheRoadShape(t *testing.T) {
+	var query string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query = r.URL.RawQuery
+		w.Write([]byte(`{"code":"Ok","routes":[{"distance":42000,"duration":2700}]}`))
+	}))
+	defer srv.Close()
+	km, min, err := (&Client{BaseURL: srv.URL}).Drive(context.Background(), []Point{{44.1, -85.1}, {44.3, -85.3}})
+	if err != nil || km != 42 || min != 45 || !strings.Contains(query, "overview=false") {
+		t.Fatalf("%v %v %v %s", km, min, err, query)
+	}
+	bad := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`{"code":"NoRoute","routes":[]}`)) }))
+	defer bad.Close()
+	if _, _, err := (&Client{BaseURL: bad.URL}).Drive(context.Background(), []Point{{1, 1}, {2, 2}}); err == nil {
+		t.Fatal("no route is an error")
+	}
+}

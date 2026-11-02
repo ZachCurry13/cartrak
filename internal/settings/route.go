@@ -11,8 +11,8 @@ const RouteURLKey = "CARTRAK_ROUTE_URL"
 var routeOptions = []Option{{"", "Off (nothing is sent)"}, {"on", "On: estimate the road for car-only trips"}}
 
 func init() {
-	Defs = append(Defs, Def{Key: RouteKey, Label: "Road estimate for trips without phone GPS (optional)", Options: routeOptions,
-		Help: "A trip the car recorded with only a few positions is drawn as a straight line. When on, CarTrak asks a routing service for the road between those positions and draws it dashed, as an estimate (it is not where the car really went). It sends the start, the end and a few positions along the way to that service. Off by default."})
+	Defs = append(Defs, Def{Key: RouteKey, Label: "Road estimate for trips and the route planner (optional)", Options: routeOptions,
+		Help: "A trip the car recorded with only a few positions is drawn as a straight line. When on, CarTrak asks a routing service for the road between those positions and draws it dashed, as an estimate (it is not where the car really went). It sends the start, the end and a few positions along the way to that service. The route planner on the Plan page uses it too, to get real road distances and times between the stops you type in (and sends those stops). Off by default."})
 	Defs = append(Defs, Def{Key: RouteURLKey, Label: "Routing service address (advanced)", Placeholder: "leave empty for the public OSRM server",
 		Help: "An OSRM-compatible server. The public demo server is for light use; you can run your own and put its address here, which also keeps your positions off the internet."})
 	validators[RouteKey] = func(v string) error {

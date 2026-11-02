@@ -56,6 +56,13 @@ To see what it costs, an admin sets **Price per kWh at home** (and, if you like,
 
 It lists each stop: about how far into the trip, what charge you arrive with (your reserve), what to charge to (only as much as the rest of the trip needs, up to your target), and about how long it takes, then the charge you arrive with. It is a guide, not a route: hills, highway speed, wind and cold use more battery, and fast chargers slow down above 80%.
 
+## Plan a route with stops (and a day of customers)
+On **More, Road-trip planner**, admins get a **Plan a route with stops** card. Add a start and up to **ten destinations**: type an address and tap **Find**, or pick one of your named places (the start can be "Where the car is now"). Tick **Find the best order** and CarTrak puts the destinations in the order that takes the least driving time (it checks every order, so it is exact), and says how much time that saves over the order you typed. Tick **Come back to the start** to end the day at home. Set the time you are leaving and tap **Plan the route**.
+
+For every leg you see the distance, the time you would leave and arrive, the battery percentage at arrival, and the weather expected on it: rain or snow, temperature, sun and the wind along your heading, from the free forecast (this needs the **Weather lookup** in Settings). The energy each leg uses is how your own car actually drives at that speed and in that temperature, plus the wind and rain effect (measured from your own wet trips once there are enough). Where the battery would fall below your reserve, a charging stop is added before that leg (to your charge target, covering the next legs if they fit), using the charging power you set above. Road distances and times come from the routing service when **Road estimate** is on in Settings; otherwise a straight line made 30 percent longer is used and the card says so.
+
+**Open this route in Google Maps** opens the whole route in Google Maps (or its app on a phone) with your start, stops and destination in this order. Google takes up to nine stops between the start and the destination, so a long day becomes parts, each carrying on from where the previous one ended. Google does not know about the charging stops CarTrak suggests, so add a charger to its route where you plug in. Nothing is sent anywhere until you tap the link.
+
 ## Journeys: combining trips
 A road trip or a work day with several stops is many trips. On **Trips**, admins can tap **Select trips**, tap the trips that belong together (finished trips that are not already in a journey), name it and press **Combine**. The journey has its own page with:
 - total distance, driving time and elapsed time;

@@ -5,6 +5,7 @@ import { bestSpeedCard } from '../bestspeedcard.js';
 import { getReserve, getTarget } from '../charge.js';
 import { planTrip } from '../tripplan.js';
 import { isFuelCar } from '../navlayout.js';
+import { multiStopCard } from '../multistop.js';
 
 const KEY = 'cartrak.planKw';
 const saved = () => { try { return Number(localStorage.getItem(KEY)) || 0; } catch (e) { return 0; } };
@@ -68,6 +69,6 @@ export default async function plan(root, _a, session) {
         : h('p', { class: 'banner' }, 'CarTrak does not know how far your battery goes yet. It needs a reading with the range, or a few trips.'),
       field('pd', `Trip distance (${unit})`, distance), field('ps', 'Starting charge (%)', start),
       band && ((band.byTemp && band.byTemp.length) || band.nowBand) ? field('pw', 'Weather', weather, 'Based on how far you really got on trips in that weather. Cold and hot weather both use more.') : null, field('pk', 'Average charging power (kW)', kw, (saved() ? '' : winKw ? `Started from your own fast charges: ${win.sessions} session${win.sessions === 1 ? '' : 's'} averaged ${winKw} kW between ${low}% and ${high}%. ` : histKw ? `Started from your own fast charges (${fast.sessions} session${fast.sessions === 1 ? '' : 's'} averaged ${histKw} kW). ` : '') + 'The average over a stop, between the reserve and the target. Many cars average well below their peak.')),
-    out);
+    out, session && session.me.role === 'admin' ? await multiStopCard(() => ({ startPct: Number(start.value) || 100, reservePct: low, targetPct: high, chargeKw: Number(kw.value) || 100 }), latest) : null);
   show();
 }

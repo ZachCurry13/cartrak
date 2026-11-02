@@ -20,7 +20,10 @@ type Conditions struct {
 	Fog       bool    `json:"fog"`       // fog was met (no energy effect is claimed for it)
 	Label     string  `json:"label"`     // "Light rain", "Snow", "Dry"
 	BasePct   float64 `json:"basePct"`   // the extra energy this is worth with the fixed estimates, before any learning from the owner's trips
-	Dry       bool    `json:"dry"`       // nothing fell
+	Dry       bool    `json:"dry"`       // nothing fell, and the road was not wet from rain just before
+	Damp      bool    `json:"damp"`      // dry now but the road was wet from rain in the hours before
+	SunWm2    float64 `json:"sunWm2"`    // average sunshine on the ground while moving
+	Sun       string  `json:"sun"`       // "Sunny", "Some sun", or "" (night and overcast)
 	MovingMin float64 `json:"movingMin"` // minutes of moving time the answer rests on
 }
 
@@ -51,11 +54,23 @@ func snowPct(cmH float64) float64 {
 	return 15
 }
 
+// dampPct is what a road still wet from earlier rain costs: about the same as a drizzle falling.
+const dampPct = 2.0
+
+// HourEffectPct is the extra energy, in percent, one hour of weather is worth with the fixed estimates: the larger of rain and snow.
+func HourEffectPct(h Hour) float64 {
+	p := rainPct(h.RainMm)
+	if sp := snowPct(h.SnowCm); sp > p {
+		return sp
+	}
+	return p
+}
+
 // Summarize walks the moving stretches of a trip and adds up the rain and snow met on each, or false when the weather could
 // not be looked up for any of it.
 func Summarize(pts []Pt, look func(lat, lon float64, ts int64) (Hour, bool)) (Conditions, bool) {
 	var c Conditions
-	var sec, rain, snow, wet, pct float64
+	var sec, rain, snow, wet, pct, damp, sun float64
 	worst := 0
 	for i := 1; i < len(pts); i++ {
 		a, b := pts[i-1], pts[i]
@@ -76,11 +91,22 @@ func Summarize(pts []Pt, look func(lat, lon float64, ts int64) (Hour, bool)) (Co
 		if h.RainMm >= 0.1 || h.SnowCm >= 0.1 {
 			wet += dt
 		}
-		p := rainPct(h.RainMm)
-		if sp := snowPct(h.SnowCm); sp > p {
-			p = sp
+		p := HourEffectPct(h)
+		if p == 0 { // nothing falling now: is the road still wet from the hours before?
+			mid := (a.TS + b.TS) / 2
+			var before float64
+			for _, back := range []int64{3600, 7200} {
+				if e, ok := look((a.Lat+b.Lat)/2, (a.Lon+b.Lon)/2, mid-back); ok {
+					before += e.RainMm
+				}
+			}
+			if before >= 0.5 {
+				p = dampPct
+				damp += dt
+			}
 		}
 		pct += p * dt
+		sun += h.Sun * dt
 		if h.Code >= 95 {
 			c.Thunder = true
 		}
@@ -95,7 +121,15 @@ func Summarize(pts []Pt, look func(lat, lon float64, ts int64) (Hour, bool)) (Co
 		return Conditions{}, false
 	}
 	c.RainMmH, c.SnowCmH, c.WetShare, c.BasePct, c.MovingMin = rain/sec, snow/sec, wet/sec, pct/sec, sec/60
-	c.Dry = c.WetShare < 0.05
+	c.Damp = damp/sec >= 0.3
+	c.Dry = c.WetShare < 0.05 && !c.Damp
+	c.SunWm2 = sun / sec
+	switch {
+	case c.SunWm2 >= 450:
+		c.Sun = "Sunny"
+	case c.SunWm2 >= 150:
+		c.Sun = "Some sun"
+	}
 	// Snow melts into the precipitation figure, so judge by the snowfall itself: more than a trace means snow.
 	c.Snowy = c.SnowCmH >= 0.1
 	c.Label = label(c)
@@ -110,6 +144,8 @@ func label(c Conditions) string {
 		return "Fog"
 	case c.Dry:
 		return "Dry"
+	case c.WetShare < 0.05 && c.Damp:
+		return "Wet roads"
 	case c.Snowy && c.SnowCmH >= 1:
 		return "Heavy snow"
 	case c.Snowy:

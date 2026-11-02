@@ -100,3 +100,35 @@ func TestLearnRainNeedsSeveralWetAndDryTripsAndMeasuresTheDifference(t *testing.
 		t.Fatalf("rain never counts as helping: %+v", l)
 	}
 }
+
+func TestAWetRoadAfterRainCountsAsDampAndSunIsNamed(t *testing.T) {
+	// Dry now, but it rained 2 mm in each of the two hours before the drive.
+	pts := make([]Pt, 10)
+	for i := range pts {
+		pts[i] = Pt{TS: 10000 + 3600*2 + int64(i)*60, Lat: 45, Lon: -93, Speed: 80}
+	}
+	look := func(lat, lon float64, ts int64) (Hour, bool) {
+		if ts < 10000+3600*2 {
+			return Hour{Wx: true, RainMm: 2}, true
+		}
+		return Hour{Wx: true, Sun: 600}, true
+	}
+	c, ok := Summarize(pts, look)
+	if !ok || c.Dry || !c.Damp || c.Label != "Wet roads" || c.BasePct != 2 {
+		t.Fatalf("%+v", c)
+	}
+	if c.Sun != "Sunny" {
+		t.Fatalf("600 W/m2 is sunny: %+v", c)
+	}
+	d, _ := Summarize(pts, always(Hour{Wx: true, Sun: 200}))
+	if d.Sun != "Some sun" || !d.Dry || d.Label != "Dry" {
+		t.Fatalf("%+v", d)
+	}
+}
+
+func TestParseReadsSunshine(t *testing.T) {
+	hs, _ := Parse([]byte(`{"hourly":{"time":["2026-10-18T12:00"],"wind_speed_10m":[1],"wind_direction_10m":[1],"precipitation":[0],"snowfall":[0],"shortwave_radiation":[520]}}`))
+	if len(hs) != 1 || hs[0].Sun != 520 {
+		t.Fatalf("%+v", hs)
+	}
+}
