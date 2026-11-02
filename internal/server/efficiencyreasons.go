@@ -90,7 +90,7 @@ func (s *Server) computeReasons(days int) (map[string]any, error) {
 		return nil, err
 	}
 	extra := map[string]float64{}
-	haveWind := false
+	haveWind, haveWeather := false, false
 	var used, usual float64
 	n := 0
 	for _, t := range ts {
@@ -112,11 +112,14 @@ func (s *Server) computeReasons(days int) (map[string]any, error) {
 				haveWind = true
 			}
 		}
+		if rep.Facts.Weather != nil {
+			haveWeather = true
+		}
 	}
 	items := []map[string]any{}
-	for _, k := range []string{"speed", "temperature", "wind", "other"} {
-		if k == "wind" && !haveWind {
-			continue // the wind lookup is off or had no data
+	for _, k := range []string{"speed", "temperature", "wind", "rain", "snow", "other"} {
+		if k == "wind" && !haveWind || (k == "rain" || k == "snow") && !(haveWeather && extra[k] != 0) {
+			continue // the weather lookup is off or had no data, or it did not rain or snow
 		}
 		if usual > 0 {
 			items = append(items, map[string]any{"key": k, "kwh": extra[k], "pctOfUse": extra[k] / usual * 100})

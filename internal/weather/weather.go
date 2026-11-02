@@ -1,5 +1,6 @@
-// Package weather looks up the hourly wind for a place and a day, for the optional wind estimate on a trip. It only
-// asks for wind speed, direction and gusts, and only for a map cell about fifty kilometers wide, never an exact position.
+// Package weather looks up the hourly wind, rain and snow for a place and a day, for the optional weather on a trip. It only
+// asks for wind speed, direction and gusts, rain, snowfall and a weather code, and only for a map cell about fifty kilometers
+// wide, never an exact position.
 package weather
 
 import (
@@ -14,12 +15,19 @@ import (
 	"time"
 )
 
-// Hour is the wind in one UTC hour.
+// Hour is the weather in one UTC hour.
 type Hour struct {
 	TS      int64   `json:"ts"`
 	SpeedKm float64 `json:"speedKph"` // 10 m wind speed
 	DirDeg  float64 `json:"dirDeg"`   // the direction the wind comes FROM
 	GustKm  float64 `json:"gustKph"`
+	// What was asked for: V is 2 on every hour of an answer that asked about rain and snow, so a day saved before then (V 0) is
+	// asked for again, while a service that sends no rain figures is not asked again and again.
+	V      int     `json:"v,omitempty"`
+	Wx     bool    `json:"wx,omitempty"`
+	RainMm float64 `json:"rainMm,omitempty"` // precipitation in the hour, millimeters (rain and melted snow)
+	SnowCm float64 `json:"snowCm,omitempty"` // snowfall in the hour, centimeters
+	Code   int     `json:"code,omitempty"`   // WMO weather code: 61 rain, 71 snow, 95 thunderstorm, and so on
 }
 
 // Cell is a map cell about fifty kilometers wide (half a degree): the only form of a position that is ever sent.
@@ -47,6 +55,9 @@ type answer struct {
 		Wind []float64 `json:"wind_speed_10m"`
 		Dir  []float64 `json:"wind_direction_10m"`
 		Gust []float64 `json:"wind_gusts_10m"`
+		Rain []float64 `json:"precipitation"`
+		Snow []float64 `json:"snowfall"`
+		Code []float64 `json:"weather_code"`
 	} `json:"hourly"`
 }
 
@@ -64,7 +75,7 @@ func (c *Client) Day(ctx context.Context, lat, lon float64, day time.Time) ([]Ho
 		}
 	}
 	d := day.UTC().Format("2006-01-02")
-	q := url.Values{"latitude": {fmt.Sprintf("%.1f", lat)}, "longitude": {fmt.Sprintf("%.1f", lon)}, "hourly": {"wind_speed_10m,wind_direction_10m,wind_gusts_10m"},
+	q := url.Values{"latitude": {fmt.Sprintf("%.1f", lat)}, "longitude": {fmt.Sprintf("%.1f", lon)}, "hourly": {"wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,snowfall,weather_code"},
 		"wind_speed_unit": {"kmh"}, "timezone": {"UTC"}, "start_date": {d}, "end_date": {d}}
 	req, err := http.NewRequestWithContext(ctx, "GET", base+"?"+q.Encode(), nil)
 	if err != nil {
@@ -83,7 +94,11 @@ func (c *Client) Day(ctx context.Context, lat, lon float64, day time.Time) ([]Ho
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("weather service answered %d", resp.StatusCode)
 	}
-	return Parse(body)
+	hs, err := Parse(body)
+	for i := range hs {
+		hs[i].V = 2
+	}
+	return hs, err
 }
 
 // Parse reads the service's answer into hours.
@@ -101,6 +116,12 @@ func Parse(body []byte) ([]Hour, error) {
 		h := Hour{TS: t.UTC().Unix(), SpeedKm: a.Hourly.Wind[i], DirDeg: a.Hourly.Dir[i]}
 		if i < len(a.Hourly.Gust) {
 			h.GustKm = a.Hourly.Gust[i]
+		}
+		if i < len(a.Hourly.Rain) && i < len(a.Hourly.Snow) { // both present means the service answered about rain and snow
+			h.Wx, h.RainMm, h.SnowCm = true, a.Hourly.Rain[i], a.Hourly.Snow[i]
+			if i < len(a.Hourly.Code) {
+				h.Code = int(a.Hourly.Code[i])
+			}
 		}
 		out = append(out, h)
 	}

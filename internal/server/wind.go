@@ -10,7 +10,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/windcalc"
 )
 
-// maxWeatherFetches limits how many days of wind one trip may ask the weather service for in one go. A long road trip
+// maxWeatherFetches limits how many days of weather one trip may ask the weather service for in one go. A long road trip
 // crosses many cells; the rest are fetched the next time the trip is opened.
 const maxWeatherFetches = 14
 
@@ -21,11 +21,50 @@ type windPoint struct {
 	speed    float64
 }
 
-// windFor works out the wind met on a trip from the optional weather lookup, or false when the lookup is off, the
-// service could not be reached, or there is not enough data. Answers are kept, so each cell and day is asked for once.
-func (s *Server) windFor(pts []windPoint) (windcalc.Stats, bool) {
+// hourLook finds the weather hour nearest a place and time, when the lookup has one.
+type hourLook func(lat, lon float64, ts int64) (weather.Hour, bool)
+
+func (s *Server) weatherClient() *weather.Client {
+	if s.Weather != nil {
+		return s.Weather
+	}
+	return &weather.Client{}
+}
+
+// weatherDay is the hours of one cell and UTC day: from what was kept when it already has rain and snow in it, otherwise asked
+// for and kept. An hour kept before rain was asked about is returned when the service cannot be reached, so wind still works.
+func (s *Server) weatherDay(ctx context.Context, client *weather.Client, lat, lon float64, day time.Time, mayFetch bool) ([]weather.Hour, bool) {
+	_, _, cell := weather.Cell(lat, lon)
+	d := day.Format("2006-01-02")
+	var old []weather.Hour
+	if body := s.S.WeatherGet(cell, d); body != "" {
+		var hs []weather.Hour
+		if json.Unmarshal([]byte(body), &hs) == nil && len(hs) > 0 {
+			if hs[0].V >= 2 {
+				return hs, true
+			}
+			old = hs
+		}
+	}
+	if !mayFetch || ctx.Err() != nil {
+		return old, false
+	}
+	clat, clon, _ := weather.Cell(lat, lon)
+	hs, err := client.Day(ctx, clat, clon, day)
+	if err != nil || len(hs) == 0 {
+		return old, false
+	}
+	if b, err := json.Marshal(hs); err == nil {
+		_ = s.S.WeatherPut(cell, d, string(b), time.Now().Unix())
+	}
+	return hs, true
+}
+
+// weatherLook gets the weather for every cell and day a trip's moving readings touch (asking the optional lookup for what is
+// not kept yet) and returns a finder over them, or false when the lookup is off or there is nothing to look up.
+func (s *Server) weatherLook(pts []windPoint) (hourLook, bool) {
 	if s.Cfg == nil || !s.Cfg.WeatherLookup() || len(pts) < 2 {
-		return windcalc.Stats{}, false
+		return nil, false
 	}
 	type need struct {
 		lat, lon float64
@@ -33,7 +72,7 @@ func (s *Server) windFor(pts []windPoint) (windcalc.Stats, bool) {
 	}
 	needs := map[string]need{}
 	for _, p := range pts {
-		if p.speed < 30 {
+		if p.speed < 3 {
 			continue
 		}
 		clat, clon, cell := weather.Cell(p.lat, p.lon)
@@ -46,38 +85,26 @@ func (s *Server) windFor(pts []windPoint) (windcalc.Stats, bool) {
 	}
 	sort.Strings(keys)
 	hours := map[string][]weather.Hour{}
-	client := s.Weather
-	if client == nil {
-		client = &weather.Client{}
-	}
+	client := s.weatherClient()
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
 	defer cancel()
 	fetched := 0
 	for _, k := range keys {
 		n := needs[k]
 		_, _, cell := weather.Cell(n.lat, n.lon)
-		day := n.day.Format("2006-01-02")
-		if body := s.S.WeatherGet(cell, day); body != "" {
-			var hs []weather.Hour
-			if json.Unmarshal([]byte(body), &hs) == nil {
-				hours[k] = hs
-				continue
-			}
+		_, cached := s.weatherCached(cell, n.day)
+		may := !cached && fetched < maxWeatherFetches
+		if may {
+			fetched++
 		}
-		if fetched >= maxWeatherFetches || ctx.Err() != nil {
-			continue
+		if hs, _ := s.weatherDay(ctx, client, n.lat, n.lon, n.day, may); len(hs) > 0 {
+			hours[k] = hs
 		}
-		fetched++
-		hs, err := client.Day(ctx, n.lat, n.lon, n.day)
-		if err != nil || len(hs) == 0 {
-			continue
-		}
-		if b, err := json.Marshal(hs); err == nil {
-			_ = s.S.WeatherPut(cell, day, string(b), time.Now().Unix())
-		}
-		hours[k] = hs
 	}
-	look := func(lat, lon float64, ts int64) (weather.Hour, bool) {
+	if len(hours) == 0 {
+		return nil, false
+	}
+	return func(lat, lon float64, ts int64) (weather.Hour, bool) {
 		_, _, cell := weather.Cell(lat, lon)
 		hs := hours[cell+"|"+time.Unix(ts, 0).UTC().Truncate(24*time.Hour).Format("2006-01-02")]
 		if len(hs) == 0 {
@@ -90,12 +117,32 @@ func (s *Server) windFor(pts []windPoint) (windcalc.Stats, bool) {
 			}
 		}
 		return best, true
+	}, true
+}
+
+// weatherCached says whether the kept hours for a cell and day were asked for with rain and snow included.
+func (s *Server) weatherCached(cell string, day time.Time) ([]weather.Hour, bool) {
+	body := s.S.WeatherGet(cell, day.Format("2006-01-02"))
+	if body == "" {
+		return nil, false
+	}
+	var hs []weather.Hour
+	if json.Unmarshal([]byte(body), &hs) != nil || len(hs) == 0 {
+		return nil, false
+	}
+	return hs, hs[0].V >= 2
+}
+
+// windFor works out the wind met on a trip from the weather found for it, or false when there is none or not enough of it.
+func (s *Server) windFor(pts []windPoint, look hourLook) (windcalc.Stats, bool) {
+	if look == nil {
+		return windcalc.Stats{}, false
 	}
 	wp := make([]windcalc.Point, 0, len(pts))
 	for _, p := range pts {
 		wp = append(wp, windcalc.Point{TS: p.ts, Lat: p.lat, Lon: p.lon, Speed: p.speed})
 	}
-	return windcalc.Estimate(wp, look)
+	return windcalc.Estimate(wp, windcalc.Lookup(look))
 }
 
 func abs64(x int64) int64 {

@@ -174,3 +174,67 @@ func TestAHeadwindIsNamedAndTakenOutOfTheLeftOver(t *testing.T) {
 		t.Fatalf("strong crosswind: %+v", cross.Tags)
 	}
 }
+
+func TestRainIsNamedAndTakenOutOfTheLeftOverAndTheWeatherTotalAddsUp(t *testing.T) {
+	rs := drive(1000, 80, 80, 0.2, 90, 12) // 80 km/h, mild, 0.2 kWh/km: a bit heavier than the 5 km/kWh band says
+	km := 80.0 / 3600 * 30 * 90
+	dry := Build(append([]Reading(nil), rs...), 0.2*km, base, "10 to 20 °C", nil)
+	wx := &Weather{Label: "Rain", RainMmH: 4, WetShare: 1, EffectPct: 8}
+	wet := BuildWithWeather(append([]Reading(nil), rs...), 0.2*km, base, "10 to 20 °C", nil, nil, wx)
+	var rain, otherDry, otherWet float64
+	for _, f := range wet.Factors {
+		switch f.Key {
+		case "rain":
+			rain = f.Pct
+		case "other":
+			otherWet = f.Pct
+		}
+	}
+	for _, f := range dry.Factors {
+		if f.Key == "other" {
+			otherDry = f.Pct
+		}
+	}
+	if rain != 8 || otherWet >= otherDry {
+		t.Fatalf("rain %v, left over %v with rain against %v without: %+v", rain, otherWet, otherDry, wet.Factors)
+	}
+	if wx.TotalPct < 3.2 || wx.TotalPct > 3.4 { // mild weather saves 4.3% and rain costs 8%
+		t.Fatalf("the total is temperature, wind and rain together: %+v", wx)
+	}
+	tagged := false
+	for _, tg := range wet.Tags {
+		if tg.Key == "rain" && tg.Level == "bad" {
+			tagged = true
+		}
+	}
+	if !tagged {
+		t.Fatalf("a rain tag: %+v", wet.Tags)
+	}
+}
+
+func TestSnowHasItsOwnReasonAndADryTripAddsNoRainReason(t *testing.T) {
+	rs := drive(1000, 80, 60, 0.15, 60, -2)
+	km := 60.0 / 3600 * 30 * 60
+	snow := BuildWithWeather(append([]Reading(nil), rs...), 0.15*km, base, "Below freezing", nil, nil, &Weather{Label: "Snow", Snowy: true, EffectPct: 8})
+	dry := BuildWithWeather(append([]Reading(nil), rs...), 0.15*km, base, "Below freezing", nil, nil, &Weather{Label: "Dry", Dry: true})
+	has := func(r Report, k string) bool {
+		for _, f := range r.Factors {
+			if f.Key == k {
+				return true
+			}
+		}
+		return false
+	}
+	if !has(snow, "snow") || has(snow, "rain") || has(dry, "rain") || has(dry, "snow") {
+		t.Fatalf("snow %+v, dry %+v", snow.Factors, dry.Factors)
+	}
+}
+
+func TestExpectedKmPerKwhFollowsTheSpeedBandAndTheTemperature(t *testing.T) {
+	if got := base.ExpectedKmPerKwh(60, "10 to 20 °C"); got < 5.2 || got > 5.3 {
+		t.Fatalf("%v", got) // 5.0 for the band, times 4.6/4.4 for the weather
+	}
+	if got := base.ExpectedKmPerKwh(60, ""); got != 5.0 {
+		t.Fatalf("%v", got)
+	}
+}

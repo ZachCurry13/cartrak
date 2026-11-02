@@ -5,10 +5,11 @@ import (
 	"sort"
 )
 
-// BuildWithWind is Build with the wind met on the trip, when it is known.
-func BuildWithWind(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64, wind *Wind) (r Report) {
+// BuildWithWeather is Build with the wind and the rain or snow met on the trip, when they are known.
+func BuildWithWeather(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64, wind *Wind, wx *Weather) (r Report) {
 	r.Facts.RegenKm = regenKm
 	r.Facts.Wind = wind
+	r.Facts.Weather = wx
 	sort.Slice(rs, func(i, j int) bool { return rs[i].TS < rs[j].TS })
 	var km, movingKm, movingSec, stoppedSec, totalSec, over100, expectedKwh float64
 	var tempSum float64
@@ -108,7 +109,14 @@ func BuildWithWind(rs []Reading, tripKwh float64, base Baseline, tempGroup strin
 	if wind != nil {
 		windPct = wind.EffectPct
 	}
-	expected := r.UsualKwhPerKm * (1 + speedPct/100) * (1 + tempPct/100) * (1 + windPct/100)
+	rainPct := 0.0
+	if wx != nil {
+		rainPct = wx.EffectPct
+	}
+	if wx != nil {
+		wx.TotalPct = ((1+tempPct/100)*(1+windPct/100)*(1+rainPct/100) - 1) * 100
+	}
+	expected := r.UsualKwhPerKm * (1 + speedPct/100) * (1 + tempPct/100) * (1 + windPct/100) * (1 + rainPct/100)
 	otherPct := (r.KwhPerKm/expected - 1) * 100
 	add := func(key string, pct float64, note string) {
 		if pct >= significant || pct <= -significant {
@@ -119,6 +127,13 @@ func BuildWithWind(rs []Reading, tripKwh float64, base Baseline, tempGroup strin
 	add("temperature", tempPct, "The outside temperature")
 	if wind != nil {
 		add("wind", windPct, "The wind along the way")
+	}
+	if wx != nil && !wx.Dry {
+		key, note := "rain", "Rain on the road"
+		if wx.Snowy {
+			key, note = "snow", "Snow on the road"
+		}
+		add(key, rainPct, note)
 	}
 	if wind != nil {
 		add("other", otherPct, "Everything else: hills, heating or cooling the cabin, braking and how you accelerate")

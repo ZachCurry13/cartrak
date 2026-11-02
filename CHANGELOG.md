@@ -13,6 +13,12 @@
 ### 🧾 Software version note
 - Ford does not send the car's software version (checked against a full export of every field). **Health** has a new **Software version** card where you write down the version you see in the car and the first day on it, so a change in efficiency or battery size can be lined up with an update.
 
+### 🌧️ Rain and snow in "Why this efficiency?"
+- **Trip detail now has a Weather line**, such as "Light rain · 41°F · 12 mph headwind", and one sentence on what the temperature, wind and rain together cost the trip. **Rain** and **Snow** are listed as reasons beside speed, temperature and wind, with a chip on the trip, and they are taken out of "everything else". Home's "where did the energy go" list gets them too.
+- **It learns your car.** The rain and snow figures start as rough fixed estimates (3 to 12 percent more energy by how hard it falls, 8 to 15 for snow). In the background CarTrak fills in the weather for your last four months of trips, a few days at a time, and once there are six wet and six dry trips it measures what rain really costs your car and uses that instead. The card says when the figure is measured.
+- The optional wind lookup is now the **Weather lookup for trips** in Settings (wind, rain and snow, still off by default, still only a map cell about 30 miles wide and the date).
+- Also fixed: the weather answers kept for a day are asked for again once, to get the rain figures; after that they are kept.
+
 ### 🎬 Wrapped file name
 - The picture you share or download from Wrapped is named by its period, such as **2026.10 CarTrak Wrapped.jpg** (a year is **2026 CarTrak Wrapped.jpg**), so they sort in order in your photos and downloads.
 

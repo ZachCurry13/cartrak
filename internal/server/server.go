@@ -66,6 +66,7 @@ type Server struct {
 	geo          geoState
 	gasLive      gasLiveState
 	capCache     capacityCache
+	rainLearn    rainLearn
 	CityLookups  bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
 	cityBusy     atomic.Bool // such a lookup is running
 	tiles        tileFlight

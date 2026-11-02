@@ -42,6 +42,17 @@ func tagsFor(r Report, km, tripKwh float64) []Tag {
 			tags = append(tags, mk("tailwind", "Tailwind "+sgn(p), "good"))
 		}
 	}
+	if f.Weather != nil && !f.Weather.Dry {
+		key, label := "rain", f.Weather.Label
+		if f.Weather.Snowy {
+			key = "snow"
+		}
+		if p, ok := pct(key); ok && p >= 3 {
+			tags = append(tags, mk(key, label+" "+sgn(p), "bad"))
+		} else {
+			tags = append(tags, mk(key, label, "info"))
+		}
+	}
 	if f.Wind != nil && (f.Wind.CrossKph >= 25 || f.Wind.GustKph >= 55) {
 		tags = append(tags, mk("crosswind", "Strong crosswind", "info"))
 	}

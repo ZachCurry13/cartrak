@@ -1,9 +1,9 @@
 package store
 
-// EnergyTrips returns the finished trips since `from` with just the fields the efficiency insights need, newest
-// first, without the usual row limit.
+// EnergyTrips returns the finished trips since `from` with just the fields the efficiency insights and the weather need (where
+// each started included), newest first, without the usual row limit.
 func (s *Store) EnergyTrips(from int64) ([]*Trip, error) {
-	rows, err := s.DB.Query(`SELECT id,start_ts,end_ts,distance_km,start_soc,end_soc,start_kwh,end_kwh FROM trips
+	rows, err := s.DB.Query(`SELECT id,start_ts,end_ts,distance_km,start_soc,end_soc,start_kwh,end_kwh,start_lat,start_lon FROM trips
 		WHERE open=0 AND end_ts IS NOT NULL AND start_ts>=? ORDER BY start_ts DESC`, from)
 	if err != nil {
 		return nil, err
@@ -12,7 +12,7 @@ func (s *Store) EnergyTrips(from int64) ([]*Trip, error) {
 	var out []*Trip
 	for rows.Next() {
 		var t Trip
-		if err := rows.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.DistanceKm, &t.StartSoC, &t.EndSoC, &t.StartKwh, &t.EndKwh); err != nil {
+		if err := rows.Scan(&t.ID, &t.StartTS, &t.EndTS, &t.DistanceKm, &t.StartSoC, &t.EndSoC, &t.StartKwh, &t.EndKwh, &t.StartLat, &t.StartLon); err != nil {
 			return nil, err
 		}
 		out = append(out, &t)

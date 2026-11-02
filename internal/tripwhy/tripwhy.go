@@ -45,6 +45,20 @@ type Wind struct {
 	EffectPct float64 `json:"effectPct"` // rough change in energy used because of it
 }
 
+// Weather is the rain and snow met while moving, and what the weather as a whole cost (from the optional weather lookup).
+type Weather struct {
+	Label     string  `json:"label"` // "Light rain", "Snow", "Dry"
+	Dry       bool    `json:"dry"`
+	Snowy     bool    `json:"snowy"`
+	RainMmH   float64 `json:"rainMmH"`
+	SnowCmH   float64 `json:"snowCmH"`
+	WetShare  float64 `json:"wetShare"`
+	EffectPct float64 `json:"effectPct"` // extra energy the rain or snow cost
+	TotalPct  float64 `json:"totalPct"`  // temperature, wind and rain or snow together
+	Learned   bool    `json:"learned"`   // the rain figure comes from the owner's own wet and dry trips
+	WetTrips  int     `json:"wetTrips"`  // how many of them it rests on
+}
+
 type Facts struct {
 	Km          float64  `json:"km"`
 	AvgKph      float64  `json:"avgKph"` // while moving
@@ -58,6 +72,7 @@ type Facts struct {
 	HardBrakes  int      `json:"hardBrakes"`  // big drops in speed between two readings
 	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
 	Wind        *Wind    `json:"wind"`
+	Weather     *Weather `json:"weather"`
 	RegenKm     *float64 `json:"regenKm"`  // range the car says braking gave back during the trip (its own counter)
 	RegenKwh    *float64 `json:"regenKwh"` // the energy that range is worth, at this trip's own use per kilometer
 }
@@ -95,5 +110,23 @@ func bandIndex(b []Band, kph float64) int {
 
 // Build explains a trip. tempGroup is the name of the temperature group of the trip's average temperature.
 func Build(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64) Report {
-	return BuildWithWind(rs, tripKwh, base, tempGroup, regenKm, nil)
+	return BuildWithWeather(rs, tripKwh, base, tempGroup, regenKm, nil, nil)
+}
+
+// BuildWithWind is Build with the wind met on the trip, when it is known.
+func BuildWithWind(rs []Reading, tripKwh float64, base Baseline, tempGroup string, regenKm *float64, wind *Wind) Report {
+	return BuildWithWeather(rs, tripKwh, base, tempGroup, regenKm, wind, nil)
+}
+
+// ExpectedKmPerKwh is what the driver's history says a trip at this average speed in this temperature group should manage, or 0
+// when there is no history.
+func (b Baseline) ExpectedKmPerKwh(avgKph float64, tempGroup string) float64 {
+	e := b.Overall
+	if k := bandIndex(b.Bands, avgKph); k >= 0 && b.Bands[k].KmPerKwh > 0 {
+		e = b.Bands[k].KmPerKwh
+	}
+	if t, ok := b.TempKmPKwh[tempGroup]; ok && t > 0 && b.TempOverall > 0 {
+		e *= t / b.TempOverall
+	}
+	return e
 }

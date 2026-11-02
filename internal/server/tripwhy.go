@@ -99,10 +99,11 @@ func (s *Server) whyFor(t *store.Trip) (tripwhy.Report, error) {
 		}
 	}
 	var wind *tripwhy.Wind
-	if ws, ok := s.windFor(wpts); ok {
+	look, _ := s.weatherLook(wpts)
+	if ws, ok := s.windFor(wpts, look); ok {
 		wind = &tripwhy.Wind{HeadKph: ws.HeadKph, CrossKph: ws.CrossKph, GustKph: ws.GustKph, EffectPct: ws.EffectPct}
 	}
-	rep := tripwhy.BuildWithWind(rs, kwh, s.whyBaseline(), group, regen, wind)
+	rep := tripwhy.BuildWithWeather(rs, kwh, s.whyBaseline(), group, regen, wind, s.tripWeather(wpts, look))
 	s.withSmoothness(&rep, t)
 	return rep, nil
 }
