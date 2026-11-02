@@ -1,16 +1,32 @@
 # Changelog
 
-## 0.64.1
+## 0.65.0
+
+### 🎨 A steadier look (the first step of the cleanup)
+- **One page header everywhere.** The "← More" line and the page title are now one header: a finger-sized back arrow with the title beside it, on every page that has a back link. (The arrow goes where Back goes, see below.)
+- **Links that stand alone on a line** are finger-sized rows without an underline, and **number tiles never leave one alone** on a phone: an odd one out spans the row.
+- **"car reported just now"** shows on Home and Live only, not under every header.
+- **Trips has a title**, like Charging.
+- This follows Google's Material 3 ideas (consistent sizes, 48 px touch targets, a top bar with a back arrow, no stray link styles) without its component library, so it looks the same on a Samsung and an iPhone. Navigation (the bottom bar) and page-by-page cleanups come next.
+
+### ⚡ A faster Home
+- Home and the pages it shares asked for a dozen slow figures at once (records, day, gas today, charging summary, plan ahead, insights, the current outing), each waiting its turn on the one database connection. Each is now reused for 20 seconds, and thrown away the moment anything is changed, so a page you come back to is quick and a change shows at once.
 
 ### ◀️ Back goes where you came from
 - **The phone's Back button no longer jumps to a random page.** A page's own "← More" link used to add a step to the history, so after using one, Back went somewhere odd. The app now keeps a note of the pages you opened, in order, and the "←" link at the top of a page goes to the page before it, exactly as Back does. Redirects (the getting-started page, adding a first car) and the Day view's previous and next day arrows replace the page instead of adding a step.
 - **The "←" link names the page you came from.** Open Stats from Trips and it says "← Trips", not "← Charging". Opened from a bookmark or a notification, it keeps the name and place its page gave it.
 
+### 🛣️ Choose the road for a trip
+- **A trip with no phone GPS now has a Choose the road button.** It works out the roads between the places the car reported, a stretch at a time, and shows each one's length next to what the odometer said: **the road closest to the odometer**, the quickest and the shortest. Pick one and it is drawn. New estimates now use the road closest to the odometer on their own (before, the quickest road through the places was taken), and a trip that was tried and given up on can be fixed by choosing a road.
+
+### 🔔 Updates that wait for you
+- **A notice at the top of every page while something needs updating**: CarTrak itself (with how to update it through TrueNAS) or any part with a newer version, such as the Cloudflare connector. It stays until it is updated or you tap **Hide** on that notice. A hidden notice comes back when something newer than the hidden version is out, and **Show them again** brings them all back. Admins only, and hiding is per device.
+
 ### 📊 Where your driving goes
 - **Trips** shows each category (work, personal, medical, and so on) as a share of your driving: one bar with percentages, and for each category the miles, the trips and the time spent driving, as a share of the range you picked. The Trips page also has a title now.
 
 ### 🛠️ Fix a day
-- **"Choose a stretch of seven days or less" for exactly seven days.** When the clocks go back, seven calendar days is 169 hours, and the limit counted 168. A week that crosses the change now counts, and there is a **Last 7 days** button beside Yesterday, Today so far and Last 3 days. Longer than a week is still refused: a rebuild replaces everything in the stretch, so it stays small.
+- **"Choose a stretch of seven days or less" for exactly seven days.** When the clocks go back, seven calendar days is 169 hours, and the limit counted 168. Fix a day now covers **up to 31 days**, with **Last 7 days** and **Last 30 days** buttons beside Yesterday, Today so far and Last 3 days, and **Pick a whole month** (any of the last twelve) to redo a month in one go. The old one-week limit was not needed: a rebuild only loads a few numbers per reading (not Ford's full raw detail) and replays them in a scratch database, so a month is small. You still see exactly what would change before anything does.
 
 ### 🧭 Route planner fixes
 - **The legs said "undefined → undefined" and "NaN h NaN min".** The names and distances of each leg were sent under names the page did not read. Fixed, and a test now checks the exact names.

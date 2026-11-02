@@ -1,0 +1,20 @@
+/* One look for the parts every page shares: the page header with its back arrow, standalone text links, number tiles, and the
+   status line. Sizes come from a small set so pages stop inventing their own. */
+:root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--radius-card:16px;--radius-ctl:12px;--tap:48px;--t-small:13px;--t-body:15px;--t-title:22px}
+
+/* A page header: a back arrow the size of a finger, then the page's title. */
+.topbar{display:flex;align-items:center;gap:var(--sp-1);min-height:var(--tap);margin:0 0 var(--sp-3)}
+.topbar .back{flex:0 0 var(--tap);display:inline-flex;align-items:center;justify-content:center;width:var(--tap);height:var(--tap);margin-left:calc(var(--sp-3) * -1);border-radius:50%;font-size:22px;font-weight:600;text-decoration:none}
+.topbar .back:hover,.topbar .back:focus-visible{background:var(--card2)}
+.topbar .page-title{margin:0;min-width:0;flex:1 1 auto}
+.topbar h2{margin:0;font-size:var(--t-title);line-height:1.2;overflow-wrap:anywhere}
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* A link that stands alone on its line is a button without a box: no underline, a finger-sized row. */
+#view p>a:only-child:not(.btn):not(.back){display:inline-flex;align-items:center;min-height:44px;font-weight:600;text-decoration:none}
+
+/* Number tiles come in two columns on a phone; an odd one out spans the row instead of sitting alone. */
+@media (max-width:479px){.grid>:last-child:nth-child(odd){grid-column:1/-1}}
+
+/* "car reported just now" belongs to Home and Live. Everywhere else it is noise under the header. */
+body:not([data-page=""]):not([data-page=live]) #sync{display:none}

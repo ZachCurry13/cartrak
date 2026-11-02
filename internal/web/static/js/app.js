@@ -9,6 +9,7 @@ import { watchErrors } from './errlog.js';
 import { trackCheck } from './tracker.js';
 import { watchUpdates } from './updatewatch.js';
 import { startBackNav, goReplace, noteRendered } from './backnav.js';
+import { showUpdateNotes } from './updatenotes.js';
 
 watchErrors();
 startBackNav();
@@ -152,6 +153,7 @@ async function render() {
     const head = view.querySelector('h2');
     document.title = head && head.textContent ? `${head.textContent} · CarTrak` : 'CarTrak';
     noteRendered(head && head.textContent, view);
+    showUpdateNotes(session, view);
     if (typeof refresh === 'function') stopRefresh = startRefresh(refresh); // schedule depends on this device's data mode
     else if (refresh && refresh.cleanup) stopRefresh = refresh.cleanup;
   } catch (e) {

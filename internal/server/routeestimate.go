@@ -131,10 +131,13 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 		_ = s.S.SaveNoRoute(t.ID) // the car will not report more positions for a finished trip: stop offering it
 		return fail(routeFailure{Msg: "the car reported too few positions to route between"})
 	}
-	road, km, err := s.routeClient().RouteNear(context.Background(), routeest.Via(recorded, 8), odoTarget(t))
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	opts, err := s.roadOptions(ctx, t) // the road closest to the odometer first
 	if err != nil {
 		return fail(routeFailure{Msg: err.Error()})
 	}
+	road, km := opts[0].Points, opts[0].Km
 	if !routeest.Plausible(km, t.DistanceKm, straightKm(t)) {
 		_ = s.S.SaveNoRoute(t.ID) // asking again would give the same road
 		return fail(routeFailure{RoadKm: km, OdoKm: t.DistanceKm})

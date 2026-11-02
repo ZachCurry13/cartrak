@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	maxSpan   = 7*24*time.Hour + 2*time.Hour // seven calendar days, with room for the day the clocks go back (169 hours)
-	settleFor = 30 * time.Minute             // the end of the stretch must be at least this long ago
+	maxSpan   = 31*24*time.Hour + 2*time.Hour // a month, with room for the day the clocks go back (an hour longer)
+	settleFor = 30 * time.Minute              // the end of the stretch must be at least this long ago
 )
 
 // Plan is what a rebuild would replace and what it would put there.
@@ -69,7 +69,7 @@ func Compute(s *store.Store, d *trips.Detector, from, to int64, now time.Time) (
 		return p, nil
 	}
 	if time.Duration(to-from)*time.Second > maxSpan {
-		p.Blockers = append(p.Blockers, "Choose a stretch of seven days or less.")
+		p.Blockers = append(p.Blockers, "Choose a stretch of 31 days or less.")
 		return p, nil
 	}
 	if time.Unix(to, 0).After(now.Add(-settleFor)) {
@@ -123,7 +123,7 @@ func Compute(s *store.Store, d *trips.Detector, from, to int64, now time.Time) (
 		}
 	}
 	if time.Duration(p.To-p.From)*time.Second > maxSpan {
-		p.Blockers = append(p.Blockers, "Once widened to whole trips the stretch is longer than seven days.")
+		p.Blockers = append(p.Blockers, "Once widened to whole trips the stretch is longer than 31 days.")
 	}
 	if len(p.Blockers) > 0 {
 		return p, nil

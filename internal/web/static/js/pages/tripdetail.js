@@ -10,6 +10,7 @@ import { tripDistanceCard, shortOdometer } from '../tripdistance.js';
 import { replayCard } from '../replay.js';
 import { catColor } from '../categories.js';
 import { placeCard } from '../placecard.js';
+import { routeChoiceBar } from '../routechoice.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
 import { whyCard } from '../tripwhy.js';
@@ -108,6 +109,7 @@ export default async function tripDetail(root, [id, action], session) {
   } else {
     routeBox.append(...routeFor(data, mc).filter(Boolean));
   }
+  if (session.me.role === 'admin' && !t.open && (data.phone || []).filter((p) => p.lat != null && p.lon != null).length < 2) routeBox.append(routeChoiceBar(t, () => dispatchEvent(new Event('hashchange')))); // no phone track: the road is an estimate, and can be chosen
   const notes = h('input', { value: t.notes || '', placeholder: 'Notes (client, purpose…)', maxlength: 200 });
   const msg = h('p', { class: 'muted', role: 'status' });
   const admin = session.me.role === 'admin';

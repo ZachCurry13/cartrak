@@ -29,6 +29,18 @@ export default async function repair(root, _a, session) {
   const range = (a, b) => { from.value = local(a); to.value = local(b); out.replaceChildren(); msg.textContent = ''; };
   const day = (back) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - back); return d; };
   const soon = () => new Date(Date.now() - 31 * 60 * 1000);
+  // A whole month, the last twelve to choose from: from its first moment to the first moment of the next (or now, for this month).
+  const now = new Date();
+  const months = h('select', { id: 'rm', 'aria-label': 'A whole month', onchange: (e) => {
+    if (!e.target.value) return;
+    const [y, m] = e.target.value.split('-').map(Number);
+    const end = new Date(y, m, 1);
+    range(new Date(y, m - 1, 1), end > now ? soon() : end);
+    e.target.value = '';
+  } }, h('option', { value: '' }, 'Pick a whole month…'), ...Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return h('option', { value: `${d.getFullYear()}-${d.getMonth() + 1}` }, d.toLocaleDateString([], { month: 'long', year: 'numeric' }));
+  }));
 
   async function preview() {
     msg.textContent = 'Reading what was stored…';
@@ -71,7 +83,9 @@ export default async function repair(root, _a, session) {
         h('button', { class: 'sec', onclick: () => range(day(1), day(0)) }, 'Yesterday'),
         h('button', { class: 'sec', onclick: () => range(day(0), soon()) }, 'Today so far'),
         h('button', { class: 'sec', onclick: () => range(day(3), day(0)) }, 'Last 3 days'),
-        h('button', { class: 'sec', onclick: () => range(day(7), day(0)) }, 'Last 7 days')),
+        h('button', { class: 'sec', onclick: () => range(day(7), day(0)) }, 'Last 7 days'),
+        h('button', { class: 'sec', onclick: () => range(day(30), day(0)) }, 'Last 30 days')),
+      h('label', { for: 'rm' }, 'Or a whole month'), months,
       h('label', { for: 'rf' }, 'From'), from, h('label', { for: 'rt' }, 'To'), to,
       h('p', {}, h('button', { onclick: preview }, 'Preview')), msg),
     out);

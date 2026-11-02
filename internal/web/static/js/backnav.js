@@ -42,10 +42,29 @@ export function startBackNav() {
 
 // After a page has drawn: remember its name, and make its "←" link say where it really goes.
 export function noteRendered(title, root) {
+  document.body.dataset.page = (location.hash.replace(/^#\/?/, '').split('/')[0]) || '';
   if (title) { titles[here()] = title; save(); }
   const before = idx > 0 ? name(stack[idx - 1]) : '';
-  if (!before) return;
-  for (const a of root.querySelectorAll('a[href^="#/"]')) if (/^←/.test(a.textContent.trim())) a.textContent = `← ${before}`;
+  if (before) for (const a of root.querySelectorAll('a[href^="#/"]')) if (/^←/.test(a.textContent.trim())) a.textContent = `← ${before}`;
+  topbar(root);
+}
+
+// The page's "← More" line and its title become one header: a back arrow and the title beside it, the same on every page.
+function topbar(root) {
+  const a = [...root.querySelectorAll('p > a[href^="#/"]')].find((x) => /^←/.test(x.textContent.trim()) && x.parentElement.children.length === 1);
+  const title = a && a.parentElement.nextElementSibling;
+  if (!title || !title.classList.contains('page-title') || title.closest('.topbar')) return;
+  const label = a.textContent.replace(/^←\s*/, '').trim();
+  a.className = 'back';
+  a.setAttribute('aria-label', `Back to ${label}`);
+  const hidden = document.createElement('span');
+  hidden.className = 'vh';
+  hidden.textContent = label;
+  a.replaceChildren(document.createTextNode('←'), hidden);
+  const bar = document.createElement('div');
+  bar.className = 'topbar';
+  a.parentElement.replaceWith(bar);
+  bar.append(a, title);
 }
 
 // A change of page that should not be a step in the history: a redirect, or the same page showing another day.
