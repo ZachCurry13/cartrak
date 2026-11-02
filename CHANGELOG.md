@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.63.4
+
+### 🎬 Wrapped file name
+- The picture you share or download from Wrapped is now named by its period, such as **2026.10 CarTrak Wrapped.jpg** (a year is **2026 CarTrak Wrapped.jpg**), so they sort in order in your photos and downloads.
+
 ## 0.63.3
 
 ### 🎬 Wrapped

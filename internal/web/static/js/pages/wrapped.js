@@ -24,6 +24,7 @@ export default async function wrapped(root, args) {
   const period = args[0] || '';
   const w = await api(`/api/analytics/wrapped?period=${encodeURIComponent(period)}`);
   const r = w.recap, cur = w.currency || '$', title = periodTitle(r.period);
+  const fileName = `${String(r.period).replace('-', '.')} CarTrak Wrapped`; // the saved or shared picture: 2026.10 CarTrak Wrapped
   const season = periodTheme(r.period); // the month's own theme, not today's
   const routes = (await api(`/api/analytics/everywhere?period=${encodeURIComponent(r.period)}`).catch(() => ({ routes: [] }))).routes;
   if (!r.trips) {
@@ -64,8 +65,8 @@ export default async function wrapped(root, args) {
     w.ring && w.ring.days ? [h('div', { class: 'kick' }, 'A day in the life'), h('div', { class: 'wpanel' }, dayRing(w.ring), ringKey()),
       w.ring.leaveAt ? h('div', { class: 'small' }, `Out the door around ${clockText(w.ring.leaveAt)} on weekdays${w.ring.plugInAt ? `, plugged in around ${clockText(w.ring.plugInAt)}` : ''}.`) : null] : null,
     [h('div', { class: 'kick' }, 'Your infographic'), img, h('div', { class: 'seg', style: 'margin-top:12px' },
-      h('button', { type: 'button', class: 'on', onclick: async (e) => { e.stopPropagation(); shareMsg.textContent = { shared: 'Shared.', saved: 'Saved to your downloads.', canceled: '' }[await shareImage(canvas, `CarTrak ${title}`)]; } }, 'Share picture'),
-      h('button', { type: 'button', class: 'sec', onclick: async (e) => { e.stopPropagation(); await downloadImage(canvas, `CarTrak ${title}`); shareMsg.textContent = 'Saved to your downloads.'; } }, 'Download'),
+      h('button', { type: 'button', class: 'on', onclick: async (e) => { e.stopPropagation(); shareMsg.textContent = { shared: 'Shared.', saved: 'Saved to your downloads.', canceled: '' }[await shareImage(canvas, fileName)]; } }, 'Share picture'),
+      h('button', { type: 'button', class: 'sec', onclick: async (e) => { e.stopPropagation(); await downloadImage(canvas, fileName); shareMsg.textContent = 'Saved to your downloads.'; } }, 'Download'),
       h('a', { class: 'btn sec', href: '#/analytics', onclick: (e) => e.stopPropagation() }, 'Done')), shareMsg],
   ].filter(Boolean);
 
