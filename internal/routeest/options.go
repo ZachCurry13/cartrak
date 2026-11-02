@@ -85,7 +85,7 @@ func (c *Client) Options(ctx context.Context, via []Point, targetKm float64) ([]
 	segs := make([][]alt, 0, len(via)-1)
 	for i := 0; i+1 < len(via); i++ {
 		if i > 0 {
-			time.Sleep(150 * time.Millisecond) // the free routing service asks for a gentle pace
+			time.Sleep(600 * time.Millisecond) // the public routing service asks for about one request a second, and each takes a moment too
 		}
 		a, err := c.alternatives(ctx, via[i], via[i+1])
 		if err != nil {

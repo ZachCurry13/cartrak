@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.65.2
+
+### ⏱️ Faster rebuilds, gentler road lookups
+- **Fix a day is about two and a half times faster** here, and should gain more on a NAS disk: the scratch database it replays into no longer waits for the disk after every write. A month still says it can take up to a minute while it works.
+- **Working out roads is gentler on the free routing service.** Choosing between roads makes a few requests for each trip, so they are spaced out to about one a second, and the road estimates run five trips at a time with a count of how many are left. It is slower, but it will not get your address blocked.
+
 ## 0.65.1
 
 ### 📐 The leftovers of the consistency pass

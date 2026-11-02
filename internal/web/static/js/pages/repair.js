@@ -43,7 +43,7 @@ export default async function repair(root, _a, session) {
   }));
 
   async function preview() {
-    msg.textContent = 'Reading what was stored…';
+    msg.textContent = secs(to) - secs(from) > 8 * 86400 ? 'Reading what was stored… a month can take up to a minute.' : 'Reading what was stored…';
     out.replaceChildren();
     try {
       const p = await api('/api/repair/preview', { method: 'POST', body: { from: secs(from), to: secs(to) } });
@@ -58,7 +58,7 @@ export default async function repair(root, _a, session) {
       word.addEventListener('input', () => { go.disabled = word.value.trim() !== 'REBUILD'; });
       async function apply() {
         go.disabled = true;
-        msg.textContent = 'Rebuilding…';
+        msg.textContent = secs(to) - secs(from) > 8 * 86400 ? 'Rebuilding… a month can take up to a minute.' : 'Rebuilding…';
         try {
           const r = await api('/api/repair/apply', { method: 'POST', body: { from: secs(from), to: secs(to), confirm: 'REBUILD' } });
           out.replaceChildren(h('p', { class: 'banner notice' }, `Done: ${r.replacedTrips} trip${r.replacedTrips === 1 ? '' : 's'} and ${r.replacedCharges} charging session${r.replacedCharges === 1 ? '' : 's'} replaced by ${r.trips} and ${r.charges}.`),

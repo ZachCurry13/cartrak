@@ -48,7 +48,7 @@ export async function routeEstimateBar() {
     failed.clear();
     while (left > 0 && guard++ < 30) {
       msg.textContent = `Estimating… ${left} to go.`;
-      const r = await api('/api/trips/estimate-routes?limit=10', { method: 'POST' }).catch(() => null);
+      const r = await api('/api/trips/estimate-routes?limit=5', { method: 'POST' }).catch(() => null);
       if (r) for (const f of r.failures || []) failed.set(f.id, f);
       if (!r || (r.done === 0 && r.failed > 0 && r.pending >= left)) {
         msg.textContent = failed.size ? 'Some trips could not be estimated, so they stay as a straight line:' : 'The routing service did not answer. Try again later.';

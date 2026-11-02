@@ -47,7 +47,7 @@ func (s *Server) estimateRoutes(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if i > 0 {
-			time.Sleep(1100 * time.Millisecond) // the public routing server is for light use
+			time.Sleep(300 * time.Millisecond) // the public routing server is for light use (a trip's own stretches are already spaced out)
 		}
 		if s.estimateFor(t, true) != nil {
 			done++
