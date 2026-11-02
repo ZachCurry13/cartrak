@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.63.3
+
+### 🎬 Wrapped
+- **An October Wrapped opened in November wore the November theme** (the turkey, the amber glow). A Wrapped now wears the theme of the month it is about: October is Halloween, December is Christmas, and so on. A theme you chose in Display, or Off, still wins.
+- **Sharing the infographic sent a blank picture.** The picture is now shared as a JPEG (about 170 KB) instead of a PNG (about 1.5 MB, which some phones and apps hand over blank), and only the file is shared, with no title beside it, because some apps take the words and drop the picture.
+- **New Download button** beside Share picture saves the picture to your device without going through the share sheet. If the share cannot send a file at all, Share picture falls back to saving it, as before.
+
 ## 0.63.2
 
 ### 🐞 Fixed in the trip purpose picker (from 0.63.1)

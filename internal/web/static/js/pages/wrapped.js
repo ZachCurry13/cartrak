@@ -2,10 +2,10 @@ import { h, dist, temp, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { compareDistance, compareEnergy, compareDriver, milesOrKm, distUnit, personalityLine, periodTitle, valueText, clockText } from '../funwords.js';
 import { flowChart, dayRing, ringKey } from '../funcharts.js';
-import { drawInfographic, shareImage } from '../infographic.js';
+import { drawInfographic, shareImage, downloadImage } from '../infographic.js';
 import { efficiency } from '../energy.js';
 import { economy, volText, priceText } from '../fuelunits.js';
-import { activeTheme, THEMES } from '../seasons.js';
+import { periodTheme, THEMES } from '../seasons.js';
 
 // Wrapped: a month or a year as full-screen slides. Tap the right side for the next one, the left side to go back. The last slide
 // is the infographic, to share or save.
@@ -24,7 +24,7 @@ export default async function wrapped(root, args) {
   const period = args[0] || '';
   const w = await api(`/api/analytics/wrapped?period=${encodeURIComponent(period)}`);
   const r = w.recap, cur = w.currency || '$', title = periodTitle(r.period);
-  const season = activeTheme();
+  const season = periodTheme(r.period); // the month's own theme, not today's
   const routes = (await api(`/api/analytics/everywhere?period=${encodeURIComponent(r.period)}`).catch(() => ({ routes: [] }))).routes;
   if (!r.trips) {
     root.append(h('p', {}, h('a', { href: '#/analytics' }, '← Insights')), h('div', { class: 'empty' }, h('b', {}, `Nothing to wrap for ${title}`), h('p', { class: 'muted' }, 'There were no trips in it.')));
@@ -65,6 +65,7 @@ export default async function wrapped(root, args) {
       w.ring.leaveAt ? h('div', { class: 'small' }, `Out the door around ${clockText(w.ring.leaveAt)} on weekdays${w.ring.plugInAt ? `, plugged in around ${clockText(w.ring.plugInAt)}` : ''}.`) : null] : null,
     [h('div', { class: 'kick' }, 'Your infographic'), img, h('div', { class: 'seg', style: 'margin-top:12px' },
       h('button', { type: 'button', class: 'on', onclick: async (e) => { e.stopPropagation(); shareMsg.textContent = { shared: 'Shared.', saved: 'Saved to your downloads.', canceled: '' }[await shareImage(canvas, `CarTrak ${title}`)]; } }, 'Share picture'),
+      h('button', { type: 'button', class: 'sec', onclick: async (e) => { e.stopPropagation(); await downloadImage(canvas, `CarTrak ${title}`); shareMsg.textContent = 'Saved to your downloads.'; } }, 'Download'),
       h('a', { class: 'btn sec', href: '#/analytics', onclick: (e) => e.stopPropagation() }, 'Done')), shareMsg],
   ].filter(Boolean);
 
@@ -73,6 +74,7 @@ export default async function wrapped(root, args) {
   const body = h('div', { class: 'wbody' });
   const close = h('a', { class: 'wclose', href: '#/analytics', 'aria-label': 'Close' }, '×');
   const stage = h('section', { class: 'wrapped', role: 'dialog', 'aria-label': `${title} wrapped` }, bars, close, body);
+  if (season) { stage.style.setProperty('--season1', THEMES[season.key][6]); stage.style.setProperty('--season2', THEMES[season.key][7]); } // the month's colors
   const show = (i) => {
     at = Math.max(0, Math.min(slides.length - 1, i));
     stage.className = `wrapped ${season && (at === 0 || at === slides.length - 1) ? 'wseason' : SKIN[at % SKIN.length]}`; // the season opens and closes it

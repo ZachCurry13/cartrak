@@ -93,6 +93,17 @@ export function activeTheme() {
   return themeFor();
 }
 
+// The theme a Wrapped for a month or a year wears: the one of that month (judged on its 15th, so a holiday late in it, like Halloween,
+// counts), not today's. A chosen theme or Off is respected as it is everywhere.
+export function periodTheme(period) {
+  const pref = getSeasonPref();
+  if (pref === 'off') return null;
+  if (THEMES[pref]) return { key: pref, day: false };
+  const m = /^(\d{4})(?:-(\d{2}))?$/.exec(period || '');
+  if (!m) return activeTheme();
+  return themeFor(new Date(Number(m[1]), m[2] ? Number(m[2]) - 1 : 11, 15));
+}
+
 // One stylesheet with every theme's colors, for dark and light, so the page switches with an attribute.
 function styles() {
   let css = '';

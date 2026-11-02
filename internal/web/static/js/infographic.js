@@ -153,16 +153,43 @@ export function drawInfographic(w, routes, colors = null) {
   return c;
 }
 
-// Share the picture, or save it when sharing a file is not possible here.
+// A data address as a file, without fetch (the page's security policy does not let it fetch a data address).
+function dataFile(url, name, type) {
+  const bin = atob(url.slice(url.indexOf(',') + 1));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new File([bytes], name, { type });
+}
+
+// The picture as a file. A JPEG, not a PNG: the picture is a full 1080 x 1920 image and the PNG is about 1.5 MB, which some phones and
+// apps hand over as a blank picture. The same picture as a JPEG is a fraction of that, and the background is solid so nothing is lost.
+// toBlob can hand back nothing (a busy phone); then the picture is read back from its data address.
+async function pictureFile(canvas, name) {
+  const type = 'image/jpeg';
+  const blob = await new Promise((res) => canvas.toBlob(res, type, 0.92));
+  if (blob && blob.size > 20000) return new File([blob], `${name}.jpg`, { type });
+  return dataFile(canvas.toDataURL(type, 0.92), `${name}.jpg`, type);
+}
+
+// Share the picture, or save it when sharing a file is not possible here. Only the file is shared: a title or text beside it makes
+// some apps take the words and drop the picture.
 export async function shareImage(canvas, name) {
-  const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
-  const file = new File([blob], `${name}.png`, { type: 'image/png' });
+  const file = await pictureFile(canvas, name);
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: name }); return 'shared'; } catch (e) { if (e.name === 'AbortError') return 'canceled'; }
+    try { await navigator.share({ files: [file] }); return 'shared'; } catch (e) { if (e.name === 'AbortError') return 'canceled'; }
   }
+  return saveBlob(file, name);
+}
+
+// Download the picture to the device.
+export async function downloadImage(canvas, name) {
+  return saveBlob(await pictureFile(canvas, name), name);
+}
+
+function saveBlob(file, name) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${name}.png`;
+  a.href = URL.createObjectURL(file);
+  a.download = file.name;
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   return 'saved';
