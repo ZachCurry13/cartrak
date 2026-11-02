@@ -5,6 +5,10 @@
 ### 🎨 A steadier look (the first step of the cleanup)
 - **One page header everywhere.** The "← More" line and the page title are now one header: a finger-sized back arrow with the title beside it, on every page that has a back link. (The arrow goes where Back goes, see below.)
 - **Pages with a title but no back link of their own** (Notifications, Help, Year in review, Data check, All cars) get the same arrow, to the page you came from.
+- **The bottom bar is five items: four pages and More.** It was seven, with tiny labels. The pages that no longer fit (Live, Health, Data and any others you had in the bar beyond the fourth) moved to the top of the More sheet, so nothing is lost; **Customize the bar** still lets you choose which four.
+- **"Saved" and "Removed" read the same everywhere**: one short message above the bottom bar for every change you make, instead of each page finding its own words.
+- **Every typed field is the same height and shape**, a number selects itself when tapped and brings up the number keypad, and **long help text is folded to two lines with a More button**, so the answer is not buried under the explanation.
+- **Trips has one row of filters** (category, how far back, List or Map) instead of three stacked bars.
 - **Links that stand alone on a line** are finger-sized rows without an underline, and **number tiles never leave one alone** on a phone: an odd one out spans the row.
 - **"car reported just now"** shows on Home and Live only, not under every header.
 - **Trips has a title**, like Charging.

@@ -21,7 +21,11 @@ export default async function trips(root, _a, session) {
   const sel = tripSelect(paintList, (id) => { location.hash = `#/journey/${id}`; });
   let cat = '', range = 'month', view = 'list';
   const list = h('div', { class: 'cols' }), sum = h('div', { class: 'card' });
-  const segCat = h('div', { class: 'seg' }), segRange = h('div', { class: 'seg' }), segView = h('div', { class: 'seg' }), mapBox = h('div');
+  // One row of filters instead of three bars: the category and the range are pickers, the view (List or Map) stays two buttons.
+  const segCat = h('select', { 'aria-label': 'Category', onchange: (e) => { cat = e.target.value; draw(); } });
+  const segRange = h('select', { 'aria-label': 'How far back', onchange: (e) => { range = e.target.value; draw(); } });
+  const segView = h('div', { class: 'seg' }), mapBox = h('div');
+  const fill = (el, items, value) => el.replaceChildren(...items.map(([k, label]) => h('option', { value: k, selected: k === value }, label)));
   const q = () => {
     const p = new URLSearchParams();
     if (cat) p.set('category', cat);
@@ -41,8 +45,8 @@ export default async function trips(root, _a, session) {
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
   }
   async function draw() {
-    seg(segCat, [['', 'All'], ...categoryList().map((c) => [c.key, c.label])], () => cat, (v) => { cat = v; });
-    seg(segRange, [['week', '7 days'], ['month', '30 days'], ['year', 'Year'], ['all', 'All']], () => range, (v) => { range = v; });
+    fill(segCat, [['', 'All trips'], ...categoryList().map((c) => [c.key, c.label])], cat);
+    fill(segRange, [['week', 'Last 7 days'], ['month', 'Last 30 days'], ['year', 'Last year'], ['all', 'All time']], range);
     if (mc.enabled) seg(segView, [['list', 'List'], ['map', 'Map']], () => view, (v) => { view = v; });
     const [ts, s] = await Promise.all([api(`/api/trips?${q()}`), api(`/api/summary?${q().replace(/category=[\w-]+&?/, '')}`)]);
     paintSummary(s);
@@ -84,7 +88,7 @@ export default async function trips(root, _a, session) {
   const review = h('div');
   const estBar = h('div');
   if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
-  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Trips')), estBar, h('nav', { class: 'linkrow', 'aria-label': 'More about trips' }, h('a', { href: '#/day' }, 'Day view'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/reports' }, 'Reports'), h('a', { href: '#/plan' }, 'Plan a trip'), admin ? h('a', { href: '#/rules' }, 'Trip rules') : null), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, colorKey(), selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Trips')), estBar, h('nav', { class: 'linkrow', 'aria-label': 'More about trips' }, h('a', { href: '#/day' }, 'Day view'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/reports' }, 'Reports'), h('a', { href: '#/plan' }, 'Plan a trip'), admin ? h('a', { href: '#/rules' }, 'Trip rules') : null), review, journeys, h('div', { class: 'filters' }, segCat, segRange, ...(mc.enabled ? [segView] : [])), sum, colorKey(), selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

@@ -25,14 +25,14 @@ export const PAGES = [
   ['display', '#/display', 'Display', 'M4 5h16v11H4zM9 20h6M12 16v4'],
 ];
 const byKey = new Map(PAGES.map((p) => [p[0], p]));
-export const MAX_BAR = 6;
+export const MAX_BAR = 4; // four pages and More: five fit a phone without tiny labels
 
 // A gas or hybrid car: it has a tank to watch instead of a plug.
 export const isFuelCar = (session) => !!(session.vehicle && session.vehicle.engine && session.vehicle.powertrain && session.vehicle.powertrain !== 'ev');
 
 export const defaults = (admin, fuelCar = false) => ({
-  bar: admin ? ['home', 'trips', 'live', fuelCar ? 'fuel' : 'charging', 'health', 'data'] : ['home', 'trips', 'live', fuelCar ? 'fuel' : 'charging', 'insights'],
-  tiles: admin ? ['insights', 'reports', 'day', 'stops', 'places', 'plan', 'settings'] : ['reports', 'day', 'stops', 'places', 'plan', 'history', 'display'],
+  bar: ['home', 'trips', fuelCar ? 'fuel' : 'charging', 'insights'],
+  tiles: admin ? ['live', 'health', 'data', 'reports', 'day', 'stops', 'places', 'plan', 'settings'] : ['live', 'reports', 'day', 'stops', 'places', 'plan', 'history', 'display'],
   auto: false,
 });
 
@@ -72,7 +72,8 @@ export function current(session) {
   const admin = session.me.role === 'admin';
   const l = layout || read(LOCAL, null) || defaults(admin, isFuelCar(session));
   const clean = (keys) => keys.filter((k) => byKey.has(k) && allowed(k, session));
-  const bar = clean(l.bar).slice(0, MAX_BAR), tiles = clean(l.tiles);
+  const all = clean(l.bar), bar = all.slice(0, MAX_BAR), kept = clean(l.tiles);
+  const tiles = [...all.slice(MAX_BAR).filter((k) => !kept.includes(k)), ...kept]; // a bar saved with more pages than fit: the rest move to More, none is lost
   return { bar: l.auto ? byUse(bar) : bar, tiles: l.auto ? byUse(tiles) : tiles, auto: !!l.auto };
 }
 

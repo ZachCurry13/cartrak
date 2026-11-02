@@ -22,6 +22,26 @@ body:not([data-page=""]):not([data-page=live]) #sync{display:none}
 /* A typed number with its currency and unit: one box, the same on every screen. */
 .fieldbox{display:inline-flex;align-items:center;gap:6px;min-height:var(--tap);padding:0 var(--sp-3);background:var(--card2);border:1px solid var(--line);border-radius:var(--radius-ctl);max-width:100%}
 .fieldbox:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-.fieldbox input{width:6em;min-width:0;min-height:44px;padding:0;border:0;background:transparent;text-align:right;font:inherit;color:inherit}
-.fieldbox input:focus-visible{outline:none}
+#view .fieldbox input[type=number]{width:6em;min-width:0;min-height:44px;padding:0;border:0;background:transparent;text-align:right;font:inherit;color:inherit}
+#view .fieldbox input[type=number]:focus-visible{outline:none}
 .fieldbox .pre,.fieldbox .suf{color:var(--muted);white-space:nowrap}
+
+/* The filters of a list page on one row: pickers that share the width, and a two-button switch. */
+.filters{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin:0 0 var(--sp-3)}
+.filters select{flex:1 1 9em;min-width:0;min-height:var(--tap)}
+.filters .seg{flex:0 0 auto}
+
+/* Every typed field is the same height and shape, wherever it is. (A number inside a .fieldbox keeps the box's own look.) */
+#view input[type=text],#view input[type=number],#view input[type=search],#view input[type=date],#view input[type=time],#view input[type=datetime-local],#view input[type=password],#view input:not([type]),#view select{min-height:var(--tap);box-sizing:border-box;padding:0 var(--sp-3);border-radius:var(--radius-ctl);font:inherit}
+#view textarea{box-sizing:border-box;padding:var(--sp-3);border-radius:var(--radius-ctl);font:inherit}
+#view input[type=number]{text-align:right}
+
+/* Help text folded to two lines, with a More button (consistency.js). */
+p.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+p.clamp.open{display:block}
+.morebtn{display:inline-flex;align-items:center;min-height:44px;margin:-6px 0 0;padding:0;border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer}
+
+/* "Saved": a short message above the bottom bar. */
+#toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);max-width:calc(100% - 32px);padding:10px 18px;border-radius:24px;background:var(--text);color:var(--bg);font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}

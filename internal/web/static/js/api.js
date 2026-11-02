@@ -2,11 +2,17 @@ import { currentCar } from './car.js';
 import { saveAnswer, loadAnswer, forgetOffline } from './offlinestore.js';
 import { windowKey } from './offlinekey.js';
 import { showOffline, hideOffline } from './offlinebar.js';
+import { toast } from './toast.js';
 
 export class AuthError extends Error {}
 
 // Screens that read secrets, tokens, people or downloads are never kept on the device.
 const NEVER_KEPT = /^\/api\/(share|shares|reports|debug|export|backup|restore|security|ford|login|logout|setup|users|people|push|devices|admin|connector|ha|remote|tiles|cars\/[^/]+\/(access|backup))(\/|\?|$)/;
+
+// Changes the person made, which say "Saved" (or "Removed") the same way everywhere. Looking things up, signing in and background reports do not.
+const SAVED_POSTS = /^\/api\/(named-places|categories|maintenance|fuel\/fills|time-off|users|cars|reports\/templates|software|devices|push\/prefs|charges|trips\/[^/]+\/(route-choice|distance|extend|close))/;
+const NOT_SAVES = /^\/api\/(restore|storage|track|push\/(unsubscribe|test))/;
+const saves = (method, path) => (method === 'PATCH' || method === 'PUT' || method === 'DELETE' ? !NOT_SAVES.test(path) : method === 'POST' && SAVED_POSTS.test(path));
 
 export async function api(path, opts = {}) {
   const init = { credentials: 'same-origin', headers: {}, method: opts.method || 'GET' };
@@ -53,6 +59,7 @@ export async function api(path, opts = {}) {
   try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
   if (!r.ok) throw new Error((data && data.error) || `HTTP ${r.status}`);
   hideOffline();
+  if (saves(init.method, path)) toast(init.method === 'DELETE' ? 'Removed' : 'Saved');
   if (keep && data && typeof data === 'object') { saveAnswer(key, data); if (wkey) saveAnswer(wkey, data); }
   return data;
 }
