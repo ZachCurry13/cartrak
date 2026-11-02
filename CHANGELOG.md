@@ -9,6 +9,9 @@
 ### 📊 Where your driving goes
 - **Trips** shows each category (work, personal, medical, and so on) as a share of your driving: one bar with percentages, and for each category the miles, the trips and the time spent driving, as a share of the range you picked. The Trips page also has a title now.
 
+### 🛠️ Fix a day
+- **"Choose a stretch of seven days or less" for exactly seven days.** When the clocks go back, seven calendar days is 169 hours, and the limit counted 168. A week that crosses the change now counts, and there is a **Last 7 days** button beside Yesterday, Today so far and Last 3 days. Longer than a week is still refused: a rebuild replaces everything in the stretch, so it stays small.
+
 ### 🧭 Route planner fixes
 - **The legs said "undefined → undefined" and "NaN h NaN min".** The names and distances of each leg were sent under names the page did not read. Fixed, and a test now checks the exact names.
 - **Address search is biased to where you are.** "Salon Innovations" found a place in Finland. The search now prefers matches around the car's position (a box about 300 miles wide, rounded to a whole degree, never the exact place).

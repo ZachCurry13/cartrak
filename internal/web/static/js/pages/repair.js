@@ -70,7 +70,8 @@ export default async function repair(root, _a, session) {
       h('p', { class: 'seg' },
         h('button', { class: 'sec', onclick: () => range(day(1), day(0)) }, 'Yesterday'),
         h('button', { class: 'sec', onclick: () => range(day(0), soon()) }, 'Today so far'),
-        h('button', { class: 'sec', onclick: () => range(day(3), day(0)) }, 'Last 3 days')),
+        h('button', { class: 'sec', onclick: () => range(day(3), day(0)) }, 'Last 3 days'),
+        h('button', { class: 'sec', onclick: () => range(day(7), day(0)) }, 'Last 7 days')),
       h('label', { for: 'rf' }, 'From'), from, h('label', { for: 'rt' }, 'To'), to,
       h('p', {}, h('button', { onclick: preview }, 'Preview')), msg),
     out);

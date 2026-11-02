@@ -109,6 +109,20 @@ func TestRebuildRefusesWhenItCouldHurt(t *testing.T) {
 	if p, _ := Compute(s, d, t0.Unix(), t0.Add(10*24*time.Hour).Unix(), time.Now().Add(20*24*time.Hour)); len(p.Blockers) == 0 {
 		t.Fatal("more than seven days is refused")
 	}
+	// Seven calendar days is 169 hours when the clocks go back, and must still be allowed; eight days is not.
+	for _, c := range []struct {
+		hours   time.Duration
+		refused bool
+	}{{169 * time.Hour, false}, {7 * 24 * time.Hour, false}, {7*24*time.Hour + 3*time.Hour, true}, {8 * 24 * time.Hour, true}} {
+		p, _ := Compute(s, d, t0.Unix(), t0.Add(c.hours).Unix(), time.Now().Add(20*24*time.Hour))
+		span := false
+		for _, b := range p.Blockers {
+			span = span || strings.Contains(b, "seven days")
+		}
+		if span != c.refused {
+			t.Fatalf("%v: refused=%v, want %v (%v)", c.hours, span, c.refused, p.Blockers)
+		}
+	}
 	if p, _ := Compute(s, d, t0.Add(-40*time.Hour).Unix(), t0.Add(-35*time.Hour).Unix(), time.Now()); len(p.Blockers) == 0 || !strings.Contains(p.Blockers[0], "No readings") {
 		t.Fatalf("no readings that early: %v", p.Blockers)
 	}

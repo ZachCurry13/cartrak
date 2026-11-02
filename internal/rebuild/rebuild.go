@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	maxSpan   = 7 * 24 * time.Hour
-	settleFor = 30 * time.Minute // the end of the stretch must be at least this long ago
+	maxSpan   = 7*24*time.Hour + 2*time.Hour // seven calendar days, with room for the day the clocks go back (169 hours)
+	settleFor = 30 * time.Minute             // the end of the stretch must be at least this long ago
 )
 
 // Plan is what a rebuild would replace and what it would put there.
