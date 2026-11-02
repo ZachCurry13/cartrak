@@ -1,6 +1,7 @@
 import { h, chip, dist, speed, temp, num } from './ui.js';
 import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
+import { routeSummary } from './routesummary.js';
 
 const MAX = 11; // the start and up to ten destinations
 const hm = (m) => (m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`);
@@ -69,7 +70,7 @@ export async function multiStopCard(get, latest) {
       if (best.checked && r.savedMinutes > 0) { const was = stops.slice(); stops.splice(0, stops.length, ...r.order.map((i) => was[i])); draw(); } // show the order it chose
       const links = routeUrls(r.stops.map((s) => [s.lat, s.lon]));
       const charges = r.legs.filter((l) => l.charge).length;
-      out.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'The route'),
+      out.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'The route'), routeSummary(r, g.startPct),
         h('p', {}, charges ? chip('work', `${charges} charging stop${charges === 1 ? '' : 's'}`) : chip('ok', 'No charging needed'), ' ', h('span', { class: 'muted' }, `${dist(r.totalKm, 0)} · ${hm(r.drivingMinutes)} driving${r.chargingMinutes ? ` + ${hm(r.chargingMinutes)} charging` : ''} · ${num(r.totalKwh, 0, ' kWh')} · arrive with about ${Math.round(r.arrivePct)}%`)),
         r.savedMinutes > 0 ? h('p', { class: 'muted', style: 'margin:0' }, `Best order: about ${hm(r.savedMinutes)} less driving than the order you gave.`) : null,
         h('p', { class: 'seg', style: 'margin:8px 0' }, ...links.map((href, i) => h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, links.length > 1 ? `Open part ${i + 1} of ${links.length} in Google Maps` : 'Open this route in Google Maps'))),
