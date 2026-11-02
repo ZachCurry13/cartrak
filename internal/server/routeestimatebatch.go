@@ -78,6 +78,7 @@ func (s *Server) dismissRoutes(w http.ResponseWriter, r *http.Request) {
 			n++
 		}
 	}
+	_ = s.S.DismissRouteReview(in.IDs)
 	s.S.LogDecision("road_dismissed", fmt.Sprintf("%d trips left as a straight line by hand", n))
 	ok(w, map[string]any{"dismissed": n})
 }

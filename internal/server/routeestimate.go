@@ -125,6 +125,9 @@ func (s *Server) estimateFor(t *store.Trip, fetch bool) *estimateOut {
 		}
 		s.routeFail[t.ID] = f
 		s.routeMu.Unlock()
+		if s.S.RouteGaveUp(t.ID) { // given up for good, not a hiccup of the routing service: keep why, so the trip stays on the list
+			_ = s.S.NoteRouteReview(t.ID, f.Msg, f.RoadKm, f.OdoKm)
+		}
 		return nil
 	}
 	if len(recorded) < 2 {

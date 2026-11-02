@@ -5,9 +5,12 @@ import { api } from './api.js';
 // offers to estimate their roads, a few at a time (the routing service is slow on purpose: it is for light use).
 export async function routeEstimateBar() {
   const d = await api('/api/trips/estimate-routes').catch(() => null);
-  if (!d || !d.enabled || !(d.pending > 0)) return null;
-  const msg = h('span', {}, `${d.pending} older trip${d.pending === 1 ? ' is' : 's are'} drawn as a straight line.`);
-  const btn = h('button', { class: 'sec' }, 'Estimate their roads');
+  // The trips that could not get a road stay listed, here, until each is fixed or dismissed: they are kept on the server, not only on this page.
+  const kept = ((await api('/api/trips/route-problems').catch(() => null)) || {}).items || [];
+  if (!d || !d.enabled || (!(d.pending > 0) && !kept.length)) return null;
+  const msg = h('span', {}, d.pending > 0 ? `${d.pending} older trip${d.pending === 1 ? ' is' : 's are'} drawn as a straight line.`
+    : `${kept.length} trip${kept.length === 1 ? '' : 's'} could not get a road, so ${kept.length === 1 ? 'it is' : 'they are'} drawn as a straight line. Open one to choose the road, use the road's length, or dismiss it:`);
+  const btn = h('button', { class: 'sec', hidden: !(d.pending > 0) }, 'Estimate their roads');
   const list = h('ul', { class: 'muted', style: 'flex-basis:100%;margin:0;padding-left:18px' });
   // One trip that could not get a road. When a road was found but its length is far from the odometer's, the odometer may have
   // updated late, so the owner can choose the road's length instead.
@@ -22,7 +25,7 @@ export async function routeEstimateBar() {
       } }, `Use ${dist(f.roadKm, 1)}`);
       li.append(use);
     }
-    li.append(gone);
+    li.append(h('a', { class: 'btn sec', href: `#/trip/${f.id}`, style: 'min-height:36px;padding:2px 10px' }, 'Choose the road'), gone);
     return li;
   };
   // The owner accepts that these stay a straight line, so they are not offered again.
@@ -34,9 +37,11 @@ export async function routeEstimateBar() {
       dismissAll.hidden = failed.size < 2;
     } catch (e) { msg.textContent = e.message; }
   }
-  const failed = new Map();
+  const failed = new Map(kept.map((f) => [f.id, f]));
   const dismissAll = h('button', { class: 'sec', hidden: true, onclick: () => dismiss([...failed.keys()]) }, 'Dismiss all');
   const box = h('div', { class: 'banner notice', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, msg, btn, dismissAll, list);
+  list.replaceChildren(...[...failed.values()].map(failRow));
+  dismissAll.hidden = failed.size < 2;
   btn.addEventListener('click', async () => {
     btn.disabled = true;
     let left = d.pending, guard = 0;

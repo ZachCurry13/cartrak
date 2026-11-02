@@ -6,6 +6,7 @@
 - **Every number you type now shows what it counts in**, in the same box as a price: the percentage and kW on the road-trip planner, the minutes, the speed and trip length, the distance and days of a service reminder, the kWh a charger reported, the distance of a trip and the minutes at Home. Miles or kilometers, mph or km/h follow your choice of units.
 - **Less on the screen.** The More sheet has two fewer rows (the guided tour and Help are one tap away from the ? at the top, which opens Help), the red Tracking button steps aside while a sheet is open, and the "car reported" line shows only on Home (Live says it itself, so it was shown twice).
 - **Battery and motor on Live is even**: three readings on each side. The battery power row now says "Idle" when nothing is flowing, instead of disappearing and leaving a gap.
+- **Trips that could not get a road stay on the list.** The "Done, except these trips" list used to exist only on the page right after the estimates ran, so opening one trip and coming back lost the rest. They are now kept, and listed at the top of Trips with why and three choices each (**Choose the road**, **use the road's length**, **Dismiss**) until you have dealt with every one. Trips that were given up on before are listed again.
 - **Wrapped has a title** (for the browser tab and screen readers), and **links inside list rows** (the "Open" of a trip to review) are finger-sized.
 
 ## 0.65.0
