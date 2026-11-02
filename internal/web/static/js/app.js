@@ -8,8 +8,10 @@ import { setCarReserve } from './charge.js';
 import { watchErrors } from './errlog.js';
 import { trackCheck } from './tracker.js';
 import { watchUpdates } from './updatewatch.js';
+import { startBackNav, goReplace, noteRendered } from './backnav.js';
 
 watchErrors();
+startBackNav();
 import { startTour } from './tourui.js';
 import { currentCar, setCar } from './car.js';
 import { routes } from './routes.js';
@@ -90,7 +92,7 @@ async function firstRunTour() {
   store.set('welcomed', '1');
   const ob = await api('/api/onboarding');
   if (ob.dismissed) return false;
-  location.hash = '#/start';
+  goReplace('#/start'); // a redirect is not a step in the history
   return true;
 }
 
@@ -132,7 +134,7 @@ async function render() {
       if (session.me.role === 'admin') trackCheck(true);
       if (!session.cars.length) { // a person who may bring a car but has none yet
         tabs.hidden = true;
-        if (name !== 'cars') { location.hash = '#/cars'; return; }
+        if (name !== 'cars') { goReplace('#/cars'); return; }
       } else {
         await Promise.all([loadAbout(), loadVehicle()]); // independent of each other
         await loadLayout(session);
@@ -149,6 +151,7 @@ async function render() {
     if (name === '') seasonOnHome();
     const head = view.querySelector('h2');
     document.title = head && head.textContent ? `${head.textContent} · CarTrak` : 'CarTrak';
+    noteRendered(head && head.textContent, view);
     if (typeof refresh === 'function') stopRefresh = startRefresh(refresh); // schedule depends on this device's data mode
     else if (refresh && refresh.cleanup) stopRefresh = refresh.cleanup;
   } catch (e) {

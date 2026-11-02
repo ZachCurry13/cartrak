@@ -7,10 +7,11 @@ import "math"
 
 // Leg is one stretch between two stops.
 type Leg struct {
-	From, To string
-	Km       float64
-	Minutes  float64 // driving time
-	KwhPerKm float64 // the car's expected energy use on this leg, weather included
+	From     string  `json:"from"`
+	To       string  `json:"to"`
+	Km       float64 `json:"km"`
+	Minutes  float64 `json:"minutes"`  // driving time
+	KwhPerKm float64 `json:"kwhPerKm"` // the car's expected energy use on this leg, weather included
 }
 
 // Input is the route and the battery it starts with.

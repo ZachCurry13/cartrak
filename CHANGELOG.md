@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.64.1
+
+### ◀️ Back goes where you came from
+- **The phone's Back button no longer jumps to a random page.** A page's own "← More" link used to add a step to the history, so after using one, Back went somewhere odd. The app now keeps a note of the pages you opened, in order, and the "←" link at the top of a page goes to the page before it, exactly as Back does. Redirects (the getting-started page, adding a first car) and the Day view's previous and next day arrows replace the page instead of adding a step.
+- **The "←" link names the page you came from.** Open Stats from Trips and it says "← Trips", not "← Charging". Opened from a bookmark or a notification, it keeps the name and place its page gave it.
+
+### 📊 Where your driving goes
+- **Trips** shows each category (work, personal, medical, and so on) as a share of your driving: one bar with percentages, and for each category the miles, the trips and the time spent driving, as a share of the range you picked. The Trips page also has a title now.
+
+### 🧭 Route planner fixes
+- **The legs said "undefined → undefined" and "NaN h NaN min".** The names and distances of each leg were sent under names the page did not read. Fixed, and a test now checks the exact names.
+- **Address search is biased to where you are.** "Salon Innovations" found a place in Finland. The search now prefers matches around the car's position (a box about 300 miles wide, rounded to a whole degree, never the exact place).
+- **A cleaner row for each stop.** A stop you chose shows its name with a **Change** button instead of a search box (tapping Find on "Where the car is now" searched those words as an address), and the move and remove buttons sit on one line.
+- The temperature group reads "50 to 59 °F" instead of "10 to 20 °c".
+
 ## 0.64.0
 
 ### 📍 Add a place by its address

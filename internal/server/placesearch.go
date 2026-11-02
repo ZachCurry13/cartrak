@@ -16,7 +16,11 @@ func (s *Server) searchPlaces(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	found, err := c.Search(ctx, r.URL.Query().Get("q"))
+	var near *[2]float64 // where the car is, so matches in your own region come first
+	if x, _ := s.S.LatestSample(); x != nil && x.Lat != nil && x.Lon != nil {
+		near = &[2]float64{*x.Lat, *x.Lon}
+	}
+	found, err := c.Search(ctx, r.URL.Query().Get("q"), near)
 	if err != nil {
 		fail(w, 502, "The address lookup did not answer: "+err.Error())
 		return

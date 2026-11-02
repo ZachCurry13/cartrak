@@ -80,6 +80,15 @@ func TestAMultiStopRouteGetsRoadsForecastRainAndAChargeWhereTheBatteryRunsLow(t 
 	if code != 200 || json.Unmarshal([]byte(b), &out) != nil || len(out.Legs) != 2 {
 		t.Fatalf("%d %s", code, b)
 	}
+	var raw struct{ Legs []map[string]any }
+	if json.Unmarshal([]byte(b), &raw) != nil {
+		t.Fatal("not json")
+	}
+	for _, key := range []string{"from", "to", "km", "minutes", "kwh", "departPct", "arrivePct", "departTs", "arriveTs", "estimated", "weather"} { // the names the page reads, exactly
+		if _, ok := raw.Legs[0][key]; !ok {
+			t.Fatalf("the leg has no %q: %v", key, raw.Legs[0])
+		}
+	}
 	l0, l1 := out.Legs[0], out.Legs[1]
 	if l0.From != "Home" || l0.To != "Client" || l0.Km != 200 || l0.Estimated || legsAsked != 2 {
 		t.Fatalf("roads from the routing service: %+v asked %d", l0, legsAsked)

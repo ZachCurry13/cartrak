@@ -8,6 +8,7 @@ import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { monthsCard } from '../rangeband.js';
 import { tripSelect } from '../tripselect.js';
+import { categoryShare } from '../categoryshare.js';
 import { routeEstimateBar } from '../routeestimatebar.js';
 
 const RANGES = { week: 7, month: 30, year: 365, all: 0 };
@@ -36,6 +37,7 @@ export default async function trips(root, _a, session) {
     const kwh = all.reduce((n, x) => n + x.kwh, 0), energyKm = all.reduce((n, x) => n + x.energyKm, 0);
     sum.replaceChildren(h('div', { class: 'grid' }, ...keys.map((k) => stat(catLabel(k), dist(s[k] ? s[k].distanceKm : 0, 0))), ...keys.map((k) => stat(`${catLabel(k)} trips`, s[k] ? s[k].trips : 0)),
       ...(kwh > 0 ? [stat('Energy used', kwhText(kwh)), stat('Efficiency', effSpan(energyKm, kwh))] : [])),
+    categoryShare(s),
     h('p', {}, h('a', { class: 'btn sec', href: `/api/export/trips.csv?${q()}` }, 'Export CSV')));
   }
   async function draw() {
@@ -82,7 +84,7 @@ export default async function trips(root, _a, session) {
   const review = h('div');
   const estBar = h('div');
   if (admin) routeEstimateBar().then((b) => { if (b) estBar.append(b); }).catch(() => {});
-  root.append(estBar, h('nav', { class: 'linkrow', 'aria-label': 'More about trips' }, h('a', { href: '#/day' }, 'Day view'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/reports' }, 'Reports'), h('a', { href: '#/plan' }, 'Plan a trip'), admin ? h('a', { href: '#/rules' }, 'Trip rules') : null), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, colorKey(), selectRow, sel.bar, list, mapBox, monthsCard());
+  root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Trips')), estBar, h('nav', { class: 'linkrow', 'aria-label': 'More about trips' }, h('a', { href: '#/day' }, 'Day view'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/reports' }, 'Reports'), h('a', { href: '#/plan' }, 'Plan a trip'), admin ? h('a', { href: '#/rules' }, 'Trip rules') : null), review, journeys, segCat, segRange, ...(mc.enabled ? [segView] : []), sum, colorKey(), selectRow, sel.bar, list, mapBox, monthsCard());
   paintJourneys();
   await draw();
 }

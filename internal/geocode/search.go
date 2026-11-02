@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -20,8 +21,10 @@ type Match struct {
 }
 
 // Search turns a typed address into up to five places. What was typed goes to the service and nowhere else: unlike the city
-// lookups it is not remembered, because an address is something a person typed, not a rounded position.
-func (c *Client) Search(ctx context.Context, query string) ([]Match, error) {
+// lookups it is not remembered, because an address is something a person typed, not a rounded position. With a place to look near
+// (nil for none), matches around it come first, so "Main St" finds the one in your own region, not the other side of the world;
+// only a box about 300 miles wide is sent, rounded to a whole degree, never the exact place.
+func (c *Client) Search(ctx context.Context, query string, near *[2]float64) ([]Match, error) {
 	query = strings.TrimSpace(query)
 	if len(query) < 3 || len(query) > 200 {
 		return nil, fmt.Errorf("type at least a street and a town")
@@ -32,6 +35,11 @@ func (c *Client) Search(ctx context.Context, query string) ([]Match, error) {
 		return nil, err
 	}
 	q := url.Values{"format": {"jsonv2"}, "limit": {"5"}, "accept-language": {"en"}, "q": {query}}
+	if near != nil {
+		lat, lon := math.Round(near[0]), math.Round(near[1])
+		q.Set("viewbox", fmt.Sprintf("%.0f,%.0f,%.0f,%.0f", lon-3, lat+3, lon+3, lat-3)) // left, top, right, bottom
+		q.Set("bounded", "0")                                                            // a preference, not a limit: far-away places still turn up when nothing is near
+	}
 	req, err := http.NewRequestWithContext(ctx, "GET", c.base()+"/search?"+q.Encode(), nil)
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-import { h, chip, dist, speed, temp, num } from './ui.js';
+import { h, chip, dist, speed, temp, num, tempBandLabel } from './ui.js';
 import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
 import { routeSummary } from './routesummary.js';
@@ -37,11 +37,18 @@ export async function multiStopCard(get, latest) {
     const pick = named.length ? h('select', { 'aria-label': 'Or one of your places', onchange: (e) => { const p = named.find((x) => String(x.id) === e.target.value); if (p) set(p.name, p.name, p.lat, p.lon); e.target.value = ''; } },
       h('option', { value: '' }, 'or one of your places'), ...named.map((p) => h('option', { value: String(p.id) }, p.name))) : null;
     const move = (d) => () => { const j = i + d; if (j >= 0 && j < stops.length) { [stops[i], stops[j]] = [stops[j], stops[i]]; draw(); } };
-    return h('div', { style: 'margin:0 0 12px' }, h('div', { class: 'row', style: 'gap:6px;align-items:center;flex-wrap:wrap' }, h('div', { style: 'flex:1 1 12em;min-width:0' }, q),
-      h('button', { class: 'sec', onclick: find }, 'Find'), pick,
-      h('button', { class: 'sec', 'aria-label': 'Move up', disabled: i === 0, onclick: move(-1) }, '↑'), h('button', { class: 'sec', 'aria-label': 'Move down', disabled: i === stops.length - 1, onclick: move(1) }, '↓'),
-      stops.length > 2 ? h('button', { class: 'sec', 'aria-label': 'Remove this stop', onclick: () => { stops.splice(i, 1); draw(); } }, 'Remove') : null),
-      s.lat != null ? h('div', { class: 'muted' }, `✓ ${s.label}`) : null, found);
+    const icon = (label, text, onclick, disabled) => h('button', { class: 'sec', 'aria-label': label, disabled, onclick, style: 'flex:0 0 44px;min-width:44px;padding:0' }, text);
+    const line = 'gap:6px;align-items:center;flex-wrap:nowrap;margin-top:6px';
+    const mark = h('b', { style: 'flex:0 0 1.4em;text-align:center' }, i === 0 ? 'A' : String(i));
+    const tools = [icon('Move up', '↑', move(-1), i === 0), icon('Move down', '↓', move(1), i === stops.length - 1), stops.length > 2 ? icon('Remove this stop', '✕', () => { stops.splice(i, 1); draw(); }) : null];
+    if (s.lat != null) { // a chosen stop: its name and a way to change it, not a search box that would look the name up again
+      return h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
+        h('div', { class: 'row', style: line.replace('margin-top:6px', 'margin-top:0') }, mark, h('div', { style: 'flex:1 1 auto;min-width:0;overflow-wrap:anywhere' }, h('b', {}, s.name || s.label), s.name && s.label && s.name !== s.label ? h('div', { class: 'muted' }, s.label) : null),
+          h('button', { class: 'sec', style: 'flex:0 0 auto', onclick: () => { Object.assign(s, { name: '', label: '', lat: null, lon: null }); draw(); } }, 'Change'), ...tools));
+    }
+    return h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
+      h('div', { class: 'row', style: line.replace('margin-top:6px', 'margin-top:0') }, mark, h('div', { style: 'flex:1 1 auto;min-width:0' }, q), h('button', { class: 'sec', style: 'flex:0 0 auto', onclick: find }, 'Find')),
+      h('div', { class: 'row', style: line }, h('div', { style: 'flex:1 1 auto;min-width:0' }, pick || ''), ...tools), found);
   };
   function draw() {
     list.replaceChildren(...stops.map(rowFor), h('p', {}, h('button', { class: 'sec', disabled: stops.length >= MAX, onclick: () => { stops.push({ name: '', label: '', lat: null, lon: null }); draw(); } }, 'Add a stop'),
@@ -57,7 +64,7 @@ export async function multiStopCard(get, latest) {
       h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, `${l.from} → ${l.to}`), h('div', { class: 'muted' }, `${dist(l.km, 0)}${l.estimated ? ' (straight line)' : ''} · ${hm(l.minutes)} · ${clock(l.departTs)} to ${clock(l.arriveTs)}`)),
         h('b', { class: l.short ? 'bad' : '' }, `${Math.round(l.arrivePct)}%`)),
       bits ? h('div', {}, h('span', {}, bits), extra >= 2 ? h('span', { class: 'muted' }, ` · wind and rain add about ${extra}%`) : null) : null,
-      h('div', { class: 'muted' }, `${num(l.kwh, 1, ' kWh')} used${w.tempBand ? ` · your usual efficiency in ${w.tempBand.toLowerCase()} weather` : ''}${w.learned ? ' · rain from your own wet trips' : ''}`));
+      h('div', { class: 'muted' }, `${num(l.kwh, 1, ' kWh')} used${w.tempBand ? ` · your usual efficiency at ${tempBandLabel(w.tempBand)}` : ''}${w.learned ? ' · rain from your own wet trips' : ''}`));
   };
   async function plan() {
     const bad = stops.findIndex((s) => s.lat == null);

@@ -1,3 +1,4 @@
+import { goReplace } from '../backnav.js';
 import { carWords } from '../carwords.js';
 import { h, stat, dist, num, speed, pct, emptyState, isMetric } from '../ui.js';
 import { api } from '../api.js';
@@ -65,10 +66,10 @@ export default async function day(root, [date, action], session) {
     const x = await api(`/api/day${d ? `?date=${encodeURIComponent(d)}` : ''}`);
     const t = x.totals, e = x.energy;
     const label = new Date(`${x.date}T12:00:00`).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    const nav = h('div', { class: 'hmonth' }, h('button', { class: 'sec', 'aria-label': 'Previous day', onclick: () => { location.hash = `#/day/${shift(x.date, -1)}`; } }, '‹'),
-      h('h3', {}, label), h('button', { class: 'sec', 'aria-label': 'Next day', onclick: () => { location.hash = `#/day/${shift(x.date, 1)}`; } }, '›'));
+    const nav = h('div', { class: 'hmonth' }, h('button', { class: 'sec', 'aria-label': 'Previous day', onclick: () => { goReplace(`#/day/${shift(x.date, -1)}`); } }, '‹'),
+      h('h3', {}, label), h('button', { class: 'sec', 'aria-label': 'Next day', onclick: () => { goReplace(`#/day/${shift(x.date, 1)}`); } }, '›'));
     const picker = h('input', { type: 'date', value: x.date, 'aria-label': 'Pick a day', style: 'max-width:12em' });
-    picker.addEventListener('change', () => { if (picker.value) location.hash = `#/day/${picker.value}`; });
+    picker.addEventListener('change', () => { if (picker.value) goReplace(`#/day/${picker.value}`); });
     const stops = x.events.filter((v) => v.kind !== 'driving' && v.kind !== 'remote' && !v.base && !v.cont); // time at the base of a trip away is not a stop; a remote start is not one either
     const roadCharges = stops.filter((v) => v.kind === 'charging' && v.where !== 'home').length; // charging stops away from home; a charge at home is not a stop
     const road = roadDay(x.events, x.tz);

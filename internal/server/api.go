@@ -124,6 +124,7 @@ func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 		DistanceKm float64 `json:"distanceKm"`
 		KWh        float64 `json:"kwh"`
 		EnergyKm   float64 `json:"energyKm"` // distance of the trips that have an energy figure, for efficiency
+		Seconds    float64 `json:"seconds"`  // time spent driving
 	}
 	capacity := s.capacityKwh()
 	out := map[string]*agg{"work": {}, "personal": {}}
@@ -138,6 +139,9 @@ func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
 		}
 		a.Trips++
 		a.DistanceKm += t.DistanceKm
+		if t.EndTS != nil && *t.EndTS > t.StartTS {
+			a.Seconds += float64(*t.EndTS - t.StartTS)
+		}
 		if e, ok := trips.EnergyUsed(t, capacity); ok {
 			a.KWh += e.Kwh
 			a.EnergyKm += t.DistanceKm

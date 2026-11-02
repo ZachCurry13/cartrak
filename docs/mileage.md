@@ -8,6 +8,9 @@
 
 and a **Total Mileage Recorded** line underneath.
 
+## Work, personal and the rest: the share of your driving
+The **Trips** page has a **Where your driving goes** card: one bar and a row for each category (Work, Personal, Medical and any you made), with its share of the distance, and in brackets its share of the trips and of the time spent driving, for the range you picked at the top (7 days, 30 days, year or all). The category buttons do not change it: it always compares every category.
+
 ## How to use it
 0. For the usual periods, tap **This week**, **Last week**, **This month** or **Last month** under *Which period*; the log is built straight away. When the period covers more than one calendar week, a line under the table gives the miles for each calendar week.
 1. Open More, **Mileage log**.
