@@ -57,14 +57,17 @@ func TestInsightsEndpointsAnswer(t *testing.T) {
 
 func TestNewBadgesAndTheMonthlyRecapGoToTheInbox(t *testing.T) {
 	_, srv := healthServer(t, fakeProv{}, false, false)
-	now := time.Now()
-	addDrive(t, srv, now.AddDate(0, 0, -3), 50)
+	// The drives are in the middle of last month, so the test means the same on the first days of a month as on any other day.
+	loc := srv.defaultLoc()
+	thisMonth := time.Date(time.Now().In(loc).Year(), time.Now().In(loc).Month(), 1, 10, 0, 0, 0, loc)
+	mid := thisMonth.AddDate(0, -1, 14)
+	addDrive(t, srv, mid, 50)
 	ctx := context.Background()
 	srv.newBadges(ctx) // the first look notes what is earned, quietly
 	if as, _ := srv.S.RecentAlerts(10); len(as) != 0 {
 		t.Fatalf("no burst of old news: %+v", as)
 	}
-	addDrive(t, srv, now.AddDate(0, 0, -2), 170) // a road trip, and past 100 miles in all
+	addDrive(t, srv, mid.AddDate(0, 0, 1), 170) // a road trip, and past 100 miles in all
 	srv.newBadges(ctx)
 	as, _ := srv.S.RecentAlerts(10)
 	titles := ""
@@ -79,8 +82,7 @@ func TestNewBadgesAndTheMonthlyRecapGoToTheInbox(t *testing.T) {
 		t.Fatal("told once")
 	}
 	// the first of a month, after 9: last month's recap, once, when there was driving in it
-	loc := srv.defaultLoc()
-	first := time.Date(now.In(loc).Year(), now.In(loc).Month(), 1, 10, 0, 0, 0, loc).AddDate(0, 1, 0) // the first of next month: this month had driving
+	first := thisMonth
 	srv.recapReady(ctx, first.Add(-2*time.Hour))
 	srv.recapReady(ctx, first)
 	srv.recapReady(ctx, first.Add(time.Hour))
