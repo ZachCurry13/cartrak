@@ -28,6 +28,17 @@ import { chargeAmps, weekCard, placesLine, card, wrappedTeaser, oldNote, kv } fr
 
 export { pick };
 
+// Home leads with what is checked every day (the battery, what needs attention, the day, the last trip). The rest of what the car
+// reports waits behind one row, which stays open or shut the way it was left.
+const MORE_KEY = 'cartrak.homeMore';
+function moreDetails(cards) {
+  let open = false;
+  try { open = localStorage.getItem(MORE_KEY) === '1'; } catch (e) { /* storage blocked: shut */ }
+  const d = h('details', { class: 'morehome', open }, h('summary', {}, 'More details'), ...cards);
+  d.addEventListener('toggle', () => { try { localStorage.setItem(MORE_KEY, d.open ? '1' : '0'); } catch (e) { /* ignore */ } });
+  return d;
+}
+
 let homeMap = null; // kept between refreshes
 let homeLink = null; // the map is a link: tap it to open the spot in Google Maps
 
@@ -73,12 +84,13 @@ export default async function dashboard(root, _args, session) {
     if (strip) out.push(strip);
     const vac = await vacP;
     if (vac) out.push(vac);
-    if (session.me.role === 'admin') out.push(outingCard());
     if (!latest) {
+      if (session.me.role === 'admin') out.push(outingCard());
       out.push(h('p', { class: 'muted' }, 'No readings yet. Data appears after the first successful sync.'));
       return box.replaceChildren(...out);
     }
     const x = latest.extra || {};
+    const extra = []; // the cards that fold away
     const soc = latest.socPct;
     const veh = session.vehicle || { battery: true, plug: true, engine: true }; // unknown type: show everything the car reports
     // A hybrid that reports no battery level (most do not) leads with its fuel tank instead of an empty battery ring.
@@ -107,6 +119,7 @@ export default async function dashboard(root, _args, session) {
         bandRow(),
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
+    if (session.me.role === 'admin') out.push(outingCard()); // under the battery: the answer comes first
     const due = ((maint && maint.items) || []).filter((m) => m.state !== 'ok');
     if (due.length || unlabelled || short.length || fuelPending) {
       out.push(card('Needs attention',
@@ -131,13 +144,13 @@ export default async function dashboard(root, _args, session) {
       h('p', { class: 'muted' }, `${placesLine(lastTrip)}${when(lastTrip.startTs, lastTrip.tz)} · ${duration(lastTrip.startTs, lastTrip.endTs)}`),
       session.me.role === 'admin' && !lastTrip.open ? h('p', {}, h('a', { class: 'btn sec', href: `#/trip/${lastTrip.id}/share` }, 'Share this trip')) : null));
     if (veh.engine && latest.fuelPct != null && !fuelFirst) {
-      out.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
+      extra.push(card('Fuel and oil', h('div', { class: 'grid' }, stat('Fuel', pct(latest.fuelPct)), stat('Fuel range', dist(pick(x, 'fuelRange'), 0)),
         stat('Oil life left', latest.oilLifePct != null ? pct(latest.oilLifePct) : '—')),
         h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.max(0, Math.min(100, latest.fuelPct))}%` }))));
     }
 
     const charging = isCharging(latest);
-    if (veh.plug) out.push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', nice(latest.chargeState) || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', nice(latest.plug) || 'Unknown')),
+    if (veh.plug) (charging ? out : extra).push(card('Charging', h('div', { style: 'margin-bottom:8px' }, chip(charging ? 'ok' : 'work', nice(latest.chargeState) || 'Unknown'), ' ', chip(/^connected$/i.test(latest.plug || '') ? 'ok' : 'work', nice(latest.plug) || 'Unknown')),
       kv([['Power', latest.chargeKw != null ? num(latest.chargeKw, 1, ' kW') : null],
         ['Voltage', pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT') > 50 ? num(pick(x, 'XEV_BATTERY_CHARGER_VOLTAGE_OUTPUT'), 0, ' V') : null], // an idle charger reads about 1 V
         ['Current', chargeAmps(latest, x)],
@@ -145,7 +158,7 @@ export default async function dashboard(root, _args, session) {
         ['Station type', chargerType(pick(x, 'XEV_CHARGE_STATION_POWER_TYPE'))]]),
       charging ? chargeEtaBox(latest, pick(x, 'XEV_BATTERY_TIME_TO_FULL_CHARGE')) : null));
 
-    out.push(card('Vehicle',
+    extra.push(card('Vehicle',
       kv([['Ignition', nice(latest.ignition) || '—'], ['Gear', nice(pick(x, 'GEAR_LEVER_POSITION'))], ['Odometer', dist(latest.odometerKm, 0)],
         ['Outside', temp(latest.outsideC)], ['Speed', speed(latest.speedKph)], ['12V battery', latest.battery12v != null ? num(latest.battery12v, 1, ' V') : null],
         ['Locks', latest.locked == null ? null : latest.locked ? 'Locked' : 'Unlocked'], ['Parking brake', pick(x, 'PARKING_BRAKE_STATUS')]])));
@@ -162,20 +175,21 @@ export default async function dashboard(root, _args, session) {
         homeLink.href = googleMapsUrl(latest.lat, latest.lon);
         here = homeLink;
       }
-      out.push(card('Location', here, h('a', { href: googleMapsUrl(latest.lat, latest.lon), target: '_blank', rel: 'noopener' }, `${latest.lat.toFixed(5)}, ${latest.lon.toFixed(5)}`), mapButtons(latest.lat, latest.lon, 'the car'),
+      extra.push(card('Location', here, h('a', { href: googleMapsUrl(latest.lat, latest.lon), target: '_blank', rel: 'noopener' }, `${latest.lat.toFixed(5)}, ${latest.lon.toFixed(5)}`), mapButtons(latest.lat, latest.lon, 'the car'),
         h('p', { class: 'muted' }, `Heading ${pick(x, 'HEADING', 'direction', 'COMPASS_DIRECTION') ?? '—'} · seen ${ago(latest.ts)}`)));
     }
 
     const tires = (latest.tires || []).some((t) => t != null) ? latest.tires :['FL', 'FR', 'RL', 'RR'].map((k) => pick(x, `TIRE_PRESSURE_${k}`));
     if (tires.some((t) => t != null) || pick(x, 'tirePressureWarning') != null) {
-      out.push(card('Tires', h('div', { class: 'grid' }, ['Front L', 'Front R', 'Rear L', 'Rear R'].map((l, i) => stat(l, pressure(tires[i])))),
+      (pick(x, 'tirePressureWarning') ? out : extra).push(card('Tires', h('div', { class: 'grid' }, ['Front L', 'Front R', 'Rear L', 'Rear R'].map((l, i) => stat(l, pressure(tires[i])))),
         pick(x, 'tirePressureWarning') ? h('p', { class: 'chip bad' }, 'Low pressure warning') : null));
     }
 
     const doors = doorsCard(latest, x, pick);
-    if (doors) out.push(doors);
+    if (doors) extra.push(doors);
     const hc = healthCard(x);
-    if (hc) out.push(hc);
+    if (hc) extra.push(hc);
+    if (extra.length) out.push(moreDetails(extra));
 
     if (!full) {
       out.push(h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Data saver is on: showing the essentials. Tires, battery details and other fields are skipped.'),

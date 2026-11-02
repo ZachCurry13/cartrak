@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.66.0
+
+### 🏠 A calmer Home
+- **Home shows what you check every day and folds the rest away.** Up front: the battery, what needs attention, the day and the month, and the last trip. Behind one row, **More details**: charging (it comes forward by itself while the car is charging), the vehicle's readings, the map and location, tires (they come forward if there is a pressure warning), doors, and the vehicle health summary. The row stays open or shut the way you leave it.
+- **The battery is the first thing on Home again**; the work-or-personal outing card moved under it.
+- Chosen from what the tracking logs showed you opening most (Trips, Live, Charging, the trip pages) and what Home had that you never opened. If a card you want is folded, tell me which and I will move it up.
+
 ## 0.65.2
 
 ### 🧠 Uses your spare memory

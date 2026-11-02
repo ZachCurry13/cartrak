@@ -51,3 +51,11 @@ p.clamp.open{display:block}
 
 /* The red "Tracking" button sits over a sheet's last rows: out of the way while a sheet is open. */
 body:has(.sheetbg) a[aria-label="Tracking is on"]{display:none}
+
+/* Home's second group: one row that opens the rest of what the car reports. */
+details.morehome{margin:var(--sp-3) 0}
+details.morehome>summary{display:flex;align-items:center;min-height:var(--tap);padding:0 var(--sp-4);background:var(--card);border:1px solid var(--line);border-radius:var(--radius-card);font-weight:600;cursor:pointer;list-style:none}
+details.morehome>summary::-webkit-details-marker{display:none}
+details.morehome>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
+details.morehome[open]>summary::after{content:'▴'}
+details.morehome[open]>summary{margin-bottom:var(--sp-3)}
