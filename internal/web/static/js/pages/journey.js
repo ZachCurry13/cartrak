@@ -3,8 +3,8 @@ import { api } from '../api.js';
 import { createMap, mapConfig } from '../map.js';
 import { effSpan, kwhText } from '../energy.js';
 import { shareCard } from '../sharecard.js';
+import { hm } from '../format.js';
 
-const hm = (sec) => { const m = Math.round(sec / 60); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`; };
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 
 // Several trips as one: totals, the legs, the stops between them, what it used and what charging cost.

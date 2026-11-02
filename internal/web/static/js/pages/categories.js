@@ -1,13 +1,15 @@
 import { h, chip } from '../ui.js';
 import { api } from '../api.js';
 import { loadCategories } from '../categories.js';
+import { moneyInput } from '../inputs.js';
 
 // The labels a trip can have. Personal, Work and Medical are built in; the owner can rename them, give each a color and a mileage
 // rate, and add their own (a charity, a side business, a club).
 function row(c, admin, reload) {
   const label = h('input', { value: c.label, maxlength: 24, 'aria-label': 'Name', disabled: !admin });
   const color = h('input', { type: 'color', value: c.color || '#64748b', 'aria-label': 'Color', disabled: !admin, style: 'min-width:56px;padding:2px' });
-  const rate = h('input', { type: 'number', step: '0.001', min: 0, inputmode: 'decimal', value: c.rate == null ? '' : c.rate, placeholder: 'none', 'aria-label': 'Mileage rate per mile', disabled: !admin, style: 'width:7em' });
+  const rateBox = moneyInput({ step: '0.001', unit: 'per mile', label: 'Mileage rate per mile', value: c.rate == null ? '' : c.rate, placeholder: 'none', disabled: !admin });
+  const rate = rateBox.input;
   const msg = h('span', { class: 'muted', role: 'status' });
   const save = async () => {
     try {
@@ -24,7 +26,7 @@ function row(c, admin, reload) {
   };
   return h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, c.label), c.builtin ? chip('work', 'built in') : null),
     h('label', {}, 'Name'), label, h('label', {}, 'Color'), color,
-    h('label', {}, 'Mileage rate per mile (optional)'), rate,
+    h('label', {}, 'Mileage rate per mile (optional)'), rateBox.el,
     h('p', { class: 'muted' }, 'Used by the Mileage log to put a deduction beside the distance. Work uses the general rate in More, Settings unless you set one here.'),
     admin ? h('p', { class: 'seg' }, h('button', { onclick: save }, 'Save'), c.builtin ? null : h('button', { class: 'danger', onclick: remove }, 'Remove'), msg) : null);
 }

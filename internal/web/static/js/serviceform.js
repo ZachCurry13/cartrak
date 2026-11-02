@@ -1,5 +1,6 @@
 import { h, isMetric } from './ui.js';
 import { api } from './api.js';
+import { moneyInput } from './inputs.js';
 
 // The form for a service visit: what was done (tap the usual jobs, or write your own), what it cost, and when each job is due
 // again. Due again fills in from the reminder of the same name, or a common interval; leave it empty for no reminder.
@@ -16,7 +17,8 @@ const KM = 1.609344;
 export function serviceForm({ visit, reminders, cur, onSaved }) {
   const chosen = new Set(visit && visit.items ? visit.items : []);
   const custom = h('input', { placeholder: 'Something else…', maxlength: 60, 'aria-label': 'Another job' });
-  const cost = h('input', { type: 'number', step: '0.01', min: 0, inputmode: 'decimal', placeholder: `${cur} total`, value: visit && visit.cost != null ? visit.cost : '', style: 'width:9em', 'aria-label': 'What it cost' });
+  const costBox = moneyInput({ currency: cur, unit: 'total', label: 'What it cost', value: visit && visit.cost != null ? visit.cost : '' });
+  const cost = costBox.input;
   const place = visit ? null : h('input', { placeholder: 'Where (optional)', maxlength: 60, 'aria-label': 'Where' });
   const notes = h('textarea', { rows: 2, maxlength: 500, placeholder: 'Notes (optional)', 'aria-label': 'Notes', style: 'width:100%;box-sizing:border-box' }, visit ? visit.notes || '' : '');
   const dueBox = h('div');
@@ -62,7 +64,7 @@ export function serviceForm({ visit, reminders, cur, onSaved }) {
   return h('div', {}, place,
     h('h3', { style: 'margin:12px 0 6px' }, 'What was done'), chips,
     h('div', { class: 'row', style: 'border:0;padding:0;gap:8px' }, custom, h('button', { type: 'button', class: 'sec sm', onclick: addCustom }, 'Add')),
-    h('h3', { style: 'margin:12px 0 6px' }, 'What it cost'), cost,
+    h('h3', { style: 'margin:12px 0 6px' }, 'What it cost'), costBox.el,
     h('h3', { style: 'margin:12px 0 6px' }, 'When each is due again'), h('p', { class: 'muted', style: 'margin:0 0 6px' }, 'Sets your service reminders. Leave empty for no reminder.'), dueBox,
     h('div', { style: 'margin-top:10px' }, notes),
     h('p', { class: 'seg', style: 'margin-top:12px' }, h('button', { type: 'button', class: 'on', onclick: () => save('logged') }, 'Save'),

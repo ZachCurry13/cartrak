@@ -1,7 +1,7 @@
 import { h, dist } from './ui.js';
 import { catColor, catLabel } from './categories.js';
+import { hm } from './format.js';
 
-const hm = (s) => (s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${Math.round((s % 3600) / 60)} min`);
 const share = (part, total) => (total > 0 ? (part / total) * 100 : 0);
 
 // How the driving was split between work, personal and the other categories: one bar and a row for each, by distance, with the

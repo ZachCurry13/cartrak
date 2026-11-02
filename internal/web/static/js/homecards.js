@@ -3,9 +3,9 @@ import { api } from './api.js';
 import { insightCard } from './insightcard.js';
 import { planCard } from './plancard.js';
 import { periodLines, gasTodayLines } from './savingscard.js';
+import { hm } from './format.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
-const hm = (sec) => (sec < 3600 ? `${Math.max(1, Math.round(sec / 60))} min` : `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`);
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const link = (href, title, ...kids) => h('a', { class: 'card', href, style: 'display:block;text-decoration:none;color:inherit' }, h('h2', {}, title), ...kids);
 

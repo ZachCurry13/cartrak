@@ -1,4 +1,5 @@
 import { h, isMetric, setMetric, getTheme, setTheme, getTimeMode, setTimeMode } from '../ui.js';
+import { getRegion, setRegion, regionChoices } from '../region.js';
 import { MODES, getPref, setPref } from '../mode.js';
 import { THEMES, getSeasonPref, setSeasonPref, applySeason, themeFor, isBirthday } from '../seasons.js';
 import { playSeason } from '../seasonfx.js';
@@ -44,6 +45,8 @@ export default async function display(root, _a, session) {
     h('p', { class: 'muted' }, 'These choices apply to this device only.'),
     h('section', { class: 'group' }, h('div', { class: 'menu' },
       setting('s-un', 'Units', choice([['imperial', 'Miles, °F, psi'], ['metric', 'Kilometers, °C, kPa']], isMetric() ? 'metric' : 'imperial', (v) => setMetric(v === 'metric'))),
+      setting('s-rg', 'Numbers and dates', choice(regionChoices(), getRegion(), (v) => { setRegion(v); dispatchEvent(new Event('hashchange')); }),
+        'How money, large numbers and dates are written. United States by default: $1,000.00 and 11/02/2026.'),
       setting('s-th', 'Theme', choice([['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']], getTheme(), setTheme)),
       setting('s-se', 'Seasonal themes', choice([['auto', `Automatic (now: ${THEMES[nowKey][0]} ${THEMES[nowKey][1]})`], ['off', 'Off'], ...Object.entries(THEMES).map(([k, t]) => [k, `${t[1]} ${t[0]}`])], getSeasonPref(),
         (v) => { setSeasonPref(v); const t = applySeason(); if (t) playSeason(THEMES[t.key][8], true); }),

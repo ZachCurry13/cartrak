@@ -1,3 +1,4 @@
+import './region.js'; // dates and numbers in the chosen country's style, before anything is drawn
 import { h, ago, applyTheme } from './ui.js';
 applyTheme();
 import { api, AuthError } from './api.js';

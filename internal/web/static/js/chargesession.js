@@ -1,12 +1,13 @@
 import { h, chip, when, duration, pct, num } from './ui.js';
 import { api } from './api.js';
 import { curveBox } from './curve.js';
+import { money } from './format.js';
+import { moneyInput } from './inputs.js';
 
 // One charging session in the Charging list, laid out like a trip card: a picture on the left (the battery, filled from where
 // it started to where it ended), what it added and how long, where, the battery bar, and the cost with where it came from.
 // What an admin can change (where it was, the charger's kWh, what was paid) folds away behind Edit.
 
-const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const WHERE = { home: 'Home', public: 'Public' };
 const FROM = { receipt: 'receipt', place: 'place price', home: 'home price', 'home+night': 'home and night price', public: 'public price' };
 
@@ -40,7 +41,8 @@ function editBox(c, cur, reload) {
   const where = h('select', { 'aria-label': 'Where it was charged' },
     ...[['', c.where && !c.kind ? `Automatic (${c.where === 'home' ? 'home' : 'away from home'})` : 'Automatic'], ['home', 'Home'], ['public', 'Away from home']].map(([v, t]) => h('option', { value: v, selected: v === (c.kind || '') }, t)));
   const kwh = h('input', { type: 'number', step: '0.1', min: 0, inputmode: 'decimal', placeholder: 'kWh', 'aria-label': 'kWh the charger reported', value: c.chargerKwh != null ? c.chargerKwh : '', style: 'width:7em' });
-  const paid = h('input', { type: 'number', step: '0.01', min: 0, inputmode: 'decimal', placeholder: cur || '$', 'aria-label': 'What you paid', value: c.costActual && c.cost != null ? c.cost.toFixed(2) : '', style: 'width:7em' });
+  const paidBox = moneyInput({ currency: cur || '$', unit: 'total', label: 'What you paid', value: c.costActual && c.cost != null ? c.cost.toFixed(2) : '' });
+  const paid = paidBox.input;
   const save = async () => {
     const body = { kind: where.value };
     if (kwh.value) body.chargerKwh = Number(kwh.value); else body.clearCharger = true;
@@ -48,7 +50,7 @@ function editBox(c, cur, reload) {
     try { await api(`/api/charges/${c.id}`, { method: 'PATCH', body }); reload(); } catch (e) { msg.textContent = e.message; }
   };
   const field = (label, el) => h('label', { class: 'cfield' }, h('span', { class: 'muted' }, label), el);
-  return h('div', { class: 'cedit' }, field('Where', where), field('Charger said (kWh)', kwh), field('You paid', paid),
+  return h('div', { class: 'cedit' }, field('Where', where), field('Charger said (kWh)', kwh), field('You paid', paidBox.el),
     h('div', { class: 'seg' }, h('button', { type: 'button', onclick: save }, 'Save')), msg);
 }
 

@@ -1,7 +1,7 @@
 import { h, num } from './ui.js';
 import { api } from './api.js';
+import { money } from './format.js';
 
-const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 
 // "What would a charge cost?": pick a start and an end battery level and see it at your home and public prices.
 export function forecastCard() {

@@ -6,12 +6,12 @@ import { getReserve, getTarget } from '../charge.js';
 import { planTrip } from '../tripplan.js';
 import { isFuelCar } from '../navlayout.js';
 import { multiStopCard } from '../multistop.js';
+import { hmMin as hm } from '../format.js';
 
 const KEY = 'cartrak.planKw';
 const saved = () => { try { return Number(localStorage.getItem(KEY)) || 0; } catch (e) { return 0; } };
 const write = (v) => { try { localStorage.setItem(KEY, String(v)); } catch (e) { /* ignore */ } };
 const toKm = (v) => (isMetric() ? v : v * 1.609344);
-const hm = (m) => (m == null ? '—' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`);
 
 // How many charging stops does a trip need, and about where?
 export default async function plan(root, _a, session) {

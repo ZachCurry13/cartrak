@@ -1,5 +1,6 @@
 import { h, dist, num, speed, pct, temp } from './ui.js';
 import { effSpan } from './energy.js';
+import { money } from './format.js';
 
 const GLYPH = { charging: '⚡', driving: '↗', parked: 'P' };
 
@@ -17,7 +18,7 @@ function powerIcon() {
   return svg;
 }
 const WHERE = { home: 'Home', public: 'Public' };
-export const money = (cur, v) => `${cur}${v.toFixed(2)}`;
+export { money };
 
 export function span(sec) {
   const m = Math.round(sec / 60);

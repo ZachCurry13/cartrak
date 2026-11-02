@@ -9,6 +9,12 @@
 - **Trips has a title**, like Charging.
 - This follows Google's Material 3 ideas (consistent sizes, 48 px touch targets, a top bar with a back arrow, no stray link styles) without its component library, so it looks the same on a Samsung and an iPhone. Navigation (the bottom bar) and page-by-page cleanups come next.
 
+### 📐 The same figure looks the same everywhere (the start of a full consistency pass)
+- **One way to write money, times and dates.** Money is written `$1,000.00` (thousands separators and two decimals) and a drive is "1 h 5 min" on every screen. Before, the money and the hours-and-minutes were each written separately in about ten places, with small differences (some said "2 h 0 min", one showed decimal hours).
+- **United States formatting by default.** Dates read 11/02/2026, times use the 12-hour clock and large numbers use commas, whatever language the phone is set to. **More, Display and data, Numbers and dates** offers Canada, United Kingdom, Australia and Germany, per device.
+- **One box for a typed price or rate.** The price per kWh at a place and at a charger, what you paid for a charge, a service visit's cost and the mileage rate are now the same finger-sized box with the currency in front and what it is (per kWh, total, per mile) after, and the number selected when you tap it. Before each was its own size and wording.
+- Still to come in this pass: the other number fields (minutes, percentages, kWh), dates and times typed in, and "Saved" feedback that reads the same everywhere.
+
 ### ⚡ A faster Home
 - Home and the pages it shares asked for a dozen slow figures at once (records, day, gas today, charging summary, plan ahead, insights, the current outing), each waiting its turn on the one database connection. Each is now reused for 20 seconds, and thrown away the moment anything is changed, so a page you come back to is quick and a change shows at once.
 

@@ -1,6 +1,6 @@
 import { h, chip, temp, speed, num } from './ui.js';
+import { hmMin as hm } from './format.js';
 
-const hm = (m) => (m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`);
 const RAIN = ['Drizzle', 'Light rain', 'Rain', 'Heavy rain', 'Thunderstorm'];
 
 // Where the legs are: "on the way to Ames, Bell and 2 more".

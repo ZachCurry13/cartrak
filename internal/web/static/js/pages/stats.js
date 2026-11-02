@@ -3,11 +3,11 @@ import { h, emptyState, dist, num, isMetric } from '../ui.js';
 import { api } from '../api.js';
 import { tapBars } from '../chart.js';
 import { placeDonut } from '../placedonut.js';
+import { hm } from '../format.js';
 
 const PERIODS = [['day', 'Day'], ['month', 'Month'], ['year', 'Year']];
 const KM = 1.609344;
 const money = (cur, v) => `${cur}${v.toFixed(v >= 100 ? 0 : 2)}`;
-const hm = (sec) => (sec < 3600 ? `${Math.round(sec / 60)} min` : `${(sec / 3600).toFixed(1)} h`);
 
 // What each tab measures and how its numbers read, in the device's units.
 function metrics(cur) {

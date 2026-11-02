@@ -1,11 +1,11 @@
 import { h, isMetric, num, dist } from './ui.js';
 import { speedTable } from './bestspeed.js';
+import { hmMin as hm } from './format.js';
 
 const KEY = 'cartrak.stopmin';
 const savedStop = () => { try { const n = Number(localStorage.getItem(KEY)); return n >= 0 && n <= 30 ? n : 5; } catch (e) { return 5; } };
 const PKEY = 'cartrak.cmpspeeds';
 const savedPair = () => { try { const p = JSON.parse(localStorage.getItem(PKEY)); return Array.isArray(p) ? p : null; } catch (e) { return null; } };
-const hm = (m) => (m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`);
 const MI = 0.621371;
 
 // "Best speed for this trip": total time at each cruising speed, counting the charging the extra energy forces.

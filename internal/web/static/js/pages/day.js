@@ -10,11 +10,11 @@ import { expandable } from '../daydetail.js';
 import { dayStopsCard } from '../daystops.js';
 import { checkCard } from '../mileagecheck.js';
 import { shareCard } from '../sharecard.js';
+import { hm } from '../format.js';
 
 const COLORS = ['#1b5fc4', '#d97706', '#7c3aed', '#0d9488', '#be185d', '#475569'];
 const STOP_COLOR = { charging: '#16a34a', parked: '#64748b' };
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
-const hm = (sec) => (sec < 3600 ? `${Math.round(sec / 60)} min` : `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`);
 const shift = (date, n) => { const d = new Date(`${date}T12:00:00`); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
 const plural = (n, w, ws) => `${n} ${n === 1 ? w : ws || w + 's'}`;

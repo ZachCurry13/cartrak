@@ -1,3 +1,4 @@
+import { locale } from './region.js';
 // Tiny DOM helpers. All data goes in through textContent, never innerHTML.
 
 // The browser's own append and replaceChildren turn null into the word "null". Pages pass null for "nothing here", as h() already
@@ -33,7 +34,7 @@ export function setMetric(m) {
 }
 const dash = '—';
 const n = (v) => v == null || Number.isNaN(Number(v));
-const grouped = (v, d) => (+v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); // 89,599, not 89599
+const grouped = (v, d) => (+v).toLocaleString(locale(), { minimumFractionDigits: d, maximumFractionDigits: d }); // 89,599, not 89599
 export const dist = (km, d = 1) => n(km) ? dash : metric ? `${grouped(km, d)} km` : `${grouped(km * 0.621371, d)} mi`;
 export const speed = (kph) => n(kph) ? dash : metric ? `${Math.round(kph)} km/h` : `${Math.round(kph * 0.621371)} mph`;
 export const temp = (c) => n(c) ? dash : metric ? `${Math.round(c)}°C` : `${Math.round(c * 9 / 5 + 32)}°F`;

@@ -4,8 +4,9 @@ import { effSpan } from './energy.js';
 import { curveBox } from './curve.js';
 import { whyCard } from './tripwhy.js';
 import { catLabel } from './categories.js';
+import { hm } from './format.js';
+import { moneyInput } from './inputs.js';
 
-const hm = (sec) => (sec < 3600 ? `${Math.max(1, Math.round(sec / 60))} min` : `${Math.floor(sec / 3600)} h ${Math.round((sec % 3600) / 60)} min`);
 
 // What a drive adds to its row: the numbers worth a second look, and why the efficiency was what it was.
 async function tripPanel(e) {
@@ -28,7 +29,8 @@ async function tripPanel(e) {
 function placePrice(e, cur) {
   const kwh = e.wallKwh || e.addedKwh;
   const now = e.cost != null && kwh > 0 ? (e.cost / kwh).toFixed(2) : '';
-  const input = h('input', { type: 'number', step: '0.01', min: 0, inputmode: 'decimal', value: now, 'aria-label': 'Price per kWh at this charger', style: 'width:7em' });
+  const inputBox = moneyInput({ currency: cur, unit: 'per kWh', label: 'Price per kWh at this charger', value: now });
+  const input = inputBox.input;
   const msg = h('p', { class: 'muted', role: 'status' });
   const save = async () => {
     const price = Number(input.value);
@@ -44,7 +46,7 @@ function placePrice(e, cur) {
   };
   return h('div', { class: 'card', style: 'margin:8px 0' }, h('b', {}, 'What does a kWh cost here?'),
     h('p', { class: 'muted' }, `This charge is an estimate from your general price. Give this charger its own price and every charge here uses it.`),
-    h('div', { style: 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0' }, h('span', {}, cur), input, h('button', { type: 'button', onclick: (ev) => { ev.stopPropagation(); save(); } }, 'Save for this place')), msg);
+    h('div', { style: 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0' }, inputBox.el, h('button', { type: 'button', onclick: (ev) => { ev.stopPropagation(); save(); } }, 'Save for this place')), msg);
 }
 
 // What a charging session adds: where, how much and what it cost, and the power curve.

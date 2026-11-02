@@ -3,9 +3,9 @@ import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
 import { routeSummary } from './routesummary.js';
 import { matchDetail } from './placematch.js';
+import { hmMin as hm } from './format.js';
 
 const MAX = 11; // the start and up to ten destinations
-const hm = (m) => (m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`);
 const clock = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 

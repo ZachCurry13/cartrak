@@ -1,11 +1,13 @@
 import { h, emptyState, shortDist } from '../ui.js';
 import { api } from '../api.js';
 import { addressCard } from '../placesearch.js';
+import { moneyInput } from '../inputs.js';
 
 // What charging costs at a place: its own price per kWh (0 when it is free), or counts as home. Left alone, a place uses the
 // usual home and public prices from Charging settings.
 function chargeBox(p, reload) {
-  const price = h('input', { type: 'number', step: '0.01', min: 0, inputmode: 'decimal', value: p.chargePrice == null ? '' : p.chargePrice, placeholder: 'usual price', style: 'width:9em', 'aria-label': `Price per kWh at ${p.name}` });
+  const priceBox = moneyInput({ unit: 'per kWh', label: `Price per kWh at ${p.name}`, value: p.chargePrice == null ? '' : p.chargePrice, placeholder: 'usual price' });
+  const price = priceBox.input;
   const home = h('input', { type: 'checkbox', checked: p.chargeHome, id: `ph${p.id}` });
   const msg = h('span', { class: 'muted', role: 'status' });
   const save = async () => {
@@ -19,7 +21,7 @@ function chargeBox(p, reload) {
   const summary = p.chargePrice != null ? `Charging here: ${p.chargePrice === 0 ? 'free' : `${p.chargePrice.toFixed(2)} per kWh`}` : p.chargeHome ? 'Charging here counts as home' : 'Charging here: the usual price';
   return h('details', { class: 'curvebox', style: 'margin:0 0 8px' }, h('summary', { class: 'muted' }, summary),
     h('p', { class: 'muted' }, 'Leave the price empty to use your usual prices (Charging, Charging settings). Enter 0 if charging here is free.'),
-    h('label', {}, 'Price per kWh here'), price,
+    h('label', {}, 'Price per kWh here'), priceBox.el,
     h('label', { for: `ph${p.id}`, style: 'display:flex;gap:8px;align-items:center;margin-top:8px' }, home, 'Counts as home charging (home price, and home in the statistics)'),
     h('p', {}, h('button', { onclick: save }, 'Save'), ' ', msg));
 }

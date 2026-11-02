@@ -76,6 +76,8 @@ Live fits the screen without scrolling, on a phone or a tablet on a car mount. T
 While the car runs from a remote start, Home and Live show how long is left, counted down from the car's own countdown as of its last report. If the car has not reported for a while the time can drift a little. CarTrak only reads this; it cannot start or stop the car.
 
 ## Seasonal themes
+**More, Display and data, Numbers and dates** sets how money, large numbers and dates are written on this device: United States by default ($1,000.00, 11/02/2026, 12-hour clock), with Canada, the United Kingdom, Australia and Germany to choose. Units (miles or kilometers) are separate, just above it.
+
 **More, Display and data, Seasonal themes** dresses the app up for the time of year: Halloween (October), Thanksgiving (November
 until Thanksgiving Day), Christmas (from the day after Thanksgiving to December 26), New Year (December 31 and January 1), winter,
 Valentine's (February 1 to 14), St. Patrick's (March 1 to 17), Easter (the two weeks before Easter Sunday), spring, the Fourth of
