@@ -40,6 +40,7 @@ export default async function settings(root, _a, session) {
   const remoteChip = remote && (remote.status.state === 'connected' ? chip('ok', 'On') : remote.enabled ? chip('bad', remote.status.state === 'not-installed' ? 'Unavailable' : 'Connecting') : chip('work', 'Off'));
 
   root.append(
+    h('div', { class: 'page-title' }, h('h2', {}, 'More')),
     h('div', { class: 'profile' },
       h('span', { class: 'avatar', 'aria-hidden': 'true' }, (session.me.name || '?').slice(0, 1).toUpperCase()),
       h('div', {}, h('b', {}, session.me.name), h('span', { class: 'muted' }, `${session.me.role === 'admin' ? 'Admin' : 'Viewer'} · CarTrak v${a.version}`))),
