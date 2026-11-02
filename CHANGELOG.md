@@ -5,6 +5,9 @@
 ### 🧠 Uses your spare memory
 - **The database now keeps up to 256 MB of itself in memory** (SQLite's own default is about 2 MB), so once it has warmed up, pages, charts and lists are read from RAM instead of the disk. It only fills as data is read, and `CARTRAK_DB_CACHE_MB` changes the size (8 to 4096) if you want more or less. The slow figures Home asks for are also reused for 45 seconds instead of 20, and still thrown away the moment anything is changed.
 
+### 🧵 Pages no longer wait in line for each other
+- **The database can now answer four requests at once** (it used one connection, so a page asking for a dozen things made each wait for the one before it while the processor sat idle). Reads run side by side; a change takes the write lock as soon as it starts, so two changes never collide, and a test hammers it with writers and readers together. `CARTRAK_DB_CONNS` changes the number (1 to 8; 1 is how it was). The memory cache is split between the connections, so the total stays what `CARTRAK_DB_CACHE_MB` says.
+
 ### ⏱️ Faster rebuilds, gentler road lookups
 - **Fix a day is about two and a half times faster** here, and should gain more on a NAS disk: the scratch database it replays into no longer waits for the disk after every write. A month still says it can take up to a minute while it works.
 - **Working out roads is gentler on the free routing service.** Choosing between roads makes a few requests for each trip, so they are spaced out to about one a second, and the road estimates run five trips at a time with a count of how many are left. It is slower, but it will not get your address blocked.

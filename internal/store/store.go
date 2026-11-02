@@ -122,7 +122,7 @@ func openFile(dir, name string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.SetMaxOpenConns(1) // SQLite: serialize writers, avoids SQLITE_BUSY
+	db.SetMaxOpenConns(connCount()) // reads run side by side (WAL); writers wait their turn for the write lock (busy_timeout)
 	if _, err := db.Exec(schema + schemaCars); err != nil {
 		return nil, err
 	}
