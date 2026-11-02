@@ -31,6 +31,13 @@ func TestAddressSearchFindsAPlaceAndSavesItByCoordinates(t *testing.T) {
 	if code != 200 || json.Unmarshal([]byte(body), &found) != nil || len(found) != 1 || found[0].Lat != 44.9778 || asked != "350 5th Ave Townsville" {
 		t.Fatalf("search: %d %s (asked %q)", code, body, asked)
 	}
+	var raw []map[string]any
+	json.Unmarshal([]byte(body), &raw)
+	for _, key := range []string{"label", "name", "address", "kind", "lat", "lon", "distKm"} { // the names the page reads, exactly
+		if _, ok := raw[0][key]; !ok {
+			t.Fatalf("a match has no %q: %v", key, raw[0])
+		}
+	}
 	if c, _ := do(t, admin, "POST", ts.URL+"/api/named-places", `{"name":"Customer","lat":44.9778,"lon":-93.265,"radiusM":150}`, xh); c != 200 {
 		t.Fatalf("saving the found place: %d", c)
 	}

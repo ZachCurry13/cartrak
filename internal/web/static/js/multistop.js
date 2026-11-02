@@ -2,6 +2,7 @@ import { h, chip, dist, speed, temp, num, tempBandLabel } from './ui.js';
 import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
 import { routeSummary } from './routesummary.js';
+import { matchDetail } from './placematch.js';
 
 const MAX = 11; // the start and up to ten destinations
 const hm = (m) => (m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`);
@@ -21,15 +22,16 @@ export async function multiStopCard(get, latest) {
   const tick = (box, id, text) => h('label', { for: id, style: 'display:flex;gap:8px;align-items:center;margin:4px 0;min-height:44px' }, box, text);
 
   const rowFor = (s, i) => {
-    const q = h('input', { value: s.label, placeholder: i === 0 ? 'Start: an address' : `Destination ${i}: an address`, maxlength: 200, 'aria-label': i === 0 ? 'Start' : `Destination ${i}` });
+    const q = h('input', { value: s.label, placeholder: i === 0 ? 'Start: a business or address' : `Destination ${i}: a business or address`, maxlength: 200, 'aria-label': i === 0 ? 'Start' : `Destination ${i}` });
     const found = h('div');
     const set = (name, label, lat, lon) => { Object.assign(s, { name, label, lat, lon }); draw(); };
     const find = async () => {
       found.replaceChildren(h('p', { class: 'muted' }, 'Searching...'));
       try {
         const r = await api(`/api/named-places/search?q=${encodeURIComponent(q.value.trim())}`);
-        found.replaceChildren(...(r.length ? r.map((m) => h('button', { class: 'sec', style: 'display:block;text-align:left;margin:4px 0;white-space:normal', onclick: () => set(m.label.split(',').slice(0, 2).join(',').trim(), m.label.split(',').slice(0, 3).join(',').trim(), m.lat, m.lon) }, m.label))
-          : [h('p', { class: 'muted' }, 'Nothing found. Try the street and the town.')]));
+        found.replaceChildren(...(r.length ? r.map((m) => h('button', { class: 'sec', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal', onclick: () => set(m.name, m.address && m.address !== m.name ? `${m.name}, ${m.address}` : m.name, m.lat, m.lon) },
+          h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m))))
+          : [h('p', { class: 'muted' }, 'Nothing found. Add the town to the name, or type the street address.')]));
       } catch (e) { found.replaceChildren(h('p', { class: 'muted' }, e.message)); }
     };
     q.addEventListener('keydown', (e) => { if (e.key === 'Enter') find(); });

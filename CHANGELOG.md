@@ -16,6 +16,9 @@
 - **The phone's Back button no longer jumps to a random page.** A page's own "← More" link used to add a step to the history, so after using one, Back went somewhere odd. The app now keeps a note of the pages you opened, in order, and the "←" link at the top of a page goes to the page before it, exactly as Back does. Redirects (the getting-started page, adding a first car) and the Day view's previous and next day arrows replace the page instead of adding a step.
 - **The "←" link names the page you came from.** Open Stats from Trips and it says "← Trips", not "← Charging". Opened from a bookmark or a notification, it keeps the name and place its page gave it.
 
+### 🔎 Find a place by its business name
+- **Type a business name, not just an address**, anywhere you add a place: "flexible circuits" finds it. Several places with the same name come back as a list, **nearest first**, each showing its name, what it is, a short address and how far away it is. Adding a place from the result fills in its name for you. It uses OpenStreetMap like the address search did, so a business has to be listed there; if not, add the town to the name or type the street address.
+
 ### 🛣️ Choose the road for a trip
 - **A trip with no phone GPS now has a Choose the road button.** It works out the roads between the places the car reported, a stretch at a time, and shows each one's length next to what the odometer said: **the road closest to the odometer**, the quickest and the shortest. Pick one and it is drawn. New estimates now use the road closest to the odometer on their own (before, the quickest road through the places was taken), and a trip that was tried and given up on can be fixed by choosing a road.
 
