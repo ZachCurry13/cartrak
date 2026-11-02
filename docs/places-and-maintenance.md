@@ -1,7 +1,7 @@
 # Places, trip review and maintenance
 
 ## Places
-**More, Places** lists the places you have named, such as Home or the office. To add one, do it while the car is there (**Save this place** uses the car's last reported position), or open any trip and use **Name the start** or **Name the end**. Pick how close counts as being there (100 m to 600 m).
+**More, Places** lists the places you have named, such as Home or the office. To add one by its address, use **Add by address**: type the street and town, tap **Search**, pick the right match, give it a name and save. The address is sent to OpenStreetMap to find the spot (the same service as city names, and it stops when **City names** is off in Settings), and only the spot is saved, not the address. Or do it while the car is there (**Save this place** uses the car's last reported position), or open any trip and use **Name the start** or **Name the end**. Pick how close counts as being there (100 m to 600 m).
 
 Named places do three things:
 - **Trips read "Home → Office"** in the trip list and on the trip page, wherever a trip started or ended inside a place.

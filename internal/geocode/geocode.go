@@ -92,23 +92,10 @@ func (c *Client) CachedState(lat, lon float64) (string, bool) {
 func (c *Client) fetch(ctx context.Context, lat, lon float64) (string, string, error) {
 	c.mu.Lock() // one lookup at a time, spaced out
 	defer c.mu.Unlock()
-	gap := c.MinGap
-	if gap == 0 {
-		gap = 1100 * time.Millisecond
+	if err := c.pace(ctx); err != nil {
+		return "", "", err
 	}
-	if wait := gap - time.Since(c.last); wait > 0 {
-		select {
-		case <-time.After(wait):
-		case <-ctx.Done():
-			return "", "", ctx.Err()
-		}
-	}
-	c.last = time.Now()
-
-	base := strings.TrimRight(c.BaseURL, "/")
-	if base == "" {
-		base = DefaultURL
-	}
+	base := c.base()
 	q := url.Values{"format": {"jsonv2"}, "zoom": {"10"}, "addressdetails": {"1"}, "accept-language": {"en"},
 		"lat": {fmt.Sprintf("%.3f", lat)}, "lon": {fmt.Sprintf("%.3f", lon)}}
 	req, err := http.NewRequestWithContext(ctx, "GET", base+"/reverse?"+q.Encode(), nil)
@@ -174,4 +161,29 @@ func (c *Client) SetBaseURL(u string) {
 	c.mu.Lock()
 	c.BaseURL = u
 	c.mu.Unlock()
+}
+
+// pace waits until the service may be asked again. The caller holds c.mu.
+func (c *Client) pace(ctx context.Context) error {
+	gap := c.MinGap
+	if gap == 0 {
+		gap = 1100 * time.Millisecond
+	}
+	if wait := gap - time.Since(c.last); wait > 0 {
+		select {
+		case <-time.After(wait):
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+	c.last = time.Now()
+	return nil
+}
+
+// base is the service address without a trailing slash. The caller holds c.mu.
+func (c *Client) base() string {
+	if b := strings.TrimRight(c.BaseURL, "/"); b != "" {
+		return b
+	}
+	return DefaultURL
 }

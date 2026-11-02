@@ -17,7 +17,9 @@ export async function batteryCard() {
   const low = Math.min(...d.months.map((m) => m.kwh));
   const bars = tapBars(d.months.slice(-12).map((m) => ({ label: monthName(m.month), value: m.kwh - low * 0.9, text: `${num(m.kwh, 1, ' kWh')} (average that month)` })), { summary: 'Estimated battery size each month' });
   return h('section', { class: 'card' }, h('h2', {}, 'Battery health (estimate)'),
-    d.ready ? h('p', {}, h('b', {}, `${num(d.startKwh, 1)} → ${num(d.nowKwh, 1, ' kWh')}`), ' ', h('span', { class: 'muted' }, `${d.changePct > 0 ? '+' : ''}${d.changePct.toFixed(1)}% since the start`)) : null,
+    d.ready && d.percent ? h('p', { style: 'margin:0' }, h('b', { style: 'font-size:1.6em' }, `${d.percent.toFixed(1)}%`), ' ', h('span', { class: 'muted' }, d.newKwh ? `of new (${num(d.newKwh, 0, ' kWh')})` : 'of the first weeks CarTrak saw')) : null,
+    d.ready && !d.newKwh ? h('p', { class: 'muted' }, h('a', { href: '#/admin' }, 'Enter the battery size when new'), ' (More, Settings) to see the percentage of new.') : null,
+    d.ready ? h('p', {}, h('b', {}, `${num(d.startKwh, 1)} → ${num(d.nowKwh, 1, ' kWh')}`), ' ', h('span', { class: 'muted' }, `${d.changePct > 0 ? '+' : ''}${d.changePct.toFixed(1)}% since the start, middle of each month's days`)) : null,
     d.ready ? h('p', {}, VERDICT[d.verdict]) : h('p', { class: 'muted' }, 'CarTrak needs a couple of months of readings before it can say anything about the trend.'),
     bars,
     h('p', { class: 'muted' }, 'This is the size of the battery as the car itself estimates it. The estimate moves with temperature and how full the battery is, so a small dip in winter is normal. It is not a lab test of the battery.'));

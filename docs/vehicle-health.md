@@ -52,6 +52,10 @@ The **True battery level** card also shows the range the car expects at 100%, an
 
 **Health** has a Battery health card: the battery size as the car itself estimates it, month by month, and a plain verdict once there are at least two months of readings: steady (within about 3 percent), a gentle decline (up to about 8 percent), or worth watching. The estimate moves with temperature and how full the battery is, so a small winter dip is normal, and this is not a lab test.
 
+Each day counts as the middle of its readings and the start and the latest figure are the middle of a month of days, so a few odd readings do not move them. Enter your battery's usable size when new under **Settings, Battery size when new** (Ford does not send it; for example 88) and the card shows the latest figure as a percentage of it, such as 96.1% of new. With no size entered it compares with the first weeks CarTrak saw. The size CarTrak uses to estimate a trip's energy is also the middle of the last three weeks of readings, so a trip's estimated kWh no longer depends on when the car happened to report last.
+
+**Software version.** Ford does not send the car's software version. On **Health**, the **Software version** card lets you write down the version you see in the car (Settings, Software Updates) and the first day on it, so a change in efficiency or battery size can be lined up with an update.
+
 ## Fixing a bad trip
 Admins see **Fix this trip** on a trip's page. **Delete this trip** removes a duplicate or junk trip (and any public link made from it); odometer and battery history are not touched. **Close this trip** finishes a trip that never ended, which needs 30 minutes without readings. A trip that is still in progress cannot be changed this way. The Data check page lists the trips worth a look.
 

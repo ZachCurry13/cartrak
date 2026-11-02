@@ -89,3 +89,34 @@ func (s *Store) DailyMedian(name string, from int64) ([]Day, error) {
 	flush()
 	return out, rows.Err()
 }
+
+// RecentMedian is the middle value of a trended series since `from`, and how many readings it is made of. For a figure the car
+// estimates and that wanders with the weather, such as the battery capacity, it is steadier than the latest reading.
+func (s *Store) RecentMedian(name string, from int64) (float64, int, error) {
+	col, ok := trended[name]
+	if !ok {
+		return 0, 0, fmt.Errorf("unknown series %q", name)
+	}
+	rows, err := s.DB.Query(`SELECT `+col+` FROM trends WHERE ts >= ? AND `+col+` IS NOT NULL`, from)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer rows.Close()
+	var vals []float64
+	for rows.Next() {
+		var v float64
+		if err := rows.Scan(&v); err != nil {
+			return 0, 0, err
+		}
+		vals = append(vals, v)
+	}
+	if err := rows.Err(); err != nil || len(vals) == 0 {
+		return 0, 0, err
+	}
+	sort.Float64s(vals)
+	m := vals[len(vals)/2]
+	if len(vals)%2 == 0 {
+		m = (vals[len(vals)/2-1] + vals[len(vals)/2]) / 2
+	}
+	return m, len(vals), nil
+}

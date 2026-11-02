@@ -40,3 +40,31 @@ func TestTooLittleHistoryGivesNoVerdictButStillListsMonths(t *testing.T) {
 		t.Fatal("under 60 days apart is not a trend")
 	}
 }
+
+func TestOddDaysDoNotMoveTheStartOrTheLatestFigure(t *testing.T) {
+	d := series(200, 88, 88)
+	for _, i := range []int{3, 7, 190, 195} { // a few days the car guessed high or low
+		d[i].Avg = 94
+	}
+	if r := Build(d); r.StartKwh != 88 || r.NowKwh != 88 || r.Verdict != "steady" {
+		t.Fatalf("%+v", r)
+	}
+}
+
+func TestPercentIsComparedWithTheNewSizeOrTheStart(t *testing.T) {
+	r := Build(series(200, 90, 87.2))
+	r.Against(91)
+	if r.NewKwh != 91 || r.Percent != 96.1 {
+		t.Fatalf("against 91: %+v", r)
+	}
+	r.NewKwh = 0
+	r.Against(0)
+	if r.NewKwh != 0 || r.Percent != 97.3 {
+		t.Fatalf("against the start: %+v", r)
+	}
+	short := Build(series(10, 88, 88))
+	short.Against(88)
+	if short.Percent != 0 {
+		t.Fatalf("no percentage without a trend: %+v", short)
+	}
+}

@@ -25,9 +25,12 @@ type tripOut struct {
 	FuelGal   *float64 `json:"fuelGal"`
 }
 
-// capacityKwh is the battery's latest estimated capacity, used to estimate trips that were recorded
-// without the car's energy reading.
+// capacityKwh is the battery's estimated capacity, used to estimate trips that were recorded without the car's energy reading.
+// It is the middle of the last weeks' readings, so it does not jump with each report; with too few readings it is the latest one.
 func (s *Server) capacityKwh() *float64 {
+	if m, ok := s.steadyCapacity(); ok {
+		return &m
+	}
 	if x, _ := s.S.LatestSample(); x != nil {
 		return x.CapacityKwh
 	}

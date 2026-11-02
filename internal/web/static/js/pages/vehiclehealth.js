@@ -4,6 +4,7 @@ import { rowEl, value, format } from '../healthrows.js';
 import { spark } from '../spark.js';
 import { batteryCard, truthCard } from '../batterycard.js';
 import { tireCard } from '../tirecard.js';
+import { softwareCard } from '../softwarecard.js';
 
 const SOURCE = {
   setting: 'chosen in Admin settings',
@@ -67,6 +68,8 @@ export default async function vehicleHealth(root, _a, session) {
   if (tires) root.append(tires);
   const truth = await truthCard();
   if (truth) root.append(truth);
+  const sw = await softwareCard(session.me.role === 'admin');
+  if (sw) root.append(sw);
   root.append(h('p', { class: 'muted' }, `Vehicle type: ${v.label} (${SOURCE[v.source] || ''}). `,
     session.me.role === 'admin' ? h('a', { href: '#/admin' }, 'Wrong? Change it in Settings.') : ''));
 }

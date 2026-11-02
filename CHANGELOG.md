@@ -1,9 +1,20 @@
 # Changelog
 
-## 0.63.4
+## 0.64.0
+
+### 📍 Add a place by its address
+- **More, Places** has a new **Add by address** card. Type a street and town, tap Search, pick the right match, name it and save. The address is sent to OpenStreetMap to find the spot (the same service as city names, so it stops when **City names** is off) and only the spot is saved, never the address.
+
+### 🔋 Battery health as a percentage
+- Battery health now shows the latest battery size as a **percentage of new**, such as 96.1%. Enter the size when new under **Settings, Battery size when new** (Ford does not send it). With none entered it compares with the first weeks CarTrak saw.
+- **The wandering estimate is smoothed.** Ford's capacity figure swings a few percent with the weather and charge level. The card now uses the middle reading of each day and the middle of a month of days, so a few odd readings no longer move it.
+- **Trip energy no longer jumps with each report.** An estimated trip used the single latest capacity reading; it now uses the middle of the last three weeks, so the same trip gives the same kWh whenever you look.
+
+### 🧾 Software version note
+- Ford does not send the car's software version (checked against a full export of every field). **Health** has a new **Software version** card where you write down the version you see in the car and the first day on it, so a change in efficiency or battery size can be lined up with an update.
 
 ### 🎬 Wrapped file name
-- The picture you share or download from Wrapped is now named by its period, such as **2026.10 CarTrak Wrapped.jpg** (a year is **2026 CarTrak Wrapped.jpg**), so they sort in order in your photos and downloads.
+- The picture you share or download from Wrapped is named by its period, such as **2026.10 CarTrak Wrapped.jpg** (a year is **2026 CarTrak Wrapped.jpg**), so they sort in order in your photos and downloads.
 
 ## 0.63.3
 

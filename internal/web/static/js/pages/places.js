@@ -1,5 +1,6 @@
 import { h, emptyState, shortDist } from '../ui.js';
 import { api } from '../api.js';
+import { addressCard } from '../placesearch.js';
 
 // What charging costs at a place: its own price per kWh (0 when it is free), or counts as home. Left alone, a place uses the
 // usual home and public prices from Charging settings.
@@ -51,6 +52,7 @@ export default async function places(root, _a, session) {
         ...(ps.length ? ps.map((p) => h('div', {}, h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, p.name), h('div', { class: 'muted' }, `within about ${shortDist(p.radiusM)}`)),
           admin ? h('button', { class: 'sec', onclick: async () => { if (confirm(`Remove ${p.name}?`)) { await api(`/api/named-places/${p.id}`, { method: 'DELETE' }); load(); } } }, 'Remove') : null), admin ? serviceKind(p, load) : null, admin ? chargeBox(p, load) : null))
           : [emptyState('No places yet', 'Drive to Home or the office and use the form below while the car is there.')])),
+      admin ? addressCard(load) : null,
       admin ? h('section', { class: 'card' }, h('h2', {}, 'Add where the car is now'),
         h('label', { for: 'pn' }, 'Name'), name, h('label', { for: 'pr' }, 'How close counts as there'), size,
         h('p', {}, h('button', { onclick: here }, 'Save this place')), msg,
