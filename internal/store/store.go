@@ -118,7 +118,7 @@ func openFile(dir, name string) (*Store, error) {
 	}
 	path := filepath.Join(dir, name)
 	db, err := sql.Open("sqlite", "file:"+filepath.ToSlash(path)+
-		"?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)")
+		"?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragma=foreign_keys(1)"+memoryPragmas())
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 // briefTTL is how long the answer to a slow, read-only call is reused. Home asks for a dozen of these at once, each waiting its turn
 // on the one database connection, so a page that took seconds is the sum of them. A new reading every half minute or so is the
 // most these figures change by themselves, and anything a person changes (any write) throws the kept answers away at once.
-const briefTTL = 20 * time.Second
+const briefTTL = 45 * time.Second
 
 // briefDisabled turns the reuse off. Tests that change the database directly and read it back at once need to see the change.
 var briefDisabled bool
