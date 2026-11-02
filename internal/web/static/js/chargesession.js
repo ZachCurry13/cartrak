@@ -40,7 +40,7 @@ function editBox(c, cur, reload) {
   const msg = h('span', { class: 'muted', role: 'status' });
   const where = h('select', { 'aria-label': 'Where it was charged' },
     ...[['', c.where && !c.kind ? `Automatic (${c.where === 'home' ? 'home' : 'away from home'})` : 'Automatic'], ['home', 'Home'], ['public', 'Away from home']].map(([v, t]) => h('option', { value: v, selected: v === (c.kind || '') }, t)));
-  const kwh = h('input', { type: 'number', step: '0.1', min: 0, inputmode: 'decimal', placeholder: 'kWh', 'aria-label': 'kWh the charger reported', value: c.chargerKwh != null ? c.chargerKwh : '', style: 'width:7em' });
+  const kwh = h('input', { type: 'number', 'data-unit': 'kWh', step: '0.1', min: 0, inputmode: 'decimal', placeholder: 'kWh', 'aria-label': 'kWh the charger reported', value: c.chargerKwh != null ? c.chargerKwh : '', style: 'width:7em' });
   const paidBox = moneyInput({ currency: cur || '$', unit: 'total', label: 'What you paid', value: c.costActual && c.cost != null ? c.cost.toFixed(2) : '' });
   const paid = paidBox.input;
   const save = async () => {

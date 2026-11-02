@@ -12,7 +12,7 @@ export async function workDayCard() {
   const days = new Set((val(KEYS.days) || '1,2,3,4,5').split(/[,\s]+/).filter(Boolean).map(Number));
   const on = h('input', { type: 'checkbox', id: 'wd-on', checked: val(KEYS.on) === 'on' });
   const boxes = DAYS.map(([n, t]) => h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: days.has(n), 'data-day': n }), ` ${t}`));
-  const stay = h('input', { type: 'number', min: 0, max: 600, value: val(KEYS.stay) || 45, 'aria-label': 'Minutes at Home', style: 'max-width:6em' });
+  const stay = h('input', { type: 'number', 'data-unit': 'min', min: 0, max: 600, value: val(KEYS.stay) || 45, 'aria-label': 'Minutes at Home', style: 'max-width:6em' });
   const msg = h('p', { class: 'muted', role: 'status' });
   const save = async () => {
     const chosen = boxes.map((b) => b.querySelector('input')).filter((i) => i.checked).map((i) => i.dataset.day).join(',');

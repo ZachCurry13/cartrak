@@ -27,8 +27,8 @@ export default async function maintenance(root, _a, session) {
     const d = await api('/api/maintenance');
     const unit = isMetric() ? 'km' : 'mi';
     const name = h('input', { id: 'mn', placeholder: 'For example Tire rotation', maxlength: 60 });
-    const km = h('input', { id: 'mk', type: 'number', min: 1, inputmode: 'numeric', placeholder: unit === 'mi' ? '6000' : '10000' });
-    const days = h('input', { id: 'md', type: 'number', min: 7, inputmode: 'numeric', placeholder: '365' });
+    const km = h('input', { id: 'mk', type: 'number', 'data-unit': 'dist', min: 1, inputmode: 'numeric', placeholder: unit === 'mi' ? '6000' : '10000' });
+    const days = h('input', { id: 'md', type: 'number', 'data-unit': 'days', min: 7, inputmode: 'numeric', placeholder: '365' });
     const msg = h('p', { class: 'muted', role: 'status' });
     const preset = ([n, k, dd]) => h('button', { class: 'sec', type: 'button', onclick: () => { name.value = n; km.value = k ? fromKm(k) : ''; days.value = dd || ''; } }, n);
     async function add() {

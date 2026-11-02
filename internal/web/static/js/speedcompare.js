@@ -18,7 +18,7 @@ export async function speedCompare(bands) {
   const fast = await api('/api/charging/fast-average').catch(() => null);
   const kw = win && win.minutesPerPct ? (latest.capacityKwh / 100) * 60 / win.minutesPerPct : fast && fast.avgKw ? fast.avgKw : 100;
   const metric = isMetric();
-  const dist = h('input', { type: 'number', min: 20, inputmode: 'numeric', value: saved() || (metric ? 960 : 600), 'aria-label': 'Trip length', style: 'max-width:6em' });
+  const dist = h('input', { type: 'number', 'data-unit': 'dist', min: 20, inputmode: 'numeric', value: saved() || (metric ? 960 : 600), 'aria-label': 'Trip length', style: 'max-width:6em' });
   const box = h('div');
   const show = () => {
     const v = Number(dist.value);

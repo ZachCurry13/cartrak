@@ -42,7 +42,7 @@ export default async function rules(root, _a, session) {
     const days = DAYS.map((d, i) => { const c = h('input', { type: 'checkbox' }); c.checked = !!(v.days & (1 << i)); return [c, h('label', {}, c, d)]; });
     const lat = h('input', { type: 'number', step: 'any', value: v.geoLat ?? '', placeholder: 'Latitude' });
     const lon = h('input', { type: 'number', step: 'any', value: v.geoLon ?? '', placeholder: 'Longitude' });
-    const rad = h('input', { type: 'number', value: v.geoRadius != null ? fromMeters(v.geoRadius) : '', placeholder: `Radius (${smallUnit()})` });
+    const rad = h('input', { type: 'number', 'data-unit': 'small', value: v.geoRadius != null ? fromMeters(v.geoRadius) : '', placeholder: `Radius (${smallUnit()})` });
     const msg = h('p', { class: 'muted', role: 'alert' });
     // Fill the place from one you named under More, Places, instead of typing coordinates.
     const named = [];

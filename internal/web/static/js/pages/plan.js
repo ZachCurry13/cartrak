@@ -39,9 +39,9 @@ export default async function plan(root, _a, session) {
     return hit ? hit.kmPerPct : avgKmPerPct;
   };
   const unit = isMetric() ? 'km' : 'mi';
-  const distance = h('input', { id: 'pd', type: 'number', min: 1, inputmode: 'decimal', placeholder: unit === 'mi' ? '420' : '680' });
-  const start = h('input', { id: 'ps', type: 'number', min: 1, max: 100, inputmode: 'numeric', value: latest && latest.socPct != null ? Math.round(latest.socPct) : 100 });
-  const kw = h('input', { id: 'pk', type: 'number', min: 10, max: 350, inputmode: 'numeric', value: saved() || winKw || histKw || 100 });
+  const distance = h('input', { id: 'pd', type: 'number', 'data-unit': 'dist', min: 1, inputmode: 'decimal', placeholder: unit === 'mi' ? '420' : '680' });
+  const start = h('input', { id: 'ps', type: 'number', 'data-unit': '%', min: 1, max: 100, inputmode: 'numeric', value: latest && latest.socPct != null ? Math.round(latest.socPct) : 100 });
+  const kw = h('input', { id: 'pk', type: 'number', 'data-unit': 'kW', min: 10, max: 350, inputmode: 'numeric', value: saved() || winKw || histKw || 100 });
   const out = h('div');
   const field = (id, label, input, help) => h('div', {}, h('label', { for: id }, label), input, help ? h('p', { class: 'muted' }, help) : null);
 

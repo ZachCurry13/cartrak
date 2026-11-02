@@ -19,9 +19,9 @@ export default async function planFuel(root) {
   const fromCar = carRange && latest && latest.fuelPct > 10 ? Number(carRange[1]) / latest.fuelPct : null; // the car's own range figure for one percent
   const kmPerPct = perTank ? perTank / 100 : fromCar;
   const unit = isMetric() ? 'km' : 'mi';
-  const distance = h('input', { id: 'pd', type: 'number', min: 1, inputmode: 'decimal', placeholder: unit === 'mi' ? '420' : '680' });
-  const start = h('input', { id: 'ps', type: 'number', min: 1, max: 100, inputmode: 'numeric', value: latest && latest.fuelPct != null ? Math.round(latest.fuelPct) : 100 });
-  const mins = h('input', { id: 'pm', type: 'number', min: 1, max: 60, inputmode: 'numeric', value: 10 });
+  const distance = h('input', { id: 'pd', type: 'number', 'data-unit': 'dist', min: 1, inputmode: 'decimal', placeholder: unit === 'mi' ? '420' : '680' });
+  const start = h('input', { id: 'ps', type: 'number', 'data-unit': '%', min: 1, max: 100, inputmode: 'numeric', value: latest && latest.fuelPct != null ? Math.round(latest.fuelPct) : 100 });
+  const mins = h('input', { id: 'pm', type: 'number', 'data-unit': 'min', min: 1, max: 60, inputmode: 'numeric', value: 10 });
   const out = h('div');
   const field = (id, label, input, help) => h('div', {}, h('label', { for: id }, label), input, help ? h('p', { class: 'muted' }, help) : null);
 

@@ -32,8 +32,8 @@ export function serviceForm({ visit, reminders, cur, onSaved }) {
       const miles = rem && rem.everyKm ? Math.round(isMetric() ? rem.everyKm : rem.everyKm / KM) : job && job[1] ? Math.round(isMetric() ? job[1] * KM : job[1]) : '';
       const months = rem && rem.everyDays ? Math.round(rem.everyDays / 30.4) : job && job[2] ? job[2] : '';
       const prev = dueInputs.get(name);
-      const d = prev ? prev.d : h('input', { type: 'number', min: 1, inputmode: 'numeric', value: miles, placeholder: unit, style: 'width:6.5em', 'aria-label': `${name} due again in ${unit}` });
-      const m = prev ? prev.m : h('input', { type: 'number', min: 1, inputmode: 'numeric', value: months, placeholder: 'months', style: 'width:5.5em', 'aria-label': `${name} due again in months` });
+      const d = prev ? prev.d : h('input', { type: 'number', 'data-unit': 'dist', min: 1, inputmode: 'numeric', value: miles, placeholder: unit, style: 'width:6.5em', 'aria-label': `${name} due again in ${unit}` });
+      const m = prev ? prev.m : h('input', { type: 'number', 'data-unit': 'months', min: 1, inputmode: 'numeric', value: months, placeholder: 'months', style: 'width:5.5em', 'aria-label': `${name} due again in months` });
       dueInputs.set(name, { d, m });
       return h('div', { class: 'row', style: 'gap:6px;flex-wrap:wrap' }, h('span', { class: 'grow', style: 'flex-basis:9em' }, name), h('span', { class: 'muted' }, 'again in'), d, h('span', { class: 'muted' }, `${unit} or`), m, h('span', { class: 'muted' }, 'months'));
     }));

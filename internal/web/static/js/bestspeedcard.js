@@ -10,7 +10,7 @@ const MI = 0.621371;
 
 // "Best speed for this trip": total time at each cruising speed, counting the charging the extra energy forces.
 export function bestSpeedCard(args, rerun) {
-  const stop = h('input', { type: 'number', min: 0, max: 30, inputmode: 'numeric', value: savedStop(), 'aria-label': 'Minutes lost per charging stop', style: 'max-width:5em' });
+  const stop = h('input', { type: 'number', 'data-unit': 'min', min: 0, max: 30, inputmode: 'numeric', value: savedStop(), 'aria-label': 'Minutes lost per charging stop', style: 'max-width:5em' });
   // Boxes update the card as you type. The card is rebuilt each time, so put the cursor back in the box you were typing in.
   let timer;
   const live = (el, save) => el.addEventListener('input', () => {
@@ -35,7 +35,7 @@ export function bestSpeedCard(args, rerun) {
   const dflt = metric ? [110, 120] : [70, 75];
   const pick = (i) => {
     const v = pair && Number(pair[i]) >= 20 && Number(pair[i]) <= 200 ? Number(pair[i]) : dflt[i];
-    const s = h('input', { type: 'number', min: 20, max: 200, step: 1, inputmode: 'numeric', value: v, 'aria-label': i ? 'Compare with (speed)' : 'Compare (speed)', style: 'max-width:5em' });
+    const s = h('input', { type: 'number', 'data-unit': 'speed', min: 20, max: 200, step: 1, inputmode: 'numeric', value: v, 'aria-label': i ? 'Compare with (speed)' : 'Compare (speed)', style: 'max-width:5em' });
     live(s, () => { try { localStorage.setItem(PKEY, JSON.stringify([a.value, b.value])); } catch (e) { /* storage blocked */ } });
     return s;
   };

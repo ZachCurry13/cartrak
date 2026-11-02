@@ -1,11 +1,26 @@
 // Behavior every page shares, so no page has to remember it: a number field selects its text when tapped and brings up the right
 // keypad, and a long help paragraph is folded to two lines with a More button, so the answer is not buried under the explanation.
 // It watches the page (pages draw in pieces as their answers arrive) and tidies what is new.
+import { isMetric, smallUnit } from './ui.js';
+
 const LONG = 170;
+// A page names what a number counts in (data-unit); a word like "speed" or "dist" follows the units chosen on this device.
+const unitText = (u) => ({ speed: isMetric() ? 'km/h' : 'mph', dist: isMetric() ? 'km' : 'mi', small: smallUnit() })[u] || u;
 
 function tidy(root) {
   for (const i of root.querySelectorAll('input[type=number]:not([inputmode])')) {
     i.setAttribute('inputmode', /\./.test(i.step || '') || i.step === 'any' ? 'decimal' : 'numeric');
+  }
+  for (const i of root.querySelectorAll('input[type=number][data-unit]')) { // the same box as a price: the number, then what it counts in
+    if (i.closest('.fieldbox')) continue;
+    const box = document.createElement('span');
+    box.className = 'fieldbox';
+    const suf = document.createElement('span');
+    suf.className = 'suf';
+    suf.setAttribute('aria-hidden', 'true');
+    suf.textContent = unitText(i.dataset.unit);
+    i.replaceWith(box);
+    box.append(i, suf);
   }
   for (const p of root.querySelectorAll('p.muted')) {
     if (p.dataset.tidy || p.closest('.banner, .topbar, .sheet, label, .seg') || p.textContent.length <= LONG || p.querySelector('a, button, input, select')) continue;

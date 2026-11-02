@@ -5,7 +5,7 @@ import { PRESETS, getTarget, setTarget, chargeEta, minutesText, clockAt } from '
 // time-to-full figure (minutes) when it reports one.
 export function chargeEtaBox(latest, fordMinutesToFull) {
   const box = h('div', { class: 'eta' });
-  const input = h('input', { type: 'number', min: 20, max: 100, inputmode: 'numeric', 'aria-label': 'Other percent', style: 'width:5.5em' });
+  const input = h('input', { type: 'number', 'data-unit': '%', min: 20, max: 100, inputmode: 'numeric', 'aria-label': 'Other percent', style: 'width:5.5em' });
   function draw() {
     const t = getTarget();
     const other = !PRESETS.includes(t);

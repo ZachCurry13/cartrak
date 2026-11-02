@@ -5,8 +5,8 @@ import { money } from './format.js';
 
 // "What would a charge cost?": pick a start and an end battery level and see it at your home and public prices.
 export function forecastCard() {
-  const from = h('input', { type: 'number', min: 0, max: 99, step: 1, inputmode: 'numeric', 'aria-label': 'Start battery percent', style: 'max-width:6em' });
-  const to = h('input', { type: 'number', min: 1, max: 100, step: 1, inputmode: 'numeric', 'aria-label': 'End battery percent', value: 80, style: 'max-width:6em' });
+  const from = h('input', { type: 'number', 'data-unit': '%', min: 0, max: 99, step: 1, inputmode: 'numeric', 'aria-label': 'Start battery percent', style: 'max-width:6em' });
+  const to = h('input', { type: 'number', 'data-unit': '%', min: 1, max: 100, step: 1, inputmode: 'numeric', 'aria-label': 'End battery percent', value: 80, style: 'max-width:6em' });
   const out = h('div', { role: 'status' });
   let timer = 0;
   async function run() {

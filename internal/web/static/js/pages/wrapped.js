@@ -86,7 +86,7 @@ export default async function wrapped(root, args) {
   stage.addEventListener('click', (e) => { if (e.target.closest('a,button')) return; show(at + (e.clientX < innerWidth / 3 ? -1 : 1)); });
   const keys = (e) => { if (e.key === 'ArrowRight') show(at + 1); if (e.key === 'ArrowLeft') show(at - 1); if (e.key === 'Escape') location.hash = '#/analytics'; };
   addEventListener('keydown', keys);
-  root.append(stage);
+  root.append(h('h2', { class: 'vh' }, `${title} Wrapped`), stage);
   show(0);
   return { cleanup: () => removeEventListener('keydown', keys) };
 }
