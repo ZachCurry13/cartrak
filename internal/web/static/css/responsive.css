@@ -26,7 +26,7 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
   body{padding-left:176px;padding-bottom:0}
   nav#tabs{top:0;bottom:0;right:auto;width:176px;flex-direction:column;padding:72px 8px 8px;border-top:0;border-right:1px solid var(--line);align-items:stretch}
   nav#tabs{gap:2px}
-  nav#tabs a{flex:none;text-align:left;padding:11px 16px;min-height:44px;border-radius:10px;font-size:.95rem}
+  nav#tabs a{flex:none;text-align:left;padding:11px 16px;min-height:44px;border-radius:var(--r-sm);font-size:.95rem}
   nav#tabs a.on{background:var(--bg)}
   header{position:relative;z-index:1}
 }
@@ -35,7 +35,7 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
 .dock-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
 .dock-top .grow{flex:1 1 0}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;min-width:0}
 .tile.big{grid-column:1/-1}
 .tile .tl{font-size:.8rem}
 .tile .tv{font-size:clamp(1.4rem,6.6vw,2.4rem);font-weight:700;line-height:1.1;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
