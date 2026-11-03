@@ -55,6 +55,9 @@ func snowPct(cmH float64) float64 {
 // dampPct is what a road still wet from earlier rain costs: about the same as a drizzle falling.
 const dampPct = 2.0
 
+// dampFromMm is the rain, added up over the three hours before, that leaves a road wet: even a drizzle of a fifth of a millimeter does.
+const dampFromMm = 0.2
+
 // HourEffectPct is the extra energy, in percent, one hour of weather is worth with the fixed estimates: the larger of rain and snow.
 func HourEffectPct(h Hour) float64 {
 	p := rainPct(h.RainMm)
@@ -93,12 +96,12 @@ func Summarize(pts []Pt, look func(lat, lon float64, ts int64) (Hour, bool)) (Co
 		if p == 0 { // nothing falling now: is the road still wet from the hours before?
 			mid := (a.TS + b.TS) / 2
 			var before float64
-			for _, back := range []int64{3600, 7200} {
+			for _, back := range []int64{3600, 7200, 10800} {
 				if e, ok := look((a.Lat+b.Lat)/2, (a.Lon+b.Lon)/2, mid-back); ok {
 					before += e.RainMm
 				}
 			}
-			if before >= 0.5 {
+			if before >= dampFromMm {
 				p = dampPct
 				damp += dt
 			}

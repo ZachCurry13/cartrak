@@ -132,3 +132,24 @@ func TestParseReadsSunshine(t *testing.T) {
 		t.Fatalf("%+v", hs)
 	}
 }
+
+func TestALightDrizzleBeforeTheDriveStillLeavesTheRoadWet(t *testing.T) {
+	// 0.4 mm fell in the third hour before the drive and nothing since: too little to call rain, enough to wet the road.
+	pts := make([]Pt, 10)
+	for i := range pts {
+		pts[i] = Pt{TS: 40000 + int64(i)*60, Lat: 45, Lon: -93, Speed: 80}
+	}
+	look := func(lat, lon float64, ts int64) (Hour, bool) {
+		if ts < 40000-2*3600 {
+			return Hour{Wx: true, RainMm: 0.4}, true
+		}
+		return Hour{Wx: true}, true
+	}
+	c, ok := Summarize(pts, look)
+	if !ok || c.Dry || !c.Damp || c.Label != "Wet roads" {
+		t.Fatalf("a drizzle three hours ago wets the road: %+v", c)
+	}
+	if d, _ := Summarize(pts, func(lat, lon float64, ts int64) (Hour, bool) { return Hour{Wx: true, RainMm: 0}, true }); !d.Dry {
+		t.Fatalf("no rain at all stays dry: %+v", d)
+	}
+}

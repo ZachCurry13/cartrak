@@ -9,7 +9,6 @@ const LONG = 170;
 const unitText = (u) => ({ speed: isMetric() ? 'km/h' : 'mph', dist: isMetric() ? 'km' : 'mi', small: smallUnit() })[u] || u;
 
 function tidy(root) {
-  upgradeFields(root);
   for (const i of root.querySelectorAll('input[type=number]:not([inputmode])')) {
     i.setAttribute('inputmode', /\./.test(i.step || '') || i.step === 'any' ? 'decimal' : 'numeric');
   }
@@ -24,6 +23,7 @@ function tidy(root) {
     i.replaceWith(box);
     box.append(i, suf);
   }
+  upgradeFields(root); // after the unit boxes above, so a field that is about to be boxed is not given a floating label first
   for (const p of root.querySelectorAll('p.muted')) {
     if (p.dataset.tidy || p.closest('.banner, .topbar, .sheet, label, .seg') || p.textContent.length <= LONG || p.querySelector('a, button, input, select')) continue;
     p.dataset.tidy = '1';

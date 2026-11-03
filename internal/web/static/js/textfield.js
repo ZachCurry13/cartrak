@@ -10,7 +10,7 @@ const alwaysUp = (f) => f.tagName === 'SELECT' || /^(date|time|datetime-local|mo
 export function upgradeFields(root) {
   for (const label of root.querySelectorAll('label:not([data-mf])')) {
     const field = label.nextElementSibling;
-    if (!field || !field.matches(FIELD) || field.hidden || label.closest(SKIP) || label.querySelector('input,select,textarea')) continue;
+    if (!field || !field.matches(FIELD) || field.hidden || field.hasAttribute('data-unit') || field.closest('.fieldbox') || label.closest(SKIP) || label.querySelector('input,select,textarea')) continue; // a field with a unit goes in its own box (consistency.js), with the label above
     if (label.htmlFor && field.id && label.htmlFor !== field.id) continue;
     label.dataset.mf = '1';
     if (!field.id) field.id = `mf${++n}`;

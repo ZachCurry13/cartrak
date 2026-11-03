@@ -18,6 +18,8 @@
       await new Promise((r) => setTimeout(r, 900)); // let the page and any colour transition settle
       const v = document.getElementById('view');
       if (document.documentElement.scrollWidth > innerWidth) out.push(`${theme} ${p || 'home'}: scrolls sideways`);
+      const stranded = [...v.querySelectorAll('.mfield')].filter((m) => !m.querySelector(':scope > input, :scope > select, :scope > textarea')).length;
+      if (stranded) out.push(`${theme} ${p || 'home'}: ${stranded} floating labels without their field`);
       const small = [...v.querySelectorAll('button,.btn,select,input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range])')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.height && r.height < 38; }).length;
       if (small) out.push(`${theme} ${p || 'home'}: ${small} controls under 38 px`);
       for (const el of v.querySelectorAll('*')) {

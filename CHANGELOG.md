@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.72.1
+
+### 🛠️ Fixes
+- **The road-trip planner's number fields read properly again.** Fields with a unit (miles, %, kW) had their label drawn over the number since 0.70.0. The label is back above the box, as on the other pages. The page sweep now also checks for a label separated from its field.
+- **A light drizzle before a drive now counts as a wet road.** Trips showed "Dry" after as little as 0.4 mm of rain in the hours before. Now 0.2 mm in the three hours before is enough for "Wet roads" (a small energy cost, about 2%). It still cannot see a passing sprinkle on one stretch of road: the weather comes hourly for an area about 30 miles across.
+
 ## 0.72.0
 
 ### ⚡ Charging, easier to read
