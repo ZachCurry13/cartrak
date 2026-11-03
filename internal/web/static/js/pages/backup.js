@@ -18,7 +18,7 @@ export default async function backup(root, _a, session) {
       h('p', { class: 'muted' }, 'The small backup leaves out the raw Ford readings, so Car data history for old readings will be empty. A large database can take a while to back up and slows the app meanwhile. Sign-in sessions are never included.'),
       h('p', { class: 'banner' }, 'A backup contains the Ford sign-in of this car. Keep it private, like a password.')),
     session.me.siteRole === 'admin' && session.cars.length > 1 ? h('section', { class: 'card' }, h('h2', {}, 'Every car and every person'),
-      h('p', { class: 'muted' }, 'One zip with the people and every car's database. To restore it, stop CarTrak, replace core.db and each car's database file in the data folder with the ones in the zip, and start it again. A backup of one car (above) has no accounts.'),
+      h('p', { class: 'muted' }, 'One zip with the people and every car’s database. To restore it, stop CarTrak, replace core.db and each car’s database file in the data folder with the ones in the zip, and start it again. A backup of one car (above) has no accounts.'),
       h('p', { class: 'seg' }, link('/api/backup/site', 'Download everything (all cars)')),
       h('p', { class: 'banner' }, 'It contains the password hash of every account and the Ford sign-in of every car. Keep it private.')) : '',
     h('section', { class: 'card' }, h('h2', {}, 'Export to spreadsheets'),
