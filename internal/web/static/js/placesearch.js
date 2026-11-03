@@ -22,7 +22,7 @@ export function addressCard(onSaved) {
     msg.textContent = 'Searching...'; found = []; chosen = null; draw();
     try {
       found = await api(`/api/named-places/search?q=${encodeURIComponent(q.value.trim())}`);
-      msg.textContent = found.length ? 'Pick the right one, name it and save.' : 'Nothing found. Add the town to the name, or type the street address.';
+      msg.textContent = found.length ? 'Pick the right one, name it and save.' : 'Not found. Add the town, or type the address.';
       if (found.length === 1) chosen = found[0];
       draw();
     } catch (e) { msg.textContent = e.message; }
@@ -39,5 +39,5 @@ export function addressCard(onSaved) {
     h('label', { for: 'pa' }, 'Business or address'), q, h('p', {}, h('button', { class: 'sec', onclick: search }, 'Search')), list,
     h('label', { for: 'pan' }, 'Name'), name, h('label', { for: 'pas' }, 'How close counts as there'), size,
     h('p', {}, h('button', { onclick: save }, 'Save this place')), msg,
-    h('p', { class: 'muted' }, 'The address is sent to OpenStreetMap to find it (the same service as city names, and off when City names is off). Only the spot is saved, not the address.'));
+    h('p', { class: 'muted' }, 'Searches OpenStreetMap (off when City names is off). Only the spot is saved.'));
 }
