@@ -88,3 +88,7 @@ a.tcard:hover,a.tcard:focus-visible{background:var(--card2)}
 .rc-item b{display:block;font-size:var(--t-body)}
 .rc-none{margin:0}
 .rc .tags{margin:var(--sp-3) 0 0}
+
+/* The links under a page title as equal chips in a tidy grid, two across on a phone, instead of a ragged row with one left over. */
+.linkrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));gap:var(--sp-2);overflow:visible}
+.linkrow a{justify-content:center;text-align:center;white-space:normal}

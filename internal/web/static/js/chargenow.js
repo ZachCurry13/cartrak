@@ -16,11 +16,11 @@ export function chargeNow() {
     const taking = isCharging(x);
     el.replaceChildren(...[
       h('h2', {}, 'Right now'),
-      h('p', {}, chip(taking ? 'ok' : 'work', taking ? 'Charging' : (nice(x.chargeState) || 'Not charging')), ' ',
-        chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in'), ' ', h('span', { class: 'muted' }, x.ts ? `reading from ${ago(x.ts)}` : '')),
+      h('p', { class: 'tags' }, chip(taking ? 'ok' : 'work', taking ? 'Charging' : (nice(x.chargeState) || 'Not charging')), chip(plugged ? 'ok' : 'work', plugged ? 'Plugged in' : 'Not plugged in')),
+      x.ts ? h('p', { class: 'muted' }, `Reading from ${ago(x.ts)}`) : null,
       h('div', { class: 'grid' },
         h('div', { class: 'stat' }, h('div', { class: 'v' }, pct(x.socPct)), h('div', { class: 'l' }, 'Battery')),
-        h('div', { class: 'stat' }, h('div', { class: 'v' }, taking && x.chargeKw != null ? num(x.chargeKw, 1, ' kW') : '—'), h('div', { class: 'l' }, 'Power')),
+        taking && x.chargeKw != null ? h('div', { class: 'stat' }, h('div', { class: 'v' }, num(x.chargeKw, 1, ' kW')), h('div', { class: 'l' }, 'Power')) : null,
         x.energyKwh != null ? h('div', { class: 'stat' }, h('div', { class: 'v' }, num(x.energyKwh, 1, ' kWh')), h('div', { class: 'l' }, 'Energy left')) : null,
         taking && x.chargerKwh > 0 ? h('div', { class: 'stat' }, h('div', { class: 'v' }, num(x.chargerKwh, 1, ' kWh')), h('div', { class: 'l' }, 'Added (by the car)')) : null),
       taking ? chargeEtaBox(x, x.timeToFullMin) : null,

@@ -1,12 +1,12 @@
 import { h, tempBandLabel } from './ui.js';
 import { api } from './api.js';
-import { efficiency } from './energy.js';
+import { effSpan } from './energy.js';
 
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'long', year: 'numeric' }); };
 const REASON = { speed: 'Driving fast', temperature: 'Weather', wind: 'Wind', other: 'Everything else' };
 
 // One thing worth knowing about how the car is driven, taken from the efficiency insights. It changes each day, and tapping it
-// opens all of them.
+// opens all of them. Its efficiency figures are tappable like every other one, so changing the unit changes them too.
 export async function insightCard() {
   const [d, why, recs] = await Promise.all([api('/api/insights').catch(() => null), api('/api/efficiency-reasons?days=60').catch(() => null), api('/api/analytics/records').catch(() => null)]);
   if (!d || d.trips < 3) return null;
@@ -16,20 +16,20 @@ export async function insightCard() {
     const best = bands.reduce((a, b) => (b.kmPerKwh > a.kmPerKwh ? b : a));
     const worst = bands.reduce((a, b) => (b.kmPerKwh < a.kmPerKwh ? b : a));
     const pct = Math.round((best.kmPerKwh / worst.kmPerKwh - 1) * 100); // extra energy for the same distance
-    if (pct >= 5) facts.push(`${tempBandLabel(worst.name)} weather costs you about ${pct}% more energy than ${tempBandLabel(best.name)}: ${efficiency(worst.kmPerKwh, 1)} against ${efficiency(best.kmPerKwh, 1)}.`);
+    if (pct >= 5) facts.push([`${tempBandLabel(worst.name)} weather costs you about ${pct}% more energy than ${tempBandLabel(best.name)}: `, effSpan(worst.kmPerKwh, 1), ' against ', effSpan(best.kmPerKwh, 1), '.']);
   }
   const months = (d.months || []).filter((m) => m.trips >= 3 && m.kmPerKwh > 0);
   if (months.length >= 2) {
     const best = months.reduce((a, b) => (b.kmPerKwh > a.kmPerKwh ? b : a));
-    facts.push(`Your most efficient month was ${monthName(best.month)}, at ${efficiency(best.kmPerKwh, 1)} over ${best.trips} trips.`);
+    facts.push([`Your most efficient month was ${monthName(best.month)}, at `, effSpan(best.kmPerKwh, 1), ` over ${best.trips} trips.`]);
   }
   const rec = recs && (recs.records || []).find((x) => x.key === 'efficient'); // the same figure as Personal bests
-  if (rec) facts.push(`Your most efficient drive of 10 miles or more got ${efficiency(rec.value * 100, 100)}.`);
+  if (rec) facts.push(['Your most efficient drive of 10 miles or more got ', effSpan(rec.value * 100, 100), '.']);
   if (why && why.items) {
     const top = why.items.filter((i) => i.kwh >= 1).sort((a, b) => b.kwh - a.kwh)[0];
-    if (top) facts.push(`${REASON[top.key] || top.key} used about ${Math.round(top.kwh)} kWh more than your usual over the last ${why.days} days (${Math.round(top.pctOfUse)}% of what you used).`);
+    if (top) facts.push([`${REASON[top.key] || top.key} used about ${Math.round(top.kwh)} kWh more than your usual over the last ${why.days} days (${Math.round(top.pctOfUse)}% of what you used).`]);
   }
   if (!facts.length) return null;
   const pick = facts[Math.floor(Date.now() / 86400000) % facts.length];
-  return h('a', { class: 'card cardlink', href: '#/insights' }, h('h2', {}, 'Did you know'), h('p', {}, pick), h('p', { class: 'muted' }, 'See all efficiency insights'));
+  return h('a', { class: 'card cardlink', href: '#/insights' }, h('h2', {}, 'Did you know'), h('p', {}, ...pick), h('p', { class: 'muted' }, 'See all efficiency insights'));
 }

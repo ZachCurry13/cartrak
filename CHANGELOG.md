@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.72.0
+
+### ⚡ Charging, easier to read
+- **Past charging is right at the top.** Under Right now come your three most recent charging sessions; **Show all** opens the rest in the same place. The cost calculator and the monthly cost, tips and records come after them, so there is no long scroll to reach what you charged last.
+- **Right now is calmer.** The status chips sit on one line, "Reading from 9 min ago" on its own, and the Power figure only shows while the car is charging (it was a dash the rest of the time, leaving a lone tile).
+- **The links under the page title are tidy equal buttons** (two across on a phone) instead of a ragged row with one left over. The same goes for Trips and the other pages that have them.
+
+### 🧼 Cleaner button rows
+- **Rows of buttons look like rows of buttons again.** Since 0.68.0 every row of buttons (Suggested setup's **See all** and **Hide**, **Open today** and **Yesterday**, **Save**, **Copy link**) sat inside a pill track meant for switches such as Automatic, Work, Personal. The track now appears only when one choice is selected.
+
+### 🔄 The efficiency unit changes everywhere
+- **"Did you know" follows the unit.** Tap any efficiency figure and every one on the page changes together (mi/kWh, Wh/mi, mi/% of battery), including the ones inside the "Did you know" sentence on Home, which used to keep the old unit.
+
 ## 0.71.1
 
 ### 🚗 The new icon actually reaches your phone

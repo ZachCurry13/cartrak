@@ -41,10 +41,11 @@ input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--acce
 .pill{color:var(--text);font-size:var(--t-small)}
 .linkrow a,.atabs a,.chipbtn{border-radius:var(--r-sm)}
 
-/* A segmented switch: a pill track with the chosen one lifted. */
-.seg{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin:0 0 var(--sp-3);padding:var(--sp-1);border:0;border-radius:var(--r-lg);background:var(--card)}
-.seg button{flex:1 1 auto;min-height:44px;padding:6px 14px;border:0;border-radius:var(--r-full);background:transparent;color:var(--muted);font-size:var(--t-label-l)}
-.seg button.on{background-color:var(--tonal-hi);color:var(--text)}
+/* A segmented switch (one of its buttons is .on): a pill track with the chosen one lifted. Any other .seg is only a row of buttons. */
+.seg{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin:0 0 var(--sp-3)}
+.seg:has(> button.on){gap:var(--sp-1);padding:var(--sp-1);border:0;border-radius:var(--r-lg);background:var(--card)}
+.seg:has(> button.on) button{flex:1 1 auto;min-height:44px;padding:6px 14px;border:0;border-radius:var(--r-full);background:transparent;color:var(--muted);font-size:var(--t-label-l)}
+.seg:has(> button.on) button.on{background-color:var(--tonal-hi);color:var(--text)}
 
 /* Press and hover feedback: a veil of the text colour over whatever is tapped. No extra markup needed. */
 button,.btn,nav#tabs a,details>summary,.msearch,.topbar .back,#view .row>a:not(.ico),.sheet .sg,.mtile,.mrow,.item,.ibrow,a.hcard,a.tcard{
@@ -109,8 +110,8 @@ input[type=checkbox].check{width:22px;height:22px}
 
 /* Material 3 Expressive: shape that responds, motion that springs, type that carries weight. */
 /* A pressed button loses its pill and squares off a little, then springs back. */
-button:not(.ico):not(.seg button),.btn{transition:background-color .15s,background-image .15s,border-radius .25s var(--spring)}
-button:not(.ico):not(.seg button):active,.btn:active{border-radius:var(--r-sm)}
+button:not(.ico):not(.seg:has(> button.on) button),.btn{transition:background-color .15s,background-image .15s,border-radius .25s var(--spring)}
+button:not(.ico):not(.seg:has(> button.on) button):active,.btn:active{border-radius:var(--r-sm)}
 /* The bar's pill grows out of the icon when a page is chosen. */
 @keyframes pillin{from{transform:scaleX(.35);opacity:.4}to{transform:none;opacity:1}}
 nav#tabs a.on svg{animation:pillin .38s var(--spring)}
@@ -123,7 +124,7 @@ input[type=checkbox]:not(.check)::after{content:"";position:absolute;top:50%;lef
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/72% no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/72% no-repeat}
 input[type=checkbox]:not(.check):checked::after{transform:translateY(-50%) scale(1)}
-@media (prefers-reduced-motion:reduce){nav#tabs a.on svg,.sheet.more,.sheet:not(.more){animation:none}input[type=checkbox]:not(.check)::after,button:not(.ico):not(.seg button){transition:none}}
+@media (prefers-reduced-motion:reduce){nav#tabs a.on svg,.sheet.more,.sheet:not(.more){animation:none}input[type=checkbox]:not(.check)::after,button:not(.ico):not(.seg:has(> button.on) button){transition:none}}
 /* Fields: a thicker accent edge when focused, a red one when what was typed is not valid. */
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 input:user-invalid,select:user-invalid,textarea:user-invalid{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
