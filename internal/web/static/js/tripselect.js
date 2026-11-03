@@ -32,7 +32,7 @@ export function tripSelect(onChange, onCombined) {
         h('button', { onclick: combine, disabled: picked.size < 2 }, `Combine ${picked.size} trip${picked.size === 1 ? '' : 's'}`),
         h('button', { class: 'sec', disabled: picked.size !== 2, onclick: () => { location.hash = `#/compare/${[...picked].join(',')}`; } }, 'Compare 2'),
         h('button', { class: 'sec', onclick: () => { state.shown.filter(eligible).forEach((t) => picked.add(t.id)); onChange(); } }, 'Select all shown'),
-        h('button', { class: 'sec', onclick: () => { picked.clear(); state.on = false; onChange(); } }, 'Cancel')), msg);
+        h('button', { class: 'text', onclick: () => { picked.clear(); state.on = false; onChange(); } }, 'Cancel')), msg);
   }
 
   return {

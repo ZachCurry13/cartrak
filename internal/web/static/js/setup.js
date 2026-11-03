@@ -73,7 +73,7 @@ function redetectCard() {
   const seen = async () => { await api('/api/repair/seen', { method: 'POST' }).catch(() => null); card.remove(); };
   card.append(h('h2', {}, 'Trips and charging are found better now'),
     h('p', { class: 'muted' }, 'This update changed how CarTrak finds trips and charging. Days recorded before it keep their old trips. If a day looks wrong, Fix a day can redo it from the stored readings, with a preview first.'),
-    h('p', { class: 'seg' }, h('a', { class: 'btn', href: '#/repair', onclick: () => seen() }, 'Open Fix a day'), h('button', { type: 'button', class: 'sec', onclick: seen }, 'Not now')));
+    h('p', { class: 'seg' }, h('a', { class: 'btn', href: '#/repair', onclick: () => seen() }, 'Open Fix a day'), h('button', { type: 'button', class: 'text', onclick: seen }, 'Not now')));
   return card;
 }
 
@@ -91,7 +91,7 @@ export async function setupCards(session) {
     card.replaceChildren(h('h2', {}, 'Suggested setup'),
       h('p', { class: 'muted' }, `${items.filter((x) => x.done).length} of ${items.length} done. All optional; swipe one away to skip it.`),
       ...left.slice(0, 3).map((x) => setupRow(x, true, again)),
-      h('p', { class: 'seg' }, h('a', { class: 'btn sec sm', href: '#/setup' }, 'See all'), h('button', { type: 'button', class: 'sec sm', onclick: hide, title: 'It stays under More, Setup checklist' }, 'Hide')));
+      h('p', { class: 'seg' }, h('a', { class: 'btn text sm', href: '#/setup' }, 'See all'), h('button', { type: 'button', class: 'sec sm', onclick: hide, title: 'It stays under More, Setup checklist' }, 'Hide')));
     return true;
   };
   if (st.hidden || !draw(setupItems(st, session))) return out;

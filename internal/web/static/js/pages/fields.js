@@ -39,7 +39,7 @@ export default async function fields(root) {
     const more = h('div', { class: 'muted', hidden: true, style: 'margin-top:6px;font-size:.85rem' },
       [f.min != null ? `Range ${f.min} to ${f.max}.` : null, f.parts > 1 ? `Made of ${f.parts} values.` : null, f.reportedAt ? `The car's own time for it: ${f.reportedAt}.` : null, `Seen in ${f.samples} readings.`].filter(Boolean).join(' '));
     const tag = f.usedFor ? chip('ok', f.usedFor) : f.shown ? chip('work', 'Car data only') : chip('bad', 'Not used');
-    const el = h('button', { class: 'row', style: 'width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);color:inherit;display:block;padding:10px 0', 'aria-expanded': 'false' },
+    const el = h('button', { class: 'row rowbtn', 'aria-expanded': 'false' },
       h('div', { style: 'display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap' }, h('b', {}, pretty(f.metric)), h('span', { class: 'muted' }, f.last || '—')),
       h('div', { style: 'display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:2px' }, h('span', { class: 'muted' }, f.changes ? `changed ${f.changes} time${f.changes === 1 ? '' : 's'} · last ${ago(f.lastChangeTs, now)}` : 'did not change'), tag), more);
     el.addEventListener('click', () => { more.hidden = !more.hidden; el.setAttribute('aria-expanded', String(!more.hidden)); });

@@ -11,7 +11,7 @@ export async function serviceCards(session) {
     const no = async () => { await api(`/api/service/${v.id}`, { method: 'PATCH', body: { status: 'dismissed' } }).catch(() => null); card.remove(); };
     card.append(h('h2', {}, '🔧 Was the car serviced?'),
       h('p', {}, `It stayed at ${v.placeName} on ${new Date(v.start * 1000).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })} for ${Math.round((v.end - v.start) / 60) >= 60 ? `${Math.floor((v.end - v.start) / 3600)} h ${Math.round(((v.end - v.start) % 3600) / 60)} min` : `${Math.round((v.end - v.start) / 60)} min`}.`),
-      h('p', { class: 'seg' }, h('a', { class: 'btn', href: `#/service/${v.id}` }, 'Yes, log it'), h('button', { type: 'button', class: 'sec', onclick: no }, 'No')));
+      h('p', { class: 'seg' }, h('a', { class: 'btn', href: `#/service/${v.id}` }, 'Yes, log it'), h('button', { type: 'button', class: 'text', onclick: no }, 'No')));
     return card;
   });
 }

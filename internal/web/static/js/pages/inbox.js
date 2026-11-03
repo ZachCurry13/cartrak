@@ -31,7 +31,7 @@ export default async function inbox(root, _a, session) {
     rows.push(url ? h('a', { class: cls, href: url }, ...body) : h('div', { class: cls }, ...body));
   }
   root.append(...[h('div', { class: 'page-title' }, h('h2', { class: 'grow' }, 'Notifications'), h('a', { class: 'btn sec sm', href: '#/notifications' }, '⚙ Alert settings')),
-    problem ? h('a', { class: 'card', href: '#/status', style: 'display:block;text-decoration:none;color:inherit' }, h('b', {}, 'Something needs a look. '), h('span', { class: 'muted' }, 'Open Status to see what.')) : null,
+    problem ? h('a', { class: 'card cardlink', href: '#/status' }, h('b', {}, 'Something needs a look. '), h('span', { class: 'muted' }, 'Open Status to see what.')) : null,
     ...(rows.length ? rows : [emptyState('Nothing yet', 'Alerts about trips, charging, tires and more appear here as they happen, even if this device has notifications off.')]),
     h('p', { class: 'muted', style: 'margin-top:16px' }, h('a', { href: '#/notifications' }, 'Choose which alerts reach this device'))].filter(Boolean));
   markInboxSeen(items);

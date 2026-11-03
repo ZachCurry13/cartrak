@@ -69,7 +69,7 @@ export default async function trips(root, _a, session) {
   }
   async function paintJourneys() {
     const js = await api('/api/journeys').catch(() => []);
-    journeys.replaceChildren(...(js.length ? [h('h2', {}, 'Journeys'), h('div', { class: 'cols' }, ...js.map((j) => h('a', { class: 'card', href: `#/journey/${j.id}`, style: 'display:block;color:inherit;text-decoration:none' },
+    journeys.replaceChildren(...(js.length ? [h('h2', {}, 'Journeys'), h('div', { class: 'cols' }, ...js.map((j) => h('a', { class: 'card cardlink', href: `#/journey/${j.id}` },
       h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, j.name), chip('work', `${j.trips} trips`)),
       h('div', { class: 'muted' }, `${dist(j.distanceKm, 0)} · ${when(j.startTs)}`))))] : []));
   }

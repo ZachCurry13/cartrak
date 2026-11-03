@@ -25,7 +25,7 @@ export default async function connect(root, _a, session) {
     } }, val + (redirect === val ? ' ✓' : '')));
 
   const paste = h('textarea', { id: 'pasted', rows: 3, placeholder: 'http://localhost/?code=…&state=…', autocapitalize: 'none', spellcheck: 'false',
-    style: 'width:100%;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;font:inherit' });
+    style: 'width:100%' });
   const msg = h('p', { role: 'status', class: 'muted' });
   const done = h('div');
   const finish = h('button', { onclick: async () => {

@@ -57,5 +57,5 @@ function baseSelect(x, named) {
 export async function vacationNote() {
   const d = await api('/api/time-off').catch(() => null);
   const now = d && d.items.find((x) => x.from <= d.today && x.to >= d.today);
-  return now ? h('a', { class: 'banner notice', href: '#/rules', style: 'display:block;color:inherit;text-decoration:none' }, `${modeName(now.kind)} mode until ${fmt(now.to)}: trips count as ${outcome(now.kind)}.`) : null;
+  return now ? h('a', { class: 'banner notice cardlink', href: '#/rules' }, `${modeName(now.kind)} mode until ${fmt(now.to)}: trips count as ${outcome(now.kind)}.`) : null;
 }

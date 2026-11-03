@@ -18,5 +18,5 @@ export function tripFixCard(t) {
   if (t.open && !stuck) return null;
   return h('section', { class: 'card' }, h('h2', {}, 'Fix this trip'),
     stuck ? h('p', { class: 'muted' }, 'This trip has had no readings for a while and was never closed. Close it to keep what was recorded, or Data check may show it as a very long trip.') : h('p', { class: 'muted' }, 'Delete a duplicate or a trip that is not real. The odometer and battery history are not changed.'),
-    h('p', { class: 'seg' }, stuck ? h('button', { onclick: close }, 'Close this trip') : null, !t.open ? h('button', { class: 'sec', onclick: del }, 'Delete this trip') : null), msg);
+    h('p', { class: 'seg' }, stuck ? h('button', { onclick: close }, 'Close this trip') : null, !t.open ? h('button', { class: 'outline', onclick: del }, 'Delete this trip') : null), msg);
 }

@@ -43,7 +43,7 @@ function wire() {
 
 function showPill(active) {
   if (active && !pill) {
-    pill = h('a', { href: '#/developer', 'aria-label': 'Tracking is on', style: 'position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:60;background:#b91c1c;color:#fff;padding:8px 14px;border-radius:999px;font-weight:600;text-decoration:none;font-size:.85rem;min-height:36px;display:flex;align-items:center' }, '● Tracking');
+    pill = h('a', { href: '#/developer', 'aria-label': 'Tracking is on', class: 'trackpill' }, '● Tracking');
     document.body.append(pill);
   } else if (!active && pill) { pill.remove(); pill = null; }
 }

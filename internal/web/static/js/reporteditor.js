@@ -49,5 +49,5 @@ export function reportEditor(opts, tpl, done) {
     h('p', {}, h('button', { class: 'sec', type: 'button', onclick: () => { cfg.columns.push({ key: opts.columns[0].key, label: '' }); drawCols(); } }, 'Add a column')),
     h('h3', { style: 'margin:14px 0 6px' }, 'Fixed columns'), h('p', { class: 'muted' }, 'A column with the same value on every row, such as a company name or a cost center.'), fixedList,
     h('p', {}, h('button', { class: 'sec', type: 'button', onclick: () => { cfg.fixed.push({ label: '', value: '' }); drawFixed(); } }, 'Add a fixed column')),
-    h('p', { class: 'seg' }, h('button', { onclick: save }, 'Save report'), h('button', { class: 'sec', onclick: () => done(false) }, 'Cancel')), msg);
+    h('p', { class: 'seg' }, h('button', { onclick: save }, 'Save report'), h('button', { class: 'text', onclick: () => done(false) }, 'Cancel')), msg);
 }

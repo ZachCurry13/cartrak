@@ -171,7 +171,7 @@ export default async function dashboard(root, _args, session) {
         homeMap = homeMap || createMap(mc, { height: 170, interactive: false });
         const d = 0.004; // about half a kilometer around the car
         homeMap.show({ markers: [{ lat: latest.lat, lon: latest.lon }], fit: [[latest.lat - d, latest.lon - d * 1.5], [latest.lat + d, latest.lon + d * 1.5]] });
-        homeLink = homeLink || h('a', { target: '_blank', rel: 'noopener', 'aria-label': "Open the car's location in Google Maps", style: 'display:block;color:inherit' }, homeMap.el);
+        homeLink = homeLink || h('a', { target: '_blank', rel: 'noopener', 'aria-label': "Open the car's location in Google Maps", class: 'cardlink' }, homeMap.el);
         homeLink.href = googleMapsUrl(latest.lat, latest.lon);
         here = homeLink;
       }

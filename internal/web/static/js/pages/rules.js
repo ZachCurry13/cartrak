@@ -39,7 +39,7 @@ export default async function rules(root, _a, session) {
     const st = h('input', { type: 'time', value: toTime(v.startMin) }), en = h('input', { type: 'time', value: v.endMin === 1440 ? '23:59' : toTime(v.endMin) });
     const pri = h('input', { type: 'number', value: v.priority }), on = h('input', { type: 'checkbox' });
     on.checked = v.enabled;
-    const days = DAYS.map((d, i) => { const c = h('input', { type: 'checkbox' }); c.checked = !!(v.days & (1 << i)); return [c, h('label', {}, c, d)]; });
+    const days = DAYS.map((d, i) => { const c = h('input', { type: 'checkbox', class: 'check' }); c.checked = !!(v.days & (1 << i)); return [c, h('label', {}, c, d)]; });
     const lat = h('input', { type: 'number', step: 'any', value: v.geoLat ?? '', placeholder: 'Latitude' });
     const lon = h('input', { type: 'number', step: 'any', value: v.geoLon ?? '', placeholder: 'Longitude' });
     const rad = h('input', { type: 'number', 'data-unit': 'small', value: v.geoRadius != null ? fromMeters(v.geoRadius) : '', placeholder: `Radius (${smallUnit()})` });
@@ -68,7 +68,7 @@ export default async function rules(root, _a, session) {
           await api(r ? `/api/rules/${r.id}` : '/api/rules', { method: r ? 'PUT' : 'POST', body });
           draw();
         } catch (e) { msg.textContent = e.message; }
-      } }, 'Save'), h('button', { class: 'sec', onclick: draw }, 'Cancel')), msg));
+      } }, 'Save'), h('button', { class: 'text', onclick: draw }, 'Cancel')), msg));
   }
   await draw();
 }

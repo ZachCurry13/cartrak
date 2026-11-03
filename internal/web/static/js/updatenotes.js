@@ -28,7 +28,7 @@ export function showUpdateNotes(session, view) {
   const shown = all.filter((x) => !gone.has(x.id));
   box.replaceChildren(...shown.map((x) => h('div', { class: 'banner notice', role: 'status', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0' },
     h('span', { style: 'flex:1 1 14em;min-width:0' }, x.text),
-    h('button', { class: 'sec', 'aria-label': `Hide: ${x.text}`, onclick: () => { gone.add(x.id); save(gone); showUpdateNotes(session, view); } }, 'Hide'))),
+    h('button', { class: 'text', 'aria-label': `Hide: ${x.text}`, onclick: () => { gone.add(x.id); save(gone); showUpdateNotes(session, view); } }, 'Hide'))),
   all.length > shown.length ? h('p', { class: 'muted', style: 'margin:4px 0' }, `${all.length - shown.length} update notice${all.length - shown.length === 1 ? ' is' : 's are'} hidden. `,
     h('a', { href: '#/about', onclick: () => { save(new Set()); } }, 'Show them again')) : null);
 }

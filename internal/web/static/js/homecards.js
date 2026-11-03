@@ -7,7 +7,7 @@ import { hm } from './format.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const link = (href, title, ...kids) => h('a', { class: 'card', href, style: 'display:block;text-decoration:none;color:inherit' }, h('h2', {}, title), ...kids);
+const link = (href, title, ...kids) => h('a', { class: 'card cardlink', href }, h('h2', {}, title), ...kids);
 
 // The day so far, in a line, with a way into the day's map and details.
 async function todayCard() {

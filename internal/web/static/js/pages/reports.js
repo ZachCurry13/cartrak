@@ -5,10 +5,10 @@ import { withCar } from '../car.js';
 import { runControls, standardTab, customTab, download } from '../reportbuilder.js';
 import { reportEditor } from '../reporteditor.js';
 
-const tile = (href, title, text, extra) => h('a', { class: 'card', href, style: 'display:block;text-decoration:none;color:inherit;margin:0' },
+const tile = (href, title, text, extra) => h('a', { class: 'card cardlink', href, style: 'margin:0' },
   h('b', {}, title), h('div', { class: 'muted' }, text), extra ? h('div', { style: 'margin-top:6px' }, extra) : null);
 const group = (title, ...tiles) => h('section', {}, h('h3', { style: 'margin:18px 0 8px' }, title), h('div', { class: 'cols' }, ...tiles.filter(Boolean)));
-const downloadTile = (href, title, text) => h('a', { class: 'card', href: withCar(href), download: '', style: 'display:block;text-decoration:none;color:inherit;margin:0' }, h('b', {}, title), h('div', { class: 'muted' }, text));
+const downloadTile = (href, title, text) => h('a', { class: 'card cardlink', href: withCar(href), download: '', style: 'margin:0' }, h('b', {}, title), h('div', { class: 'muted' }, text));
 
 // Everything that adds your driving, charging and costs up. At the top, a report you can download: the usual mileage log, or a
 // custom one, for the categories and days you choose.

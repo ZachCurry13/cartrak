@@ -11,7 +11,7 @@ export async function workDayCard() {
   const val = (k) => (d.settings.find((s) => s.key === k) || {}).value || '';
   const days = new Set((val(KEYS.days) || '1,2,3,4,5').split(/[,\s]+/).filter(Boolean).map(Number));
   const on = h('input', { type: 'checkbox', id: 'wd-on', checked: val(KEYS.on) === 'on' });
-  const boxes = DAYS.map(([n, t]) => h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: days.has(n), 'data-day': n }), ` ${t}`));
+  const boxes = DAYS.map(([n, t]) => h('label', { class: 'check' }, h('input', { type: 'checkbox', class: 'check', checked: days.has(n), 'data-day': n }), ` ${t}`));
   const stay = h('input', { type: 'number', 'data-unit': 'min', min: 0, max: 600, value: val(KEYS.stay) || 45, 'aria-label': 'Minutes at Home', style: 'max-width:6em' });
   const msg = h('p', { class: 'muted', role: 'status' });
   const save = async () => {

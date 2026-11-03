@@ -14,8 +14,8 @@ const PRESETS = [
 
 // Which categories, which days or weeks, and which file: the part of a report that is chosen every time it is run.
 function runControls(categories, fuel = false) {
-  const all = h('input', { type: 'checkbox', id: 'rc-all', checked: true });
-  const boxes = categories.map((c) => ({ c, el: h('input', { type: 'checkbox', id: `rc-${c.key}` }) }));
+  const all = h('input', { type: 'checkbox', class: 'check', id: 'rc-all', checked: true });
+  const boxes = categories.map((c) => ({ c, el: h('input', { type: 'checkbox', class: 'check', id: `rc-${c.key}` }) }));
   const sync = (changed) => {
     if (changed === all && all.checked) boxes.forEach((b) => { b.el.checked = false; });
     else if (changed !== all) all.checked = !boxes.some((b) => b.el.checked);
@@ -55,7 +55,7 @@ export const download = (path, params) => { location.href = withCar(`/api/report
 
 // The standard report: the usual columns of a mileage log, any of which can be left out.
 function standardTab(opts, run) {
-  const boxes = opts.columns.map((c) => ({ c, el: h('input', { type: 'checkbox', id: `sc-${c.key}`, checked: c.default }) }));
+  const boxes = opts.columns.map((c) => ({ c, el: h('input', { type: 'checkbox', class: 'check', id: `sc-${c.key}`, checked: c.default }) }));
   const set = (f) => boxes.forEach((b) => { b.el.checked = f(b.c); });
   return h('div', {}, h('p', { class: 'muted' }, 'The usual mileage log: one row per trip with its value, a summary above it and a totals sheet. Untick any column you do not want.'),
     h('h3', { style: 'margin:6px 0' }, 'Columns'),

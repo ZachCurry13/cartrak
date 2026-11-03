@@ -40,7 +40,7 @@ export default async function remote(root, _a, session) {
     extras.replaceChildren(...[
       v.redirect ? h('div', {}, h('p', { class: 'muted' }, 'Using this address with Ford? Pick the redirect URL that matches EXACTLY what is registered on your Ford app: with the /ford/callback path, or just the address.'),
         h('p', { class: 'seg' }, h('button', { class: 'sec', onclick: () => useForFord(v.redirect) }, 'Use ' + v.redirect), h('button', { class: 'sec', onclick: () => useForFord(v.url) }, 'Use ' + v.url + ' (no path)'))) : null,
-      v.tokenSet && !v.locked.token ? h('p', {}, h('button', { class: 'sec', onclick: removeToken }, 'Remove saved token and turn off')) : null].filter(Boolean));
+      v.tokenSet && !v.locked.token ? h('p', {}, h('button', { class: 'outline', onclick: removeToken }, 'Remove saved token and turn off')) : null].filter(Boolean));
   }
 
   steps.replaceChildren(

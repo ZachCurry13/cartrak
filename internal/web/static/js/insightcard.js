@@ -31,5 +31,5 @@ export async function insightCard() {
   }
   if (!facts.length) return null;
   const pick = facts[Math.floor(Date.now() / 86400000) % facts.length];
-  return h('a', { class: 'card', href: '#/insights', style: 'display:block;text-decoration:none;color:inherit' }, h('h2', {}, 'Did you know'), h('p', {}, pick), h('p', { class: 'muted' }, 'See all efficiency insights'));
+  return h('a', { class: 'card cardlink', href: '#/insights' }, h('h2', {}, 'Did you know'), h('p', {}, pick), h('p', { class: 'muted' }, 'See all efficiency insights'));
 }

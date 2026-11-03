@@ -65,7 +65,7 @@ export function restoreCard() {
       h('p', {}, `Accounts in it: ${b.users.join(', ')}. After restoring, everyone signs in with these accounts and their passwords from that time.`),
       h('p', { class: 'banner' }, 'Restoring replaces everything now in CarTrak and signs everyone out. Your current data is not deleted: it is kept in the data folder as cartrak.db.before-restore-<time>, and you can delete it later.'),
       h('label', { for: 'rw' }, 'To confirm, type RESTORE'), word,
-      h('p', { class: 'seg' }, go, h('button', { class: 'sec', onclick: async () => { await api('/api/restore', { method: 'DELETE' }); load(); } }, 'Cancel')), msg].filter(Boolean));
+      h('p', { class: 'seg' }, go, h('button', { class: 'text', onclick: async () => { await api('/api/restore', { method: 'DELETE' }); load(); } }, 'Cancel')), msg].filter(Boolean));
   }
 
   box.append(h('h2', {}, 'Restore a backup'), msg);
