@@ -15,7 +15,7 @@ const (
 func init() {
 	Defs = append(Defs,
 		Def{Key: OffPeakPriceKey, Label: "Cheaper home price per kWh (optional)", Placeholder: "0.08",
-			Help: "If your electricity plan has cheaper hours, the price in those hours. Home charging in that window is priced with it, and the charging forecast shows what waiting for it would save. Leave empty if you have one price all day."},
+			Help: "The price in your cheaper hours, if your plan has them. Home charging in that window is priced with it, and the forecast shows what waiting would save. Empty: one price all day."},
 		Def{Key: OffPeakWindowKey, Label: "Cheaper hours", Placeholder: "22:00-06:00",
 			Help: "When the cheaper price applies, in your time zone, as start-end in 24-hour time. It may cross midnight, as in 22:00-06:00."})
 	validators[OffPeakPriceKey] = func(v string) error {

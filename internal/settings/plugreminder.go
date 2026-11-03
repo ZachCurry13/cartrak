@@ -18,7 +18,7 @@ var reminderLevels = []Option{{"", "Below 60% (default)"}, {"30", "Below 30%"}, 
 func init() {
 	Defs = append(Defs,
 		Def{Key: PlugReminderTimeKey, Label: "Plug-in reminder time", Options: reminderTimes,
-			Help: "If the car is parked, not plugged in and low enough, devices that turned on the Plug in tonight alert get one reminder at this time (in your time zone). At most one a day."},
+			Help: "Phones with the Plug in tonight alert get one reminder at this time (your time zone) if the car is parked, unplugged and low. At most once a day."},
 		Def{Key: PlugReminderBelowKey, Label: "Plug-in reminder battery level", Options: reminderLevels,
 			Help: "The reminder is sent only when the battery is below this level."})
 	validators[PlugReminderTimeKey] = func(v string) error {

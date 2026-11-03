@@ -9,7 +9,7 @@ var weatherOptions = []Option{{"", "Off (nothing is sent)"}, {"on", "On: look up
 
 func init() {
 	Defs = append(Defs, Def{Key: WeatherKey, Label: "Weather lookup for trips (optional)", Options: weatherOptions,
-		Help: "When on, CarTrak asks a free weather service (Open-Meteo, no account) for the wind, rain and snow along each trip, so a trip can say whether it had a headwind, a tailwind, rain or snow, and what that cost. In the background it also fills in the last few months of trips, a few days at a time, so it can measure what rain costs your car. It sends only a map cell about 30 miles wide and the date, never your exact position, and remembers the answers. Off by default."})
+		Help: "On: CarTrak asks Open-Meteo (free, no account) for wind, rain and snow along each trip, so a trip can show what the weather cost. It also fills in recent trips in the background to learn what rain costs your car. Only a map cell about 30 miles wide and the date are sent. Off by default."})
 	validators[WeatherKey] = func(v string) error {
 		for _, o := range weatherOptions {
 			if o.Value == v {

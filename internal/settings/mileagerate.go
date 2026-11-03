@@ -10,7 +10,7 @@ const MileageRateKey = "CARTRAK_MILEAGE_RATE"
 
 func init() {
 	Defs = append(Defs, Def{Key: MileageRateKey, Label: "Mileage deduction per mile", Placeholder: "0.70",
-		Help: "Optional. Your tax authority's rate for business driving, per mile. The Mileage log and Year in review then show an estimated deduction for work trips. It is an estimate for your own planning, not tax advice."})
+		Help: "Optional. Your tax authority's business rate per mile, for the estimated deduction on work trips. An estimate for your own planning, not tax advice."})
 	validators[MileageRateKey] = func(v string) error {
 		if v == "" {
 			return nil

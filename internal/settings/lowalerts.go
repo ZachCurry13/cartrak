@@ -17,9 +17,9 @@ var lowBatteryLevels = []Option{{"", "Default (20%)"}, {"10", "10%"}, {"15", "15
 func init() {
 	Defs = append(Defs,
 		Def{Key: LowBatteryKey, Label: "Battery reserve", Options: lowBatteryLevels,
-			Help: "The level you like to keep in hand. Home and Live show how far you can go before it, Plan ahead and the road-trip planner keep above it, and phones that turned on the Low battery alert are told when the battery falls to it while the car is not charging."},
+			Help: "The charge you like to keep in hand. Home, Live and the planners keep above it, and phones with the Low battery alert are told when the battery falls to it while not charging."},
 		Def{Key: ChargeBudgetKey, Label: "Monthly charging budget", Placeholder: "for example 60",
-			Help: "Devices that turned on the Charging budget alert are told once a month when the month's charging cost passes this amount, in the currency set under prices. Needs your price per kWh. Leave empty for no budget."})
+			Help: "Phones with the Charging budget alert are told once a month when the month's charging cost passes this (in your currency). Needs your price per kWh. Empty: no budget."})
 	validators[LowBatteryKey] = func(v string) error {
 		for _, o := range lowBatteryLevels {
 			if o.Value == v {

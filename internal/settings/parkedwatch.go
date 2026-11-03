@@ -12,7 +12,7 @@ var bumpOptions = []Option{{"", "Normal (1.0)"}, {"0.6", "Sensitive (0.6)"}, {"2
 
 func init() {
 	Defs = append(Defs, Def{Key: BumpKey, Label: "Parked watch: bump level", Options: bumpOptions,
-		Help: "A parked car's motion sensors read close to zero. A reading above this level while the car is parked counts as a bump, for devices that turned on the Bump while parked alert. The car only reports now and then, so a short knock can be missed. See More, Parked watch."})
+		Help: "A parked car's motion sensors read near zero. A reading above this while parked counts as a bump (for devices with the Bump while parked alert). The car reports only now and then, so a short knock can be missed. See More, Parked watch."})
 	validators[BumpKey] = func(v string) error {
 		for _, o := range bumpOptions {
 			if o.Value == v {

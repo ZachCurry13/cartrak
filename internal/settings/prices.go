@@ -23,7 +23,7 @@ func init() {
 		Def{Key: CurrencyKey, Label: "Currency symbol", Options: []Option{{"", "$"}, {"€", "€"}, {"£", "£"}, {"kr", "kr"}, {"A$", "A$"}, {"C$", "C$"}},
 			Help: "Shown in front of the cost figures."})
 	Defs = append(Defs, Def{Key: ChargeEffKey, Label: "Slow-charging efficiency", Options: effOptions,
-		Help: "How much of the energy from a home charger reaches the battery. Used for cost estimates until at least three sessions have the charger's own number entered, then your measured average is used instead."})
+		Help: "How much of a home charger's energy reaches the battery. Used for cost until three sessions have the charger's own number; then your measured average is used."})
 	validators[ChargeEffKey] = func(v string) error {
 		for _, o := range effOptions {
 			if o.Value == v {

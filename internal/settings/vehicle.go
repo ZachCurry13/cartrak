@@ -15,7 +15,7 @@ var powertrainChoices = []Option{
 
 func init() {
 	Defs = append(Defs, Def{Key: PowertrainKey, Label: "Vehicle type", Options: powertrainChoices,
-		Help: "CarTrak works out whether the car is electric, hybrid or gas from the data Ford sends. If it guesses wrong, choose the type here. It decides which cards and Vehicle health sections appear."})
+		Help: "CarTrak works out electric, hybrid or gas from Ford's data. If it is wrong, choose the type here: it decides which cards and health sections show."})
 	validators[PowertrainKey] = func(val string) error {
 		for _, o := range powertrainChoices {
 			if val == o.Value {

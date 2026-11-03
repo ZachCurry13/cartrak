@@ -10,7 +10,7 @@ const BatteryNewKey = "CARTRAK_BATTERY_NEW_KWH"
 
 func init() {
 	Defs = append(Defs, Def{Key: BatteryNewKey, Label: "Battery size when new (kWh)", Placeholder: "for example 88",
-		Help: "Battery health shows the car's estimated battery size as a percentage of this. Use the usable size for your model and battery option; Ford does not send it. Left empty, Battery health compares with the first weeks CarTrak saw instead."})
+		Help: "Battery health is shown as a percentage of this. Use your model's usable size (Ford does not send it). Empty: compared with the first weeks CarTrak saw."})
 	validators[BatteryNewKey] = func(v string) error {
 		if v == "" {
 			return nil

@@ -20,9 +20,9 @@ const (
 func init() {
 	Defs = append(Defs,
 		Def{Key: MapEnabledKey, Label: "Maps", Options: []Option{{"", "On (OpenStreetMap)"}, {"off", "Off: draw plain route lines"}},
-			Help: "Trip maps use map tiles. CarTrak downloads the tiles on the server and keeps a copy on disk, so your phone never contacts the map provider. Turn off to draw plain route lines and make no map requests at all."},
+			Help: "Trip maps use map tiles. CarTrak fetches them on the server and keeps a copy, so your phone never contacts the map provider. Off: plain route lines and no map requests."},
 		Def{Key: MapTileURLKey, Label: "Map tile server (advanced)", Placeholder: DefaultTileURL,
-			Help: "Only to use a different tile provider. Must contain {z}, {x} and {y}. Follow that provider's usage rules; the default is OpenStreetMap's, which is meant for light use."},
+			Help: "Only for a different tile provider. Must contain {z}, {x} and {y}. Follow its usage rules (the default, OpenStreetMap, is for light use)."},
 		Def{Key: MapAttributionKey, Label: "Map credit (advanced)", Placeholder: DefaultAttribution,
 			Help: "The credit line shown on maps. Change it together with the tile server, as the provider requires."})
 	validators[MapEnabledKey] = func(val string) error {

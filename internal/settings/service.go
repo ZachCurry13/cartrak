@@ -13,7 +13,7 @@ var serviceMinutes = []Option{{"", "20 minutes (default)"}, {"45", "45 minutes"}
 
 func init() {
 	Defs = append(Defs, Def{Key: ServiceMinutesKey, Label: "Ask about a service visit after", Options: serviceMinutes,
-		Help: "When the car stays this long at a place you marked as a dealership, tire shop or repair shop (More, Places), CarTrak asks after you leave whether it was serviced, what was done and what it cost."})
+		Help: "After a stay this long at a place marked as a dealership, tire shop or repair shop (More, Places), CarTrak asks whether the car was serviced, what was done and what it cost."})
 	validators[ServiceMinutesKey] = func(v string) error {
 		for _, o := range serviceMinutes {
 			if o.Value == v {

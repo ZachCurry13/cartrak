@@ -2,6 +2,11 @@
 
 ## 0.66.1
 
+### ✂️ Shorter help text
+- **The help under 22 settings is about half as long**, with the same facts: the Ford redirect, time zone, battery size, city names, maps, the mileage rate, bump level, road estimate, service visit, vehicle type, the weather lookup, the home charger's efficiency, cheaper hours, the EIA key, battery reserve, charging budget and the plug-in reminder, and the sign-in, city lookup, map tile and routing server addresses.
+- **Notifications is shorter too** (the intro, holiday voices, the alert list's note and the slow fast charge alert).
+- A scan of every page as it is shown found 125 long text blocks; these were the wordiest pages. Health, Backup, Field check and Trip rules still have explanations of 110 to 250 characters.
+
 ### ✂️ A tidier, shorter route planner
 - **Shorter wording** on the planner and the place search ("Up to 10 stops. Search a business or address, or pick a saved place", "Best order (least driving)", "Return to the start", "Not found. Add the town, or type the address").
 - **Stops are tidier.** A chosen stop shows its name once (it showed "Where the car is" twice) with the address under it, and only the buttons that do something: the start cannot move, the first stop cannot move above it, and a single stop has no arrows. No more empty rows.

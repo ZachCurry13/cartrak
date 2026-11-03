@@ -10,7 +10,7 @@ const KeepDaysKey = "CARTRAK_TRACK_KEEP_DAYS"
 
 func init() {
 	Defs = append(Defs, Def{Key: KeepDaysKey, Label: "Delete phone GPS points after (days)", Placeholder: "empty keeps everything",
-		Help: "Optional cleanup for the points phones send. Trips and their summaries are always kept; only the fine route points are removed."})
+		Help: "Optional cleanup of the fine route points phones send. Trips and their summaries are always kept."})
 	validators[KeepDaysKey] = func(val string) error {
 		if val == "" {
 			return nil

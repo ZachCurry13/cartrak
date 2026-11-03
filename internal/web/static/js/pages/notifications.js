@@ -85,8 +85,8 @@ export default async function notifications(root, _a, session) {
         h('h2', {}, 'Holiday touches'),
         h('p', {}, h('label', { for: 'hol' }, holidayOn, ' 🎃 Dress up friendly alerts for holidays and my birthday')),
         h('p', {}, h('label', { for: 'hvo' }, voiceOn, ' 🎅 Holiday voices: Santa, a friendly ghost, a leprechaun…')),
-        h('p', { class: 'muted' }, 'Voices change only the words of the friendly alerts (Christmas, Halloween, St. Patrick’s Day, Easter, Valentine’s, the Fourth of July, Thanksgiving, New Year), never the facts, and never a warning. Spooky, not scary.'),
-        h('p', { class: 'muted' }, 'Around a holiday, alerts like Trip ended and Charging complete start with its emoji and wish you a happy holiday on the day. On your birthday (set it under Display) you also get a happy birthday in the morning. Warnings always stay plain. This follows you to every device.'),
+        h('p', { class: 'muted' }, 'Voices change only the words of friendly alerts (Christmas, Halloween, Easter, Thanksgiving and the other holidays), never the facts and never a warning.'),
+        h('p', { class: 'muted' }, 'Around a holiday, alerts start with its emoji, and on your birthday (set under Display) you get a greeting in the morning. Warnings stay plain. This follows you to every device.'),
         h('p', { class: 'seg' }, h('button', { type: 'button', class: 'on', onclick: () => run(save) }, 'Save alert choices')),
         msg),
       cfg.devices.length ? h('section', { class: 'card' }, h('h2', {}, 'Your devices'),
@@ -111,11 +111,11 @@ export default async function notifications(root, _a, session) {
   if (session && session.me.role === 'admin') {
     api('/api/alerts/log').then((xs) => {
       log.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'Recent alerts'),
-        h('p', { class: 'muted' }, 'Every alert CarTrak decided to send, and who it reached. If an alert you expected is missing here, CarTrak never decided to send it.'),
+        h('p', { class: 'muted' }, 'Every alert CarTrak decided to send, and who it reached. If one is missing here, CarTrak never decided to send it.'),
         ...(xs.length ? xs.map(logLine) : [h('p', { class: 'muted' }, 'None yet.')])));
     }).catch(() => { /* not available */ });
   }
-  root.append(h('p', { class: 'muted' }, 'Get a notification on this phone or computer when something happens. Alerts say things like "Charging complete" and never include a location. They are encrypted so only your device can read them, but the push service of the phone maker (Google or Apple) can see that one was sent.'), box);
+  root.append(h('p', { class: 'muted' }, 'Get a notification on this device when something happens. Alerts never include a location and are encrypted; the phone maker’s push service (Google or Apple) can see that one was sent.'), box);
   root.append(log);
   saveBar.append(h('span', { class: 'grow' }, 'Unsaved changes'), h('button', { type: 'button', class: 'on', onclick: () => run(save) }, 'Save'));
   root.append(saveBar);
