@@ -51,7 +51,7 @@ export default async function fieldcheck(root, _a, session) {
   const clear = h('button', { class: 'sec', onclick: () => { for (const k of Object.keys(state)) delete state[k]; persist(); draw(); msg.textContent = 'Cleared.'; } }, 'Start over');
 
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Field check')),
-    h('p', { class: 'muted' }, 'Work down the list when you can. Tap Works, Problem or Skipped on each, add a note, then copy the results to send. The Debug report page has the rest.'),
+    h('p', { class: 'muted' }, 'Tap Works, Problem or Skipped on each item, add a note, then copy the results to send. The Debug report page has the rest.'),
     autoBox, list, h('div', { class: 'actions' }, copy, clear), msg, box);
   api('/api/fieldcheck').then((d) => { // answers saved from another device or an earlier visit
     const saved = (d.state && d.state.checks) || {};

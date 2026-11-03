@@ -29,7 +29,7 @@ function exportCard(session) {
   days.addEventListener('change', set); priv.addEventListener('change', set); car.addEventListener('change', set);
   set();
   return h('section', { class: 'card' }, h('h2', {}, 'Export every field over time'),
-    h('p', { class: 'muted' }, 'A zip of spreadsheets: every field of the newest reading, the fields that never changed, and a table with a row each time anything changed. Nothing is cut off, unlike printing this page.'),
+    h('p', { class: 'muted' }, 'A zip of spreadsheets: the newest reading, the fields that never changed, and a row each time anything changed. Nothing is cut off.'),
     cars.length > 1 ? h('p', {}, h('label', { for: 'xc' }, 'Which car'), car) : null,
     h('label', { for: 'xd' }, 'How far back'), days,
     h('p', {}, h('label', { for: 'xp' }, priv, ' Include positions and the VIN (they are left out otherwise, so the file is safe to send)')), h('p', {}, link));
@@ -43,7 +43,7 @@ export default async function data(root, _a, session) {
   const tabs = h('div', { class: 'seg datatabs' });
   const body = h('div');
   root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Car data'), h('a', { class: 'btn sec', href: '#/fields' }, 'Field watcher')),
-    h('p', { class: 'muted' }, 'Everything the car tells CarTrak, in plain words. Tap the ? next to anything to see what it means. You can also look at how the car was at any earlier time.'), head, tabs, body);
+    h('p', { class: 'muted' }, 'Everything the car tells CarTrak, in plain words. Tap ? next to anything to see what it means, or look at the car at an earlier time.'), head, tabs, body);
 
   async function load(at) {
     d = await api(`/api/car-data${at ? `?at=${at}` : ''}`);

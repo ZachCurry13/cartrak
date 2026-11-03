@@ -56,7 +56,7 @@ export default async function vehicleHealth(root, _a, session) {
   root.querySelector('.page-title').append(chip('work', v.label));
   if (!d.ready) return root.append(h('p', { class: 'muted' }, 'No readings yet. This page fills in after the first successful sync.'));
 
-  root.append(h('p', { class: 'muted' }, `${d.model || 'Your car'} · reading from ${ago(d.asOf)}. Ford sends some values only when the car wakes up, so older ones say how old they are.`));
+  root.append(h('p', { class: 'muted' }, `${d.model || 'Your car'} · reading from ${ago(d.asOf)}. Ford sends some values only when the car wakes, so older ones show their age.`));
   root.append(attention(d.report));
   for (const s of d.report.sections) {
     root.append(h('section', { class: 'card' }, h('h2', {}, s.title), s.intro ? h('p', { class: 'muted' }, s.intro) : null,

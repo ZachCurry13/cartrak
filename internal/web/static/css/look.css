@@ -164,8 +164,8 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .dayring{width:min(100%,270px);display:block;margin:0 auto;color:var(--text)}
 /* Wrapped (pages/wrapped.js): full-screen story slides */
 .wrapped{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom));color:#fff;overflow-y:auto;cursor:pointer;-webkit-user-select:none;user-select:none;background:#0b1220}
-.wrapped .dots{display:flex;gap:4px;margin:0 40px 18px 0}.wrapped .dots i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.3)}.wrapped .dots i.on{background:#fff}
-.wclose{position:absolute;top:calc(4px + env(safe-area-inset-top));right:10px;color:#fff;text-decoration:none;font-size:2rem;width:44px;height:44px;display:grid;place-items:center}
+.wrapped .dots{display:flex;gap:4px;margin:0 0 18px 40px}.wrapped .dots i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.3)}.wrapped .dots i.on{background:#fff}
+.wclose{position:absolute;top:calc(4px + env(safe-area-inset-top));left:6px;color:#fff;text-decoration:none;font-size:2rem;width:44px;height:44px;display:grid;place-items:center}
 .wbody{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;max-width:560px;width:100%;margin:0 auto;animation:wfade .45s ease}
 @keyframes wfade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .wrapped .kick{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;opacity:.8}.wrapped .grow{flex:1}

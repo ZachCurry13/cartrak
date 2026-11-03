@@ -72,6 +72,6 @@ a.tcard:hover,a.tcard:focus-visible{background:var(--card2)}
 @media (max-width:560px){.ccard .tside{flex-direction:row-reverse;flex-wrap:wrap;justify-content:space-between}.ccost{flex-direction:row;flex-wrap:wrap;align-items:center;gap:2px 10px;text-align:left;min-width:0;flex:1 1 12em}.ccost>*{white-space:nowrap}.ccard .tside>button{flex:none;white-space:nowrap}}
 
 /* a row of links under a page title, scrolling sideways on a phone instead of stacking */
-.linkrow{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin:0 0 4px;scrollbar-width:none}.linkrow::-webkit-scrollbar{display:none}
+.linkrow{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 10px;margin:0 0 4px}
 .linkrow a{flex:0 0 auto;white-space:nowrap;padding:8px 14px;border-radius:var(--r-full);background:var(--card2);color:var(--text);text-decoration:none;font-size:.9rem;min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}
 .hcard.remote{--hc:var(--personal)}.hico.remote{color:var(--personal)}.hbar .chg.remote{background:var(--personal)}

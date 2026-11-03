@@ -94,3 +94,6 @@ export const goReplace = (hash) => {
   replacing = true;
   location.replace(to);
 };
+
+// The page before this one, for a screen that draws its own header (Wrapped): where to go and what to call it.
+export const previousPage = () => (idx > 0 ? { href: stack[idx - 1], label: name(stack[idx - 1]) || 'the previous page' } : null);
