@@ -1,4 +1,5 @@
 import { h } from './ui.js';
+import { trapFocus } from './focustrap.js';
 import { PAGES, MAX_BAR, allowed, current, defaults, save, page, icon, isFuelCar } from './navlayout.js';
 
 // Customize: choose the pages in the bottom bar and the tiles in the More sheet, in any order, or let them follow how often
@@ -35,6 +36,7 @@ export function openEditor(session, done) {
   const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Customize' }, h('div', { class: 'mhandle', 'aria-hidden': 'true' }), h('div', { class: 'mhead' }, h('h2', {}, 'Customize')), body);
   const bg = h('div', { class: 'sheetbg bottom' }, sheet);
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
+  trapFocus(sheet);
   document.body.append(bg);
   draw();
 }

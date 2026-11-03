@@ -1,22 +1,10 @@
-/* Material 3 for the whole app, and the one place the shared parts are defined: tokens for shape, type, surface and state;
-   buttons, fields, chips, cards, segmented switches and sheets; press feedback on everything tappable; the bottom bar pill.
-   Loaded last. Page layouts live in the other files and use these tokens for their corners, so a change here changes every page. */
-:root{
-  --r-xs:8px;--r-sm:12px;--r-md:16px;--r-lg:28px;--r-full:999px;
-  --t-label:12px;--t-label-l:14px;--t-body-l:16px;--t-title-m:18px;--t-title-l:22px;--t-head:28px;
-  --tonal:color-mix(in srgb,var(--accent) 20%,var(--card));
-  --tonal-hi:color-mix(in srgb,var(--accent) 30%,var(--card));
-  --press:color-mix(in srgb,currentColor 14%,transparent);
-  --hover:color-mix(in srgb,currentColor 8%,transparent);
-  --lift:0 1px 3px rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.2);
-  --lift-hi:0 6px 24px rgba(0,0,0,.35);
-}
-:root[data-theme=light]{--lift:0 1px 3px rgba(20,25,31,.18),0 1px 2px rgba(20,25,31,.12);--lift-hi:0 6px 24px rgba(20,25,31,.22)}
-@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--lift:0 1px 3px rgba(20,25,31,.18),0 1px 2px rgba(20,25,31,.12);--lift-hi:0 6px 24px rgba(20,25,31,.22)}}
+/* Material 3 Expressive, as components: buttons, fields, chips, cards, banners, sheets, switches, press and ripple, the bottom bar.
+   Every size, radius, curve and shade it uses comes from tokens.css, so changing the look is a change there (see docs/DESIGN.md).
+   Loaded after the page stylesheets so it has the last word. Do not put a raw radius, font size or colour in this file. */
 
 /* Type roles. One scale, so a heading means the same thing on every page. */
 body{line-height:1.45}
-#view h2:not(.card>h2),.topbar h2{font-size:var(--t-title-l);font-weight:600;line-height:1.25}
+#view h2:not(.card>h2),.topbar h2{font-size:var(--t-head);font-weight:700;letter-spacing:-.01em;line-height:1.2}
 #view h3{font-size:var(--t-title-m);font-weight:600;line-height:1.3;margin:0 0 var(--sp-2)}
 small,.muted.small,.sub{font-size:var(--t-small)}
 
@@ -37,7 +25,7 @@ button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:va
 button.sec,.btn.sec{background-color:var(--tonal);color:var(--text)}
 button.outline,.btn.outline{background:transparent;color:var(--accent);border:1px solid var(--line)}
 button.text,.btn.text{background:transparent;color:var(--accent);padding:8px 12px}
-button.danger,.btn.danger{background-color:var(--bad);color:#fff}
+button.danger,.btn.danger{background-color:var(--bad);color:var(--on-alert)}
 button.sm,.btn.sm{padding:6px 16px;min-height:40px;box-sizing:border-box}
 button.ico,.btn.ico{padding:0;min-width:44px;border-radius:50%}
 button:disabled,.btn[aria-disabled=true]{opacity:.38;cursor:default;background-image:none}
@@ -50,12 +38,12 @@ input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--acce
 
 /* Chips and pills: small labels. Filter chips (the row of links under a page title, the Insights tabs) are the same shape. */
 .chip,.pill{display:inline-block;padding:4px 12px;border-radius:var(--r-sm);font-size:var(--t-label);font-weight:650;letter-spacing:.02em;border:0;background:color-mix(in srgb,currentColor 15%,transparent)}
-.pill{color:var(--text);font-size:13px}
+.pill{color:var(--text);font-size:var(--t-small)}
 .linkrow a,.atabs a,.chipbtn{border-radius:var(--r-sm)}
 
 /* A segmented switch: a pill track with the chosen one lifted. */
 .seg{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin:0 0 var(--sp-3);padding:var(--sp-1);border:0;border-radius:var(--r-lg);background:var(--card)}
-.seg button{flex:1 1 auto;min-height:44px;padding:6px 14px;border:0;border-radius:var(--r-full);background:transparent;color:var(--muted);font-size:.92rem}
+.seg button{flex:1 1 auto;min-height:44px;padding:6px 14px;border:0;border-radius:var(--r-full);background:transparent;color:var(--muted);font-size:var(--t-label-l)}
 .seg button.on{background-color:var(--tonal-hi);color:var(--text)}
 
 /* Press and hover feedback: a veil of the text colour over whatever is tapped. No extra markup needed. */
@@ -80,7 +68,7 @@ nav#tabs a.on{color:var(--text);font-weight:600}
 
 /* Parts that were styled inline on their pages: a whole card or banner that is one link, the "Tracking is on" pill, and a row that is a button. */
 .cardlink{display:block;color:inherit;text-decoration:none}
-.trackpill{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;min-height:36px;padding:8px 14px;border-radius:var(--r-full);background:var(--alert-solid);color:#fff;font-size:var(--t-small);font-weight:600;text-decoration:none}
+.trackpill{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;min-height:36px;padding:8px 14px;border-radius:var(--r-full);background:var(--alert-solid);color:var(--on-alert);font-size:var(--t-small);font-weight:600;text-decoration:none}
 button.rowbtn{display:block;width:100%;min-height:0;padding:10px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;color:inherit;font-weight:inherit;text-align:left}
 
 /* A checkbox that turns something on or off is a switch. A checkbox in a list of things to pick from (class "check") stays a box. */
@@ -91,7 +79,6 @@ input[type=checkbox]:not(.check):checked::before{left:24px;width:24px;height:24p
 input[type=checkbox]:not(.check):disabled{opacity:.38;cursor:default}
 input[type=checkbox].check{width:22px;height:22px}
 @media (prefers-reduced-motion:reduce){input[type=checkbox]:not(.check),input[type=checkbox]:not(.check)::before{transition:none}}
-:root{--alert-solid:#c62828}
 
 /* Cards and lists without outlines: a surface is shown by its shade, and a status by its coloured edge. */
 .hcard,.tcard{border-top:0;border-right:0;border-bottom:0;border-left-width:4px}
@@ -102,7 +89,7 @@ input[type=checkbox].check{width:22px;height:22px}
 @keyframes scrimin{from{opacity:0}to{opacity:1}}
 @keyframes sheetin{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
 .sheetbg{animation:scrimin .18s ease-out}
-.sheet:not(.more){animation:sheetin .22s cubic-bezier(.2,0,0,1)}
+.sheet:not(.more){animation:sheetin .22s var(--decel)}
 @media (prefers-reduced-motion:reduce){.sheetbg,.sheet:not(.more){animation:none}}
 
 /* A card that follows a row of number tiles sits a gap below them, not against them. */
@@ -117,5 +104,30 @@ input[type=checkbox].check{width:22px;height:22px}
 /* A tap spreads from the finger (js/touchfeedback.js). The registered property lets the circle grow. */
 @property --rr{syntax:'<length>';inherits:false;initial-value:0px}
 @keyframes ripple{from{--rr:0px}to{--rr:480px}}
-.rip.rip,nav#tabs a.rip.rip{background-image:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--press) var(--rr),transparent calc(var(--rr) + 1px));animation:ripple .45s cubic-bezier(.2,0,0,1) forwards}
+.rip.rip,nav#tabs a.rip.rip{background-image:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--press) var(--rr),transparent calc(var(--rr) + 1px));animation:ripple .45s var(--decel) forwards}
 @media (prefers-reduced-motion:reduce){.rip.rip,nav#tabs a.rip.rip{animation:none}}
+
+/* Material 3 Expressive: shape that responds, motion that springs, type that carries weight. */
+/* A pressed button loses its pill and squares off a little, then springs back. */
+button:not(.ico):not(.seg button),.btn{transition:background-color .15s,background-image .15s,border-radius .25s var(--spring)}
+button:not(.ico):not(.seg button):active,.btn:active{border-radius:var(--r-sm)}
+/* The bar's pill grows out of the icon when a page is chosen. */
+@keyframes pillin{from{transform:scaleX(.35);opacity:.4}to{transform:none;opacity:1}}
+nav#tabs a.on svg{animation:pillin .38s var(--spring)}
+nav#tabs a.on{font-weight:700}
+/* Sheets rise on a decelerating curve; a switch's thumb springs and shows a check when on. */
+.sheet.more{animation:moreup .4s var(--decel)}
+.sheet:not(.more){animation:sheetin .32s var(--decel)}
+input[type=checkbox]:not(.check)::before{transition:left .3s var(--spring),width .3s var(--spring),height .3s var(--spring),background-color .2s}
+input[type=checkbox]:not(.check)::after{content:"";position:absolute;top:50%;left:24px;width:24px;height:24px;background:var(--accent);transform:translateY(-50%) scale(0);transition:transform .3s var(--spring);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/72% no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/72% no-repeat}
+input[type=checkbox]:not(.check):checked::after{transform:translateY(-50%) scale(1)}
+@media (prefers-reduced-motion:reduce){nav#tabs a.on svg,.sheet.more,.sheet:not(.more){animation:none}input[type=checkbox]:not(.check)::after,button:not(.ico):not(.seg button){transition:none}}
+/* Fields: a thicker accent edge when focused, a red one when what was typed is not valid. */
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+input:user-invalid,select:user-invalid,textarea:user-invalid{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
+.fieldbox input:focus,.fieldbox input:user-invalid{box-shadow:none;border-color:transparent}
+input,select,textarea{transition:border-color .15s,box-shadow .15s}
+/* Surfaces carry a trace of the accent, so a card reads as part of the colour scheme, not as grey. */
+.card{background:color-mix(in srgb,var(--accent) 4%,var(--card))}

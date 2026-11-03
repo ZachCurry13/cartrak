@@ -23,6 +23,7 @@ mobile-first PWA. Runs as a TrueNAS custom app behind a Cloudflare tunnel.
 ## Checks before calling work done
 - Go: `go test ./...`, `GOOS=linux go vet ./...`, `gofmt -l .` clean. Every outside service (Ford, Cloudflare) gets an `httptest` fake.
 - JS: `for f in internal/web/static/js/*.js; do node --input-type=module --check < $f || echo BAD $f; done`
+- UI follows `docs/DESIGN.md` (tokens in `css/tokens.css`, components in `css/material.css`; `go test ./internal/web` guards it; `docs/design-check.js` is the page sweep).
 - UI: check at 360x760 with awkward data (long names, many trips), measure `scrollWidth`, tap targets, light and dark themes. Use a local-only `devfixture.js` harness. If the browser pane is hidden, measure with scripts, not screenshots.
 - Flex rows with buttons give text a `basis-*` so buttons wrap on phones.
 

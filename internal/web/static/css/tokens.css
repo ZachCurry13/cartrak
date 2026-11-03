@@ -1,0 +1,24 @@
+/* THE design tokens: the one file to edit when the design language changes (see docs/DESIGN.md).
+   Shape, type, space, motion and state live here. The theme colours (--bg, --card, --accent ...) live in look.css and are set
+   by the season code; everything here that needs a colour derives it from those. Components (material.css) only use var(--...). */
+:root{
+  /* shape: corner radii, small to large */
+  --r-xs:8px;--r-sm:12px;--r-md:20px;--r-lg:28px;--r-full:999px;
+  --radius-card:var(--r-md);--radius-ctl:var(--r-sm); /* names the older stylesheets use */
+  /* space and touch */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--tap:48px;
+  /* type: label, small, body, large body, title, headline */
+  --t-label:12px;--t-small:13px;--t-label-l:14px;--t-body:15px;--t-body-l:16px;--t-title-m:18px;--t-title-l:22px;--t-title:22px;--t-head:28px;
+  /* motion: a spring with a little overshoot, and a decelerating curve for things that arrive */
+  --spring:cubic-bezier(.34,1.3,.64,1);--decel:cubic-bezier(.05,.7,.1,1);
+  /* state: tonal fills, the press and hover veils, elevation */
+  --tonal:color-mix(in srgb,var(--accent) 20%,var(--card));
+  --tonal-hi:color-mix(in srgb,var(--accent) 30%,var(--card));
+  --press:color-mix(in srgb,currentColor 14%,transparent);
+  --hover:color-mix(in srgb,currentColor 8%,transparent);
+  --alert-solid:#c62828;--on-alert:#fff; /* a solid red with the white text that goes on it: the Tracking pill, the alert badge, Delete */
+  --lift:0 1px 3px rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.2);
+  --lift-hi:0 6px 24px rgba(0,0,0,.35);
+}
+:root[data-theme=light]{--lift:0 1px 3px rgba(20,25,31,.18),0 1px 2px rgba(20,25,31,.12);--lift-hi:0 6px 24px rgba(20,25,31,.22)}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--lift:0 1px 3px rgba(20,25,31,.18),0 1px 2px rgba(20,25,31,.12);--lift-hi:0 6px 24px rgba(20,25,31,.22)}}

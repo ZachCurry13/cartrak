@@ -1,4 +1,5 @@
 import { h } from './ui.js';
+import { trapFocus } from './focustrap.js';
 import { renderChangelog } from './pages/changelog.js';
 
 // After an update, the first time the app opens: a sheet with what changed in every version since this device last opened it,
@@ -25,5 +26,6 @@ export async function showWhatsNew(session) {
     h('p', { class: 'seg', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'on', onclick: done }, 'Got it'), h('a', { class: 'btn sec', href: '#/changelog', onclick: done }, 'Everything new')));
   const bg = h('div', { class: 'sheetbg bottom' }, sheet);
   bg.addEventListener('click', (e) => { if (e.target === bg) done(); });
+  trapFocus(sheet);
   document.body.append(bg);
 }

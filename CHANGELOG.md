@@ -7,6 +7,16 @@
 - **It fits the screen again.** 0.68.0 left the More sheet narrower than the screen, with the bottom bar showing around it; it is full width and sits on the bottom edge again.
 - **Closing it returns you to the button you opened it from**, and screen readers are told it is a dialog.
 
+### ✨ Material 3 Expressive
+- **Rounder, bolder shapes.** Cards and sheets have larger corners, page titles are bigger and heavier, and cards carry a trace of your accent colour instead of plain grey.
+- **Controls that respond.** A pressed button squares off a little and springs back, the pill behind the chosen tab grows out of its icon, and a switch's thumb springs across and shows a check mark when it is on.
+- **Fields show their state.** A focused field gets a thicker accent edge, and one holding something invalid turns red.
+- **Dialogs keep your keyboard inside them.** Tab no longer wanders out of an open sheet to the page behind.
+
+### 🧱 Easier to keep up to date
+- **One place for the design's values** (`css/tokens.css`): corners, spacing, text sizes, motion and shades. The next design release is a change there, and `docs/DESIGN.md` lists the steps, the rules and what is not Material yet.
+- **A test guards it:** components may not use raw sizes or colours, every token they use must exist, and every stylesheet and script must be in the offline list. `docs/design-check.js` is a script to paste into the browser that sweeps every page for sideways scroll, small tap targets and low contrast.
+
 ### 👆 Taps you can feel
 - **A ripple spreads from your finger** on buttons, tabs, tiles and list rows.
 - **A short vibration** when you flip a switch or press a button, a firmer one for Delete. Android only: iPhone does not let web pages vibrate. **More, Display and data, Touch feedback** turns it off, and it stays off if your phone is set to reduce motion.

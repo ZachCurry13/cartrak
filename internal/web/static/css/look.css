@@ -158,7 +158,7 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .bigfig{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.bigfig div{background:var(--card2);border-radius:var(--r-sm);padding:10px 12px}.bigfig b{display:block;font-size:1.35rem}.bigfig span{font-size:var(--t-label);color:var(--muted)}
 .rec{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);color:inherit;text-decoration:none}.rec:first-of-type{border-top:0}.rec .ri{font-size:1.4rem;width:1.8em;text-align:center;flex:0 0 auto}.rec b{display:block}
 .recap{background:linear-gradient(150deg,color-mix(in srgb,var(--ok) 22%,var(--card)),var(--card) 60%);}
-.map.glow{background:#05080f}.map.glow .map-tiles img{filter:grayscale(1) invert(1) brightness(.42) contrast(1.15)}.map.glow .map-glow polyline{mix-blend-mode:screen}.map.glow .map-credit{background:rgba(0,0,0,.5);color:#ccc}
+.map.glow{background:#05080f}.map.glow .map-tiles img{filter:grayscale(1) invert(1) brightness(.42) contrast(1.15)}.map.glow .map-glow polyline{mix-blend-mode:screen}.map.glow .map-credit{background:rgba(0,0,0,.5);color:#ccc}.map.glow .map-credit a{color:inherit}
 .badge{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:var(--t-label);min-width:0}.badges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 8px}
 .bring{position:relative;width:78px;height:78px}.bring span{position:absolute;inset:0;display:grid;place-items:center;font-size:1.9rem}.badge.locked .bring span{filter:grayscale(1);opacity:.45}
 .dayring{width:min(100%,270px);display:block;margin:0 auto;color:var(--text)}

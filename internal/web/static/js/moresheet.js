@@ -1,4 +1,5 @@
 import { h } from './ui.js';
+import { trapFocus } from './focustrap.js';
 import { api } from './api.js';
 import { current, page, icon } from './navlayout.js';
 import { openEditor } from './navedit.js';
@@ -30,6 +31,7 @@ export function openMore(session) {
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
   document.addEventListener('keydown', onKey);
   dragToClose(sheet, bg, close);
+  trapFocus(sheet);
   document.body.append(bg);
   sheet.focus({ preventScroll: true });
   open = bg;

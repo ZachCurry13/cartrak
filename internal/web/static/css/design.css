@@ -1,6 +1,5 @@
 /* One look for the parts every page shares: the page header with its back arrow, standalone text links, number tiles, and the
    status line. Sizes come from a small set so pages stop inventing their own. */
-:root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--radius-card:16px;--radius-ctl:12px;--tap:48px;--t-small:13px;--t-body:15px;--t-title:22px}
 
 /* A page header: a back arrow the size of a finger, then the page's title. */
 .topbar{display:flex;align-items:center;gap:var(--sp-1);min-height:var(--tap);margin:0 0 var(--sp-3)}

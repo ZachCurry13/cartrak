@@ -1,4 +1,5 @@
 import { h } from './ui.js';
+import { trapFocus } from './focustrap.js';
 import { buildIndex, search } from './searchindex.js';
 
 // A search box that opens over any page: type a word and jump to the page or setting that has it.
@@ -15,6 +16,7 @@ export async function openSearch(admin) {
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
   document.addEventListener('keydown', onKey);
+  trapFocus(sheet);
   document.body.append(bg);
   open = bg;
   box.focus();
