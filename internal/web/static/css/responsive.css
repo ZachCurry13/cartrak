@@ -1,5 +1,5 @@
 /* Layouts for tablet and desktop. The phone layout (single column, bottom tabs) is the default. */
-nav#tabs a{font-size:.78rem;padding:14px 2px}
+nav#tabs a{font-size:var(--t-label);padding:14px 2px}
 
 /* the back link at the top of a page: a full-size tap target */
 main>p:first-child>a:only-child{display:inline-flex;align-items:center;min-height:44px}
@@ -26,7 +26,7 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
   body{padding-left:176px;padding-bottom:0}
   nav#tabs{top:0;bottom:0;right:auto;width:176px;flex-direction:column;padding:72px 8px 8px;border-top:0;border-right:1px solid var(--line);align-items:stretch}
   nav#tabs{gap:2px}
-  nav#tabs a{flex:none;text-align:left;padding:11px 16px;min-height:44px;border-radius:var(--r-sm);font-size:.95rem}
+  nav#tabs a{flex:none;text-align:left;padding:11px 16px;min-height:44px;border-radius:var(--r-sm);font-size:var(--t-label-l)}
   nav#tabs a.on{background:var(--bg)}
   header{position:relative;z-index:1}
 }
@@ -37,10 +37,10 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;min-width:0}
 .tile.big{grid-column:1/-1}
-.tile .tl{font-size:.8rem}
+.tile .tl{font-size:var(--t-label)}
 .tile .tv{font-size:clamp(1.4rem,6.6vw,2.4rem);font-weight:700;line-height:1.1;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile.big .tv{font-size:clamp(2.6rem,14vw,5rem)}
-.tile .ts{font-size:.85rem;min-height:1.2em}
+.tile .ts{font-size:var(--t-small);min-height:1.2em}
 .tile .bar{margin:8px 0}
 @media (min-width:760px){
   .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}

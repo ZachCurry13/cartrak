@@ -12,6 +12,11 @@
 - **Quiet buttons are plain text.** "Not now", "No", "Cancel" and "Hide" no longer look as heavy as the button beside them, and deleting something is an outlined button.
 - **One set of shapes everywhere.** Buttons, fields, chips, cards, sheets and the segmented switches are defined once now, and the corners of the History, Trips, Charging and More cards use the same sizes.
 
+- **Cards without outlines.** History, Trips, Insights lists and More now show a card by its shade, not a border; a trip or charge keeps its coloured edge, which says what kind it is.
+- **One text scale.** Small and medium text on every page snaps to the same few sizes instead of about twenty slightly different ones.
+- **Sheets rise and fade in** the Material way (and stay still if your phone is set to reduce motion).
+- **Contrast check.** Every text colour on 34 pages was measured in light and dark; the one blue that fell just short in light mode is a little deeper, and the red of the Tracking pill and alert badge is now one shared colour.
+
 ### 🧭 Small fixes along the way
 - **Wrapped has a back arrow** at the top left that goes to the page you came from (it used to be a × that always went to Insights).
 - **The links under the Trips title wrap** onto a second line instead of scrolling sideways and cutting off "Reports".
