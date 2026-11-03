@@ -1,4 +1,5 @@
 import { h, emptyState, shortDist } from '../ui.js';
+import { fab } from '../fab.js';
 import { api } from '../api.js';
 import { addressCard } from '../placesearch.js';
 import { moneyInput } from '../inputs.js';
@@ -61,4 +62,5 @@ export default async function places(root, _a, session) {
         h('p', { class: 'muted' }, 'Uses the car\'s last reported position, so do it while the car is there. Or open a trip and name its start or end.')) : null].filter(Boolean));
   }
   await load();
+  if (admin) root.append(fab('Add a place', () => document.getElementById('pn')));
 }

@@ -34,7 +34,7 @@ var Defs = []Def{
 	{Key: "CARTRAK_TUNNEL_TOKEN", Label: "Cloudflare tunnel token", Secret: true, Group: "remote"},
 	{Key: "CARTRAK_PUBLIC_ADDRESS", Label: "Public address", Group: "remote"},
 	{Key: "CARTRAK_REMOTE_ENABLED", Label: "Remote access on", Group: "remote"},
-	{Key: "CARTRAK_TZ", Label: "Default time zone", Placeholder: "America/Chicago", Help: "Used only when the car's location is unknown. Each trip otherwise uses the time zone where it starts."},
+	{Key: "CARTRAK_TZ", Label: "Default time zone", Placeholder: "America/New_York", Help: "Used only when the car's location is unknown. Each trip otherwise uses the time zone where it starts."},
 }
 
 // Lookup reads a process-level (env or config.yaml) value and its source.
@@ -109,7 +109,7 @@ func Valid(key, val string) error {
 	case "CARTRAK_TZ":
 		if val != "" {
 			if _, err := time.LoadLocation(val); err != nil {
-				return fmt.Errorf("unknown time zone %q (use a name like America/Chicago)", val)
+				return fmt.Errorf("unknown time zone %q (use a name like America/New_York)", val)
 			}
 		}
 	case "FORD_REDIRECT_URL":

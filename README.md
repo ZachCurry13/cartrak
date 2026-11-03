@@ -26,6 +26,9 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - **Insights**: Wrapped for a month or the year with a shareable infographic, every route you drove glowing on a map, achievements, where every kWh went, and charts of charging, driving and the battery ([details](docs/insights.md))
 - **Gas and hybrid cars**: fill-ups with the price per gallon, a tank size CarTrak works out for itself, fuel and economy on every trip, fuel in Insights and Wrapped ([details](docs/fuel.md))
 - **Several cars and people**: each car has its own database, settings and Ford link; each person sees only the cars they were given, and can be allowed to bring a car of their own ([details](docs/several-cars.md))
+- **Trip planning**: a route planner with up to ten stops in the best order, an Open in Google Maps link, a range and weather forecast for the drive, and an **Estimate the route** button for trips recorded with only a few positions
+- **Weather** along each trip (wind, rain, snow) to explain why a trip used more energy, from a free weather service you switch on yourself
+- **Material design** throughout: a bottom sheet you can drag, switches, a ripple and short vibration on tap (Android), light and dark, and a design guide for keeping it current ([details](docs/DESIGN.md))
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
 
 > CarTrak is an independent open-source project and is not affiliated with or
@@ -92,7 +95,7 @@ theme, update checks) is edited in the app and stored in the database.
 | `CARTRAK_ADDR` | `:8080` | Listen address | |
 | `CARTRAK_DATA` | `/data` in Docker, `./data` otherwise | Directory for `cartrak.db` | |
 | `CARTRAK_CONFIG` | `/config` in Docker, `./config` otherwise | Directory holding `config.yaml` | |
-| `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/Chicago` | yes |
+| `CARTRAK_TZ` | `UTC` | Default IANA time zone, used only when the car location is unknown. Trips use the zone where they start, e.g. `America/New_York` | yes |
 | `CARTRAK_GEOCODE_ENABLED` | (on) | `off` stops the mileage log from asking a place-lookup service for city names. See [mileage log](docs/mileage.md) | yes |
 | `CARTRAK_PLUG_REMINDER_TIME` / `CARTRAK_PLUG_REMINDER_BELOW` | (9 pm, below 60%) | When the evening Plug in tonight? alert applies; see [notifications](docs/notifications.md) | yes |
 | `CARTRAK_GEOCODE_URL` | OpenStreetMap Nominatim | Another Nominatim-compatible lookup service | yes |
@@ -142,13 +145,14 @@ More detail in [docs/configuration.md](docs/configuration.md).
 Tap the **?** at the top of the app (or **More, How to use CarTrak**) for a two-minute guided tour: each step opens a page and lights up the part it explains, with Back, Next and Skip. The Help page, under More, has quick settings and a checklist.
 
 ## Documentation
-[TrueNAS](docs/truenas.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
+[TrueNAS](docs/truenas.md) · [Design](docs/DESIGN.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
 [Configuration](docs/configuration.md) · [Insights](docs/insights.md) · [Road trips and charging](docs/road-trips-and-charging.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Car data](docs/car-data.md) · [Vehicle health](docs/vehicle-health.md) · [Several cars and people](docs/several-cars.md) · [Fuel](docs/fuel.md) · [Backup and security](docs/backup.md) · [Places and maintenance](docs/places-and-maintenance.md) · [Sharing](docs/sharing.md) · [Home Assistant](docs/home-assistant.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development
 ```bash
 go test ./... && go vet ./...
 ```
+The interface follows [docs/DESIGN.md](docs/DESIGN.md): design values live in `css/tokens.css`, components in `css/material.css`, and a test keeps them in step.
 Web files in `internal/web/static` are embedded in the binary; restart after editing. They are served from
 addresses that carry the version (`/v0.26.0/js/app.js`) and the service worker's cache is named after the
 version, so nothing needs bumping by hand and no cache can keep an old copy.

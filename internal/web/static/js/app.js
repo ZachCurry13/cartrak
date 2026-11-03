@@ -11,12 +11,14 @@ import { trackCheck } from './tracker.js';
 import { watchUpdates } from './updatewatch.js';
 import { startBackNav, goReplace, noteRendered } from './backnav.js';
 import { startTouchFeedback } from './touchfeedback.js';
+import { startAppBar } from './appbar.js';
 import { showUpdateNotes } from './updatenotes.js';
 import { startConsistency } from './consistency.js';
 
 watchErrors();
 startBackNav();
 startTouchFeedback();
+startAppBar();
 startConsistency(document.getElementById('view'));
 import { startTour } from './tourui.js';
 import { currentCar, setCar } from './car.js';
@@ -153,6 +155,10 @@ async function render() {
     for (const a of tabs.querySelectorAll('a[href="#/health"], a[href="#/data"]')) a.hidden = session.me.role !== 'admin'; // viewers get the simple set of tabs
     const mod = await modP;
     view.replaceChildren();
+    view.classList.remove('enter'); // the page rises in a little as it replaces the last one
+    void view.offsetWidth;
+    view.classList.add('enter');
+    setTimeout(() => view.classList.remove('enter'), 400);
     const refresh = await mod.default(view, args, session);
     if (name === '') seasonOnHome();
     const head = view.querySelector('h2');

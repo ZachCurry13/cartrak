@@ -34,7 +34,7 @@ Fill the form top to bottom. Anything not mentioned can stay at its default.
 
 ### Container Configuration
 - Timezone: set yours if the form has this field.
-- **Environment Variables:** none are required. Optionally add `CARTRAK_TZ` = your time zone name (for example `America/Chicago`). Ford credentials and the time zone can instead be entered later inside CarTrak (see step 4), so you do not need to add them here.
+- **Environment Variables:** none are required. Optionally add `CARTRAK_TZ` = your time zone name (for example `America/New_York`). Ford credentials and the time zone can instead be entered later inside CarTrak (see step 4), so you do not need to add them here.
 
 ### Security Context Configuration
 - Leave **Privileged** off.

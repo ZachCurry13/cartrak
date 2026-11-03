@@ -131,3 +131,33 @@ input:user-invalid,select:user-invalid,textarea:user-invalid{border-color:var(--
 input,select,textarea{transition:border-color .15s,box-shadow .15s}
 /* Surfaces carry a trace of the accent, so a card reads as part of the colour scheme, not as grey. */
 .card{background:color-mix(in srgb,var(--accent) 4%,var(--card))}
+
+/* Text fields: the label sits in the field and floats up when it is focused or filled (js/textfield.js). */
+.mfield{position:relative;display:block;margin:var(--sp-3) 0 0}
+#view .mfield>input,#view .mfield>select,#view .mfield>textarea{width:100%;min-height:56px;padding:22px var(--sp-3) 6px 14px;box-sizing:border-box}
+#view .mfield>textarea{min-height:88px}
+#view .mfield>select{padding-right:36px}
+.mfield>label{position:absolute;left:15px;top:16px;margin:0;max-width:calc(100% - 48px);overflow:hidden;color:var(--muted);font-size:var(--t-body);text-overflow:ellipsis;white-space:nowrap;pointer-events:none;transition:top .18s var(--decel),font-size .18s var(--decel),color .18s}
+.mfield>input:not(:placeholder-shown)~label,.mfield>textarea:not(:placeholder-shown)~label,.mfield>input:focus~label,.mfield>textarea:focus~label,.mfield>select~label,.mfield.always>label{top:7px;font-size:var(--t-label)}
+.mfield>input:focus~label,.mfield>select:focus~label,.mfield>textarea:focus~label{color:var(--accent)}
+.mfield>input:user-invalid~label,.mfield>select:user-invalid~label,.mfield>textarea:user-invalid~label{color:var(--bad)}
+
+/* The top bar: tonal and shadowed once the page has scrolled, out of the way while reading down, back on the way up (js/appbar.js). */
+header#top{position:sticky;top:0;z-index:20;background:var(--bg);transition:transform .28s var(--decel),background-color .2s,box-shadow .2s}
+header#top.raised{background:color-mix(in srgb,var(--accent) 6%,var(--card));box-shadow:var(--lift)}
+header#top.away{transform:translateY(-100%)}
+@media (prefers-reduced-motion:reduce){header#top{transition:none}.mfield>label{transition:none}}
+
+/* The floating action button: the one thing to do on a page, above the bottom bar and the Tracking pill (js/fab.js). */
+.fab{position:fixed;right:var(--sp-4);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:40;min-height:56px;padding:0 var(--sp-4) 0 var(--sp-4);border-radius:var(--r-md);background-color:var(--tonal-hi);color:var(--text);box-shadow:var(--lift-hi);font-size:var(--t-label-l)}
+.fab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+body:has(.trackpill) .fab{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
+body:has(.sheetbg) .fab{display:none}
+
+/* A page rises in a little as it replaces the last one. */
+@keyframes viewin{from{opacity:.55;transform:translateY(10px)}to{opacity:1;transform:none}}
+#view.enter>*{animation:viewin .32s var(--decel)}
+@media (prefers-reduced-motion:reduce){#view.enter>*{animation:none}}
+.toursheet.bottom{border-radius:var(--r-lg) var(--r-lg) 0 0}
+/* A page with a floating button leaves room under its last line for it. */
+body:has(.fab) #view{padding-bottom:calc(var(--sp-5) + 64px)}

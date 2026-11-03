@@ -14,7 +14,7 @@ Restart the app after editing.
 | Key | Meaning | Default |
 |---|---|---|
 | `CARTRAK_PROVIDER` | `fordconnect` (FordConnect 2.0, your car), `fordconnect1` (older API) or `demo` (simulated) | `fordconnect` |
-| `CARTRAK_TZ` | IANA time zone for work-hour rules, e.g. `America/Chicago` | `UTC` |
+| `CARTRAK_TZ` | IANA time zone for work-hour rules, e.g. `America/New_York` | `UTC` |
 | `CARTRAK_GEOCODE_ENABLED` / `CARTRAK_GEOCODE_URL` | the mileage log looks up city names; `off` never sends locations, or point it at your own Nominatim; see [mileage log](mileage.md) | OpenStreetMap |
 | `CARTRAK_DB_CACHE_MB` | how much of the database SQLite keeps in memory, 8 to 4096; default 256. It fills only as data is read, so a large value costs nothing until the data is there |
 | `CARTRAK_DB_CONNS` | how many database connections CarTrak uses at once, 1 to 8; default 4. More lets a page that asks for many things read them side by side; 1 is the old one-at-a-time behavior |

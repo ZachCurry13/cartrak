@@ -88,6 +88,11 @@ phone's "reduce motion" setting or in Data saver.
 
 On a holiday itself, and on your birthday, Home also says so at the top ("Happy Halloween! 🎃").
 
+## Touch feedback
+**More, Display and data, Touch feedback** turns the short vibration on or off for this device. It ticks when you flip a switch or press a button, and a little firmer for Delete. It works on Android; an iPhone does not let web pages vibrate, so there it does nothing. It stays off if the phone is set to reduce motion. The ripple that spreads from your finger follows the same "reduce motion" setting.
+
+The More sheet can be pulled down to close it: drag its handle or its title. Pull a little and it springs back; pull far, or flick, and it closes.
+
 ### Your birthday
 Set your birthday (the month and day, never the year) under **More, Display and data, Your birthday**. On that day **Automatic**
 shows the birthday theme instead of the holiday one: party colors, a cake by the name, confetti and "Happy birthday! 🎂" on Home.

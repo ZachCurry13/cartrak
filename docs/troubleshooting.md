@@ -16,7 +16,7 @@ The redirect URL CarTrak sent is not registered on your Ford app. If you registe
 Open More -> Connect Ford. If Ford shows an error about the redirect, the redirect URI registered with Ford must match `FORD_REDIRECT_URL` exactly, including `https://` and the path `/ford/callback`.
 
 **Ford shows an error, "Not Found" or "login service unavailable" when I press Connect Ford.**
-Run **More -> Admin settings -> Ford diagnostics** after linking to see which endpoints answer. Before linking, check that the client ID and secret are right and that the redirect URL matches the one registered with Ford exactly. If Ford documents a different sign-in address, put it in "Ford sign-in address (advanced)". 
+Run **More -> Admin settings -> Ford diagnostics** after linking to see which endpoints answer. Before linking, check that the client ID and secret are right and that the redirect URL matches the one registered with Ford exactly. If Ford documents a different sign-in address, put it in "Ford sign-in address (advanced)".
 CarTrak 0.5 and newer use FordConnect 2.0; earlier versions used the older API and may not work with a FordConnect 2.0 app, so update first. Ford's own login page is also sometimes unavailable; try again later.
 
 **Ford says AADB2C90075 / "RESTApiCallForUserInfo".**

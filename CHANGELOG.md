@@ -1,6 +1,17 @@
 # Changelog
 
-## 0.69.0
+## 0.70.0
+
+### 🧩 Fields, top bar and a button for the main action
+- **Text fields have a label that floats.** The label sits in the field and moves up to its top edge when you tap it or it has something in it; a focused field gets a thicker accent edge, an invalid one turns red. Colour pickers and the file chooser keep their plain labels.
+- **The top bar gets out of the way.** It lifts onto a tonal surface once the page has scrolled, leaves when you scroll down to read and comes back the moment you scroll up.
+- **Floating action button.** Places has **Add a place** and Maintenance has **Add a reminder**: tap it and the page scrolls to the form and puts the cursor in the first field.
+- **Pages rise in a little** as they replace the last one (not at all if your phone is set to reduce motion).
+
+### 🧹 Housekeeping
+- The README lists trip planning, weather and the Material design; the docs cover touch feedback and the draggable sheet.
+- An example time zone in the docs and in the setting's hint was swapped for a neutral one.
+- The rain-learning code moved out of `weather/conditions.go` into its own file.
 
 ### 🪟 The More sheet works like a Material sheet
 - **Pull it down to close it.** Drag the handle or the title and the sheet follows your finger. Pull far, or flick, and it closes; pull a little and it springs back. The backdrop fades as you pull.

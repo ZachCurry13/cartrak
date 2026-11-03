@@ -1,4 +1,5 @@
 import { h, emptyState, chip, dist, isMetric } from '../ui.js';
+import { fab } from '../fab.js';
 import { api } from '../api.js';
 
 // Service reminders by distance, by time, or both. They count from when they are added or marked done.
@@ -57,4 +58,5 @@ export default async function maintenance(root, _a, session) {
         h('p', { class: 'muted' }, 'The examples are only starting points. Use the intervals in your car\'s service schedule.')) : null].filter(Boolean));
   }
   await load();
+  if (admin) root.append(fab('Add a reminder', () => document.getElementById('mn')));
 }

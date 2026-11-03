@@ -2,12 +2,14 @@
 // keypad, and a long help paragraph is folded to two lines with a More button, so the answer is not buried under the explanation.
 // It watches the page (pages draw in pieces as their answers arrive) and tidies what is new.
 import { isMetric, smallUnit } from './ui.js';
+import { upgradeFields } from './textfield.js';
 
 const LONG = 170;
 // A page names what a number counts in (data-unit); a word like "speed" or "dist" follows the units chosen on this device.
 const unitText = (u) => ({ speed: isMetric() ? 'km/h' : 'mph', dist: isMetric() ? 'km' : 'mi', small: smallUnit() })[u] || u;
 
 function tidy(root) {
+  upgradeFields(root);
   for (const i of root.querySelectorAll('input[type=number]:not([inputmode])')) {
     i.setAttribute('inputmode', /\./.test(i.step || '') || i.step === 'any' ? 'decimal' : 'numeric');
   }
