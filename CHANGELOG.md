@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.71.1
+
+### 🚗 The new icon actually reaches your phone
+- **Icons have a new address** (`/icons/v2/...`). The new icon kept the old file names, so the offline copy the app keeps, the browser, the installer or anything in front of CarTrak could keep serving the old picture, even after removing and re-adding the app. With new addresses every one of them has to fetch the new files. Change the icon again later and the folder name changes with it.
+- **The web app manifest is served with the right type** (`application/manifest+json`; it went out as plain text).
+- A test now checks that every icon the app names exists and sits in a versioned folder.
+- **After updating, remove the app from your home screen and add it again.** If the icon is still the old one, open `/icons/v2/icon-512.png` in your phone's browser: it should show the white car on blue.
+
 ## 0.71.0
 
 ### 🔧 Fix a day, one change at a time

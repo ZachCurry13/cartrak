@@ -6,7 +6,9 @@
 import fs from 'fs';
 import zlib from 'zlib';
 
-const OUT = 'internal/web/static/icons/';
+// The folder name is part of every icon's address. When the art changes, bump it (v2 to v3) here and in the manifest, so no cache
+// (the service worker, the browser, the installer, a CDN) can keep handing out the old picture under the old address.
+const OUT = 'internal/web/static/icons/v2/';
 const C = { bgTop: [10, 75, 176], bgBot: [0, 40, 100], car: [244, 248, 255], wheel: [150, 176, 222], track: [138, 178, 240], roof: [188, 210, 245] };
 
 // ---- the art (512 space) ----

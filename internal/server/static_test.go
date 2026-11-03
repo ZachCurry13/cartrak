@@ -44,8 +44,11 @@ func TestTheAppIsServedFromVersionedAddressesSoNoCacheCanKeepAnOldCopy(t *testin
 	if strings.Contains(sw, "__V__") || !strings.Contains(sw, "const V = '1.0.0'") || resp.Header.Get("Cache-Control") != "no-cache" || !strings.Contains(resp.Header.Get("Content-Type"), "javascript") {
 		t.Fatalf("the service worker carries the version and is never cached: %q %s", resp.Header.Get("Cache-Control"), sw[:120])
 	}
-	if resp, _ := get("/icons/icon.svg"); resp.StatusCode != 200 {
+	if resp, _ := get("/icons/v2/icon.svg"); resp.StatusCode != 200 {
 		t.Fatalf("other files still served: %d", resp.StatusCode)
+	}
+	if resp, _ := get("/manifest.webmanifest"); resp.StatusCode != 200 || resp.Header.Get("Content-Type") != "application/manifest+json" {
+		t.Fatalf("the manifest has the manifest type: %d %q", resp.StatusCode, resp.Header.Get("Content-Type"))
 	}
 	if resp, _ := get("/api/health"); resp.StatusCode == 200 {
 		t.Fatal("the API is not static")

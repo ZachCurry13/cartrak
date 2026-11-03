@@ -71,3 +71,23 @@ func TestEveryStylesheetAndScriptIsCachedByTheServiceWorker(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// An icon the manifest, the page or the service worker names must exist, or the app installs with a broken icon. They live in a
+// versioned folder (icons/v2): change the art, change the folder, and no cache can keep serving the old picture.
+func TestEveryIconTheAppNamesExists(t *testing.T) {
+	re := regexp.MustCompile(`/icons/v[0-9]+/[A-Za-z0-9._-]+`)
+	for _, f := range []string{"static/manifest.webmanifest", "static/index.html", "static/sw.js"} {
+		found := re.FindAllString(read(t, f), -1)
+		if len(found) == 0 {
+			t.Errorf("%s names no icons in a versioned folder", f)
+		}
+		for _, p := range found {
+			if _, err := fs.Stat(Files, "static"+p); err != nil {
+				t.Errorf("%s names %s, which does not exist", f, p)
+			}
+		}
+	}
+	if strings.Contains(read(t, "static/manifest.webmanifest"), "\"/icons/icon") {
+		t.Error("the manifest still points at an unversioned icon address")
+	}
+}

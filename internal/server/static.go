@@ -68,6 +68,9 @@ func (s *Server) staticHandler(static fs.FS) http.Handler {
 			files.ServeHTTP(w, r2)
 		default:
 			w.Header().Set("Cache-Control", "no-cache")
+			if strings.HasSuffix(p, ".webmanifest") { // the type browsers and installers expect; the file extension alone gives text/plain
+				w.Header().Set("Content-Type", "application/manifest+json")
+			}
 			files.ServeHTTP(w, r)
 		}
 	})
