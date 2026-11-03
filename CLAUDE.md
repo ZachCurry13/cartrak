@@ -32,6 +32,9 @@ mobile-first PWA. Runs as a TrueNAS custom app behind a Cloudflare tunnel.
 - `grep -rnF '() =>' --include=*.md .` after scripted doc edits.
 - Clones use LF endings (`core.autocrlf=false`).
 
+## Bug reports
+The owner sends reports from the app ("Send a bug report" at the foot of a page) to their own private reports repository. Pull them with `gh` as in `docs/bug-reports.md` (ask for the repository name), read `screen.png`, `report.md` and `debug.txt`, and never copy a report's contents into this public repo.
+
 ## Users
 Admin (manages everything) and viewer (read-only). No kid accounts or age groups.
 

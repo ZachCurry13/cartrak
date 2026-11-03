@@ -4,7 +4,7 @@
 @media print {
   :root { color-scheme: light; }
   html, body { background: #fff !important; color: #111 !important; }
-  #top, #carnote, #tabs, #upd, .updbar, #offbar, .offbar, .tour, .toast, .fab, .trackpill, .sheetbg { display: none !important; }
+  #top, #bugfoot, #carnote, #tabs, #upd, .updbar, #offbar, .offbar, .tour, .toast, .fab, .trackpill, .sheetbg { display: none !important; }
   main#view { max-width: none !important; padding: 0 !important; margin: 0 !important; }
   main#view::before { content: "CarTrak"; display: block; font-weight: 700; color: #555; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 12px; }
   /* what only works on a screen: buttons, pickers, the way back */

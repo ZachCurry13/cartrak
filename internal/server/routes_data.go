@@ -107,6 +107,8 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /api/trips/{id}/route-options", s.auth(true, s.tripRouteOptions))
 	m.HandleFunc("POST /api/trips/{id}/route-choice", s.auth(true, s.setTripRoute))
 	m.HandleFunc("POST /api/trips/{id}/calibrate", s.auth(true, s.calibrateOdometer))
+	m.HandleFunc("GET /api/bug-report/status", s.auth(true, s.reportStatus))
+	m.HandleFunc("POST /api/bug-report", s.auth(true, s.sendReport))
 	m.HandleFunc("GET /api/trips/{id}/route-stops", s.auth(true, s.tripStops))
 	m.HandleFunc("POST /api/trips/{id}/route-stops", s.auth(true, s.setTripStops))
 	m.HandleFunc("POST /api/trips/{id}/distance", s.auth(true, s.setTripDistance))

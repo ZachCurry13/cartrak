@@ -12,6 +12,7 @@ import { watchUpdates } from './updatewatch.js';
 import { startBackNav, goReplace, noteRendered } from './backnav.js';
 import { startTouchFeedback } from './touchfeedback.js';
 import { startAppBar } from './appbar.js';
+import { mountBugReport } from './bugreport.js';
 import { showUpdateNotes } from './updatenotes.js';
 import { startConsistency } from './consistency.js';
 
@@ -142,6 +143,7 @@ async function render() {
       applySeason();
       await loadCars();
       if (session.me.role === 'admin') trackCheck(true);
+      mountBugReport(session);
       if (!session.cars.length) { // a person who may bring a car but has none yet
         tabs.hidden = true;
         if (name !== 'cars') { goReplace('#/cars'); return; }

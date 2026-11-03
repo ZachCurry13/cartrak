@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.75.0
+
+### 🐞 Send a bug report from any page
+- **A "Send a bug report" button at the foot of every page** (administrators). It captures what is on screen, you type a short note, and one tap sends it. No more screenshots in a chat.
+- **It records the screen it came from:** a picture of the whole page, the page's text, its address, the app version, and the screen in words (a phone or a computer, its size, touch or mouse, installed app or browser tab, theme, browser).
+- **The debug report goes along** (ticked by default, last 24 hours) so nothing needs copying.
+- **It goes to your own private GitHub repository**, never the public CarTrak one, as an issue with the picture and report attached as files, so it can be read later with the gh tool. Set it up once under More, Settings (a repository name and a token that can write only to it); the token stays on the server. Until it is set up the button explains how. Steps: `docs/bug-reports.md`.
+
 ## 0.74.0
 
 ### 🔇 A quiet car, noticed

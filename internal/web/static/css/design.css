@@ -63,3 +63,7 @@ details.morehome[open]>summary{margin-bottom:var(--sp-3)}
 .msearch{display:flex;align-items:center;gap:var(--sp-3);width:100%;min-height:var(--tap);margin:0 0 var(--sp-3);padding:0 var(--sp-4);border:1px solid var(--line);border-radius:var(--radius-card);background:var(--card2);color:var(--muted);font:inherit;text-align:left;cursor:pointer}
 .msearch svg{width:22px;height:22px;flex:0 0 22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
 .fieldbox:has(> input[hidden]){display:none}
+
+/* The bug report button at the foot of every page. */
+#bugfoot{padding:var(--sp-3) var(--sp-4) var(--sp-5);text-align:center}
+#bugfoot button{color:var(--muted)}
