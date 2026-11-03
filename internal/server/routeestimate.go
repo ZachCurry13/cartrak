@@ -90,6 +90,9 @@ func (s *Server) recordedPoints(t *store.Trip) []routeest.Point {
 	if t.EndLat != nil && t.EndLon != nil && (len(recorded) == 0 || recorded[len(recorded)-1] != (routeest.Point{*t.EndLat, *t.EndLon})) {
 		recorded = append(recorded, routeest.Point{*t.EndLat, *t.EndLon})
 	}
+	if via, err := s.S.TripVia(t.ID); err == nil && len(via) > 0 { // places the owner added: the car did not record the detour
+		recorded = withStops(recorded, via)
+	}
 	return recorded
 }
 

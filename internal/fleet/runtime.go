@@ -63,7 +63,7 @@ func (f *Fleet) build(c store.Car, primary bool) (*Runtime, error) {
 	if err != nil {
 		return nil, err
 	}
-	det := &trips.Detector{S: st, TZ: f.Cfg.TZ, TZFn: cfgs.Location, Work: func() trips.WorkDay {
+	det := &trips.Detector{S: st, TZ: f.Cfg.TZ, TZFn: cfgs.Location, OdoFactor: cfgs.OdometerFactor, Work: func() trips.WorkDay {
 		on, days, stay := cfgs.WorkDay()
 		return trips.WorkDay{On: on, Days: days, StaySec: int64(stay) * 60}
 	}}

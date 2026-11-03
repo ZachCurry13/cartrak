@@ -25,15 +25,19 @@ async function accessBox(car, session) {
     }), msg);
 }
 
+// The car the header picker asked to rename, if any.
+const renameFor = () => { try { return sessionStorage.getItem('cartrak.renameCar') || ''; } catch (e) { return ''; } };
+
 function carCard(car, session, reload) {
   const manage = car.level === 'owner' || session.me.role === 'admin';
   const msg = h('p', { class: 'muted', role: 'status' });
   const extra = h('div');
   const name = h('input', { value: car.name, 'aria-label': 'Name of the car', maxlength: 40 });
   const save = h('button', { onclick: async () => {
-    try { await api(`/api/cars/${car.id}`, { method: 'PATCH', body: { name: name.value } }); reload(); } catch (e) { msg.textContent = e.message; }
+    try { await api(`/api/cars/${car.id}`, { method: 'PATCH', body: { name: name.value } }); reload(); } catch (e) { msg.className = 'banner'; msg.textContent = `Could not rename: ${e.message}`; }
   } }, 'Save name');
-  const rename = h('div', { class: 'row', hidden: true }, name, save);
+  const rename = h('div', { class: 'row', hidden: String(car.id) !== renameFor() }, name, save);
+  if (!rename.hidden) { try { sessionStorage.removeItem('cartrak.renameCar'); } catch (e) { /* ignore */ } setTimeout(() => name.focus(), 0); } // opened from the car picker in the header
   const views = Object.entries(car.adminViews || {});
   return h('section', { class: 'card' },
     h('div', { class: 'row', style: 'border:0;padding:0' }, h('b', { class: 'grow' }, car.name),

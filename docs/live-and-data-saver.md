@@ -102,3 +102,6 @@ Someone born on February 29 gets it on the 28th in other years. **Getting starte
 ## What's new
 After an update, the first time the app opens it shows what changed in every version since this device last opened it. **Got it**
 closes it until the next update; **More, About and updates, What's new** keeps the whole list.
+
+## Motion on Live
+The Live page moves a little with what the car is doing: a soft moving light while it is driving, a green glow and rising lights while it charges, a slow "breathing" and drifting z while it is parked and has not reported for a while (asleep), a small padlock when it is locked, and warm air (cold day) or cool flecks (hot day) during a remote start. The car only reports every 30 seconds to 10 minutes, so none of it follows speed or power moment by moment, and an animation stops when the last reading is too old for that state (about 90 seconds while driving, 6 minutes while charging). It is off in Data saver and when the phone is set to reduce motion.

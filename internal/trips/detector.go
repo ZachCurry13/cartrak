@@ -14,6 +14,8 @@ type Detector struct {
 	TZ   *time.Location
 	TZFn func() *time.Location // optional: read the zone live (admin panel); wins over TZ
 	Work func() WorkDay        // optional: the "first outing of a work day is work" rule, read live; nil leaves it off
+	// OdoFactor is the owner's correction for odometer distances (see settings.OdometerFactor), read live; nil or 0 leaves distances as the car says.
+	OdoFactor func() float64
 
 	maxOdo   *float64 // the highest odometer seen: an old lower value on one reading is not a car that went back
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
@@ -159,9 +161,20 @@ func pick(n, old *float64) *float64 {
 }
 
 // distance prefers the odometer; otherwise it sums GPS hops between samples.
+// odoFactor is the correction to apply to a distance read from the odometer.
+func (d *Detector) odoFactor() float64 {
+	if d.OdoFactor == nil {
+		return 1
+	}
+	if f := d.OdoFactor(); f > 0 {
+		return f
+	}
+	return 1
+}
+
 func (d *Detector) distance(t *store.Trip) float64 {
 	if t.StartOdo != nil && t.EndOdo != nil && *t.EndOdo >= *t.StartOdo {
-		return *t.EndOdo - *t.StartOdo
+		return (*t.EndOdo - *t.StartOdo) * d.odoFactor()
 	}
 	if t.EndTS == nil {
 		return 0

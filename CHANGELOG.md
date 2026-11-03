@@ -1,6 +1,30 @@
 # Changelog
 
-## 0.72.1
+## 0.73.0
+
+### 🔋 A charging time that learns from your car
+- **"Time until 80% / 90% / 100%" uses your earlier charges.** It tells a wall outlet from Level 2 from a fast charger, learns how charging slows near full from your own sessions, and for fast charging takes the battery temperature into account (a cold battery is slower; a warm one in cold weather was preconditioned). The line under it says what it rests on. With fewer than two earlier charges of the kind it carries on from the power right now, as before.
+
+### 🌀 Live moves with the car
+- **A quiet background and small movements that follow the car's state:** a moving light while driving, a green glow and rising lights while charging, slow breathing and drifting z while it is parked and has not reported for a while, a padlock when locked, and warm air or cool flecks during a remote start.
+- **Honest about how fresh the car's data is:** the car reports every 30 seconds to 10 minutes, so nothing follows speed or power moment by moment, and an animation stops when the last reading is too old for its state. Off in Data saver and with "reduce motion".
+
+### 📏 Match your other mileage app
+- **An odometer correction.** Open a trip, **Does the distance look wrong?**, **Match another mileage app**, type what the other app measured, and every distance taken from the odometer is scaled to match (GPS reads a little short, an odometer a little long). New trips use it; **Fix a day** applies it to older ones. It is also a setting.
+
+### 🗺️ Add a stop to a trip's route
+- **Tell CarTrak where the car went.** On a trip with an estimated road, **Add a stop the car did not report** searches for a place (up to five) and draws the road through it again, so a detour the car did not record can be shown.
+
+### 📍 Places, condensed
+- One **Add a place** card (Search, or Where the car is now) replaces two, each place has a single folded line for its charging price and service kind, and the intro is a line.
+
+### 🚗 Renaming a car
+- **Rename this car…** is in the car picker at the top, and a rename that fails now says why.
+
+### 🔧 Smaller fixes
+- The "Time until" row no longer leaves an empty percent box beside it.
+
+### 🛠️ Fixes held from 0.72.1
 
 ### 🛠️ Fixes
 - **The road-trip planner's number fields read properly again.** Fields with a unit (miles, %, kW) had their label drawn over the number since 0.70.0. The label is back above the box, as on the other pages. The page sweep now also checks for a label separated from its field.

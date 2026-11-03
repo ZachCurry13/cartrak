@@ -1,5 +1,6 @@
 import { h, chip, dist, isMetric } from './ui.js';
 import { api } from './api.js';
+import { odometerCalibrator } from './odometercal.js';
 
 const SRC = { road: 'set from the estimated road', direct: 'set from the drive between start and end', manual: 'entered by you' };
 
@@ -43,5 +44,5 @@ export function tripDistanceCard(t) {
     h('p', { class: 'muted' }, 'The car\'s odometer sometimes updates late, so a drive can be recorded shorter than it was. You can use the length of the road, or type the real distance. Reports and the mileage log use the corrected figure. Nothing changes until you choose.'),
     h('p', {}, `Distance now: ${dist(t.distanceKm, 1)} `, t.distanceSrc ? chip('work', `corrected: ${SRC[t.distanceSrc] || t.distanceSrc}`) : null),
     h('p', { class: 'seg' }, short ? null : h('button', { class: 'sec', onclick: check }, 'Check the road distance'), t.distanceSrc && t.startOdo != null ? h('button', { class: 'sec', onclick: () => send({ use: 'odometer' }) }, 'Go back to the odometer') : null),
-    out, h('div', { class: 'row', style: 'border:0;padding:0' }, num, h('button', { class: 'sec', onclick: enter }, 'Use this distance')), msg);
+    out, h('div', { class: 'row', style: 'border:0;padding:0' }, num, h('button', { class: 'sec', onclick: enter }, 'Use this distance')), odometerCalibrator(t), msg);
 }

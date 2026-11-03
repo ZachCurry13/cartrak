@@ -161,7 +161,7 @@ func replay(rows []store.ReplayRow, d *trips.Detector) ([]*store.Trip, []*store.
 	defer tmp.Close()
 	// A scratch database that is thrown away: waiting for the disk after every write (a NAS disk is slow at it) buys nothing.
 	_, _ = tmp.DB.Exec(`PRAGMA synchronous=OFF`)
-	det := &trips.Detector{S: tmp, TZ: d.TZ, TZFn: d.TZFn} // no work day rule here: Apply classifies against the real store
+	det := &trips.Detector{S: tmp, TZ: d.TZ, TZFn: d.TZFn, OdoFactor: d.OdoFactor} // no work day rule here: Apply classifies against the real store
 	for _, r := range rows {
 		st := &ford.State{TS: time.Unix(r.TS, 0), OdometerKm: r.OdometerKm, SoCPct: r.SoC, Lat: r.Lat, Lon: r.Lon, SpeedKph: r.SpeedKph,
 			Ignition: r.Ignition, ChargeState: r.ChargeState, ChargeKw: r.ChargeKw, EnergyKwh: r.EnergyKwh, Plug: r.Plug}

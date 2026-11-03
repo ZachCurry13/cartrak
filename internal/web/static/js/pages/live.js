@@ -7,6 +7,7 @@ import { reserveKm, getReserve, chargeEta, getTarget, setTarget, minutesText, cl
 import { gpsCard } from '../gpscard.js';
 import { efficiency } from '../energy.js';
 import { batteryRing } from '../ring.js';
+import { liveFx } from '../liveanim.js';
 import { pick } from '../pick.js';
 import { powerTile, fitText } from '../livepower.js';
 import { isCharging } from '../chargestate.js';
@@ -101,7 +102,9 @@ export default async function live(root, _a, session) {
     const x = ev.sample;
     lastCharge = ev.charge || null;
     showMode(pickMode(ev));
+    fx.set({ mode: pickMode(ev), locked: !!(x && x.locked === true), outsideC: x ? x.outsideC : null });
     const rc = remoteChip(x);
+    fx.set({ remote: !!rc });
     if (!rc) remoteBox.replaceChildren();
     else if (!remoteBox.firstChild || remoteBox.dataset.ts !== String(x.remoteStartTs)) { remoteBox.replaceChildren(rc); remoteBox.dataset.ts = String(x.remoteStartTs); }
     if (x) {
@@ -182,7 +185,11 @@ export default async function live(root, _a, session) {
   }
 
   // Time since the car itself last reported (CarTrak asks Ford more often than a sleeping car has news).
-  function tickAge() { age.textContent = lastTs ? `car reported ${ago(carTs || lastTs)}` : ''; showTimes(); }
+  function tickAge() {
+    age.textContent = lastTs ? `car reported ${ago(carTs || lastTs)}` : '';
+    fx.set({ age: lastTs ? Math.floor(Date.now() / 1000 - (carTs || lastTs)) : Infinity }); // an animation stops once the reading is too old for its state
+    showTimes();
+  }
 
   async function keepAwake() {
     try { if ('wakeLock' in navigator && !document.hidden) wake = await navigator.wakeLock.request('screen'); } catch (e) { /* not allowed */ }
@@ -199,6 +206,7 @@ export default async function live(root, _a, session) {
   const onVisible = () => { if (!document.hidden && !wake) keepAwake(); };
   document.addEventListener('visibilitychange', onVisible);
 
+  const fx = liveFx(dock);
   root.append(dock);
   if (gps) root.append(h('details', { class: 'livegps' }, h('summary', { class: 'muted' }, 'Phone GPS'), gps.el));
   if (effective() === 'saver') {

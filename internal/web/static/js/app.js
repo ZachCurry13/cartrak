@@ -79,8 +79,10 @@ async function loadCars() {
   const sel = document.getElementById('carsel');
   sel.hidden = d.cars.length < 2;
   sel.replaceChildren(...d.cars.map((c) => h('option', { value: String(c.id), selected: String(c.id) === currentCar() }, c.name)),
-    ...(d.cars.length > 1 ? [h('option', { value: 'all', selected: location.hash.startsWith('#/fleet') }, 'All cars')] : []));
-  sel.onchange = () => { if (sel.value === 'all') { location.hash = '#/fleet'; return; } setCar(sel.value); location.hash = '#/'; location.reload(); };
+    ...(d.cars.length > 1 ? [h('option', { value: 'all', selected: location.hash.startsWith('#/fleet') }, 'All cars'), h('option', { value: 'rename' }, 'Rename this car…')] : []));
+  sel.onchange = () => {
+    if (sel.value === 'rename') { try { sessionStorage.setItem('cartrak.renameCar', currentCar()); } catch (e) { /* no storage: the Cars page just opens */ } sel.value = currentCar(); location.hash = '#/cars'; return; } // the Cars page opens the name box
+    if (sel.value === 'all') { location.hash = '#/fleet'; return; } setCar(sel.value); location.hash = '#/'; location.reload(); };
   const here = d.cars.find((c) => String(c.id) === currentCar());
   // The role that counts is the one for the car on screen: an owner manages their car, a viewer reads it. The role for the
   // whole installation (people, remote access) stays as siteRole.

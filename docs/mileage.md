@@ -84,3 +84,6 @@ Waiting in a customer's parking lot adds no miles, but it is time on the job. **
 **More, Trip rules, Work days** makes the first outing of a work day, from leaving Home until the car is back, count as work whatever the time. Later outings that day are personal. Getting home for lunch and leaving again within the chosen minutes keeps the work day going. A trip that carries on from another away from Home takes its category. Your own labels, vacation and trip modes win, and the time-of-day rules still apply where this rule has nothing to say.
 
 For a weekend concert or a happy hour on a non-work day, tap **Work** under **This outing** on Home. It relabels the trips so far and covers the rest of the outing until the car is back at Home. A place named Home (or Home 2) is needed.
+
+## Matching another mileage app
+A GPS mileage app and the car's odometer rarely agree: GPS reads a little short, an odometer a little long (a few percent either way is normal). Open a trip, **Does the distance look wrong?**, **Match another mileage app**, and type what the other app measured for that trip. CarTrak sets an **Odometer correction** (also under More, Settings) that multiplies every distance it takes from the odometer. New trips use it; **Fix a day** applies it to older ones. Distances you corrected by hand are not changed. The trip needs to be at least 2 miles.

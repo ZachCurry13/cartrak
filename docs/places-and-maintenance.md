@@ -43,3 +43,6 @@ so the reminders stay right without a second step. Or tap **It was not a service
 **More, Maintenance, Service history** lists every visit with what was done, the cost and the odometer, and **Log a service**
 adds one CarTrak did not see. The history downloads as a spreadsheet from **Reports** (Service history), Insights counts service in
 the year's running cost, and Wrapped has a Car care slide for a month or year with service in it.
+
+## Adding a place
+On **Places** one card adds a place: **Search** for a business or address, or **Where the car is now** to save the car's last position. Each place has one folded line for its charging price and whether it is a service place.

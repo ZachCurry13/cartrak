@@ -1,0 +1,31 @@
+/* Live page motion (js/liveanim.js): a quiet background and a few small movements that follow the car's state. Everything sits
+   behind the tiles, never takes a tap, and stops with "reduce motion". */
+.dock{position:relative}
+.dock>.fx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;border-radius:var(--r-lg)}
+.dock>:not(.fx){position:relative;z-index:1}
+.fx::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .8s}
+.fx-driving .fx::before{opacity:1;background:linear-gradient(115deg,transparent 0 38%,color-mix(in srgb,var(--accent) 16%,transparent) 50%,transparent 62% 100%);background-size:300% 100%;animation:fxslide 6s linear infinite}
+.fx-charging .fx::before{opacity:1;background:radial-gradient(120% 70% at 50% 115%,color-mix(in srgb,var(--ok) 28%,transparent),transparent 65%);animation:fxaurora 5s ease-in-out infinite}
+.fx-remote.fx-heat .fx::before{opacity:1;background:radial-gradient(100% 60% at 50% 120%,color-mix(in srgb,var(--warn) 24%,transparent),transparent 65%)}
+.fx-remote.fx-cool .fx::before{opacity:1;background:radial-gradient(100% 60% at 50% 120%,color-mix(in srgb,var(--personal) 24%,transparent),transparent 65%)}
+@keyframes fxslide{to{background-position:-300% 0}}
+@keyframes fxaurora{50%{opacity:.55}}
+/* charging: small lights rising from the bottom */
+.fx-dot,.fx-air,.fx-z,.fx-lock{position:absolute;opacity:0}
+.fx-charging .fx-dot{left:calc(30% + var(--i) * 10%);bottom:-6px;width:6px;height:6px;border-radius:50%;background:var(--ok);animation:fxrise 4.2s ease-in infinite;animation-delay:calc(var(--i) * .8s)}
+@keyframes fxrise{0%{transform:translateY(0);opacity:0}20%{opacity:.8}100%{transform:translateY(-62vh);opacity:0}}
+/* asleep: the hero breathes slowly and "z" drifts up beside it */
+.fx-asleep .tile.big{animation:fxbreathe 7s ease-in-out infinite}
+@keyframes fxbreathe{50%{opacity:.82}}
+.fx-asleep .fx-z{right:calc(14% + var(--i) * 4%);top:24%;color:var(--muted);font-weight:700;font-size:calc(1rem + var(--i) * .4rem);animation:fxzz 4.5s ease-in infinite;animation-delay:calc(var(--i) * 1.4s)}
+.fx-z::before{content:"z"}
+@keyframes fxzz{0%{transform:translate(0,10px);opacity:0}25%{opacity:.8}100%{transform:translate(18px,-34px);opacity:0}}
+/* locked: a small padlock in the corner */
+.fx-locked .fx-lock{top:10px;right:12px;width:14px;height:11px;margin-top:7px;border-radius:3px;background:var(--muted);opacity:.7}
+.fx-lock::before{content:"";position:absolute;left:2px;top:-7px;width:6px;height:8px;border:2px solid var(--muted);border-bottom:0;border-radius:6px 6px 0 0}
+/* remote start: warm air rises when it is cold out, cool flecks fall when it is hot */
+.fx-remote.fx-heat .fx-air{left:calc(12% + var(--i) * 15%);bottom:-8px;width:5px;height:26px;border-radius:5px;background:var(--warn);animation:fxwarm 3.2s ease-in infinite;animation-delay:calc(var(--i) * .45s)}
+.fx-remote.fx-cool .fx-air{left:calc(12% + var(--i) * 15%);top:-8px;width:6px;height:6px;border-radius:50%;background:var(--personal);animation:fxcool 3.8s linear infinite;animation-delay:calc(var(--i) * .55s)}
+@keyframes fxwarm{0%{transform:translateY(0) scaleY(.6);opacity:0}25%{opacity:.7}100%{transform:translateY(-50vh) scaleY(1.2);opacity:0}}
+@keyframes fxcool{0%{transform:translateY(0);opacity:0}20%{opacity:.8}100%{transform:translateY(60vh);opacity:.1}}
+@media (prefers-reduced-motion:reduce){.fx::before,.fx-dot,.fx-air,.fx-z,.fx-asleep .tile.big{animation:none!important}.fx-dot,.fx-air,.fx-z{display:none}}

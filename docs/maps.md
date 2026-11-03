@@ -44,3 +44,6 @@ Each row of the day, and of the History feed, says where it happened: a drive as
 - Cached tiles are reused for 30 days and deleted after 60 days without being needed. The map folder is safe to delete at any time; it refills as you look at maps.
 - The server needs to be able to reach the internet for new tiles. With no internet, only tiles already cached appear and the rest of the map area stays blank (routes and markers still draw).
 - On a metered connection Data saver skips the Home map; the trip page already waits for you to load the route.
+
+## Adding a stop to a trip
+A trip with an estimated road (the car reported too few positions) cannot show a detour. Under the map, **Add a stop the car did not report** lets you search for a place the trip went through (up to five); the road is worked out again through it, and the stops stay with the trip.

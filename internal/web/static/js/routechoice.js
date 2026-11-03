@@ -1,5 +1,6 @@
 import { h, dist } from './ui.js';
 import { api } from './api.js';
+import { routeStopsBox } from './routestops.js';
 
 // For a trip with no phone GPS. With no road drawn yet (a straight line between the few places the car reported), one button works
 // out the road closest to the odometer and draws it. With a road already drawn, the roads it could have taken are offered, each
@@ -17,7 +18,7 @@ export function routeChoiceBar(t, hasRoute, onChosen) {
         onChosen();
       } catch (e) { msg.replaceChildren(e.message, ' ', h('a', { href: '#/admin' }, 'Settings')); go.disabled = false; }
     } }, 'Estimate the route');
-    box.append(h('p', { class: 'muted', style: 'margin:0 0 6px' }, 'Only a few positions were recorded for this trip, so it is drawn as a straight line.'), go, msg);
+    box.append(h('p', { class: 'muted', style: 'margin:0 0 6px' }, 'Only a few positions were recorded for this trip, so it is drawn as a straight line.'), go, msg, routeStopsBox(t, onChosen));
     return box;
   }
   async function load(e) {
@@ -40,6 +41,6 @@ export function routeChoiceBar(t, hasRoute, onChosen) {
         } }, 'Use this road')), msg);
     } catch (err) { msg.textContent = err.message; if (e) e.target.disabled = false; }
   }
-  box.append(h('button', { class: 'sec', onclick: load }, 'Choose a different road'), msg);
+  box.append(h('button', { class: 'sec', onclick: load }, 'Choose a different road'), msg, routeStopsBox(t, onChosen));
   return box;
 }

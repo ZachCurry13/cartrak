@@ -5,7 +5,7 @@ import { matchDetail } from './placematch.js';
 const SIZES = [[100, 'Small'], [150, 'Normal'], [300, 'Large'], [600, 'Very large']];
 
 // Add a place by typing its address: search, pick the right match, name it. Only the coordinates are kept, never the address.
-export function addressCard(onSaved) {
+export function addressCard(onSaved, bare = false) {
   const q = h('input', { id: 'pa', type: 'search', placeholder: 'A business name, or street and town', maxlength: 200, autocomplete: 'off' });
   const name = h('input', { id: 'pan', placeholder: 'For example Customer', maxlength: 40 });
   const size = h('select', { id: 'pas' }, ...SIZES.map(([v, n]) => h('option', { value: v, selected: v === 150 }, `${n} (${shortDist(v)})`)));
@@ -35,7 +35,7 @@ export function addressCard(onSaved) {
     } catch (e) { msg.textContent = e.message; }
   }
   q.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
-  return h('section', { class: 'card' }, h('h2', {}, 'Add a business or address'),
+  return h(bare ? 'div' : 'section', { class: bare ? '' : 'card' }, bare ? null : h('h2', {}, 'Add a business or address'),
     h('label', { for: 'pa' }, 'Business or address'), q, h('p', {}, h('button', { class: 'sec', onclick: search }, 'Search')), list,
     h('label', { for: 'pan' }, 'Name'), name, h('label', { for: 'pas' }, 'How close counts as there'), size,
     h('p', {}, h('button', { onclick: save }, 'Save this place')), msg,

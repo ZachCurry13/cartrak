@@ -150,3 +150,6 @@ notices that countdown and records each remote start: when it ran and for how lo
 took and the outside temperature. They appear as rows in the Day view and History (which can show only remote starts), the day's
 summary mentions them, and Insights, Battery adds them up. Home and Live show a chip while one is running, with the number of
 remote starts since the car was last driven. The car reports only every few minutes while parked, so times are close, not exact.
+
+## How long until 80%, 90% or 100%
+While the car charges, **Time until** is worked out from your own earlier charges: the kind of charger (a wall outlet, Level 2 or a fast charger, from the car's station type and the power seen), how the power fell away near full in those sessions, and for a fast charger how warm the battery is (a cold battery charges slower; a battery that is warm for the weather was preconditioned). It needs at least two earlier charges of the same kind; until then it carries the power right now on to the target, as before. The line under it says what it is based on.
