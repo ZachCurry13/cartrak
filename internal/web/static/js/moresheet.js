@@ -3,6 +3,7 @@ import { api } from './api.js';
 import { current, page, icon } from './navlayout.js';
 import { openEditor } from './navedit.js';
 import { openSearch } from './searchsheet.js';
+import { dragToClose } from './sheetdrag.js';
 
 // The tiles are the person's own choice (Customize, below); everything else is in its natural home: charging prices on Charging,
 // trip rules on Trips, alert choices behind the bell, people, cars and backups under Settings and the Admin part of More.
@@ -10,11 +11,12 @@ let open = null;
 
 export function openMore(session) {
   if (open) return;
-  const close = () => { bg.remove(); open = null; document.removeEventListener('keydown', onKey); };
+  const opener = document.activeElement; // focus goes back to what opened the sheet
+  const close = () => { bg.remove(); open = null; document.removeEventListener('keydown', onKey); if (opener && opener.isConnected && opener.focus) opener.focus(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   const tile = (key) => { const [, href, label, d] = page(key); return h('a', { class: 'mtile', href, onclick: close }, icon(d), h('span', {}, label)); };
   const row = (d, label, attrs) => h('a', { class: 'mrow', ...attrs }, icon(d), h('span', {}, label));
-  const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-label': 'More' },
+  const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'More', tabindex: '-1' },
     h('div', { class: 'mhandle', 'aria-hidden': 'true' }),
     h('div', { class: 'mhead' }, h('h2', {}, 'More'), h('button', { class: 'ico', type: 'button', 'aria-label': 'Close', onclick: close }, icon('M6 6l12 12M18 6L6 18'))),
     // the way to any page in one step: type what you are looking for (the logs showed More, then "Everything else", then a hunt)
@@ -27,6 +29,8 @@ export function openMore(session) {
   const bg = h('div', { class: 'sheetbg bottom' }, sheet);
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
   document.addEventListener('keydown', onKey);
+  dragToClose(sheet, bg, close);
   document.body.append(bg);
+  sheet.focus({ preventScroll: true });
   open = bg;
 }

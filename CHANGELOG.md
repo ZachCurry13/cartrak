@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.69.0
+
+### 🪟 The More sheet works like a Material sheet
+- **Pull it down to close it.** Drag the handle or the title and the sheet follows your finger. Pull far, or flick, and it closes; pull a little and it springs back. The backdrop fades as you pull.
+- **It fits the screen again.** 0.68.0 left the More sheet narrower than the screen, with the bottom bar showing around it; it is full width and sits on the bottom edge again.
+- **Closing it returns you to the button you opened it from**, and screen readers are told it is a dialog.
+
+### 👆 Taps you can feel
+- **A ripple spreads from your finger** on buttons, tabs, tiles and list rows.
+- **A short vibration** when you flip a switch or press a button, a firmer one for Delete. Android only: iPhone does not let web pages vibrate. **More, Display and data, Touch feedback** turns it off, and it stays off if your phone is set to reduce motion.
+
+### 📐 Small fixes
+- A card that follows a row of number tiles (Trips) has a gap above it instead of touching the tiles.
+- Small round buttons and the chips that filter lists are 44 px tall, easier to hit.
+
 ## 0.68.0
 
 ### 🎨 Material design, all the way through

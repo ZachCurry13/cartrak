@@ -4,6 +4,7 @@ import { MODES, getPref, setPref } from '../mode.js';
 import { THEMES, getSeasonPref, setSeasonPref, applySeason, themeFor, isBirthday } from '../seasons.js';
 import { playSeason } from '../seasonfx.js';
 import { birthdayCard } from '../myprefs.js';
+import { getHaptics, setHaptics, buzz } from '../touchfeedback.js';
 
 // One labeled choice with optional help text.
 function setting(id, label, select, help) {
@@ -51,6 +52,8 @@ export default async function display(root, _a, session) {
       setting('s-se', 'Seasonal themes', choice([['auto', `Automatic (now: ${THEMES[nowKey][0]} ${THEMES[nowKey][1]})`], ['off', 'Off'], ...Object.entries(THEMES).map(([k, t]) => [k, `${t[1]} ${t[0]}`])], getSeasonPref(),
         (v) => { setSeasonPref(v); const t = applySeason(); if (t) playSeason(THEMES[t.key][8], true); }),
         'Colors, an ornament and a short effect on Home that follow the holidays. Automatic changes with the date; the effect never plays with reduce motion or Data saver.'),
+      setting('s-hp', 'Touch feedback', choice([['on', 'A short vibration'], ['off', 'Off']], getHaptics() ? 'on' : 'off', (v) => { setHaptics(v === 'on'); buzz(14); }),
+        'A short tick when you flip a switch or press a button. Android only: iPhone does not let web pages vibrate.'),
       setting('s-tm', 'Trip times', choice([['trip', 'Where the trip happened'], ['device', 'This device']], getTimeMode(), setTimeMode),
         'Trips show the local time where they started, with the zone name.'),
       setting('s-dm', 'Data use', choice(Object.entries(MODES), getPref(), (v) => { setPref(v); location.reload(); }),

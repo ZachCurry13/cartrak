@@ -9,7 +9,7 @@ export async function openSearch(admin) {
   const box = h('input', { type: 'search', placeholder: 'Search settings and pages', 'aria-label': 'Search settings and pages', autocomplete: 'off' });
   const list = h('div', { role: 'listbox' });
   const none = h('p', { class: 'muted', hidden: true }, 'Nothing matches. Try a different word.');
-  const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-label': 'Search' }, box, none, list);
+  const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Search' }, box, none, list);
   const bg = h('div', { class: 'sheetbg' }, sheet);
   const close = () => { bg.remove(); open = null; document.removeEventListener('keydown', onKey); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };

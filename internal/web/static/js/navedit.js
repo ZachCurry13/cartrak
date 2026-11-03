@@ -32,7 +32,7 @@ export function openEditor(session, done) {
         h('button', { type: 'button', onclick: () => { Object.assign(state, defaults(session.me.role === 'admin', isFuelCar(session))); state.bar = [...state.bar]; state.tiles = [...state.tiles]; draw(); } }, 'Reset'),
         h('button', { type: 'button', onclick: close }, 'Cancel')), msg);
   }
-  const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-label': 'Customize' }, h('div', { class: 'mhandle', 'aria-hidden': 'true' }), h('div', { class: 'mhead' }, h('h2', {}, 'Customize')), body);
+  const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Customize' }, h('div', { class: 'mhandle', 'aria-hidden': 'true' }), h('div', { class: 'mhead' }, h('h2', {}, 'Customize')), body);
   const bg = h('div', { class: 'sheetbg bottom' }, sheet);
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
   document.body.append(bg);

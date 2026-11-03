@@ -27,7 +27,7 @@ small,.muted.small,.sub{font-size:var(--t-small)}
 .card.hl,.card.attn{background:var(--tonal)}
 .banner{background:var(--card);border:1px solid var(--bad);border-radius:var(--r-md);padding:var(--sp-3);margin:0 0 var(--sp-3);color:var(--text)}
 .banner.notice{border-color:var(--accent)}
-.sheet{background:var(--card);color:var(--text);border-radius:var(--r-lg);box-shadow:var(--lift-hi)}
+.sheet{width:100%;max-width:560px;max-height:85vh;overflow:auto;padding:14px;background:var(--card);color:var(--text);border-radius:var(--r-lg);box-shadow:var(--lift-hi)}
 .sheetbg.bottom .sheet,.sheet.more{border-radius:var(--r-lg) var(--r-lg) 0 0}
 #toast{box-shadow:var(--lift-hi);border-radius:var(--r-xs)}
 
@@ -104,3 +104,18 @@ input[type=checkbox].check{width:22px;height:22px}
 .sheetbg{animation:scrimin .18s ease-out}
 .sheet:not(.more){animation:sheetin .22s cubic-bezier(.2,0,0,1)}
 @media (prefers-reduced-motion:reduce){.sheetbg,.sheet:not(.more){animation:none}}
+
+/* A card that follows a row of number tiles sits a gap below them, not against them. */
+.grid + .card{margin-top:var(--sp-3)}
+
+/* The More sheet's handle and title are what a finger pulls (js/sheetdrag.js). The handle's grab area is wider and taller than it looks. */
+.sheet.more .mhandle,.sheet.more .mhead{touch-action:none;cursor:grab}
+.sheet.more .mhandle{position:relative}
+.sheet.more .mhandle::before{content:"";position:absolute;inset:-14px -120px}
+.sheet:focus{outline:none}
+
+/* A tap spreads from the finger (js/touchfeedback.js). The registered property lets the circle grow. */
+@property --rr{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes ripple{from{--rr:0px}to{--rr:480px}}
+.rip.rip,nav#tabs a.rip.rip{background-image:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--press) var(--rr),transparent calc(var(--rr) + 1px));animation:ripple .45s cubic-bezier(.2,0,0,1) forwards}
+@media (prefers-reduced-motion:reduce){.rip.rip,nav#tabs a.rip.rip{animation:none}}

@@ -18,7 +18,7 @@ export async function showWhatsNew(session) {
     if (fresh.length >= 6) break; // a phone left for months gets the latest six; the rest are in What's new
   }
   const done = () => { try { localStorage.setItem('seenVersion', a.version); } catch (e) { /* ignore */ } a.justUpdated = false; bg.remove(); };
-  const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-label': "What's new" },
+  const sheet = h('div', { class: 'sheet more', role: 'dialog', 'aria-modal': 'true', 'aria-label': "What's new" },
     h('div', { class: 'mhandle', 'aria-hidden': 'true' }),
     h('div', { class: 'mhead' }, h('h2', {}, `✨ What's new in v${a.version}`)),
     h('div', { class: 'wnew' }, ...renderChangelog(fresh.join('\n') || `## ${a.version}\n- Small improvements and fixes.`, '')),

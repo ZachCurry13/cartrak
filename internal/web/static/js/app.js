@@ -10,11 +10,13 @@ import { watchErrors } from './errlog.js';
 import { trackCheck } from './tracker.js';
 import { watchUpdates } from './updatewatch.js';
 import { startBackNav, goReplace, noteRendered } from './backnav.js';
+import { startTouchFeedback } from './touchfeedback.js';
 import { showUpdateNotes } from './updatenotes.js';
 import { startConsistency } from './consistency.js';
 
 watchErrors();
 startBackNav();
+startTouchFeedback();
 startConsistency(document.getElementById('view'));
 import { startTour } from './tourui.js';
 import { currentCar, setCar } from './car.js';

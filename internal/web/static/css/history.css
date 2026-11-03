@@ -47,7 +47,7 @@ a.tcard:hover,a.tcard:focus-visible{background:var(--card2)}
 .sbar i{position:absolute;top:0;bottom:0;display:block}
 .sbar i.left{left:0;background:var(--ok)}
 .sbar i.used{background:var(--warn)}
-.ico.sm{width:36px;height:36px;border-radius:50%;background:var(--card2)}
+.ico.sm{width:44px;height:44px;border-radius:50%;background:var(--card2)}
 .ico.sm svg{width:18px;height:18px}
 
 .tkey{margin:0 0 10px;color:var(--muted)}.tkey summary{cursor:pointer;min-height:40px;display:flex;align-items:center}
