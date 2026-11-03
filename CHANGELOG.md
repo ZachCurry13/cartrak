@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.66.1
+## 0.67.0
+
+### 🧭 Getting to a page in fewer taps
+- **The More sheet starts with "Find a page or setting".** Type what you want (Places, Fix a day, Notifications, a setting) and go straight there. Your logs showed More, then "Everything else", then a hunt through pages; "Everything else in More" is now **All pages and settings**.
 
 ### ✂️ Shorter help text
 - **The help under 22 settings is about half as long**, with the same facts: the Ford redirect, time zone, battery size, city names, maps, the mileage rate, bump level, road estimate, service visit, vehicle type, the weather lookup, the home charger's efficiency, cheaper hours, the EIA key, battery reserve, charging budget and the plug-in reminder, and the sign-in, city lookup, map tile and routing server addresses.

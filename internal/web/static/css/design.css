@@ -59,3 +59,7 @@ details.morehome>summary::-webkit-details-marker{display:none}
 details.morehome>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
 details.morehome[open]>summary::after{content:'▴'}
 details.morehome[open]>summary{margin-bottom:var(--sp-3)}
+
+/* The search row at the top of the More sheet: as wide as the sheet, finger-sized. */
+.msearch{display:flex;align-items:center;gap:var(--sp-3);width:100%;min-height:var(--tap);margin:0 0 var(--sp-3);padding:0 var(--sp-4);border:1px solid var(--line);border-radius:var(--radius-card);background:var(--card2);color:var(--muted);font:inherit;text-align:left;cursor:pointer}
+.msearch svg{width:22px;height:22px;flex:0 0 22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
