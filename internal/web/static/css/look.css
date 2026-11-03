@@ -1,8 +1,8 @@
 /* The look: dark first, one green accent. Light mode keeps the same structure with deeper colors.
    Loaded after the other stylesheets, so it has the last word. Colors only live in this block. */
-:root{--bg:#0d1117;--card:#161d27;--card2:#1c2531;--line:#232d3a;--text:#e6edf3;--muted:#8b98a5;--accent:#2fd4a0;--accent-text:#04261c;--work:#f5b84a;--personal:#58a6ff;--bad:#ff7b72;--ok:#2fd4a0;--warn:#f5b84a;color-scheme:dark}
-@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#08795a;--accent-text:#fff;--work:#9a4308;--personal:#1a54b0;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}}
-:root[data-theme=light]{--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#08795a;--accent-text:#fff;--work:#9a4308;--personal:#1a54b0;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}
+:root{--bg:#0d1117;--card:#161d27;--card2:#1c2531;--line:#232d3a;--text:#e6edf3;--muted:#8b98a5;--accent:#6aa5ff;--accent-text:#05122b;--work:#f5b84a;--personal:#58a6ff;--bad:#ff7b72;--ok:#2fd4a0;--warn:#f5b84a;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#0a4bb0;--accent-text:#fff;--work:#9a4308;--personal:#1a54b0;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}}
+:root[data-theme=light]{--bg:#f3f5f8;--card:#fff;--card2:#eef1f5;--line:#dde3ea;--text:#14191f;--muted:#5b6672;--accent:#0a4bb0;--accent-text:#fff;--work:#9a4308;--personal:#1a54b0;--bad:#b71c1c;--ok:#07694e;--warn:#9a4308;color-scheme:light}
 
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--accent)}

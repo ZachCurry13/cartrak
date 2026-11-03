@@ -46,7 +46,20 @@ func TestRepairPreviewShowsTheChangeApplyNeedsTheWordAndViewersAreRefused(t *tes
 	if code, _ := do(t, admin, "POST", ts.URL+"/api/repair/apply", body(""), xh); code != 400 {
 		t.Fatalf("apply without the word: %d", code)
 	}
-	if code, b := do(t, admin, "POST", ts.URL+"/api/repair/apply", body(`,"confirm":"REBUILD"`), xh); code != 200 {
+	var ch struct{ Changes []struct{ Key string } }
+	if json.Unmarshal([]byte(b), &ch) != nil || len(ch.Changes) != 1 {
+		t.Fatalf("the preview lists the change to accept or leave: %s", b)
+	}
+	if code, _ := do(t, admin, "POST", ts.URL+"/api/repair/apply", body(`,"confirm":"REBUILD","keys":[]`), xh); code != 400 {
+		t.Fatalf("nothing ticked: %d", code)
+	}
+	if code, b := do(t, admin, "POST", ts.URL+"/api/repair/apply", body(`,"confirm":"REBUILD","keys":["trip:n1"]`), xh); code != 200 {
+		t.Fatalf("a key that matches no change applies nothing: %d %s", code, b)
+	}
+	if left, _ := srv.S.ListTrips(store.TripFilter{}); len(left) != 0 {
+		t.Fatal("an unticked change is left as it is")
+	}
+	if code, b := do(t, admin, "POST", ts.URL+"/api/repair/apply", body(`,"confirm":"REBUILD","keys":["`+ch.Changes[0].Key+`"]`), xh); code != 200 {
 		t.Fatalf("apply: %d %s", code, b)
 	}
 	if got, _ := srv.S.ListTrips(store.TripFilter{}); len(got) != 1 || got[0].DistanceKm < 39 || got[0].DistanceKm > 41 {

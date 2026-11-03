@@ -83,7 +83,7 @@ until Thanksgiving Day), Christmas (from the day after Thanksgiving to December 
 Valentine's (February 1 to 14), St. Patrick's (March 1 to 17), Easter (the two weeks before Easter Sunday), spring, the Fourth of
 July (July 1 to 4), summer and autumn. A theme changes the accent color and the battery ring, puts an ornament by the name, and plays
 a short effect on Home once a session (bigger on the holiday itself). Wrapped and its infographic use the season's colors.
-**Automatic** follows the date; pick one theme to keep it, or **Off**. It is a choice for each device. The effect never plays with the
+**Automatic** follows the holidays and your birthday: outside them, and when you choose **Off**, the app wears its own colours, CarTrak blue (a Ford-style blue). The four plain seasons (winter, spring, summer, autumn) are no longer applied by themselves, but you can still pick one to keep. Pick any theme to keep it. It is a choice for each device. The effect never plays with the
 phone's "reduce motion" setting or in Data saver.
 
 On a holiday itself, and on your birthday, Home also says so at the top ("Happy Halloween! 🎃").

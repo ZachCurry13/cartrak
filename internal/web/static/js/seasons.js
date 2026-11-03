@@ -84,13 +84,22 @@ const KEY = 'season';
 export const getSeasonPref = () => { try { return localStorage.getItem(KEY) || 'auto'; } catch (e) { return 'auto'; } };
 export const setSeasonPref = (v) => { try { localStorage.setItem(KEY, v); } catch (e) { /* storage blocked */ } };
 
+// Outside the holidays the app wears its own colours (CarTrak blue). The four plain seasons are still there to choose by hand.
+const PLAIN = new Set(['winter', 'spring', 'summer', 'autumn']);
+const holiday = (t) => (t && PLAIN.has(t.key) ? null : t);
+
+// The theme Automatic picks for a date: a holiday or the birthday, or none.
+export function autoTheme(date = new Date()) {
+  if (isBirthday(date)) return { key: 'birthday', day: true };
+  return holiday(themeFor(date));
+}
+
 // The theme in use now: the chosen one, the date's, or none.
 export function activeTheme() {
   const pref = getSeasonPref();
   if (pref === 'off') return null;
   if (THEMES[pref]) return { key: pref, day: false };
-  if (isBirthday()) return { key: 'birthday', day: true };
-  return themeFor();
+  return autoTheme();
 }
 
 // The theme a Wrapped for a month or a year wears: the one of that month (judged on its 15th, so a holiday late in it, like Halloween,
@@ -101,7 +110,7 @@ export function periodTheme(period) {
   if (THEMES[pref]) return { key: pref, day: false };
   const m = /^(\d{4})(?:-(\d{2}))?$/.exec(period || '');
   if (!m) return activeTheme();
-  return themeFor(new Date(Number(m[1]), m[2] ? Number(m[2]) - 1 : 11, 15));
+  return holiday(themeFor(new Date(Number(m[1]), m[2] ? Number(m[2]) - 1 : 11, 15)));
 }
 
 // One stylesheet with every theme's colors, for dark and light, so the page switches with an attribute.

@@ -1,7 +1,7 @@
 import { h, isMetric, setMetric, getTheme, setTheme, getTimeMode, setTimeMode } from '../ui.js';
 import { getRegion, setRegion, regionChoices } from '../region.js';
 import { MODES, getPref, setPref } from '../mode.js';
-import { THEMES, getSeasonPref, setSeasonPref, applySeason, themeFor, isBirthday } from '../seasons.js';
+import { THEMES, getSeasonPref, setSeasonPref, applySeason, autoTheme } from '../seasons.js';
 import { playSeason } from '../seasonfx.js';
 import { birthdayCard } from '../myprefs.js';
 import { getHaptics, setHaptics, buzz } from '../touchfeedback.js';
@@ -41,7 +41,7 @@ export default async function display(root, _a, session) {
   const btn = h('button', { onclick: () => refreshApp(btn, msg) }, 'Refresh the app');
   const server = session && session.about ? session.about.version : '';
   const stale = server && loadedVersion !== server;
-  const nowKey = isBirthday() ? 'birthday' : themeFor().key;
+  const now = autoTheme();
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Display and data')),
     h('p', { class: 'muted' }, 'These choices apply to this device only.'),
     h('section', { class: 'group' }, h('div', { class: 'menu' },
@@ -49,7 +49,7 @@ export default async function display(root, _a, session) {
       setting('s-rg', 'Numbers and dates', choice(regionChoices(), getRegion(), (v) => { setRegion(v); dispatchEvent(new Event('hashchange')); }),
         'How money, large numbers and dates are written. United States by default: $1,000.00 and 11/02/2026.'),
       setting('s-th', 'Theme', choice([['auto', 'Match my phone'], ['light', 'Light'], ['dark', 'Dark']], getTheme(), setTheme)),
-      setting('s-se', 'Seasonal themes', choice([['auto', `Automatic (now: ${THEMES[nowKey][0]} ${THEMES[nowKey][1]})`], ['off', 'Off'], ...Object.entries(THEMES).map(([k, t]) => [k, `${t[1]} ${t[0]}`])], getSeasonPref(),
+      setting('s-se', 'Seasonal themes', choice([['auto', `Automatic (now: ${now ? `${THEMES[now.key][0]} ${THEMES[now.key][1]}` : 'CarTrak blue'})`], ['off', 'Off'], ...Object.entries(THEMES).map(([k, t]) => [k, `${t[1]} ${t[0]}`])], getSeasonPref(),
         (v) => { setSeasonPref(v); const t = applySeason(); if (t) playSeason(THEMES[t.key][8], true); }),
         'Colors, an ornament and a short effect on Home that follow the holidays. Automatic changes with the date; the effect never plays with reduce motion or Data saver.'),
       setting('s-hp', 'Touch feedback', choice([['on', 'A short vibration'], ['off', 'Off']], getHaptics() ? 'on' : 'off', (v) => { setHaptics(v === 'on'); buzz(14); }),

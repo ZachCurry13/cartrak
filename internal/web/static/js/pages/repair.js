@@ -1,23 +1,9 @@
-import { h, dist, when, duration, num } from '../ui.js';
+import { h, when } from '../ui.js';
+import { changeRow } from '../repairchanges.js';
 import { api } from '../api.js';
 
 const local = (d) => { const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
 const secs = (input) => Math.floor(new Date(input.value).getTime() / 1000);
-
-function tripLine(t) {
-  const used = t.startSoc != null && t.endSoc != null;
-  return h('div', { class: 'row' }, h('div', { class: 'grow' },
-    h('b', {}, `${dist(t.distanceKm)} · ${duration(t.startTs, t.endTs)}`),
-    h('div', { class: 'muted' }, `${when(t.startTs)}${used ? ` · battery ${num(t.startSoc, 0)}% to ${num(t.endSoc, 0)}%` : ''}`)));
-}
-
-function chargeLine(c) {
-  return h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, 'Charging'),
-    h('div', { class: 'muted' }, `${when(c.startTs)} · ${num(c.startSoc, 0)}% to ${num(c.endSoc, 0)}%`)));
-}
-
-const column = (title, trips, charges) => h('section', { class: 'card' }, h('h2', {}, title),
-  ...(trips.length || charges.length ? [...trips.map(tripLine), ...charges.map(chargeLine)] : [h('p', { class: 'muted' }, 'Nothing.')]));
 
 // Fix a day: redo the trips and charging of a stretch of time from the stored readings, after a preview.
 export default async function repair(root, _a, session) {
@@ -53,25 +39,35 @@ export default async function repair(root, _a, session) {
       const kept = p.unchangedTrips + p.unchangedCharges;
       const keptText = kept ? `${p.unchangedTrips} trip${p.unchangedTrips === 1 ? '' : 's'} and ${p.unchangedCharges} charging session${p.unchangedCharges === 1 ? '' : 's'} already match the stored readings and will be left alone.` : '';
       if (!p.oldTrips.length && !p.oldCharges.length && !p.newTrips.length && !p.newCharges.length) return out.replaceChildren(...[note, h('p', { class: 'banner notice' }, `Nothing needs fixing here. ${keptText}`)].filter(Boolean));
+      const rows = p.changes.map((c) => changeRow(c, p, refresh));
       const word = h('input', { id: 'rw', placeholder: 'Type REBUILD', autocomplete: 'off', 'aria-label': 'Type REBUILD to confirm' });
       const go = h('button', { class: 'danger', disabled: true, onclick: apply }, 'Rebuild');
-      word.addEventListener('input', () => { go.disabled = word.value.trim() !== 'REBUILD'; });
+      const ticked = () => rows.filter((r) => r.box.checked).map((r) => r.key);
+      function refresh() {
+        const n = ticked().length;
+        go.textContent = `Rebuild ${n} of ${rows.length} change${rows.length === 1 ? '' : 's'}`;
+        go.disabled = n === 0 || word.value.trim() !== 'REBUILD';
+      }
+      const setAll = (on) => { for (const r of rows) { r.box.checked = on; r.row.classList.toggle('off', !on); } refresh(); };
+      word.addEventListener('input', refresh);
       async function apply() {
         go.disabled = true;
         msg.textContent = secs(to) - secs(from) > 8 * 86400 ? 'Rebuilding… a month can take up to a minute.' : 'Rebuilding…';
         try {
-          const r = await api('/api/repair/apply', { method: 'POST', body: { from: secs(from), to: secs(to), confirm: 'REBUILD' } });
+          const r = await api('/api/repair/apply', { method: 'POST', body: { from: secs(from), to: secs(to), confirm: 'REBUILD', keys: ticked() } });
           out.replaceChildren(h('p', { class: 'banner notice' }, `Done: ${r.replacedTrips} trip${r.replacedTrips === 1 ? '' : 's'} and ${r.replacedCharges} charging session${r.replacedCharges === 1 ? '' : 's'} replaced by ${r.trips} and ${r.charges}.`),
             h('p', {}, h('a', { class: 'btn', href: '#/trips' }, 'See trips')));
           msg.textContent = '';
-        } catch (e) { msg.textContent = e.message; go.disabled = false; }
+        } catch (e) { msg.textContent = e.message; refresh(); }
       }
       out.replaceChildren(...[note,
-        h('p', { class: 'muted' }, `Widened to whole trips: ${when(p.from)} to ${when(p.to)}. ${p.readings} stored readings. ${keptText}`),
-        h('div', { class: 'cols' }, column('Now', p.oldTrips, p.oldCharges), column('After rebuilding', p.newTrips, p.newCharges)),
+        h('p', { class: 'muted' }, `${rows.length} change${rows.length === 1 ? '' : 's'} found between ${when(p.from)} and ${when(p.to)} (${p.readings} stored readings). Untick any you want to leave as it is. ${keptText}`),
+        h('p', { class: 'seg' }, h('button', { type: 'button', class: 'text', onclick: () => setAll(true) }, 'Tick all'), h('button', { type: 'button', class: 'text', onclick: () => setAll(false) }, 'Untick all')),
+        ...rows.map((r) => r.row),
         h('section', { class: 'card' },
-          h('p', { class: 'muted' }, 'This replaces the trips and charging sessions on the left with the ones on the right. Notes, categories you chose by hand and charger kWh you typed in are kept. Public links to the old trips stop working. Make a backup first if you want to be able to undo it.'),
+          h('p', { class: 'muted' }, 'Only the ticked changes are made. Notes, categories you chose by hand and charger kWh you typed in are kept. Public links to the old trips stop working.'),
           h('label', { for: 'rw' }, 'To confirm, type REBUILD'), word, h('p', {}, go))].filter(Boolean));
+      refresh();
     } catch (e) { msg.textContent = e.message; }
   }
 

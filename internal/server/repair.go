@@ -15,6 +15,8 @@ type repairIn struct {
 	From    int64  `json:"from"`
 	To      int64  `json:"to"`
 	Confirm string `json:"confirm"`
+	// Keys are the changes (rebuild.Group.Key) the person left ticked. Absent means all of them; present but empty means none.
+	Keys []string `json:"keys"`
 }
 
 func (s *Server) repairPlan(w http.ResponseWriter, r *http.Request) (*rebuild.Plan, repairIn, bool) {
@@ -56,12 +58,20 @@ func (s *Server) repairApply(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "type REBUILD to confirm")
 		return
 	}
+	offered := len(p.Changes)
+	if in.Keys != nil {
+		if len(in.Keys) == 0 {
+			fail(w, 400, "tick at least one change")
+			return
+		}
+		p = p.Only(in.Keys)
+	}
 	if err := rebuild.Apply(s.S, s.D, p); err != nil {
 		fail(w, 409, err.Error())
 		return
 	}
 	loc := s.defaultLoc()
-	s.S.LogDecision("fix a day", fmt.Sprintf("%s to %s: %d trips and %d charges replaced by %d and %d; %d trips and %d charges left alone (unchanged)",
-		time.Unix(in.From, 0).In(loc).Format("Jan 2 15:04"), time.Unix(in.To, 0).In(loc).Format("Jan 2 15:04"), len(p.OldTrips), len(p.OldCharges), len(p.NewTrips), len(p.NewCharges), p.UnchangedTrips, p.UnchangedCharges))
+	s.S.LogDecision("fix a day", fmt.Sprintf("%s to %s: %d trips and %d charges replaced by %d and %d; %d trips and %d charges left alone (unchanged); %d of %d changes accepted",
+		time.Unix(in.From, 0).In(loc).Format("Jan 2 15:04"), time.Unix(in.To, 0).In(loc).Format("Jan 2 15:04"), len(p.OldTrips), len(p.OldCharges), len(p.NewTrips), len(p.NewCharges), p.UnchangedTrips, p.UnchangedCharges, len(p.Group()), offered))
 	ok(w, map[string]any{"trips": len(p.NewTrips), "charges": len(p.NewCharges), "replacedTrips": len(p.OldTrips), "replacedCharges": len(p.OldCharges), "unchangedTrips": p.UnchangedTrips, "unchangedCharges": p.UnchangedCharges})
 }

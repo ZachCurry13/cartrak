@@ -29,6 +29,7 @@ type Plan struct {
 	OldCharges []*store.Charge `json:"oldCharges"`
 	NewTrips   []*store.Trip   `json:"newTrips"`
 	NewCharges []*store.Charge `json:"newCharges"`
+	Changes    []Group         `json:"changes"` // the old and new rows joined into the changes a person can accept or leave
 	Blockers   []string        `json:"blockers"`
 	Note       string          `json:"note,omitempty"` // something the person should know about the stretch, such as a charge left out
 	// UnchangedTrips and UnchangedCharges are the ones the replay recorded exactly as they are stored. They are left alone and

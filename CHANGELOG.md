@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.71.0
+
+### 🔧 Fix a day, one change at a time
+- **Every change is one row**, with what is stored now on the left and what it becomes on the right, and what changed written under it: a trip that starts or ends minutes off, a distance that moves, a trip split into three or three joined into one, a charge that was not in the readings, a trip that should not be there.
+- **Untick the ones you do not want.** Each row has a box (all start ticked, and **Tick all** and **Untick all** are there). The Rebuild button says how many it will make ("Rebuild 3 of 5 changes"), and only those are applied. The rest stay exactly as stored.
+- Rows that already match the readings are still left alone and counted, not listed.
+
+### 🚗 A new app icon, and CarTrak blue
+- **The icon is a car seen from above with two trails of tire tracks behind it**, white on a Ford-style blue with a pale roof panel. It fills the shape your phone uses (no more white edge), keeps everything inside the part that is never cropped, and comes with a one-colour version so Android's themed icons can tint it. The icon is drawn by a small script (`scripts/gen-icons.mjs`), so changing it later is changing numbers. Your phone updates an installed icon on its own schedule; removing and re-adding the app puts it there at once.
+- **CarTrak blue is the default look.** Outside the holidays, and when you turn holiday themes off, the whole app wears the blue (a lighter blue in dark mode, a deep blue in light mode). The four plain seasons are no longer put on by themselves; they are still there to pick under Display and data. Charging still shows green.
+
 ## 0.70.1
 
 ### 🌦️ A trip says why its weather is missing

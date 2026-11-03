@@ -86,6 +86,7 @@ func (p *Plan) Fill() {
 	if p.Blockers == nil {
 		p.Blockers = []string{}
 	}
+	p.Changes = p.Group()
 }
 
 // keptTrips are the stored trips in the day and a half up to the end of the stretch that the plan does not replace, oldest first.

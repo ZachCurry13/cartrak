@@ -25,6 +25,12 @@
       "purpose": "maskable"
     },
     {
+      "src": "/icons/icon-mono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "monochrome"
+    },
+    {
       "src": "/icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
