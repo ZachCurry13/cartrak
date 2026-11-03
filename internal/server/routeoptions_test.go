@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -89,5 +90,35 @@ func TestRouteOptionsNeedTheRoadLookupSwitchedOn(t *testing.T) {
 	srv.S.UpdateTrip(tr)
 	if c, _ := do(t, admin, "GET", fmt.Sprintf("%s/api/trips/%d/route-options", ts.URL, tr.ID), "", nil); c != 409 {
 		t.Fatalf("nothing is asked while the lookup is off: %d", c)
+	}
+}
+
+// A routing service that is down must show its own reason. The app reads 502, 503 and 504 as "CarTrak is restarting" and hides the
+// message, which is what the owner saw.
+func TestARoutingServiceThatIsDownIsReportedInItsOwnWords(t *testing.T) {
+	down := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "busy", 429) }))
+	defer down.Close()
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.RouteEst = &routeest.Client{BaseURL: down.URL}
+	srv.Cfg.Set(settings.RouteKey, "on")
+	admin := adminClient(t, ts.URL)
+	fp := func(v float64) *float64 { return &v }
+	t0 := time.Now().Add(-3 * time.Hour).Truncate(time.Second)
+	for i, p := range [][2]float64{{44.76, -85.60}, {44.85, -85.50}} {
+		st := &ford.State{TS: t0.Add(time.Duration(i*20) * time.Minute), Lat: fp(p[0]), Lon: fp(p[1]), OdometerKm: fp(1000 + float64(i)*8), Raw: []byte(`{}`)}
+		if _, err := srv.S.SaveState("t", st); err != nil {
+			t.Fatal(err)
+		}
+	}
+	end := t0.Add(20 * time.Minute).Unix()
+	tr := &store.Trip{StartTS: t0.Unix(), StartLat: fp(44.76), StartLon: fp(-85.60), Category: "personal", CategorySource: "default"}
+	if err := srv.S.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	tr.EndTS, tr.EndLat, tr.EndLon, tr.DistanceKm, tr.Open = &end, fp(44.85), fp(-85.50), 8, false
+	srv.S.UpdateTrip(tr)
+	code, body := do(t, admin, "GET", fmt.Sprintf("%s/api/trips/%d/route-options", ts.URL, tr.ID), "", nil)
+	if code == 502 || code == 503 || code == 504 || code < 400 || !strings.Contains(body, "routing service") {
+		t.Fatalf("a failing service is not a restart, and says why: %d %s", code, body)
 	}
 }

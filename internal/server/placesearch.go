@@ -22,7 +22,7 @@ func (s *Server) searchPlaces(w http.ResponseWriter, r *http.Request) {
 	}
 	found, err := c.Search(ctx, r.URL.Query().Get("q"), near)
 	if err != nil {
-		fail(w, 502, "The address lookup did not answer: "+err.Error())
+		fail(w, upstreamFailed, "The address lookup did not answer: "+err.Error())
 		return
 	}
 	ok(w, found)

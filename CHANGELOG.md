@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.66.1
+
+### 🩹 A road lookup that fails now says why
+- **"CarTrak didn't answer just now. It may be restarting after an update" was the wrong message.** When the routing service (or the address search, or a test alert) failed, CarTrak answered with a code the app reads as "the server is restarting" and hid the real reason. They now show what actually went wrong, such as the routing service being busy.
+- A lookup for the roads of a trip now gives up after 35 seconds and uses the one road the service gives for the whole trip, so it cannot run into the 100-second limit of the tunnel in front of CarTrak.
+
 ## 0.66.0
 
 ### 🧭 Getting where you want to be

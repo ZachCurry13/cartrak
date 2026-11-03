@@ -40,7 +40,10 @@ func (s *Server) roadOptions(ctx context.Context, t *store.Trip) ([]routeest.Opt
 		return nil, fmt.Errorf("the car reported too few positions to route between")
 	}
 	via := routeest.Via(recorded, 8)
-	opts, err := s.routeClient().Options(ctx, via, odoTarget(t))
+	// The alternatives for every stretch must not take so long that the tunnel in front of CarTrak gives up first (it does after 100 s).
+	optCtx, stop := context.WithTimeout(ctx, 35*time.Second)
+	defer stop()
+	opts, err := s.routeClient().Options(optCtx, via, odoTarget(t))
 	if err != nil || len(opts) == 0 {
 		road, km, err2 := s.routeClient().RouteNear(ctx, via, odoTarget(t))
 		if err2 != nil {
@@ -80,7 +83,7 @@ func (s *Server) tripRouteOptions(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	opts, err := s.roadOptions(ctx, t)
 	if err != nil {
-		fail(w, 502, "the routing service gave no road: "+err.Error())
+		fail(w, upstreamFailed, "the routing service gave no road: "+err.Error())
 		return
 	}
 	out := make([]optionOut, len(opts))
@@ -107,7 +110,7 @@ func (s *Server) setTripRoute(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	opts, err := s.roadOptions(ctx, t)
 	if err != nil {
-		fail(w, 502, "the routing service gave no road: "+err.Error())
+		fail(w, upstreamFailed, "the routing service gave no road: "+err.Error())
 		return
 	}
 	for _, o := range opts {

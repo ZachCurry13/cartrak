@@ -149,7 +149,7 @@ func (s *Server) pushTest(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
 	if err := s.Push.SendTo(ctx, sub, push.Alert{Kind: "test", Title: "CarTrak test", Body: "Alerts are working on this device.", URL: "#/notifications"}); err != nil {
-		fail(w, 502, err.Error())
+		fail(w, upstreamFailed, err.Error())
 		return
 	}
 	ok(w, "sent")

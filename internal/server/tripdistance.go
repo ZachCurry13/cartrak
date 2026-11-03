@@ -32,7 +32,7 @@ func (s *Server) tripRoad(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	_, km, err := s.routeClient().RouteNear(ctx, routeest.Via(recorded, 8), odoTarget(t))
 	if err != nil {
-		fail(w, 502, "the routing service gave no road: "+err.Error())
+		fail(w, upstreamFailed, "the routing service gave no road: "+err.Error())
 		return
 	}
 	// the drive straight from where it started to where it ended, as a navigation app would plan it
@@ -88,7 +88,7 @@ func (s *Server) setTripDistance(w http.ResponseWriter, r *http.Request) {
 		}
 		line, roadKm, err := s.routeClient().RouteNear(ctx, via, odoTarget(t))
 		if err != nil {
-			fail(w, 502, "the routing service gave no road: "+err.Error())
+			fail(w, upstreamFailed, "the routing service gave no road: "+err.Error())
 			return
 		}
 		pts := make([][2]float64, 0, 300)
