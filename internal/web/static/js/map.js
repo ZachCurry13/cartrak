@@ -10,6 +10,12 @@ const MAX_ZOOM = 18;
 
 let cfgPromise = null;
 // Whether maps are on, and the credit line. One request per page load.
+// Printing makes a page wider than the phone, and a map would redraw for the new width with its tiles still loading, so the printout shows
+// a half-blank map. While printing, each map keeps the width it was drawn at.
+const printable = new Set();
+addEventListener('beforeprint', () => { for (const el of printable) { if (el.isConnected) { el.style.width = `${el.clientWidth}px`; el.style.maxWidth = '100%'; } else printable.delete(el); } });
+addEventListener('afterprint', () => { for (const el of printable) { el.style.width = ''; el.style.maxWidth = ''; } });
+
 export const mapConfig = () => (cfgPromise ||= api('/api/map').catch(() => ({ enabled: false })));
 
 const project = (lat, lon, z) => {
@@ -151,6 +157,7 @@ export function createMap(cfg, { height = 260, interactive = true, glow = false 
     el.append(h('div', { class: 'map-ctl' }, btn('+', 'Zoom in', () => setZoom(zoom + 1)), btn('−', 'Zoom out', () => setZoom(zoom - 1))));
   }
 
+  printable.add(el);
   new ResizeObserver(() => { try { render(); } catch (e) { console.error("map render failed", e); } }).observe(el);
 
   return {

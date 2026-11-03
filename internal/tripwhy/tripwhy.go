@@ -74,6 +74,7 @@ type Facts struct {
 	HardBrakes  int      `json:"hardBrakes"`  // big drops in speed between two readings
 	QuickStarts int      `json:"quickStarts"` // big gains in speed between two readings
 	Wind        *Wind    `json:"wind"`
+	Lookup      bool     `json:"lookup"` // the optional weather lookup is switched on, so a missing wind or rain figure is not because it is off
 	Weather     *Weather `json:"weather"`
 	RegenKm     *float64 `json:"regenKm"`  // range the car says braking gave back during the trip (its own counter)
 	RegenKwh    *float64 `json:"regenKwh"` // the energy that range is worth, at this trip's own use per kilometer

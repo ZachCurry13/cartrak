@@ -54,6 +54,10 @@ func TestTheWhyOfATripComparesItWithTheDriversOwnHistory(t *testing.T) {
 	if out.VsUsualPct < 10 {
 		t.Fatalf("it used more than usual: %s", b)
 	}
+	var lk struct{ Facts struct{ Lookup *bool } }
+	if json.Unmarshal([]byte(b), &lk) != nil || lk.Facts.Lookup == nil || *lk.Facts.Lookup {
+		t.Fatalf("the trip says whether the weather lookup is on, and here it is off: %s", b)
+	}
 	if code, _ := do(t, admin, "GET", ts.URL+"/api/trips/9999/why", "", nil); code != 404 {
 		t.Fatalf("no such trip: %d", code)
 	}

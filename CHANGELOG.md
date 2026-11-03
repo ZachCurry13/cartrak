@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.70.1
+
+### 🌦️ A trip says why its weather is missing
+- **The "Why this efficiency?" card no longer says weather is off when it is on.** A trip the car recorded with only a few positions has rain and snow but no wind figure (working out the wind needs the path the car took). The card now says "Wind is not included for this trip: the car recorded too few positions along the way to work out the wind. Rain and snow are." It only suggests switching on the weather lookup when it really is off, and says plainly when a trip's weather could not be looked up.
+
+### 🖨️ Printing and Save as PDF
+- **Nothing floats over the text.** Field labels, the "Tracking" pill and the leftover unit boxes no longer print, so the Share and Distance cards read cleanly.
+- **The coloured part of a bar prints** (battery left and used on a trip), instead of an empty outline.
+- **Fewer half-empty pages.** A card may run onto the next page instead of being pushed whole to a new one.
+- **The printed map is complete.** It used to redraw for the wider page and print with its right half blank; it now keeps the size it was drawn at.
+
 ## 0.70.0
 
 ### 🧩 Fields, top bar and a button for the main action

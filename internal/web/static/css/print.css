@@ -4,12 +4,14 @@
 @media print {
   :root { color-scheme: light; }
   html, body { background: #fff !important; color: #111 !important; }
-  #top, #carnote, #tabs, #upd, .updbar, #offbar, .offbar, .tour, .toast { display: none !important; }
+  #top, #carnote, #tabs, #upd, .updbar, #offbar, .offbar, .tour, .toast, .fab, .trackpill, .sheetbg { display: none !important; }
   main#view { max-width: none !important; padding: 0 !important; margin: 0 !important; }
   main#view::before { content: "CarTrak"; display: block; font-weight: 700; color: #555; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 12px; }
   /* what only works on a screen: buttons, pickers, the way back */
-  main button, main select, main .btn, main .seg, main input, main textarea, main .ico, main > p:first-child:has(> a[href^="#/"]) { display: none !important; }
-  .card, section.card, .tcard, .row, .badge, .trow, .stat, .tile { break-inside: avoid; page-break-inside: avoid; }
+  main button, main select, main .btn, main .seg, main input, main textarea, main .ico, main .mfield, main .fieldbox, main > p:first-child:has(> a[href^="#/"]) { display: none !important; }
+  /* small things stay whole; a card may run onto the next page so a short page is not left mostly empty */
+  .tcard, .row, .badge, .trow, .stat, .tile { break-inside: avoid; page-break-inside: avoid; }
+  .card > h2 { break-after: avoid; }
   .card, section.card { box-shadow: none !important; background: #fff !important; border: 1px solid #bbb !important; margin-bottom: 10px; }
   h1, h2, h3 { color: #000 !important; break-after: avoid; page-break-after: avoid; }
   .muted, .ts, .tl { color: #555 !important; }
@@ -17,6 +19,8 @@
   .banner { border: 1px solid #bbb !important; background: #fff !important; color: #111 !important; }
   .chip, .pill { border: 1px solid #999 !important; background: #fff !important; color: #111 !important; }
   .bar, .socbar, .sbar { border: 1px solid #bbb; background: #eee !important; }
+  /* the coloured part of a bar is a background, which a browser leaves out of a printout unless told not to */
+  .bar > i, .socbar i, .sbar i, .hbar i, .yfill, .planday i { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   svg { max-width: 100%; }
   * { animation: none !important; transition: none !important; }
 }

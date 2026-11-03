@@ -38,6 +38,13 @@ function say(f, facts) {
   }
 }
 
+// Why a trip has no wind figure: the lookup is off, or it could not be worked out for this trip, and say which.
+function noWind(f) {
+  if (!f.lookup) return 'Wind, rain and snow are not included. You can switch on the optional weather lookup in More, Settings.';
+  if (f.weather) return 'Wind is not included for this trip: the car recorded too few positions along the way to work out the wind. Rain and snow are.';
+  return 'Weather is not included for this trip: it could not be looked up (the trip may be very recent, or the car recorded too few positions).';
+}
+
 // The weather in one line, and what it cost in all: "Light rain · 41°F · 12 mph headwind".
 function weatherBlock(d) {
   const f = d.facts, w = f.weather;
@@ -65,7 +72,7 @@ export async function whyCard(id) {
     ...(d.factors.length ? d.factors.map((x) => h('div', { class: 'row' }, h('span', { class: 'grow' }, say(x, f)), h('b', { class: x.pct > 0 ? 'bad' : '', style: 'white-space:nowrap' }, sign(x.pct))))
       : [h('p', { class: 'muted' }, 'Nothing stands out: speed and weather were typical for you.')]),
     d.smooth ? h('p', {}, h('b', {}, { firm: 'Firmer than your usual. ', smooth: 'Smoother than your usual. ', usual: 'About as firm as your usual. ' }[d.smooth.verdict] || ''), h('span', { class: 'muted' }, `Acceleration was firm in ${Math.round(d.smooth.accelShare)}% of the readings and braking in ${Math.round(d.smooth.brakeShare)}% (about 10% each is your usual, from the car's torque readings).`)) : null,
-    f.wind == null ? h('p', { class: 'muted' }, 'Wind, rain and snow are not included. You can switch on the optional weather lookup in More, Settings.') : (!d.factors.some((x) => x.key === 'wind') && (f.wind.crossKph >= 15 || f.wind.gustKph >= 40) ? h('p', { class: 'muted' }, `Wind: ${speed(Math.abs(f.wind.headKph))} ${f.wind.headKph >= 0 ? 'head' : 'tail'}wind on average, ${speed(f.wind.crossKph)} of crosswind, gusts to ${speed(f.wind.gustKph)}. It made little difference to the energy used.`) : null),
+    f.wind == null ? h('p', { class: 'muted' }, noWind(f)) : (!d.factors.some((x) => x.key === 'wind') && (f.wind.crossKph >= 15 || f.wind.gustKph >= 40) ? h('p', { class: 'muted' }, `Wind: ${speed(Math.abs(f.wind.headKph))} ${f.wind.headKph >= 0 ? 'head' : 'tail'}wind on average, ${speed(f.wind.crossKph)} of crosswind, gusts to ${speed(f.wind.gustKph)}. It made little difference to the energy used.`) : null),
     h('p', { class: 'muted' }, [f.stops ? `${f.stops} stop${f.stops === 1 ? '' : 's'}${f.stoppedPct >= 1 ? `, ${Math.round(f.stoppedPct)}% of the time stopped` : ''}` : null, `top speed ${speed(f.maxKph)}`].filter(Boolean).join(' · ') + '. Percentages are against your own driving over the last few months.'));
 }
 

@@ -104,6 +104,7 @@ func (s *Server) whyFor(t *store.Trip) (tripwhy.Report, error) {
 		wind = &tripwhy.Wind{HeadKph: ws.HeadKph, CrossKph: ws.CrossKph, GustKph: ws.GustKph, EffectPct: ws.EffectPct}
 	}
 	rep := tripwhy.BuildWithWeather(rs, kwh, s.whyBaseline(), group, regen, wind, s.tripWeather(wpts, look))
+	rep.Facts.Lookup = s.Cfg != nil && s.Cfg.WeatherLookup()
 	s.withSmoothness(&rep, t)
 	return rep, nil
 }
