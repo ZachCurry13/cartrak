@@ -8,6 +8,15 @@
 - **The bottom bar marks the page you are on** with a soft pill behind its icon, as Android shows it.
 - **Cards, sheets, chips and the Saved message share one set of shapes, sizes and shades**, and headings use one text scale, so a heading means the same thing on every page. Cards inside cards sit a shade deeper, and anything worth a look is tinted with your accent colour. It follows light, dark and the seasonal colours.
 
+- **On and off settings are switches.** A checkbox that turns something on or off is now a Material switch; a list of things to pick from (days of the week, report columns) keeps its boxes.
+- **Quiet buttons are plain text.** "Not now", "No", "Cancel" and "Hide" no longer look as heavy as the button beside them, and deleting something is an outlined button.
+- **One set of shapes everywhere.** Buttons, fields, chips, cards, sheets and the segmented switches are defined once now, and the corners of the History, Trips, Charging and More cards use the same sizes.
+
+### 🧭 Small fixes along the way
+- **Wrapped has a back arrow** at the top left that goes to the page you came from (it used to be a × that always went to Insights).
+- **The links under the Trips title wrap** onto a second line instead of scrolling sideways and cutting off "Reports".
+- **Shorter wording** on Backup, Field check, Trip rules, Car data and Health.
+
 ### 🛣️ Estimate the route, told straight
 - **A trip with too few recorded positions says so** ("this trip has too few recorded positions to draw a road") instead of blaming the routing service, which was never asked. Your debug report showed the road lookup working (13 of 13 trips that had positions); the 14 failures were two trips with nothing to route between.
 

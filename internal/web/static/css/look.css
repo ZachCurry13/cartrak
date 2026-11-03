@@ -212,3 +212,4 @@ label:has(> input[type=checkbox]){display:flex;align-items:center;gap:10px;min-h
 .savebar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:60;display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:var(--r-md);background:var(--card);border:1px solid var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.35)}.savebar[hidden]{display:none}
 
 .trow{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.trow .bring{flex:0 0 auto;width:64px;height:64px}.trow .bring svg{width:64px;height:64px}.trow .bring span{font-size:1.6rem}.trow.locked .bring span{filter:grayscale(1);opacity:.45}.trow b{display:block}
+.wclose::before{content:"←"}

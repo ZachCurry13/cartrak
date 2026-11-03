@@ -75,7 +75,7 @@ export default async function wrapped(root, args) {
   const bars = h('div', { class: 'dots' }, ...slides.map(() => h('i')));
   const body = h('div', { class: 'wbody' });
   const before = previousPage(); // a back arrow to the page the person came from, not always Insights
-  const close = h('a', { class: 'wclose', href: before ? before.href : '#/analytics', 'aria-label': `Back to ${before ? before.label : 'Insights'}` }, '←');
+  const close = h('a', { class: 'wclose', href: before ? before.href : '#/analytics', 'aria-label': `Back to ${before ? before.label : 'Insights'}` }); // the arrow is drawn by CSS: backnav.js rewrites any link whose text starts with an arrow
   const stage = h('section', { class: 'wrapped', role: 'dialog', 'aria-label': `${title} wrapped` }, bars, close, body);
   if (season) { stage.style.setProperty('--season1', THEMES[season.key][6]); stage.style.setProperty('--season2', THEMES[season.key][7]); } // the month's colors
   const show = (i) => {
