@@ -122,3 +122,22 @@ func TestARoutingServiceThatIsDownIsReportedInItsOwnWords(t *testing.T) {
 		t.Fatalf("a failing service is not a restart, and says why: %d %s", code, body)
 	}
 }
+
+func TestATripWithTooFewPositionsSaysSoInsteadOfBlamingTheRoutingService(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.RouteEst = &routeest.Client{BaseURL: "http://127.0.0.1:1"}
+	srv.Cfg.Set(settings.RouteKey, "on")
+	admin := adminClient(t, ts.URL)
+	t0 := time.Now().Add(-3 * time.Hour).Truncate(time.Second)
+	end := t0.Add(20 * time.Minute).Unix()
+	tr := &store.Trip{StartTS: t0.Unix(), Category: "personal", CategorySource: "default"}
+	if err := srv.S.CreateTrip(tr); err != nil {
+		t.Fatal(err)
+	}
+	tr.EndTS, tr.Open = &end, false
+	srv.S.UpdateTrip(tr)
+	code, body := do(t, admin, "GET", fmt.Sprintf("%s/api/trips/%d/route-options", ts.URL, tr.ID), "", nil)
+	if code != 422 || !strings.Contains(body, "too few recorded positions") || strings.Contains(body, "routing service") {
+		t.Fatalf("want a 422 in the trip's own words, got %d %s", code, body)
+	}
+}

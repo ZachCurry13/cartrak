@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.67.0
+## 0.68.0
+
+### 🎨 Material design, all the way through
+- **Everything you tap now answers.** Buttons, rows, tabs and sheets darken a little under your finger (and on hover with a mouse), so a tap always feels received.
+- **Four kinds of button, each with one job.** Filled for the main thing to do, tonal for another way forward, outlined for a safe choice beside it, and plain text for the quietest. All are pill shaped.
+- **The bottom bar marks the page you are on** with a soft pill behind its icon, as Android shows it.
+- **Cards, sheets, chips and the Saved message share one set of shapes, sizes and shades**, and headings use one text scale, so a heading means the same thing on every page. Cards inside cards sit a shade deeper, and anything worth a look is tinted with your accent colour. It follows light, dark and the seasonal colours.
+
+### 🛣️ Estimate the route, told straight
+- **A trip with too few recorded positions says so** ("this trip has too few recorded positions to draw a road") instead of blaming the routing service, which was never asked. Your debug report showed the road lookup working (13 of 13 trips that had positions); the 14 failures were two trips with nothing to route between.
 
 ### 🧭 Getting to a page in fewer taps
 - **The More sheet starts with "Find a page or setting".** Type what you want (Places, Fix a day, Notifications, a setting) and go straight there. Your logs showed More, then "Everything else", then a hunt through pages; "Everything else in More" is now **All pages and settings**.

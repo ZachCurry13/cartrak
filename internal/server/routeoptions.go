@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"strconv"
 	"sync"
@@ -28,6 +28,9 @@ type routeOptEntry struct {
 // roadOptions are the roads for a finished trip through the positions it has: the one closest to the odometer first (when the
 // odometer length is trusted), then the quickest and the shortest. When the routing service cannot give alternatives for every
 // stretch, the one road it gives for the whole is the only choice.
+// errTooFewPositions is the trip's own limit, not a routing service failure: with fewer than two positions there is nothing to route between.
+var errTooFewPositions = errors.New("this trip has too few recorded positions to draw a road")
+
 func (s *Server) roadOptions(ctx context.Context, t *store.Trip) ([]routeest.Option, error) {
 	s.routeOpts.mu.Lock()
 	if e, ok := s.routeOpts.m[t.ID]; ok && time.Since(e.at) < routeOptsKeep {
@@ -37,7 +40,7 @@ func (s *Server) roadOptions(ctx context.Context, t *store.Trip) ([]routeest.Opt
 	s.routeOpts.mu.Unlock()
 	recorded := s.recordedPoints(t)
 	if len(recorded) < 2 {
-		return nil, fmt.Errorf("the car reported too few positions to route between")
+		return nil, errTooFewPositions
 	}
 	via := routeest.Via(recorded, 8)
 	// The alternatives for every stretch must not take so long that the tunnel in front of CarTrak gives up first (it does after 100 s).
@@ -82,6 +85,10 @@ func (s *Server) tripRouteOptions(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
 	defer cancel()
 	opts, err := s.roadOptions(ctx, t)
+	if errors.Is(err, errTooFewPositions) {
+		fail(w, 422, err.Error())
+		return
+	}
 	if err != nil {
 		fail(w, upstreamFailed, "the routing service gave no road: "+err.Error())
 		return
@@ -109,6 +116,10 @@ func (s *Server) setTripRoute(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
 	defer cancel()
 	opts, err := s.roadOptions(ctx, t)
+	if errors.Is(err, errTooFewPositions) {
+		fail(w, 422, err.Error())
+		return
+	}
 	if err != nil {
 		fail(w, upstreamFailed, "the routing service gave no road: "+err.Error())
 		return

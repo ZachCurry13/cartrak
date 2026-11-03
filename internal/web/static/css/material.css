@@ -1,0 +1,66 @@
+/* Material 3 for the whole app: the parts that make it feel like one system instead of a set of pages.
+   Loaded last, so it refines the older rules. Shape, type and surface tokens, press feedback on everything tappable,
+   four button kinds with one job each, tonal surfaces, and a bottom bar that marks the page you are on. */
+:root{
+  --r-xs:8px;--r-sm:12px;--r-md:16px;--r-lg:28px;--r-full:999px;
+  --t-label:12px;--t-label-l:14px;--t-body-l:16px;--t-title-m:18px;--t-title-l:22px;--t-head:28px;
+  --tonal:color-mix(in srgb,var(--accent) 20%,var(--card));
+  --tonal-hi:color-mix(in srgb,var(--accent) 30%,var(--card));
+  --press:color-mix(in srgb,currentColor 14%,transparent);
+  --hover:color-mix(in srgb,currentColor 8%,transparent);
+  --lift:0 1px 3px rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.2);
+  --lift-hi:0 6px 24px rgba(0,0,0,.35);
+}
+:root[data-theme=light]{--lift:0 1px 3px rgba(20,25,31,.18),0 1px 2px rgba(20,25,31,.12);--lift-hi:0 6px 24px rgba(20,25,31,.22)}
+
+/* Type roles. One scale, so a heading means the same thing on every page. */
+body{line-height:1.45}
+#view h2:not(.card>h2),.topbar h2{font-size:var(--t-title-l);font-weight:600;line-height:1.25}
+#view h3{font-size:var(--t-title-m);font-weight:600;line-height:1.3;margin:0 0 var(--sp-2)}
+#view .card>h2,.card>h2{font-size:var(--t-label);font-weight:600;letter-spacing:.08em}
+small,.muted.small,.sub{font-size:var(--t-small)}
+
+/* Press and hover feedback: a veil of the text colour over whatever is tapped. No extra markup needed. */
+button,.btn,nav#tabs a,details>summary,.msearch,.topbar .back,#view .row>a:not(.ico),.sheet .sg,.chip[onclick],a.chip{
+  transition:background-color .15s,background-image .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
+@media (hover:hover){
+  button:hover,.btn:hover,nav#tabs a:hover,details>summary:hover,.msearch:hover,#view .row>a:not(.ico):hover,.sheet .sg:hover{background-image:linear-gradient(var(--hover),var(--hover))}
+}
+button:active,.btn:active,nav#tabs a:active,details>summary:active,.msearch:active,.topbar .back:active,#view .row>a:not(.ico):active,.sheet .sg:active{background-image:linear-gradient(var(--press),var(--press))}
+button:focus-visible,.btn:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled,.btn[aria-disabled=true]{opacity:.38;cursor:default;background-image:none}
+
+/* Four kinds of button. Filled: the one thing to do here. Tonal (.sec): another way forward. Outlined (.outline): a
+   safe choice beside a filled one. Text (.text): the quietest. Danger is filled red and used for what cannot be undone. */
+button,.btn{border-radius:var(--r-full);padding:8px 22px;min-height:44px;font-size:var(--t-label-l);font-weight:600;letter-spacing:.01em}
+button.sec,.btn.sec{background-color:var(--tonal);color:var(--text);border:0}
+button.outline,.btn.outline{background:transparent;color:var(--accent);border:1px solid var(--line)}
+button.text,.btn.text{background:transparent;color:var(--accent);border:0;padding:8px 12px}
+button.sm,.btn.sm{padding:6px 16px;min-height:40px}
+button.ico,.btn.ico{padding:0;min-width:44px;border-radius:50%}
+.seg{border-radius:var(--r-full);padding:4px;background:var(--card)}
+.seg button{border-radius:var(--r-full)}
+.seg button.on{background:var(--tonal-hi);color:var(--text)}
+.seg button:not(.on){background:transparent}
+
+/* Surfaces rise with importance: the page, a card, a card inside a card, a sheet over everything. */
+.card{border-radius:var(--r-md);border:0;box-shadow:none;background:var(--card)}
+.card .card,.hpanel .card{background:var(--card2);border-radius:var(--r-sm)}
+.card.hl,.card.attn{background:var(--tonal)}
+.sheet{border-radius:var(--r-lg);box-shadow:var(--lift-hi);background:var(--card)}
+.sheetbg.bottom .sheet{border-radius:var(--r-lg) var(--r-lg) 0 0}
+.chip{border-radius:var(--r-sm);padding:4px 12px;font-size:var(--t-label);letter-spacing:.02em}
+#toast{box-shadow:var(--lift-hi);border-radius:var(--r-xs)}
+
+/* Bottom bar: the page you are on sits in a pill, as Material 3 shows it. Every icon has the same box so nothing jumps. */
+nav#tabs{border-top:0;background:color-mix(in srgb,var(--accent) 5%,var(--card));box-shadow:0 -1px 0 var(--line)}
+nav#tabs a{gap:2px;padding:6px 2px;min-height:56px;font-size:var(--t-label);font-weight:500}
+nav#tabs a svg{box-sizing:content-box;width:22px;height:22px;padding:3px 18px;border-radius:var(--r-full);transition:background-color .2s}
+nav#tabs a.on svg{background:var(--tonal-hi)}
+nav#tabs a.on{color:var(--text);font-weight:600}
+nav#tabs a{background-image:none!important}
+
+/* Switches and checkboxes take the accent colour. */
+input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--accent)}
+
+@media (prefers-reduced-motion:reduce){button,.btn,nav#tabs a,nav#tabs a svg{transition:none}}
