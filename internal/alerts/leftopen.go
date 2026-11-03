@@ -94,17 +94,21 @@ func lockStamp(f map[string]any) string {
 	return latest
 }
 
-// reportedAt says when the car last reported, in the local time zone.
-func (e *Engine) reportedAt(stamp string) string {
+// reportedWhen says when the car last reported: a clock time when that was within the last two hours, otherwise how long ago
+// ("at 3:04 pm", "15 hours ago", "3 days ago"). A parked car stops reporting, so an old report is easier to judge as an age.
+func (e *Engine) reportedWhen(stamp string) string {
 	t, err := time.Parse(time.RFC3339, stamp)
 	if err != nil {
 		return ""
 	}
-	t = t.In(e.zone())
-	if t.YearDay() == e.now().In(e.zone()).YearDay() && t.Year() == e.now().In(e.zone()).Year() {
-		return t.Format("3:04 pm")
+	age := e.now().Sub(t)
+	switch {
+	case age < 0, age < 2*time.Hour:
+		return "at " + t.In(e.zone()).Format("3:04 pm")
+	case age < 48*time.Hour:
+		return fmt.Sprintf("%d hours ago", int(age.Hours()+0.5))
 	}
-	return t.Format("Mon 3:04 pm")
+	return fmt.Sprintf("%d days ago", int(age.Hours()/24+0.5))
 }
 
 // leftOpen warns once when the car is parked with a door, the tailgate, the hood or a window open for ten minutes.
@@ -139,8 +143,8 @@ func (e *Engine) leftOpen(st *ford.State) {
 		}
 		_ = e.S.SetKV(kvOpen, key+"|"+strconv.FormatInt(st.TS.Unix(), 10)+"|"+stamp) // what, when, and the car's report time
 		body := fmt.Sprintf("The parked car has its %s open.", strings.Join(things, ", "))
-		if at := e.reportedAt(stamp); at != "" {
-			body += fmt.Sprintf(" The car last reported this at %s, so it may have been closed since.", at)
+		if at := e.reportedWhen(stamp); at != "" {
+			body += fmt.Sprintf(" The car last reported this %s, so it may have been closed since.", at)
 		}
 		e.send(push.Alert{Kind: push.LeftOpen, Title: "Left open", Body: body, URL: "#/live"})
 	}

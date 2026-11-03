@@ -24,7 +24,9 @@ const (
 	v2CheckURL  = v2Host + "/dah2vb2cprod.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_FCON_AUTHORIZE"
 	v2QueryBase = v2Host + "/fcon-query/v1"
 	slowEvery   = 30 * time.Minute // how often the rarely-changing endpoints are re-read
-	refreshKey  = "ford2_refresh"
+	// An endpoint Ford refuses for this vehicle (403 or 404: a hybrid has no charge schedules) is tried again only this often, in case that changes.
+	unsupportedEvery = 24 * time.Hour
+	refreshKey       = "ford2_refresh"
 )
 
 // slowEndpoints change rarely, so they are read at most every slowEvery.

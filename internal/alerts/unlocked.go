@@ -37,7 +37,7 @@ func (e *Engine) unlocked(st *ford.State) {
 		body := "Parked and unlocked for over 10 minutes."
 		if stamp != "" {
 			if t, err := time.Parse(time.RFC3339, stamp); err == nil && st.TS.Sub(t) > 30*time.Minute { // a sleeping car repeats its last report
-				body = fmt.Sprintf("The car says it is unlocked. It last reported this at %s, so it may have been locked since.", e.reportedAt(stamp))
+				body = fmt.Sprintf("The car says it is unlocked. It last reported this %s, so it may have been locked since.", e.reportedWhen(stamp))
 			}
 		}
 		e.send(push.Alert{Kind: push.Unlocked, Title: "Car left unlocked", Body: body, URL: "#/live"})

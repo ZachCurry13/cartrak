@@ -413,11 +413,12 @@ func TestAnUnlockedAlertFromAnOldReportSaysWhen(t *testing.T) {
 		s.Extra["telemetry.metrics.doorLockStatus[0].value"] = "UNLOCKED"
 		s.Extra["telemetry.metrics.doorLockStatus[0].vehicleDoor"] = "ALL_DOORS"
 		s.Extra["telemetry.metrics.doorLockStatus[0].updateTime"] = t0.Add(-48 * time.Hour).UTC().Format(time.RFC3339)
+		s.Extra["telemetry.metrics.speed.updateTime"] = time.Now().UTC().Format(time.RFC3339) // the car itself is reporting; only the lock report is old
 	}
 	for i := 0; i < 5; i++ {
 		e.Handle(reading(i*4, old))
 	}
-	if r.kinds() != "unlocked" || !strings.Contains(r.got[0].Body, "last reported this at") {
+	if r.kinds() != "unlocked" || !strings.Contains(r.got[0].Body, "days ago") {
 		t.Fatalf("says the report is old: %s %+v", r.kinds(), r.got)
 	}
 }
@@ -503,6 +504,7 @@ func TestTheSameOldUnlockedReportIsNotAnnouncedAgainAfterARestart(t *testing.T) 
 		s.Extra["telemetry.metrics.doorLockStatus[0].value"] = "UNLOCKED"
 		s.Extra["telemetry.metrics.doorLockStatus[0].vehicleDoor"] = "ALL_DOORS"
 		s.Extra["telemetry.metrics.doorLockStatus[0].updateTime"] = t0.Add(-48 * time.Hour).UTC().Format(time.RFC3339)
+		s.Extra["telemetry.metrics.speed.updateTime"] = time.Now().UTC().Format(time.RFC3339) // the car itself is reporting; only the lock report is old
 	}
 	for i := 0; i < 5; i++ {
 		e.Handle(reading(i*4, old))

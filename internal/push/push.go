@@ -38,6 +38,7 @@ const (
 	BackupReminder    = "backup_reminder"
 	LeftOpen          = "left_open"
 	CarFault          = "car_fault"
+	CarSilent         = "car_silent"
 	ChargeSlow        = "charge_slow"
 	Achievement       = "achievement"
 	MonthlyRecap      = "monthly_recap"
@@ -66,6 +67,7 @@ var Kinds = []Kind{
 	{LowTire, "Low tire pressure", "The car reports a tire as low."},
 	{CarFault, "Car-reported problem", "The car's own checks report something other than normal: the main battery, the tire pressure system or the 12 V load. At most once a day for each."},
 	{ChargeSlow, "Slow fast charge", "A fast charge that just ended was much slower than your usual, so another charger may be better. Only charges that stopped by about 85% count, since every charger slows near full. Needs a few earlier fast sessions."},
+	{CarSilent, "Car stopped reporting", "The car has not sent anything new for more than a day, which can mean a weak 12 V battery or no cell signal. At most once a day."},
 	{Low12V, "Low 12 V battery", "The small battery is low enough to risk the car not waking. At most once a day."},
 	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},
 	{TripStart, "Trip started", "A trip began."},

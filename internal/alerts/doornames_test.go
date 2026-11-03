@@ -29,7 +29,7 @@ func TestLeftOpenSaysWhenTheCarLastReportedAndDoesNotRepeatAnOldReport(t *testin
 	for i := 0; i < 6; i++ {
 		e.Handle(reading(i*4, stale))
 	}
-	if len(r.got) != 1 || !strings.Contains(r.got[0].Body, "last reported this at") || !strings.Contains(r.got[0].Body, "may have been closed since") {
+	if len(r.got) != 1 || !strings.Contains(r.got[0].Body, "days ago") || !strings.Contains(r.got[0].Body, "may have been closed since") {
 		t.Fatalf("one alert that says how old the report is: %s %v", r.kinds(), r.got)
 	}
 	for i := 0; i < 8; i++ { // a drive in between, then the very same old report again

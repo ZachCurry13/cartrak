@@ -13,6 +13,7 @@ import { createMap, mapConfig } from '../map.js';
 import { reserveKm, getReserve } from '../charge.js';
 import { chargeEtaBox } from '../chargecard.js';
 import { vacationNote } from '../vacation.js';
+import { silentNote } from '../silentnote.js';
 import { setupCards } from '../setup.js';
 import { serviceCards } from '../servicecard.js';
 import { shortOdometer } from '../tripdistance.js';
@@ -74,6 +75,8 @@ export default async function dashboard(root, _args, session) {
     else if (sideP) cache = await sideP;
     const { status, trips, ob, health, week, maint, unlabelled, short = [], fuelPending = 0 } = cache;
     const out = [...(staleSince ? [h('div', { class: 'banner' }, h('b', {}, 'You are offline. '), `Showing the last readings saved on this device (${ago(Math.floor(staleSince / 1000))}).`)] : []), ...notices(session)];
+    const quiet = staleSince ? null : silentNote(status); // the car has said nothing for a day
+    if (quiet) out.push(quiet);
     if (ob) {
       // Only while the one essential step (linking Ford) is missing. The optional steps stay on the Getting started page.
       if (!ob.dismissed && ob.canLink && !ob.linked) out.push(h('a', { class: 'card', href: '#/start', style: 'display:block;text-decoration:none' }, h('b', {}, 'Getting started'), h('div', { class: 'muted' }, 'Connect your Ford account to start seeing your car →')));

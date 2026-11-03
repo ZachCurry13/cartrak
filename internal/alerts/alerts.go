@@ -97,6 +97,7 @@ func (e *Engine) Handle(st *ford.State) {
 	}
 	e.tires(st, first)
 	e.battery12V(st)
+	e.carSilent(st)
 	e.carFaults(st)
 	e.maintenance(st.OdometerKm)
 	e.namedPlaces(st, first)
@@ -175,6 +176,9 @@ func (e *Engine) battery12V(st *ford.State) {
 		if soc != nil {
 			body += fmt.Sprintf(" (%.0f%%)", *soc)
 		}
+	}
+	if when := e.reportedWhen(ford.Text(st.Extra, "batteryVoltage.updateTime")); when != "" { // the reading can be hours old if the car has gone quiet
+		body += ". The car last reported this " + when
 	}
 	e.send(push.Alert{Kind: push.Low12V, Title: "Low 12 V battery", Body: body + ". The car may not wake if it drops further.", URL: "#/health"})
 }

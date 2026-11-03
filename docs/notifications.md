@@ -76,3 +76,6 @@ the alerts you want. **Refresh the app** keeps the registration.
 
 ### Holiday voices
 With **Holiday voices** on (Notifications page, next to Holiday touches), the friendly alerts around a holiday talk in its voice: Santa at Christmas, a friendly ghost at Halloween, a leprechaun on St. Patrick's Day, the Easter bunny, Cupid on Valentine's Day, fireworks on the Fourth of July, a grateful turkey at Thanksgiving and a toast at New Year. The alerts for charging done, plugging in and out, and trips start and end get their own lines ("Ho ho ho! Fully charged"); the others get a short opener in front. Only the words change: the numbers and the facts are the same, and warnings never use a voice. It is off until you turn it on.
+
+## When the car goes quiet
+**Car stopped reporting** (optional, off until you choose it) tells you, at most once a day, when the car has sent nothing new for more than a day. A parked car sleeps for hours, so a few hours of quiet is normal; a day or more often means a weak 12 V battery (the car's modem needs it) or no cell signal. Home also shows a note once that happens. The **Low 12 V battery** alert and the door and unlock alerts say how old the car's report is ("last reported this 15 hours ago"), because a sleeping car repeats the last thing it said.

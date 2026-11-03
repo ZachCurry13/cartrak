@@ -2,6 +2,7 @@ package ford
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 	"sync/atomic"
@@ -123,5 +124,29 @@ func TestRateLimitV2(t *testing.T) {
 	var rl *RateLimitError
 	if !errors.As(err, &rl) || rl.After != 42*time.Second {
 		t.Fatalf("want RateLimitError(42s), got %v", err)
+	}
+}
+
+func TestAnEndpointFordRefusesForThisVehicleIsOnlyTriedOnceADay(t *testing.T) {
+	c := &Connect2{slow: map[string]json.RawMessage{}, slowErr: map[string]string{}, slowAt: map[string]time.Time{}}
+	for _, e := range slowEndpoints { // everything was read two hours ago, and two endpoints answered 403
+		c.slowAt[e.Key] = time.Now().Add(-2 * time.Hour)
+	}
+	c.slowErr["departureTimes"], c.slowErr["chargeSchedules"] = "HTTP 403", "HTTP 403"
+	seen := map[string]bool{}
+	for i := 0; i < len(slowEndpoints); i++ {
+		e, ok := c.nextSlow()
+		if !ok {
+			break
+		}
+		seen[e.Key] = true
+		c.slowAt[e.Key] = time.Now() // as if it was read
+	}
+	if seen["departureTimes"] || seen["chargeSchedules"] || !seen["garage"] {
+		t.Fatalf("the refused ones wait a day, the rest are read after half an hour: %v", seen)
+	}
+	c.slowAt["departureTimes"] = time.Now().Add(-25 * time.Hour)
+	if e, ok := c.nextSlow(); !ok || e.Key != "departureTimes" {
+		t.Fatalf("a day later it asks again: %+v %v", e, ok)
 	}
 }

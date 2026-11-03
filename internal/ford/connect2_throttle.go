@@ -70,7 +70,11 @@ func (c *Connect2) nextSlow() (slowEndpoint, bool) {
 	found := false
 	for _, e := range slowEndpoints {
 		at := c.slowAt[e.Key] // zero if never read
-		if time.Since(at) <= slowEvery {
+		every := slowEvery
+		if msg := c.slowErr[e.Key]; msg == "HTTP 403" || msg == "HTTP 404" {
+			every = unsupportedEvery
+		}
+		if time.Since(at) <= every {
 			continue
 		}
 		if !found || at.Before(bestAt) {

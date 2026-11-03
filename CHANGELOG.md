@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.74.0
+
+### 🔇 A quiet car, noticed
+- **Home says when a car has gone quiet.** If the car has sent nothing new for more than a day, a note says so and points to Health for its last 12 V reading: a parked car sleeps for hours, but a day or more usually means a weak 12 V battery or no cell signal.
+- **New optional alert: Car stopped reporting** (Notifications; off until you pick it), at most once a day.
+- **Old readings say how old they are.** The Low 12 V alert, the left-open alert and the left-unlocked alert now say "last reported this 15 hours ago" (a clock time only when it was within two hours), so a sleeping car's last words are not mistaken for news.
+
+### 🔧 Smaller fixes
+- **Peak power reads the same everywhere.** A charge showed "peak 10.5 kW" while its charging curve said "11 kW". Both now use a tenth of a kW for home chargers and whole kW for fast ones.
+- **A car stops asking for what Ford refuses.** A hybrid has no charge schedules or departure times, and Ford answers 403 every time; CarTrak now tries those again once a day, not every half hour.
+
 ## 0.73.0
 
 ### 🔋 A charging time that learns from your car

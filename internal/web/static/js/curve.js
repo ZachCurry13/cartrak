@@ -2,6 +2,9 @@ import { h, num } from './ui.js';
 import { api } from './api.js';
 import { lineChart } from './chart.js';
 
+// Power the way the session card writes it: a tenth of a kW for a home charger (10.5 kW), whole kW for a fast one (150 kW), so the same figure never reads two ways.
+const kw = (v) => num(v, v < 20 ? 1 : 0, ' kW');
+
 // Power against battery level for one session: touch and drag along it to read the power at any level.
 function draw(c) {
   const pts = c.points.filter((p) => p.kw > 0.2).map((p) => ({ x: p.soc, y: p.kw })).sort((a, b) => a.x - b.x);
@@ -16,7 +19,7 @@ function draw(c) {
     xTicks: ticks.length >= 2 ? ticks : undefined,
     xTitle: 'Battery level',
     yTitle: 'Power (kW)',
-    summary: `Peak ${Math.round(c.peakKw)} kW${c.at80Kw != null ? ` · ${Math.round(c.at80Kw)} kW at 80%` : ''}`,
+    summary: `Peak ${kw(c.peakKw)}${c.at80Kw != null ? ` · ${kw(c.at80Kw)} at 80%` : ''}`,
   });
 }
 
@@ -30,8 +33,8 @@ export function curveBox(id) {
     loaded = true;
     try {
       const c = await api(`/api/charges/${id}/curve`);
-      const bits = [c.peakKw > 0 ? `Peak ${num(c.peakKw, 0, ' kW')}` : null, c.avgKw != null ? `average ${num(c.avgKw, 0, ' kW')}` : null,
-        c.minutes10to80 != null ? `10 to 80% in ${Math.round(c.minutes10to80)} min` : null, c.at80Kw != null ? `${num(c.at80Kw, 0, ' kW')} at 80%` : null,
+      const bits = [c.peakKw > 0 ? `Peak ${kw(c.peakKw)}` : null, c.avgKw != null ? `average ${kw(c.avgKw)}` : null,
+        c.minutes10to80 != null ? `10 to 80% in ${Math.round(c.minutes10to80)} min` : null, c.at80Kw != null ? `${kw(c.at80Kw)} at 80%` : null,
         c.addedKwh != null ? `${num(c.addedKwh, 1, ' kWh')} added` : null].filter(Boolean);
       body.replaceChildren(draw(c), h('p', {}, bits.join(' · ')));
     } catch (e) { body.textContent = e.message; }

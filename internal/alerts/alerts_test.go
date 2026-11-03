@@ -38,6 +38,10 @@ var t0 = time.Date(2026, 10, 13, 12, 0, 0, 0, time.UTC)
 func reading(min int, mod func(*ford.State)) *ford.State {
 	soc := 70.0
 	st := &ford.State{TS: t0.Add(time.Duration(min) * time.Minute), Plug: "DISCONNECTED", ChargeState: "NOT_READY", SoCPct: &soc, Ignition: "OFF", Extra: map[string]any{}}
+	if st.Extra == nil {
+		st.Extra = map[string]any{}
+	}
+	st.Extra["telemetry.metrics.speed.updateTime"] = st.TS.UTC().Format(time.RFC3339) // the car reported just now, unless a test says otherwise
 	if mod != nil {
 		mod(st)
 	}
