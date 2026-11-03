@@ -34,7 +34,7 @@ func (e *Engine) lowBattery(st *ford.State, first bool) {
 		if first {
 			return
 		}
-		e.send(push.Alert{Kind: push.LowBattery, Title: "Low battery", Body: fmt.Sprintf("The battery is at %.0f%%.", soc), URL: "#/"})
+		e.send(push.Alert{Kind: push.LowBattery, Title: "Low battery", Body: fmt.Sprintf("The battery is at %.0f%%.", soc), URL: "#/charging"})
 	}
 }
 

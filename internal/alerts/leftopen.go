@@ -142,6 +142,6 @@ func (e *Engine) leftOpen(st *ford.State) {
 		if at := e.reportedAt(stamp); at != "" {
 			body += fmt.Sprintf(" The car last reported this at %s, so it may have been closed since.", at)
 		}
-		e.send(push.Alert{Kind: push.LeftOpen, Title: "Left open", Body: body, URL: "#/"})
+		e.send(push.Alert{Kind: push.LeftOpen, Title: "Left open", Body: body, URL: "#/live"})
 	}
 }

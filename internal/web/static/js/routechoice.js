@@ -1,11 +1,25 @@
 import { h, dist } from './ui.js';
 import { api } from './api.js';
 
-// For a trip with no phone GPS: work out the roads it could have taken and let the owner pick, with each one's length next to
-// what the odometer said. The one closest to the odometer is offered first, and chosen for new estimates on its own.
-export function routeChoiceBar(t, onChosen) {
+// For a trip with no phone GPS. With no road drawn yet (a straight line between the few places the car reported), one button works
+// out the road closest to the odometer and draws it. With a road already drawn, the roads it could have taken are offered, each
+// with its length next to what the odometer said, to pick another.
+export function routeChoiceBar(t, hasRoute, onChosen) {
   const box = h('div', { style: 'margin:8px 0 0' });
   const msg = h('p', { class: 'muted', role: 'status' });
+  if (!hasRoute) {
+    const go = h('button', { onclick: async () => {
+      go.disabled = true;
+      msg.textContent = 'Working out the road between the places the car reported…';
+      try {
+        const d = await api(`/api/trips/${t.id}/route-options`);
+        await api(`/api/trips/${t.id}/route-choice`, { method: 'POST', body: { kind: d.options[0].kind } }); // the road closest to the odometer comes first
+        onChosen();
+      } catch (e) { msg.replaceChildren(e.message, ' ', h('a', { href: '#/admin' }, 'Settings')); go.disabled = false; }
+    } }, 'Estimate the route');
+    box.append(h('p', { class: 'muted', style: 'margin:0 0 6px' }, 'Only a few positions were recorded for this trip, so it is drawn as a straight line.'), go, msg);
+    return box;
+  }
   async function load(e) {
     if (e) e.target.disabled = true;
     msg.textContent = 'Asking the routing service for the roads between the places the car reported…';
@@ -26,6 +40,6 @@ export function routeChoiceBar(t, onChosen) {
         } }, 'Use this road')), msg);
     } catch (err) { msg.textContent = err.message; if (e) e.target.disabled = false; }
   }
-  box.append(h('button', { class: 'sec', onclick: load }, 'Choose the road'), msg);
+  box.append(h('button', { class: 'sec', onclick: load }, 'Choose a different road'), msg);
   return box;
 }

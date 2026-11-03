@@ -2,6 +2,10 @@
 
 ## 0.66.0
 
+### 🧭 Getting where you want to be
+- **A trip drawn as a straight line has an "Estimate the route" button.** One tap works out the road closest to the odometer between the places the car reported and draws it. A trip that already has a road offers "Choose a different road" instead.
+- **Tapping a notification opens the page it is about.** Left open, car left unlocked and the other door alerts open Live; low battery opens Charging; arriving and leaving a place open the Day view; a new trophy opens Trophies; low disk space opens Status. The ones that already opened the right page (a trip, charging, service) are unchanged. Older entries in the notification list open the same pages.
+
 ### 🏠 A calmer Home
 - **Home shows what you check every day and folds the rest away.** Up front: the battery, what needs attention, the day and the month, and the last trip. Behind one row, **More details**: charging (it comes forward by itself while the car is charging), the vehicle's readings, the map and location, tires (they come forward if there is a pressure warning), doors, and the vehicle health summary. The row stays open or shut the way you leave it.
 - **The battery is the first thing on Home again**; the work-or-personal outing card moved under it.

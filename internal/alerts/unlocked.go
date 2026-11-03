@@ -40,6 +40,6 @@ func (e *Engine) unlocked(st *ford.State) {
 				body = fmt.Sprintf("The car says it is unlocked. It last reported this at %s, so it may have been locked since.", e.reportedAt(stamp))
 			}
 		}
-		e.send(push.Alert{Kind: push.Unlocked, Title: "Car left unlocked", Body: body, URL: "#/"})
+		e.send(push.Alert{Kind: push.Unlocked, Title: "Car left unlocked", Body: body, URL: "#/live"})
 	}
 }

@@ -151,9 +151,9 @@ func (e *Engine) namedPlaces(st *ford.State, first bool) {
 			continue
 		}
 		if now {
-			e.send(push.Alert{Kind: push.ArrivePlace, Title: "Arrived at " + p.Name, Body: "The car is at " + p.Name + "." + charge(st), URL: "#/"})
+			e.send(push.Alert{Kind: push.ArrivePlace, Title: "Arrived at " + p.Name, Body: "The car is at " + p.Name + "." + charge(st), URL: "#/day"})
 		} else {
-			e.send(push.Alert{Kind: push.LeavePlace, Title: "Left " + p.Name, Body: "The car has left " + p.Name + "." + charge(st), URL: "#/"})
+			e.send(push.Alert{Kind: push.LeavePlace, Title: "Left " + p.Name, Body: "The car has left " + p.Name + "." + charge(st), URL: "#/day"})
 		}
 	}
 	for id := range e.inside {

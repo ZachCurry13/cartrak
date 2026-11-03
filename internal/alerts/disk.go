@@ -24,5 +24,5 @@ func (e *Engine) diskCheck() {
 		return
 	}
 	_ = e.S.SetKV(kvDiskAlert, strconv.FormatInt(e.now().Unix(), 10))
-	e.send(push.Alert{Kind: push.LowDisk, Title: "Low disk space", Body: fmt.Sprintf("%.1f GB left on the disk CarTrak uses. Free up space under More, Backup before it fills.", float64(free)/(1<<30)), URL: "#/backup"})
+	e.send(push.Alert{Kind: push.LowDisk, Title: "Low disk space", Body: fmt.Sprintf("%.1f GB left on the disk CarTrak uses. Free up space under More, Backup before it fills.", float64(free)/(1<<30)), URL: "#/status"})
 }
