@@ -19,7 +19,7 @@ export function tripDay(d, i, n, ctx) {
       rows.push(eventRow({ kind: 'driving', start: at(p.departMin), end: at(s.arriveMin), fromPlace: p.name, place: s.name, distanceKm: bendKm(p, s), startSoc: p.departPct, endSoc: s.arrivePct }, undefined, ctx.currency));
     }
     if (s.chargeMin > 0) {
-      const row = eventRow({ kind: 'charging', where: '', place: s.net ? s.name : `Supercharger: ${s.name}`, start: at(s.arriveMin), end: at(s.departMin), addedKwh: s.kwh, cost: s.cost == null ? null : s.cost, costActual: false, startSoc: s.arrivePct, endSoc: s.departPct }, undefined, ctx.currency, j);
+      const row = eventRow({ kind: 'charging', where: '', place: s.net || s.name.startsWith("Supercharger: ") ? s.name : `Supercharger: ${s.name}`, start: at(s.arriveMin), end: at(s.departMin), addedKwh: s.kwh, cost: s.cost == null ? null : s.cost, costActual: false, startSoc: s.arrivePct, endSoc: s.departPct }, undefined, ctx.currency, j);
       rows.push(plain(row), h('div', { class: 'seg' }, h('a', { class: 'text sm', href: ctx.review(s), target: '_blank', rel: 'noopener' }, 'Reviews on PlugShare'),
         h('button', { class: 'text sm', type: 'button', onclick: () => ctx.avoid(s) }, 'Avoid this charger')));
     }

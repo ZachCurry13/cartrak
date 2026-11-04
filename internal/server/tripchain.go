@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	highwayKph   = 105.0
-	chainStopMax = 6000
-	altMinSaving = 5.0  // minutes: a smaller saving is not worth mentioning
-	eaPenaltyMin = 10.0 // Superchargers first: Electrify America is used when it saves more than this
+	highwayKph           = 105.0
+	chainStopMax         = 6000
+	altMinSaving         = 5.0     // minutes: a smaller saving is not worth mentioning
+	eaPenaltyMin         = 10.0    // Superchargers first: Electrify America is used when it saves more than this
+	viaSnapM     float64 = 25000.0 // "find a charger here": the closest usable charger within this many meters of the place
 )
 
 type chainVia struct {
 	stopPoint
-	Charge *bool `json:"charge"` // plug in here; unset means yes
-	Night  bool  `json:"night"`  // the day ends here: a hotel already booked
+	Mode   string `json:"mode"`   // pass (drive through), night (a hotel) or charge (find a charger here)
+	Charge *bool  `json:"charge"` // a hotel has a charger; in older pages, plug in here
+	Night  bool   `json:"night"`  // the day ends here: a hotel already booked
 }
 
 type chainIn struct {
@@ -125,9 +127,40 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 		}
 		return tripchain.Station{Name: p.Name, Lat: p.Lat, Lon: p.Lon}
 	}
+	use := [][]superchargers.Site{tesla}
+	if useEA {
+		use = append(use, ea)
+	}
+	var eligible []superchargers.Site // the chargers a place may be snapped to: the networks in use, minus the ones avoided
+	for _, l := range use {
+		for _, u := range l {
+			if !avoid[chargerKey(u.Lat, u.Lon)] {
+				eligible = append(eligible, u)
+			}
+		}
+	}
 	vias := make([]tripchain.Via, len(in.Via))
 	for i, v := range in.Via {
-		vias[i] = tripchain.Via{Station: station(v.stopPoint, "Stop"), Charge: v.Charge == nil || *v.Charge, Night: v.Night}
+		at := station(v.stopPoint, "Stop")
+		switch v.Mode {
+		case "charge": // find a charger here: the stop becomes the closest usable charger
+			site, found := superchargers.Nearest(eligible, v.Lat, v.Lon, viaSnapM)
+			if !found {
+				fail(w, http.StatusUnprocessableEntity, fmt.Sprintf("No charger you can use is within %.0f miles of %s. Pick a bigger town, or another way to treat that place.", viaSnapM/1609.0, at.Name))
+				return
+			}
+			name := site.Name
+			if site.Net == "" {
+				name = "Supercharger: " + name
+			}
+			vias[i] = tripchain.Via{Station: tripchain.Station{Name: name, Lat: site.Lat, Lon: site.Lon, Kw: site.Kw, PS: site.PS, Net: site.Net}, Charge: true}
+		case "night": // a hotel: the day ends here; it charges only if it has a charger
+			vias[i] = tripchain.Via{Station: at, Night: true, Charge: v.Charge != nil && *v.Charge}
+		case "pass":
+			vias[i] = tripchain.Via{Station: at}
+		default: // older pages: the two flags
+			vias[i] = tripchain.Via{Station: at, Charge: v.Charge == nil || *v.Charge, Night: v.Night}
+		}
 	}
 	params := tripchain.Params{Start: station(in.Start, "Start"), Dest: station(in.Dest, "Destination"), StartPct: in.StartPct, ReservePct: in.Reserve,
 		TargetPct: in.Target, CapacityKwh: *capacity, KwhPerKm: 1 / kmPerKwh, CarKw: in.ChargeKw, MaxLegKm: in.MaxLegKm, MaxLegMin: in.MaxLegMin,
@@ -151,10 +184,6 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 		}
 		days, err := tripchain.Plan(params, st, vias)
 		return days, len(st), err
-	}
-	use := [][]superchargers.Site{tesla}
-	if useEA {
-		use = append(use, ea)
 	}
 	days, n, err := plan(use...)
 	if errors.Is(err, tripchain.ErrNoChain) {

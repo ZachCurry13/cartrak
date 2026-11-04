@@ -81,7 +81,8 @@ export function setCategories(list) { cats = Object.fromEntries(list.map((c) => 
 export const catChip = (t) => {
   const c = cats[t.category];
   const e = chip(t.category, (c ? c.label : t.category) + (t.categorySource === 'manual' ? ' ✎' : t.categorySource === 'rule' ? ' ⚙' : t.categorySource === 'workday' ? ' ⌂' : t.categorySource === 'outing' ? ' ⇄' : t.categorySource === 'vacation' ? ' · vacation' : t.categorySource === 'mode' ? ' · mode' : ''));
-  if (c && c.color) { e.style.color = c.color; e.style.borderColor = c.color; }
+  // the category colour stays on the border; the words lean on the theme's text colour so they stay readable on any colour
+  if (c && c.color) { e.style.color = `color-mix(in srgb, ${c.color} 45%, var(--text))`; e.style.borderColor = c.color; }
   return e;
 };
 

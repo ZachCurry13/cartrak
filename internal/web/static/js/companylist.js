@@ -54,5 +54,5 @@ export function pasteListCard(use) {
     draw();
   }
   return h('div', {},
-    h('p', { class: 'muted' }, 'Paste the names, one per line. The trailing number and country are read and dropped. Names are searched near Home.'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
+    h('p', { class: 'muted' }, 'Paste the names, one per line. The trailing number and country are read and dropped. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
 }

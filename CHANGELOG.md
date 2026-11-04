@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.78.0
+
+### 🚦 This outing: any category
+- On Home, **This outing** keeps **Automatic** as the default (the rules decide) with **Work** and **Personal**, and now has an **Another category** drop-down with every other category: Medical, Charity and any you added under Trip categories. Pick one and the trips of the outing so far are relabeled, and the ones to come until you are back at Home.
+
+### 🔌 Long trips, clearer
+- **Starting from**: the Long trip tab now has its own start. It begins as the car's position, and you can change it to one of your saved places or search for an address, so a trip can start somewhere the car is not.
+- **Each place you add has three choices**: **Drive through it**, **Stop for the night here (a hotel)** (tick **The hotel has a charger** if it does), or **Find a charger here**, which stops at the closest charger you can use to that place.
+- **Plain charger choices with real numbers.** Every open Supercharger that lets other cars charge has NACS plugs, so you need the NACS adapter for them; the Magic Dock sites have a CCS plug built into the stall and need no adapter. The choices are now **All open Superchargers (I have the adapter)**, **Magic Dock sites only (no adapter)** and **No Superchargers**, each with how many sites it offers, and Electrify America (CCS) is a separate tick with its count.
+
 ## 0.77.0
 
 ### 🔌 Integrations, all in one place

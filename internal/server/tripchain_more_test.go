@@ -120,3 +120,57 @@ func TestAHotelNightNamesTheNearestCharger(t *testing.T) {
 		t.Fatalf("the hotel should name the charger close by: %s", out)
 	}
 }
+
+func TestAPlaceCanBeTurnedIntoTheClosestCharger(t *testing.T) {
+	ts, _, admin := chainServers(t)
+	post := func(via string) (int, string) {
+		return do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(`,"via":[`+via+`]`), xh)
+	}
+	c, out := post(`{"name":"Town","lat":47.2,"lon":-93.25,"mode":"charge"}`)
+	if c != 200 || !strings.Contains(out, `"name":"Supercharger: Super 47.3"`) || strings.Contains(out, `"name":"Town"`) {
+		t.Fatalf("the place should become the closest charger: %d %s", c, out)
+	}
+	if c, out = post(`{"name":"Faraway","lat":40,"lon":-80,"mode":"charge"}`); c != 422 || !strings.Contains(out, "within") {
+		t.Fatalf("no charger near the place: %d %s", c, out)
+	}
+	if c, out = post(`{"name":"Roadside","lat":47.0,"lon":-93.2,"mode":"pass"}`); c != 200 || !strings.Contains(out, `"name":"Roadside"`) {
+		t.Fatalf("a place to drive through stays as it is: %d %s", c, out)
+	}
+	_, src := do(t, admin, "GET", ts.URL+"/api/trip-chain/sources", "", nil)
+	if !strings.Contains(src, `"ready":true`) || !strings.Contains(src, `"adapter":2`) {
+		t.Fatalf("the counts: %s", src)
+	}
+}
+
+func TestTheRangeBetweenTwoChargeLevelsComesFromTheCarsOwnDriving(t *testing.T) {
+	ts, _ := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	if _, b := do(t, admin, "GET", ts.URL+"/api/trip-chain/range", "", nil); !strings.Contains(b, `"ready":false`) {
+		t.Fatalf("with no driving yet there is nothing to say: %s", b)
+	}
+}
+
+func TestTheRangeUsesTheChargeTargetAndReserveAndOffersOtherIdeas(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	admin := adminClient(t, ts.URL)
+	seedUsualDriving(t, srv) // 90 kWh at 0.17 kWh/km
+	_, b := do(t, admin, "GET", ts.URL+"/api/trip-chain/range?reserve=20&target=80", "", nil)
+	var r struct {
+		Ready   bool
+		Windows []struct{ From, To, Km, Minutes float64 }
+	}
+	if json.Unmarshal([]byte(b), &r) != nil || !r.Ready || len(r.Windows) < 3 {
+		t.Fatalf("range: %s", b)
+	}
+	first := r.Windows[0] // 80 to 20 percent of 90 kWh is 54 kWh, about 318 km at 0.17 kWh/km
+	if first.From != 80 || first.To != 20 || first.Km < 250 || first.Km > 380 {
+		t.Fatalf("the first window is the planner's own settings: %+v", first)
+	}
+	seen := map[[2]float64]bool{}
+	for _, w := range r.Windows {
+		if seen[[2]float64{w.From, w.To}] {
+			t.Fatalf("a window appears twice: %+v", r.Windows)
+		}
+		seen[[2]float64{w.From, w.To}] = true
+	}
+}

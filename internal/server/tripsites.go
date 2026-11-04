@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -74,3 +75,38 @@ func (s *Server) eaSites(ctx context.Context, key string) ([]superchargers.Site,
 	sites, _, err := s.keptList(eaKey, eaAtKey, func(c context.Context) ([]superchargers.Site, error) { return afdc.Fetch(c, nil, base, key) }, ctx)
 	return sites, err
 }
+
+// sourceCounts is how many sites each choice on the Long trip tab would offer, from the lists already kept (nothing is downloaded
+// here), counted for North America where Superchargers use the NACS plug. ready is false until the lists have been fetched once.
+func (s *Server) sourceCounts() map[string]any {
+	inNA := func(lat, lon float64) bool { return lat > 14 && lat < 72 && lon > -170 && lon < -50 }
+	var tesla, ea []superchargers.Site
+	if b := s.S.GetKV(superKey); b != "" {
+		_ = json.Unmarshal([]byte(b), &tesla)
+	}
+	if b := s.S.GetKV(eaKey); b != "" {
+		_ = json.Unmarshal([]byte(b), &ea)
+	}
+	adapter, magic := 0, 0
+	for _, x := range tesla {
+		if !inNA(x.Lat, x.Lon) {
+			continue
+		}
+		if x.NACS {
+			adapter++
+		}
+		if x.Dock {
+			magic++
+		}
+	}
+	eaN := 0
+	for _, x := range ea {
+		if inNA(x.Lat, x.Lon) {
+			eaN++
+		}
+	}
+	return map[string]any{"ready": len(tesla) > 0, "adapter": adapter, "magic": magic, "ea": eaN, "eaReady": len(ea) > 0}
+}
+
+// tripSources: GET /api/trip-chain/sources. Admin only.
+func (s *Server) tripSources(w http.ResponseWriter, r *http.Request) { ok(w, s.sourceCounts()) }
