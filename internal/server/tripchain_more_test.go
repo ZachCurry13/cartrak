@@ -80,3 +80,28 @@ func TestTripChainPassesThePlacesGiven(t *testing.T) {
 		t.Fatalf("an unknown place gave %d", c)
 	}
 }
+
+func TestAHotelNightNamesTheNearestCharger(t *testing.T) {
+	ts, srv, admin := chainServers(t)
+	srv.Cfg.Set(settings.AFDCKeyKey, "test-key")
+	_, out := do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(`,"ea":true,"via":[{"name":"Hotel","lat":46.7,"lon":-93.25,"charge":false,"night":true}]`), xh)
+	var r struct {
+		Days []struct {
+			Stops []struct {
+				Name string
+				Kind string
+				Near *struct {
+					Name string
+					Km   float64
+				}
+			}
+		}
+	}
+	if json.Unmarshal([]byte(out), &r) != nil || len(r.Days) != 2 {
+		t.Fatalf("want two days around the hotel: %s", out)
+	}
+	night := r.Days[0].Stops[len(r.Days[0].Stops)-1]
+	if night.Name != "Hotel" || night.Near == nil || !strings.Contains(night.Near.Name, "Electrify America: Mall") || night.Near.Km > 10 {
+		t.Fatalf("the hotel should name the charger close by: %s", out)
+	}
+}

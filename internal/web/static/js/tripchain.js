@@ -68,6 +68,8 @@ export function tripChainCard(get, start, use) {
   const links = (points, what) => routeUrls(points).map((href, i, all) => h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, all.length > 1 ? `${what}: part ${i + 1} of ${all.length}` : `${what} in Google Maps`));
   const stopRow = (s, j) => h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('span', { style: 'flex:0 0 1.4em;text-align:center' }, j === 0 ? 'A' : String(j)),
     h('div', { style: 'flex:1 1 9em;min-width:0;overflow-wrap:anywhere' }, s.name, s.kw ? h('span', { class: 'muted' }, ` · ${s.kw} kW`) : null, s.kind === 'overnight' && j > 0 ? [' ', chip('work', 'Overnight')] : null),
+    s.near ? h('div', { class: 'muted', style: 'flex:1 1 100%' }, `Closest charger: ${s.near.name}${s.near.kw ? ` (${s.near.kw} kW)` : ''}, ${dist(s.near.km, 1)} away. Charge there this evening or first thing tomorrow. `,
+      h('a', { href: review(s.near), target: '_blank', rel: 'noopener' }, 'Reviews on PlugShare')) : null,
     s.net || s.ps || s.kw ? h('div', { class: 'seg', style: 'flex:1 1 100%' }, h('a', { class: 'text sm', href: review(s), target: '_blank', rel: 'noopener' }, 'Reviews on PlugShare'),
       s.kind === 'charge' ? h('button', { class: 'text sm', type: 'button', onclick: () => { const a = readAvoid(); a[key(s)] = s.name; writeAvoid(a); go(); } }, 'Avoid this charger') : null) : null);
   const dayCard = (d, i, n) => h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },

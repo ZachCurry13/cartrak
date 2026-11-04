@@ -40,6 +40,14 @@ type Params struct {
 type Stop struct {
 	Station
 	Kind string `json:"kind"` // start, charge, overnight, dest
+	// Near is the closest charger to a night stop that is not one itself (a hotel), filled in by the caller.
+	Near *Near `json:"near,omitempty"`
+}
+
+// Near is a charger close to a stop.
+type Near struct {
+	Station
+	Km float64 `json:"km"`
 }
 
 // Day is one day of the trip.

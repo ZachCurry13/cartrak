@@ -164,6 +164,7 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, err.Error())
 		return
 	}
+	s.addNearby(days, use, avoid)
 	out := map[string]any{"days": days, "sites": n}
 	if !useEA && len(ea) > 0 { // what adding Electrify America would change
 		if alt, _, aerr := plan(tesla, ea); aerr == nil {

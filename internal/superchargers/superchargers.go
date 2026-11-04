@@ -119,6 +119,9 @@ func Nearest(sites []Site, lat, lon, maxM float64) (Site, bool) {
 	return best, bestD < maxM || (bestD == maxM && best.Name != "")
 }
 
+// DistKm is the distance in kilometers between two points.
+func DistKm(la1, lo1, la2, lo2 float64) float64 { return distM(la1, lo1, la2, lo2) / 1000 }
+
 func distM(la1, lo1, la2, lo2 float64) float64 {
 	const r = 6371000.0
 	p1, p2 := la1*math.Pi/180, la2*math.Pi/180
