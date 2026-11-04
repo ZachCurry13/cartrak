@@ -26,6 +26,9 @@
 ### 🗺️ A tidier Day map when GPS comes on partway
 - When the phone's GPS was switched on partway through a drive, the day map drew only the part it recorded, as if the drive were shorter. The part before (or after) is now filled in with a dotted line from the car's own positions, in the same colour as the drive.
 
+### 📍 Record GPS from the top bar
+- A new button next to Search turns on GPS recording from this phone from any page, and lights up while it records. It stays on as you move between pages (a browser still cannot record once the app is closed or the screen locks). The card on the Live page is the same switch.
+
 ### 🏷️ Charges name themselves
 - A charge near a known Supercharger or Electrify America site is named after it, and otherwise shows its city, instead of "Unnamed place".
 

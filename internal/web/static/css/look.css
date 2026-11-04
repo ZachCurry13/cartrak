@@ -95,6 +95,10 @@ header{flex-wrap:wrap;align-items:center}
 .ico:hover,.ico:focus-visible{background:var(--card)}
 .ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .ico[hidden]{display:none}
+.ico.on{color:var(--on-alert);background:var(--alert-solid)}
+.ico.on svg{animation:gpspulse 1.6s ease-in-out infinite}
+@keyframes gpspulse{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.ico.on svg{animation:none}}
 .ico b{position:absolute;top:3px;right:1px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--alert-solid);color:#fff;font-size:var(--t-label);line-height:18px;text-align:center}
 .ico b[hidden]{display:none}
 .hsub{flex-basis:100%;display:flex;gap:12px;align-items:baseline;min-width:0}

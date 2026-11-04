@@ -27,6 +27,8 @@ import { routes } from './routes.js';
 import { loadCategories } from './categories.js';
 import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
+import { gps } from './gpstoggle.js';
+import { toast } from './toast.js';
 import { openMore } from './moresheet.js';
 import { applyBar, load as loadLayout, noteVisit } from './navlayout.js';
 import { applySeason, activeTheme, setBirthday, THEMES } from './seasons.js';
@@ -91,6 +93,7 @@ async function loadCars() {
   session.me.role = session.me.siteRole === 'admin' || (here && here.level === 'owner') ? 'admin' : 'viewer';
   for (const id of ['srch', 'bell', 'help']) document.getElementById(id).hidden = !d.cars.length; // a person with no car yet still sees Help
   document.getElementById('srch').onclick = () => openSearch(session.me.role === 'admin');
+  wireGps(session.me.role === 'admin' && d.cars.length > 0);
   document.getElementById('help').onclick = (e) => { e.preventDefault(); startTour(session); }; // the ? opens the guided tour; the Help page is in More
   refreshBell();
   const note = document.getElementById('carnote');
@@ -212,3 +215,21 @@ if (fordReturn) location.replace('/ford/callback' + location.search + location.h
 else render().then(syncLabel);
 
 watchUpdates(() => loadedVersion);
+
+// The record-GPS switch in the top bar: for an admin only, lit while this phone is recording its location.
+function wireGps(show) {
+  const b = document.getElementById('gps');
+  b.hidden = !show;
+  if (b.dataset.wired) return;
+  b.dataset.wired = '1';
+  let was = false;
+  gps.subscribe((s) => {
+    b.classList.toggle('on', s.on);
+    b.setAttribute('aria-pressed', String(s.on));
+    b.setAttribute('aria-label', s.on ? 'Stop recording GPS from this phone' : 'Record GPS from this phone');
+    b.title = s.on ? `Recording GPS: ${s.sent} points sent` : 'Record GPS from this phone';
+    if (s.error && !s.on) toast(s.error);
+    if (s.on !== was) { was = s.on; toast(s.on ? 'Recording GPS from this phone. Keep CarTrak open with the screen on.' : 'Stopped recording GPS.'); }
+  });
+  b.onclick = () => gps.toggle();
+}
