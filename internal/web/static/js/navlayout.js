@@ -19,6 +19,7 @@ export const PAGES = [
   ['stops', '#/stops', 'Work stops', 'M12 7v5l3 3|o12,12,9'],
   ['history', '#/history', 'History', 'M12 7v5l3 3|o12,12,9'],
   ['places', '#/places', 'Places', 'M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z|o12,10,2.5'],
+  ['tires', '#/tires', 'Tires', 'o12,12,8|o12,12,3|M12 4v4M12 16v4M4 12h4M16 12h4'],
   ['plan', '#/plan', 'Plan a trip', 'M4 19l5-14 6 9 5-5M4 19h16'],
   ['maintenance', '#/maintenance', 'Service', 'M14 6l4 4-8 8H6v-4zM16 4l4 4', 'admin'],
   ['settings', '#/admin', 'Settings', 'o12,12,3.5|M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1', 'admin'],

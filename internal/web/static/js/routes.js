@@ -31,6 +31,7 @@ export const routes = {
   plan: () => import('./pages/plan.js'),
   maintenance: () => import('./pages/maintenance.js'),
   places: () => import('./pages/places.js'),
+  tires: () => import('./pages/tires.js'),
   insights: () => import('./pages/insights.js'),
   parkedwatch: () => import('./pages/parkedwatch.js'),
   guide: () => import('./pages/guide.js'),

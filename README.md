@@ -28,6 +28,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - **Several cars and people**: each car has its own database, settings and Ford link; each person sees only the cars they were given, and can be allowed to bring a car of their own ([details](docs/several-cars.md))
 - **Trip planning**: a route planner with up to ten stops in the best order, an Open in Google Maps link, a range and weather forecast for the drive, and an **Estimate the route** button for trips recorded with only a few positions
 - **Weather** along each trip (wind, rain, snow) to explain why a trip used more energy, from a free weather service you switch on yourself
+- **Tires**: log each set and the day it went on, and see what winter tires do to your range at the same temperature, not blamed on the cold ([details](docs/tires.md))
 - **Send a bug report** from any page: a picture of the page, its text, the screen it was on and the debug report go to a private GitHub repository of yours, so a problem can be read later instead of described ([details](docs/bug-reports.md))
 - **Material design** throughout: a bottom sheet you can drag, switches, a ripple and short vibration on tap (Android), light and dark, and a design guide for keeping it current ([details](docs/DESIGN.md))
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
@@ -146,7 +147,7 @@ More detail in [docs/configuration.md](docs/configuration.md).
 Tap the **?** at the top of the app (or **More, How to use CarTrak**) for a two-minute guided tour: each step opens a page and lights up the part it explains, with Back, Next and Skip. The Help page, under More, has quick settings and a checklist.
 
 ## Documentation
-[TrueNAS](docs/truenas.md) · [Bug reports](docs/bug-reports.md) · [Design](docs/DESIGN.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
+[TrueNAS](docs/truenas.md) · [Tires](docs/tires.md) · [Bug reports](docs/bug-reports.md) · [Design](docs/DESIGN.md) · [Cloudflare tunnel](docs/cloudflare.md) · [Ford setup](docs/ford-setup.md) ·
 [Configuration](docs/configuration.md) · [Insights](docs/insights.md) · [Road trips and charging](docs/road-trips-and-charging.md) · [Notifications](docs/notifications.md) · [Mileage log](docs/mileage.md) · [Maps](docs/maps.md) · [Car data](docs/car-data.md) · [Vehicle health](docs/vehicle-health.md) · [Several cars and people](docs/several-cars.md) · [Fuel](docs/fuel.md) · [Backup and security](docs/backup.md) · [Places and maintenance](docs/places-and-maintenance.md) · [Sharing](docs/sharing.md) · [Home Assistant](docs/home-assistant.md) · [Phone tracking](docs/phone-tracking.md) · [Live view and data saver](docs/live-and-data-saver.md) · [Updating](docs/updating.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Development

@@ -98,6 +98,7 @@ func (e *Engine) Handle(st *ford.State) {
 	e.tires(st, first)
 	e.battery12V(st)
 	e.carSilent(st)
+	e.checkTires()
 	e.carFaults(st)
 	e.maintenance(st.OdometerKm)
 	e.namedPlaces(st, first)

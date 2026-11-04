@@ -14,6 +14,7 @@ import { routeChoiceBar } from '../routechoice.js';
 import { mapButtons } from '../maplinks.js';
 import { tripFixCard } from '../tripfix.js';
 import { whyCard } from '../tripwhy.js';
+import { tireSets, tireAt, KIND_LABEL } from '../tiresets.js';
 import { battery, fuelBar } from '../tripcard.js';
 import { economy, volText } from '../fuelunits.js';
 
@@ -124,9 +125,12 @@ export default async function tripDetail(root, [id, action], session) {
   const avgKph = lateReport ? null : rawKph;
   const hasStart = t.startLat != null && t.startLon != null;
   const hasEnd = t.endLat != null && t.endLon != null && !t.open;
+  const tireLine = h('p', { class: 'muted', style: 'margin:0' });
+  tireSets().then((sets) => { const s = tireAt(sets, t.startTs); if (s) tireLine.textContent = `Tires: ${s.name} (${(KIND_LABEL[s.kind] || s.kind).toLowerCase()})`; }).catch(() => {});
   root.append(...[h('p', {}, h('a', { href: '#/trips' }, '← Trips'), ' · ', h('a', { href: `#/day/${new Date(t.startTs * 1000).toLocaleDateString('en-CA', t.tz ? { timeZone: t.tz } : {})}` }, 'See the whole day')),
     h('section', { class: 'card' }, h('div', { class: 'row', style: 'border:0;padding:0' }, h('h2', { class: 'grow' }, when(t.startTs, t.tz)), catChip(t)),
       placesBold(t),
+      tireLine,
       lateReport ? h('p', { class: 'muted' }, 'The car reported this drive only after it was over, so its time and speed are not known. The distance is the odometer’s.') : null,
       h('div', { class: 'grid' }, stat('Distance', dist(t.distanceKm)), stat('Time', lateReport ? '—' : duration(t.startTs, t.endTs)), stat('Average speed', speed(avgKph)), stat('Top speed', speed(t.maxSpeedKph)),
         ...(t.startFuel != null ? fuelStats(t) : [

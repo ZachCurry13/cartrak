@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.76.0
+
+### 🛞 Do the winter tires change your range?
+- **A Tires page (More, Tires).** Log each set (summer, winter, all-season) and the day it went on, in the past or today; **Winter tires on today** is one tap. Every trip now says which tires it was on.
+- **A comparison that does not blame the tires for the weather.** Cold costs energy on its own and winter tires go on when it turns cold, so CarTrak compares only trips at the same outside temperature (bands about 9°F wide) and the same kind of driving (city or highway), and leaves out trips on wet or snowy roads. It says "winter tires use about 6% more energy at the same temperature, about 6% less range", with the lowest and highest temperature group and how many miles it rests on.
+- **Honest about what it cannot know yet.** Until both sets have driven enough at the same temperature it says "not enough overlap yet" and what is missing, and it flags a result bigger than tires usually make. A first winter has no cold driving on the old tires, so expect a first answer a few weeks after the swap and a better one next winter.
+- **An optional reminder** (Notifications, Tire swap reminder; off until you pick it): once in autumn when the daily high has stayed under 45°F for three days, once in spring when it has stayed over 50°F for five days with winter tires on. It uses the car's own outside temperature and stays quiet unless you keep a tire log.
+
 ## 0.75.0
 
 ### 🐞 Send a bug report from any page
