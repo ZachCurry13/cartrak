@@ -28,6 +28,7 @@ import { loadCategories } from './categories.js';
 import { refreshBell } from './inboxstate.js';
 import { openSearch } from './searchsheet.js';
 import { gps } from './gpstoggle.js';
+import { refreshAttention } from './attention.js';
 import { toast } from './toast.js';
 import { openMore } from './moresheet.js';
 import { applyBar, load as loadLayout, noteVisit } from './navlayout.js';
@@ -94,6 +95,7 @@ async function loadCars() {
   for (const id of ['srch', 'bell', 'help']) document.getElementById(id).hidden = !d.cars.length; // a person with no car yet still sees Help
   document.getElementById('srch').onclick = () => openSearch(session.me.role === 'admin');
   wireGps(session.me.role === 'admin' && d.cars.length > 0);
+  if (session.me.role === 'admin') refreshAttention();
   document.getElementById('help').onclick = (e) => { e.preventDefault(); startTour(session); }; // the ? opens the guided tour; the Help page is in More
   refreshBell();
   const note = document.getElementById('carnote');

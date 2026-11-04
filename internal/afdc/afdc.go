@@ -67,3 +67,27 @@ func Fetch(ctx context.Context, c *http.Client, base, key string) ([]supercharge
 	}
 	return Parse(io.LimitReader(resp.Body, 64<<20))
 }
+
+// Ping asks the list for one station, to check the key works.
+func Ping(ctx context.Context, c *http.Client, base, key string) error {
+	if c == nil {
+		c = http.DefaultClient
+	}
+	q := url.Values{"api_key": {key}, "fuel_type": {"ELEC"}, "ev_network": {"Electrify America"}, "limit": {"1"}}
+	req, err := http.NewRequestWithContext(ctx, "GET", base+"?"+q.Encode(), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+	case 200:
+		return nil
+	case 401, 403:
+		return fmt.Errorf("the list did not accept the key (%d)", resp.StatusCode)
+	}
+	return fmt.Errorf("the list answered %d", resp.StatusCode)
+}

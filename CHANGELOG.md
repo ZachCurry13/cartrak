@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.77.0
+
+### 🔌 Integrations, all in one place
+- **More, Integrations** lists every outside service CarTrak uses (Ford, Remote access, Phone GPS, Maps, City names, Road estimates, Weather, Gas prices, Superchargers, Electrify America, Push alerts), one card each: what it is for, **what it sends**, and whether it is on.
+- Keys and switches are edited **right on the card** (the same settings as before, so nothing is lost), and a saved key is never shown again.
+- **Test connection** on Weather, Road estimates, City names, Gas prices and Electrify America asks the service once and keeps the result on the card.
+- A small **red dot on More** (administrators) shows when Ford is not set up or a service you turned on failed its last test.
+
 ## 0.76.0
 
 ### 🛞 Do the winter tires change your range?
