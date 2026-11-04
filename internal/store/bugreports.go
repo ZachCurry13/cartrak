@@ -17,20 +17,29 @@ type BugReport struct {
 	Text    string `json:"text"`
 	Layout  string `json:"layout"`
 	Debug   string `json:"debug"`
+	HTML    string `json:"html,omitempty"` // the page as it looked: its markup and styles, without scripts
+	HasPage bool   `json:"hasPage"`        // there is a page copy to open
 }
 
 const bugDDL = `CREATE TABLE IF NOT EXISTS bug_reports (id INTEGER PRIMARY KEY, ts INTEGER NOT NULL, version TEXT NOT NULL DEFAULT '', note TEXT NOT NULL DEFAULT '',
  page TEXT NOT NULL DEFAULT '', device TEXT NOT NULL DEFAULT '', text TEXT NOT NULL DEFAULT '', layout TEXT NOT NULL DEFAULT '', debug TEXT NOT NULL DEFAULT '');
 CREATE TABLE IF NOT EXISTS report_links (id INTEGER PRIMARY KEY, token_hash TEXT NOT NULL, created INTEGER NOT NULL, expires INTEGER NOT NULL, last_used INTEGER NOT NULL DEFAULT 0, opens INTEGER NOT NULL DEFAULT 0)`
 
-func (s *Store) bugInit() error { _, err := s.DB.Exec(bugDDL); return err }
+func (s *Store) bugInit() error {
+	if _, err := s.DB.Exec(bugDDL); err != nil {
+		return err
+	}
+	_, _ = s.DB.Exec(`ALTER TABLE bug_reports ADD COLUMN html TEXT NOT NULL DEFAULT ''`) // already there on later runs
+	_, _ = s.DB.Exec(`ALTER TABLE report_links ADD COLUMN token TEXT NOT NULL DEFAULT ''`)
+	return nil
+}
 
 // AddBugReport keeps a report and returns it with its number.
 func (s *Store) AddBugReport(r BugReport) (BugReport, error) {
 	if err := s.bugInit(); err != nil {
 		return r, err
 	}
-	res, err := s.DB.Exec(`INSERT INTO bug_reports(ts,version,note,page,device,text,layout,debug) VALUES(?,?,?,?,?,?,?,?)`, r.TS, r.Version, r.Note, r.Page, r.Device, r.Text, r.Layout, r.Debug)
+	res, err := s.DB.Exec(`INSERT INTO bug_reports(ts,version,note,page,device,text,layout,debug,html) VALUES(?,?,?,?,?,?,?,?,?)`, r.TS, r.Version, r.Note, r.Page, r.Device, r.Text, r.Layout, r.Debug, r.HTML)
 	if err != nil {
 		return r, err
 	}
@@ -43,9 +52,9 @@ func (s *Store) BugReports(full bool) ([]BugReport, error) {
 	if err := s.bugInit(); err != nil {
 		return nil, err
 	}
-	q := `SELECT id,ts,version,note,page,device,'','','' FROM bug_reports ORDER BY ts DESC, id DESC`
+	q := `SELECT id,ts,version,note,page,device,'','','',html<>'' FROM bug_reports ORDER BY ts DESC, id DESC`
 	if full {
-		q = `SELECT id,ts,version,note,page,device,text,layout,debug FROM bug_reports ORDER BY ts DESC, id DESC`
+		q = `SELECT id,ts,version,note,page,device,text,layout,debug,html<>'' FROM bug_reports ORDER BY ts DESC, id DESC`
 	}
 	rows, err := s.DB.Query(q)
 	if err != nil {
@@ -55,7 +64,7 @@ func (s *Store) BugReports(full bool) ([]BugReport, error) {
 	out := []BugReport{}
 	for rows.Next() {
 		var r BugReport
-		if err := rows.Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug); err != nil {
+		if err := rows.Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug, &r.HasPage); err != nil {
 			return nil, err
 		}
 		out = append(out, r)
@@ -69,10 +78,11 @@ func (s *Store) BugReport(id int64) (*BugReport, error) {
 		return nil, err
 	}
 	var r BugReport
-	err := s.DB.QueryRow(`SELECT id,ts,version,note,page,device,text,layout,debug FROM bug_reports WHERE id=?`, id).Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug)
+	err := s.DB.QueryRow(`SELECT id,ts,version,note,page,device,text,layout,debug,html FROM bug_reports WHERE id=?`, id).Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug, &r.HTML)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
+	r.HasPage = r.HTML != ""
 	return &r, err
 }
 
@@ -98,21 +108,22 @@ func (s *Store) DeleteBugReports(id, before int64) (int64, error) {
 
 // ReportLink is the one link that opens the reports as text, made on demand, expiring and revocable.
 type ReportLink struct {
-	Created  int64 `json:"created"`
-	Expires  int64 `json:"expires"`
-	LastUsed int64 `json:"lastUsed"`
-	Opens    int   `json:"opens"`
+	Token    string `json:"token,omitempty"` // kept so the link can be shown again; only the owner reads it
+	Created  int64  `json:"created"`
+	Expires  int64  `json:"expires"`
+	LastUsed int64  `json:"lastUsed"`
+	Opens    int    `json:"opens"`
 }
 
 // NewReportLink replaces any earlier link with one for the given token hash.
-func (s *Store) NewReportLink(hash string, expires int64) error {
+func (s *Store) NewReportLink(token, hash string, expires int64) error {
 	if err := s.bugInit(); err != nil {
 		return err
 	}
 	if _, err := s.DB.Exec(`DELETE FROM report_links`); err != nil {
 		return err
 	}
-	_, err := s.DB.Exec(`INSERT INTO report_links(token_hash,created,expires) VALUES(?,?,?)`, hash, time.Now().Unix(), expires)
+	_, err := s.DB.Exec(`INSERT INTO report_links(token_hash,token,created,expires) VALUES(?,?,?,?)`, hash, token, time.Now().Unix(), expires)
 	return err
 }
 
@@ -144,7 +155,7 @@ func (s *Store) CurrentReportLink() *ReportLink {
 		return nil
 	}
 	var l ReportLink
-	if err := s.DB.QueryRow(`SELECT created,expires,last_used,opens FROM report_links LIMIT 1`).Scan(&l.Created, &l.Expires, &l.LastUsed, &l.Opens); err != nil {
+	if err := s.DB.QueryRow(`SELECT token,created,expires,last_used,opens FROM report_links LIMIT 1`).Scan(&l.Token, &l.Created, &l.Expires, &l.LastUsed, &l.Opens); err != nil {
 		return nil
 	}
 	return &l

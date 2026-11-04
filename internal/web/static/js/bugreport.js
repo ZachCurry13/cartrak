@@ -5,6 +5,7 @@ import { h } from './ui.js';
 import { api } from './api.js';
 import { deviceInfo, pageText } from './pagecapture.js';
 import { layoutFacts } from './layoutfacts.js';
+import { pageSnapshot } from './pagesnapshot.js';
 import { phoneSection } from './errlog.js';
 import { trapFocus } from './focustrap.js';
 
@@ -26,13 +27,13 @@ function sheet(info) {
     msg.textContent = 'Saving…';
     try {
       const debug = withDebug.checked ? await debugText() : '';
-      const r = await api('/api/bug-reports', { method: 'POST', body: { note: note.value, page: info.page, device: info.device, text: info.text, layout: info.layout, debug } });
+      const r = await api('/api/bug-reports', { method: 'POST', body: { note: note.value, page: info.page, device: info.device, text: info.text, layout: info.layout, html: info.html, debug } });
       msg.replaceChildren(`Saved as report #${r.id}. `, h('a', { href: '#/bugreports', onclick: close }, 'Open Bug reports'), ' to make a link for Claude.');
       send.hidden = true;
     } catch (e) { msg.textContent = e.message; send.disabled = false; }
   } }, 'Save report');
   const dlg = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Send a bug report', tabindex: '-1' }, h('h2', {}, 'Send a bug report'),
-    h('p', { class: 'muted' }, `Saved in the app as text from this page (${info.page}): its words, your screen (${info.device.split(';')[0]}) and how it is laid out.`), note,
+    h('p', { class: 'muted' }, `Saved in the app as text from this page (${info.page}): its words, a copy of how it looks, and your screen (${info.device.split(';')[0]}).`), note,
     h('label', { for: 'br-debug', style: 'display:flex;align-items:center;gap:10px;margin-top:10px' }, withDebug, 'Include the debug report (the last 24 hours)'),
     h('p', {}, send, ' ', h('button', { class: 'text', type: 'button', onclick: close }, 'Close')), msg);
   const bg = h('div', { class: 'sheetbg' }, dlg);
@@ -46,7 +47,7 @@ function sheet(info) {
 export function mountBugReport(session) {
   const foot = document.getElementById('bugfoot');
   if (!foot || session.me.role !== 'admin') return;
-  const btn = h('button', { class: 'text sm', type: 'button', onclick: () => sheet({ page: location.hash || '#/', device: deviceInfo(), text: pageText(), layout: layoutFacts() }) }, 'Send a bug report');
+  const btn = h('button', { class: 'text sm', type: 'button', onclick: () => sheet({ page: location.hash || '#/', device: deviceInfo(), text: pageText(), layout: layoutFacts(), html: pageSnapshot() }) }, 'Send a bug report');
   foot.replaceChildren(btn);
   const place = () => { foot.hidden = HIDDEN_ON.some((p) => location.hash.startsWith(p)); };
   addEventListener('hashchange', place);

@@ -13,7 +13,6 @@ export default async function bugReports(root, _a, session) {
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Bug reports')),
     h('p', { class: 'muted' }, 'Tap Send a bug report at the foot of any page. The report is kept here as text: what the page said, your screen, how it was laid out and the debug report.'), box);
   const msg = h('p', { class: 'muted', role: 'status' });
-  let fresh = null; // the link just made: its address is shown once, because only a fingerprint of it is kept
 
   async function load() {
     const d = await api('/api/bug-reports');
@@ -24,13 +23,14 @@ export default async function bugReports(root, _a, session) {
     const link = d.link;
     box.replaceChildren(
       h('section', { class: 'card' }, h('h2', {}, 'A link to read them'),
-        fresh ? h('div', {}, h('p', {}, h('b', {}, 'Your link (shown once):')), h('p', { style: 'overflow-wrap:anywhere' }, fresh.url || fresh.path), fresh.url ? copyButton(fresh.url, 'Copy the link') : null,
-          fresh.addressKnown ? null : h('p', { class: 'banner' }, 'CarTrak does not know its public address yet (More, Remote access), so this is only the end of the link.'))
-          : link ? h('p', { class: 'muted' }, `A link is open until ${when(link.expires)}. ${link.opens ? `Opened ${link.opens} time${link.opens === 1 ? '' : 's'}, last ${ago(link.lastUsed)}.` : 'Not opened yet.'}`)
-            : h('p', { class: 'muted' }, 'No link is open. Make one, give it to whoever helps, and stop it when they are done.'),
+        link ? h('div', {}, h('p', { class: 'muted' }, `A link is open until ${when(link.expires)}. ${link.opens ? `Opened ${link.opens} time${link.opens === 1 ? '' : 's'}, last ${ago(link.lastUsed)}.` : 'Not opened yet.'}`),
+          d.linkUrl ? h('div', {}, h('p', { style: 'overflow-wrap:anywhere' }, d.linkUrl),
+            h('p', { class: 'seg' }, copyButton(d.linkUrl, 'Copy the link'), copyButton(`Please read my CarTrak bug reports: ${d.linkUrl}\nEach report has a "page as it looked" copy at ./<number>/page: open it at the window size in the report.`, 'Copy a message for Claude'))) : null,
+          d.addressKnown ? null : h('p', { class: 'banner' }, 'CarTrak does not know its public address yet (More, Remote access), so the link cannot be opened from outside.'))
+          : h('p', { class: 'muted' }, 'No link is open. Make one, give it to whoever helps, and stop it when they are done.'),
         h('label', { for: 'br-days' }, 'Works for'), days,
-        h('p', { class: 'seg' }, h('button', { type: 'button', onclick: async () => { fresh = await api('/api/bug-reports/link', { method: 'POST', body: { days: Number(days.value) } }); load(); } }, link ? 'Make a new link' : 'Make a link'),
-          link ? h('button', { class: 'sec', type: 'button', onclick: async () => { await api('/api/bug-reports/link', { method: 'DELETE' }); fresh = null; load(); } }, 'Stop the link') : null),
+        h('p', { class: 'seg' }, h('button', { type: 'button', onclick: async () => { await api('/api/bug-reports/link', { method: 'POST', body: { days: Number(days.value) } }); load(); } }, link ? 'Make a new link' : 'Make a link'),
+          link ? h('button', { class: 'sec', type: 'button', onclick: async () => { await api('/api/bug-reports/link', { method: 'DELETE' }); load(); } }, 'Stop the link') : null),
         h('p', { class: 'muted' }, 'Anyone with the link can read every report, including the debug report, until it expires or you stop it. A new link replaces the old one.')),
       h('section', { class: 'card' }, h('h2', {}, 'Keeping and clearing'), h('label', { for: 'br-keep' }, 'Keep reports'), keep,
         h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => clear(30) }, 'Clear older than 30 days'), h('button', { class: 'sec', type: 'button', onclick: () => clear(0) }, 'Clear all')), msg),
@@ -44,7 +44,8 @@ export default async function bugReports(root, _a, session) {
     if (el.querySelector('pre')) return;
     const r = await api(`/api/bug-reports/${id}`);
     el.append(h('pre', { style: 'white-space:pre-wrap;overflow-wrap:anywhere;margin:var(--sp-2) 0' }, `${r.note}\n\n${r.device}\n\n${r.layout}`),
-      h('p', { class: 'seg' }, h('button', { class: 'text sm', type: 'button', onclick: async () => { await api(`/api/bug-reports/${id}`, { method: 'DELETE' }); load(); } }, 'Delete this report')));
+      h('p', { class: 'seg' }, r.hasPage ? h('a', { class: 'btn sec', href: `/api/bug-reports/${id}/page`, target: '_blank', rel: 'noopener' }, 'See the page as it looked') : null,
+        h('button', { class: 'text sm', type: 'button', onclick: async () => { await api(`/api/bug-reports/${id}`, { method: 'DELETE' }); load(); } }, 'Delete this report')));
   }
 
   async function clear(days) {

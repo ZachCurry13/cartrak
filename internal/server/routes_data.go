@@ -103,6 +103,8 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("DELETE /api/shares/{id}", s.auth(true, s.revokeShare))
 	m.HandleFunc("GET /r/{token}", s.reportsPage)
 	m.HandleFunc("GET /r/{token}/{id}", s.reportPage)
+	m.HandleFunc("GET /r/{token}/{id}/page", s.reportPageCopy)
+	m.HandleFunc("GET /api/bug-reports/{id}/page", s.auth(true, s.adminPageCopy))
 	m.HandleFunc("GET /api/debug-report", s.auth(true, s.debugReport))
 	m.HandleFunc("GET /api/bug-reports", s.auth(true, s.listReports))
 	m.HandleFunc("POST /api/bug-reports", s.auth(true, s.addReport))

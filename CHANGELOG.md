@@ -17,7 +17,7 @@
 - **The route planner is tidier**: one **Plan a route** card with three tabs, **Stops**, **Paste a list** and **Long trip**, so only one is open at a time.
 - In the Road-trip planner, **Long trip: pick the Superchargers**: give a destination and set the **longest leg** (hours, or miles), the **longest day on the road** and which chargers your car can use (NACS plugs with the NACS adapter, a built-in CCS dock, or either). CarTrak picks the fastest set of stops where no leg is over your limits and the battery stays above your reserve.
 - A trip longer than your day limit is cut into days, with the night spent at a charger. **Plan this day below** fills the day's stops into the route planner, which adds real roads, the forecast and your car's usual efficiency.
-- **Places you insist on.** Add a town to take one road and not another (like going up through the Upper Peninsula), or a **hotel you already booked** to end a day there. Each can be a stop to plug in at or just a place to drive through.
+- **Places you insist on.** Add a town to take one road and not another (like a town on the scenic route), or a **hotel you already booked** to end a day there. Each can be a stop to plug in at or just a place to drive through.
 - **Superchargers first, Electrify America if you want it.** Only open Superchargers that let other makes charge are offered, from supercharge.info. Tick **Also use Electrify America** (it needs a free charger list key, pasted in Settings) and it is used when it saves enough to matter. When you left it off, CarTrak says how much time adding it would have saved.
 - **Reviews and avoiding.** Each charger links to its reviews on PlugShare, and **Avoid this charger** plans around it from then on (**Allow again** brings it back).
 - **Open in Google Maps** for each day and for the whole trip, split into parts of ten stops, and **Save this trip** to open it again later.
@@ -34,10 +34,14 @@
 ### 🐞 Bug reports kept in the app, as text
 - **Send a bug report** now keeps the report inside CarTrak: your note, the page's words, your screen, **layout facts** (what scrolls sideways, is cut off, too small to tap or hard to read) and the debug report. No picture, and no GitHub repository or token to set up.
 - **More, Bug reports** lists them, with **Keep reports** until cleared or for 30, 60 or 90 days, **Clear older than 30 days** and **Clear all**.
-- **A link to read them**: make one on that page (1, 7 or 30 days), copy it, and whoever opens it sees every report as plain text without signing in. It can be stopped any time, shows how often it was opened, and a new link replaces the old one.
+- **See the page as it looked**: each report also keeps a copy of the page's markup and styles (nothing that can run), so a layout problem can be seen again at the same window size, with no screenshot to take.
+- **A link to read them**: make one on that page (1, 7 or 30 days), copy it (it stays on the page, with a ready-to-paste message), and whoever opens it sees every report as plain text without signing in. It can be stopped any time, shows how often it was opened, and a new link replaces the old one.
 
 ### 🔔 One unit in notifications
 - "Trip ended" and the weekly summary now show miles only ("28.0 mi"), not miles and kilometers. If your fuel units setting is metric they show kilometers only.
+
+### 👁️ Easier to read in dark mode
+- The numbered stop badges on the Day view (and on a planned trip) used white text on a bright green or amber circle, which was hard to read in dark mode. They now use the theme's own dark-on-bright and white-on-deep text.
 
 ### 🏷️ Charges name themselves
 - A charge near a known Supercharger or Electrify America site is named after it, and otherwise shows its city, instead of "Unnamed place".

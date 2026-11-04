@@ -13,7 +13,8 @@ import (
 const (
 	reportKeepKey  = "report_keep_days"
 	reportMaxKept  = 200
-	reportBodyMax  = 3 << 20
+	reportBodyMax  = 5 << 20
+	reportHTMLMax  = 2 << 20
 	reportDebugMax = 1 << 20
 	reportPageMax  = 1 << 20 // what one link answers with
 )
@@ -34,7 +35,13 @@ func (s *Server) listReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	keep, _ := strconv.Atoi(s.S.GetKV(reportKeepKey))
-	ok(w, map[string]any{"reports": l, "keepDays": keep, "link": s.S.CurrentReportLink(), "addressKnown": s.publicBase() != ""})
+	link := s.S.CurrentReportLink()
+	url := ""
+	if link != nil && link.Token != "" {
+		url = s.publicBase() + "/r/" + link.Token
+		link.Token = ""
+	}
+	ok(w, map[string]any{"reports": l, "keepDays": keep, "link": link, "linkUrl": url, "addressKnown": s.publicBase() != ""})
 }
 
 // addReport: POST /api/bug-reports. A report is text: the note, what the page said, the device and screen, facts about the layout and
@@ -46,7 +53,7 @@ func (s *Server) addReport(w http.ResponseWriter, r *http.Request) {
 		fail(w, 413, "that report is too large")
 		return
 	}
-	if len(in.Note) > 4000 || len(in.Page) > 200 || len(in.Device) > 1000 || len(in.Text) > 60000 || len(in.Layout) > 30000 || len(in.Debug) > reportDebugMax {
+	if len(in.Note) > 4000 || len(in.Page) > 200 || len(in.Device) > 1000 || len(in.Text) > 60000 || len(in.Layout) > 30000 || len(in.Debug) > reportDebugMax || len(in.HTML) > reportHTMLMax {
 		fail(w, 400, "part of that report is too long")
 		return
 	}
@@ -72,6 +79,7 @@ func (s *Server) oneReport(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "no such report")
 		return
 	}
+	rep.HTML = ""
 	ok(w, rep)
 }
 
@@ -144,7 +152,7 @@ func (s *Server) makeReportLink(w http.ResponseWriter, r *http.Request) {
 		in.Days = 7
 	}
 	tok := shortToken(24)
-	if err := s.S.NewReportLink(store.TokenHash(tok), time.Now().AddDate(0, 0, in.Days).Unix()); err != nil {
+	if err := s.S.NewReportLink(tok, store.TokenHash(tok), time.Now().AddDate(0, 0, in.Days).Unix()); err != nil {
 		fail(w, 500, "db error")
 		return
 	}
@@ -164,7 +172,11 @@ func (s *Server) revokeReportLink(w http.ResponseWriter, r *http.Request) {
 func reportText(r *store.BugReport, debugMax int) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Report %d, %s, app %s\n\n", r.ID, time.Unix(r.TS, 0).Format("2006-01-02 15:04"), r.Version)
-	fmt.Fprintf(&b, "Note: %s\n\nPage: %s\nDevice: %s\n\n", strings.TrimSpace(r.Note), r.Page, r.Device)
+	fmt.Fprintf(&b, "Note: %s\n\nPage: %s\nDevice: %s\n", strings.TrimSpace(r.Note), r.Page, r.Device)
+	if r.HasPage {
+		fmt.Fprintf(&b, "The page as it looked (open it at the window size above): ./%d/page\n", r.ID)
+	}
+	b.WriteString("\n")
 	if r.Layout != "" {
 		fmt.Fprintf(&b, "## Layout facts\n%s\n\n", r.Layout)
 	}

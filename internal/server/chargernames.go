@@ -35,7 +35,7 @@ func (s *Server) knownChargers() []superchargers.Site {
 	return all
 }
 
-// chargerAt is the name of the known charger at a point ("Supercharger: Mackinaw City, MI"), or "".
+// chargerAt is the name of the known charger at a point ("Supercharger: Springfield, IL"), or "".
 func (s *Server) chargerAt(lat, lon *float64) string {
 	if lat == nil || lon == nil {
 		return ""

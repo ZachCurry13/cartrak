@@ -87,8 +87,8 @@ func TestTripChainReachesAGapOnlyElectrifyAmericaFills(t *testing.T) {
 
 func TestTripChainPassesThePlacesGiven(t *testing.T) {
 	ts, _, admin := chainServers(t)
-	_, out := do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(`,"via":[{"name":"Escanaba","lat":46.5,"lon":-93.5,"charge":false}]`), xh)
-	if !strings.Contains(out, `"name":"Escanaba"`) {
+	_, out := do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(`,"via":[{"name":"Midway","lat":46.5,"lon":-93.5,"charge":false}]`), xh)
+	if !strings.Contains(out, `"name":"Midway"`) {
 		t.Fatalf("the place to pass is missing: %s", out)
 	}
 	if c, _ := do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(`,"via":[{"name":"Nowhere","lat":0,"lon":0}]`), xh); c != 400 {

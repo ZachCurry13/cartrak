@@ -48,3 +48,42 @@ func TestBugReportsAreKeptAsTextAndOpenedThroughOneRevocableLink(t *testing.T) {
 		t.Fatalf("after clearing: %s", out)
 	}
 }
+
+func TestAReportsPageCopyIsServedWithAPolicyThatRunsNothing(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.Cfg.Set(keyAddress, "cartrak.example.test")
+	admin := adminClient(t, ts.URL)
+	anon := &http.Client{}
+	api := ts.URL + "/api/bug-reports"
+	do(t, admin, "POST", api, `{"note":"layout","page":"#/plan","device":"phone 411x800","html":"<!doctype html><html><body><p>copy</p></body></html>"}`, xh)
+	do(t, admin, "POST", api, `{"note":"no copy","page":"#/plan","device":"phone"}`, xh)
+	_, out := do(t, admin, "POST", api+"/link", `{"days":7}`, xh)
+	var link struct{ Path string }
+	json.Unmarshal([]byte(out), &link)
+	_, body := do(t, admin, "GET", api, "", nil)
+	var l struct {
+		Reports []struct {
+			ID      int64
+			HasPage bool
+		}
+		LinkURL string
+	}
+	if json.Unmarshal([]byte(body), &l) != nil || !strings.HasSuffix(l.LinkURL, link.Path) || len(l.Reports) != 2 || !l.Reports[1].HasPage || l.Reports[0].HasPage {
+		t.Fatalf("the list shows the link again and which reports have a page copy: %s", body)
+	}
+	req, _ := http.NewRequest("GET", ts.URL+link.Path+"/"+strconv.FormatInt(l.Reports[1].ID, 10)+"/page", nil)
+	resp, err := anon.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != 200 || !strings.Contains(resp.Header.Get("Content-Security-Policy"), "default-src 'none'") || resp.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+		t.Fatalf("the copy must carry a policy that runs nothing: %d %v", resp.StatusCode, resp.Header)
+	}
+	if c, _ := do(t, anon, "GET", ts.URL+link.Path+"/"+strconv.FormatInt(l.Reports[0].ID, 10)+"/page", "", nil); c != 404 {
+		t.Fatalf("a report with no copy gave %d", c)
+	}
+	if _, text := do(t, anon, "GET", ts.URL+link.Path, "", nil); !strings.Contains(text, "/page") {
+		t.Fatalf("the text index points to the page copy: %s", text)
+	}
+}
