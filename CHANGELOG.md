@@ -8,6 +8,11 @@
 - **Honest about what it cannot know yet.** Until both sets have driven enough at the same temperature it says "not enough overlap yet" and what is missing, and it flags a result bigger than tires usually make. A first winter has no cold driving on the old tires, so expect a first answer a few weeks after the swap and a better one next winter.
 - **An optional reminder** (Notifications, Tire swap reminder; off until you pick it): once in autumn when the daily high has stayed under 45°F for three days, once in spring when it has stayed over 50°F for five days with winter tires on. It uses the car's own outside temperature and stays quiet unless you keep a tire log.
 
+### 📋 Paste a list of companies
+- In **Plan a route with stops**, **Paste a list of companies** takes names one per line, with or without a number and country on the end ("Name-1234567-U.S.A."). The number and country are read and dropped.
+- Each name is found by its number if you confirmed it before, then among your saved places, then by an address search near Home. Sure matches are filled in; doubtful ones show the choices and wait for your pick. Anything can be skipped.
+- Places you pick are remembered by the number, so the next list fills them in by itself. Up to 10 companies are used per list; paste the rest as another day.
+
 ## 0.75.0
 
 ### 🐞 Send a bug report from any page

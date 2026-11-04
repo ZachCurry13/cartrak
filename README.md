@@ -28,6 +28,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - **Several cars and people**: each car has its own database, settings and Ford link; each person sees only the cars they were given, and can be allowed to bring a car of their own ([details](docs/several-cars.md))
 - **Trip planning**: a route planner with up to ten stops in the best order, an Open in Google Maps link, a range and weather forecast for the drive, and an **Estimate the route** button for trips recorded with only a few positions
 - **Weather** along each trip (wind, rain, snow) to explain why a trip used more energy, from a free weather service you switch on yourself
+- **Paste a list of companies** into the route planner: names are matched to your saved places or found by address search, the ones you pick are remembered, and the round trip is planned
 - **Tires**: log each set and the day it went on, and see what winter tires do to your range at the same temperature, not blamed on the cold ([details](docs/tires.md))
 - **Send a bug report** from any page: a picture of the page, its text, the screen it was on and the debug report go to a private GitHub repository of yours, so a problem can be read later instead of described ([details](docs/bug-reports.md))
 - **Material design** throughout: a bottom sheet you can drag, switches, a ripple and short vibration on tap (Android), light and dark, and a design guide for keeping it current ([details](docs/DESIGN.md))

@@ -75,6 +75,8 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /api/fields", s.auth(false, s.fieldWatch))
 	m.HandleFunc("GET /api/named-places", s.auth(false, s.listNamedPlaces))
 	m.HandleFunc("GET /api/named-places/search", s.auth(true, s.searchPlaces))
+	m.HandleFunc("POST /api/company-list/resolve", s.auth(true, s.resolveCompanies))
+	m.HandleFunc("POST /api/company-list/remember", s.auth(true, s.rememberCompany))
 	m.HandleFunc("POST /api/route-plan", s.auth(true, s.planRoute))
 	m.HandleFunc("GET /api/software", s.auth(false, s.listSoftware))
 	m.HandleFunc("POST /api/software", s.auth(true, s.addSoftware))
