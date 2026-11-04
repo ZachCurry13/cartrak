@@ -114,6 +114,7 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("POST /api/trips/{id}/route-choice", s.auth(true, s.setTripRoute))
 	m.HandleFunc("POST /api/trips/{id}/calibrate", s.auth(true, s.calibrateOdometer))
 	m.HandleFunc("GET /api/bug-report/status", s.auth(true, s.reportStatus))
+	m.HandleFunc("POST /api/bug-report/setup", s.auth(true, s.setupReport))
 	m.HandleFunc("GET /api/tire-sets", s.auth(false, s.tireSetList))
 	m.HandleFunc("GET /api/tire-sets/compare", s.auth(false, s.tireSetCompare))
 	m.HandleFunc("POST /api/tire-sets", s.auth(true, s.tireSetAdd))

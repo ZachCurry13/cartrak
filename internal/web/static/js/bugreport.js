@@ -6,6 +6,7 @@ import { api } from './api.js';
 import { deviceInfo, pageText, screenshot } from './pagecapture.js';
 import { phoneSection } from './errlog.js';
 import { trapFocus } from './focustrap.js';
+import { reportSetup } from './reportsetup.js';
 
 const HIDDEN_ON = ['#/live', '#/login'];
 
@@ -20,8 +21,7 @@ function sheet(info, configured) {
   const msg = h('p', { class: 'muted', role: 'status' });
   let body;
   if (!configured) {
-    body = [h('p', {}, 'Bug reports are sent to a private GitHub repository that you set up once: a repository name and a token, under More, Settings (Bug report repository, Bug report token). The steps are in docs/bug-reports.md.'),
-      h('p', {}, h('a', { class: 'btn', href: '#/admin', onclick: close }, 'Open Settings'), ' ', h('button', { class: 'text', type: 'button', onclick: close }, 'Close'))];
+    body = reportSetup(close, () => { close(); sheet(info, true); });
   } else {
     const note = h('textarea', { rows: 4, maxlength: 4000, placeholder: 'What went wrong? What did you expect?', 'aria-label': 'What went wrong', style: 'width:100%' });
     const withDebug = h('input', { type: 'checkbox', class: 'check', id: 'br-debug', checked: true });

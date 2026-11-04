@@ -169,3 +169,21 @@ func joinFiles(f []string) string {
 	}
 	return ", " + strings.Join(f, ", ")
 }
+
+// Check says whether the repository can take reports: it exists, the token can write to it, and it is private. A public
+// repository is refused because a report holds screenshots and positions.
+func (c *Client) Check(ctx context.Context) error {
+	out, err := c.do(ctx, "GET", "/repos/"+c.Repo, nil)
+	if err != nil {
+		return err
+	}
+	if private, _ := out["private"].(bool); !private {
+		return fmt.Errorf("%s is public: reports contain screenshots and positions, so make it private (GitHub, the repository's Settings, Danger Zone, Change visibility)", c.Repo)
+	}
+	if perms, ok := out["permissions"].(map[string]any); ok {
+		if push, _ := perms["push"].(bool); !push {
+			return fmt.Errorf("the token cannot write to %s: set Contents and Issues to Read and write", c.Repo)
+		}
+	}
+	return nil
+}

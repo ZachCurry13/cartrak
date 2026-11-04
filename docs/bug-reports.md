@@ -14,6 +14,8 @@ It goes from your CarTrak server to GitHub; the browser never sees the token. A 
 your screen, so use a **private** repository, never the public CarTrak one.
 
 ## Set it up once
+The easy way: tap **Send a bug report** and follow the three steps on the sheet. It has links that open GitHub with the repository name filled in, and it checks the repository and token before saving them (a public repository is refused). The same steps by hand:
+
 1. On GitHub, create a **private** repository, for example `cartrak-reports`. Tick **Add a README** so it has a first commit.
 2. Create a **fine-grained personal access token** (GitHub, Settings, Developer settings, Personal access tokens, Fine-grained tokens):
    repository access **only that repository**, permissions **Contents: Read and write** and **Issues: Read and write**. Copy the token.

@@ -29,6 +29,9 @@
 ### 📍 Record GPS from the top bar
 - A new button next to Search turns on GPS recording from this phone from any page, and lights up while it records. It stays on as you move between pages (a browser still cannot record once the app is closed or the screen locks). The card on the Live page is the same switch.
 
+### 🐞 Bug report setup in three steps
+- The first time you tap **Send a bug report**, the sheet now walks you through it: a link that creates the private repository with its name filled in, a link to create the token (with the two permissions to pick), and two boxes to paste into. CarTrak checks with GitHub that the repository exists, can be written to and is **private** (a public one is refused, because reports hold screenshots and positions) before it keeps anything. No trip to Settings.
+
 ### 🏷️ Charges name themselves
 - A charge near a known Supercharger or Electrify America site is named after it, and otherwise shows its city, instead of "Unnamed place".
 

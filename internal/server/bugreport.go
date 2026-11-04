@@ -3,10 +3,12 @@ package server
 import (
 	"encoding/base64"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/bugreport"
+	"github.com/ZachCurry13/cartrak/internal/settings"
 )
 
 const (
@@ -68,4 +70,42 @@ func (s *Server) sendReport(w http.ResponseWriter, r *http.Request) {
 	}
 	s.S.LogDecision("bug_report", "a bug report was sent to the private repository: "+res.ID)
 	ok(w, res)
+}
+
+var repoName = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$`)
+
+// setupReport checks a repository and token with GitHub and, when they work, keeps them as the bug report settings, so the whole
+// setup can be done from the report sheet. POST /api/bug-report/setup {"repo": "me/cartrak-reports", "token": "..."} Admin only.
+func (s *Server) setupReport(w http.ResponseWriter, r *http.Request) {
+	var in struct{ Repo, Token string }
+	if decode(r, &in) != nil || s.Cfg == nil {
+		fail(w, 400, "give the repository and the token")
+		return
+	}
+	in.Repo, in.Token = strings.TrimSpace(in.Repo), strings.TrimSpace(in.Token)
+	in.Repo = strings.TrimPrefix(strings.TrimPrefix(in.Repo, "https://github.com/"), "github.com/")
+	in.Repo = strings.TrimSuffix(in.Repo, "/")
+	if !repoName.MatchString(in.Repo) {
+		fail(w, 400, "the repository looks like your-name/cartrak-reports")
+		return
+	}
+	if in.Token == "" || len(in.Token) > 255 || strings.ContainsAny(in.Token, " \t\r\n") {
+		fail(w, 400, "paste the token exactly as GitHub shows it")
+		return
+	}
+	c := &bugreport.Client{Repo: in.Repo, Token: in.Token, API: s.ReportAPI}
+	if err := c.Check(r.Context()); err != nil {
+		fail(w, upstreamFailed, err.Error())
+		return
+	}
+	if err := s.Cfg.Set(settings.ReportRepoKey, in.Repo); err != nil {
+		fail(w, 500, "could not save the repository")
+		return
+	}
+	if err := s.Cfg.Set(settings.ReportTokenKey, in.Token); err != nil {
+		fail(w, 500, "could not save the token")
+		return
+	}
+	s.S.LogDecision("bug_report", "bug reports were set up for a private repository")
+	ok(w, map[string]any{"configured": true, "repo": in.Repo})
 }

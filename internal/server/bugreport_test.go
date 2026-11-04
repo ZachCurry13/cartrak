@@ -74,3 +74,32 @@ func TestABugReportNeedsTheRepositoryAdminsAndASensibleSize(t *testing.T) {
 		t.Fatalf("a viewer cannot send the car's data off the box: %d", code)
 	}
 }
+
+func TestBugReportSetupChecksTheRepositoryIsPrivateAndWritable(t *testing.T) {
+	repo := `{"private":true,"permissions":{"push":true}}`
+	gh := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write([]byte(repo)) }))
+	defer gh.Close()
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.ReportAPI = gh.URL
+	admin := adminClient(t, ts.URL)
+	url := ts.URL + "/api/bug-report/setup"
+	if c, _ := do(t, admin, "POST", url, `{"repo":"not a repo","token":"ghp_x"}`, xh); c != 400 {
+		t.Fatalf("a bad name gave %d", c)
+	}
+	repo = `{"private":false,"permissions":{"push":true}}`
+	if c, b := do(t, admin, "POST", url, `{"repo":"me/reports","token":"ghp_x"}`, xh); c == 200 || !strings.Contains(b, "public") {
+		t.Fatalf("a public repository must be refused: %d %s", c, b)
+	}
+	repo = `{"private":true,"permissions":{"push":false}}`
+	if c, _ := do(t, admin, "POST", url, `{"repo":"me/reports","token":"ghp_x"}`, xh); c == 200 {
+		t.Fatalf("a token that cannot write must be refused")
+	}
+	if srv.Cfg.ReportRepo() != "" {
+		t.Fatal("nothing is saved until the check passes")
+	}
+	repo = `{"private":true,"permissions":{"push":true}}`
+	c, b := do(t, admin, "POST", url, `{"repo":"https://github.com/me/reports/","token":"ghp_x"}`, xh)
+	if c != 200 || strings.Contains(b, "ghp_x") || srv.Cfg.ReportRepo() != "me/reports" || srv.Cfg.ReportToken() != "ghp_x" {
+		t.Fatalf("set up: %d %s", c, b)
+	}
+}
