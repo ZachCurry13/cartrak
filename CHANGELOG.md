@@ -31,8 +31,10 @@
 ### 📍 Record GPS from the top bar
 - A new button next to Search turns on GPS recording from this phone from any page, and lights up while it records. It stays on as you move between pages (a browser still cannot record once the app is closed or the screen locks). The card on the Live page is the same switch.
 
-### 🐞 Bug report setup in three steps
-- The first time you tap **Send a bug report**, the sheet now walks you through it: a link that creates the private repository with its name filled in, a link to create the token (with the two permissions to pick), and two boxes to paste into. CarTrak checks with GitHub that the repository exists, can be written to and is **private** (a public one is refused, because reports hold screenshots and positions) before it keeps anything. No trip to Settings.
+### 🐞 Bug reports kept in the app, as text
+- **Send a bug report** now keeps the report inside CarTrak: your note, the page's words, your screen, **layout facts** (what scrolls sideways, is cut off, too small to tap or hard to read) and the debug report. No picture, and no GitHub repository or token to set up.
+- **More, Bug reports** lists them, with **Keep reports** until cleared or for 30, 60 or 90 days, **Clear older than 30 days** and **Clear all**.
+- **A link to read them**: make one on that page (1, 7 or 30 days), copy it, and whoever opens it sees every report as plain text without signing in. It can be stopped any time, shows how often it was opened, and a new link replaces the old one.
 
 ### 🔔 One unit in notifications
 - "Trip ended" and the weekly summary now show miles only ("28.0 mi"), not miles and kilometers. If your fuel units setting is metric they show kilometers only.

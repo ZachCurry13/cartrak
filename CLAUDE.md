@@ -33,7 +33,7 @@ mobile-first PWA. Runs as a TrueNAS custom app behind a Cloudflare tunnel.
 - Clones use LF endings (`core.autocrlf=false`).
 
 ## Bug reports
-The owner sends reports from the app ("Send a bug report" at the foot of a page) to their own private reports repository. Pull them with `gh` as in `docs/bug-reports.md` (ask for the repository name), read `screen.png`, `report.md` and `debug.txt`, and never copy a report's contents into this public repo.
+The owner sends reports from the app ("Send a bug report" at the foot of a page). They are kept in the app as text. The owner makes a link on More, Bug reports and pastes it in chat: read it with WebFetch (it lists every report as plain text; `/r/<secret>/<number>` is one report). Never copy a report's contents or the link into this public repo.
 
 ## Users
 Admin (manages everything) and viewer (read-only). No kid accounts or age groups.

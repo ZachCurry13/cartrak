@@ -3,7 +3,7 @@ import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
-import { tripDay } from './tripdays.js';
+import { tripDay } from './longtripdays.js';
 
 const toKm = (v) => (isMetric() ? v : v / 0.621371);
 const PLUGS = [['both', 'Superchargers: NACS plugs or a built-in CCS dock'], ['nacs', 'Superchargers: NACS plugs only (with the adapter)'], ['dock', 'Superchargers: built-in CCS dock only'], ['none', 'No Superchargers']];

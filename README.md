@@ -31,7 +31,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - **Long trips**: give a destination, the longest leg and the longest day, and CarTrak picks Superchargers your car can use and splits the trip into days
 - **Paste a list of companies** into the route planner: names are matched to your saved places or found by address search, the ones you pick are remembered, and the round trip is planned
 - **Tires**: log each set and the day it went on, and see what winter tires do to your range at the same temperature, not blamed on the cold ([details](docs/tires.md))
-- **Send a bug report** from any page: a picture of the page, its text, the screen it was on and the debug report go to a private GitHub repository of yours, so a problem can be read later instead of described ([details](docs/bug-reports.md))
+- **Send a bug report** from any page: it is kept in the app as text (the page's words, the screen it was on, layout facts and the debug report), cleared by hand or after 30, 60 or 90 days, and a link you make on demand lets someone read them ([details](docs/bug-reports.md))
 - **Material design** throughout: a bottom sheet you can drag, switches, a ripple and short vibration on tap (Android), light and dark, and a design guide for keeping it current ([details](docs/DESIGN.md))
 - One Go binary, SQLite storage, Docker image, TrueNAS and Cloudflare tunnel ready
 

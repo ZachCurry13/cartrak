@@ -71,7 +71,6 @@ type Server struct {
 	rainLearn    rainLearn
 	routeOpts    routeOptCache
 	etaHist      etaHistory // what the charging time estimate learned from past sessions
-	ReportAPI    string     // the address bug reports are sent to; empty is GitHub, tests point it at a fake
 	brief        briefCache
 	CityLookups  bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
 	cityBusy     atomic.Bool // such a lookup is running

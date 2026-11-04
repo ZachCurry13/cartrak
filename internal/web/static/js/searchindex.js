@@ -4,6 +4,7 @@ import { GROUPS } from './pages/guide.js';
 // Things people look for by a word that is not the name of the page they live on. Each says where it is:
 // [title, where, href, what it is, extra words people might type].
 const EXTRA = [
+  ['Bug reports', 'More → Bug reports', '#/bugreports', 'Reports you sent from any page, kept as text, with a link to let someone read them and a way to clear them.', 'bug report problem feedback issue link clear export'],
   ['Tires and snow tires', 'More → Tires', '#/tires', 'Log your tire sets and the day winter tires go on, and see what they do to your range at the same temperature.', 'tires tire snow winter summer all season swap range efficiency wheels'],
   ['Vacation', 'More → Trip rules', '#/rules', 'Pick the days you are away and every trip is Personal, so you do not change them one by one.', 'vacation holiday time off away trip personal work'],
   ['Work or personal', 'More → Trip rules', '#/rules', 'Rules that label trips by day, time and place.', 'work personal business label category rule hours'],
