@@ -13,6 +13,11 @@
 - Each name is found by its number if you confirmed it before, then among your saved places, then by an address search near Home. Sure matches are filled in; doubtful ones show the choices and wait for your pick. Anything can be skipped.
 - Places you pick are remembered by the number, so the next list fills them in by itself. Up to 10 companies are used per list; paste the rest as another day.
 
+### 🔌 Long trips: pick the Superchargers
+- In the Road-trip planner, **Long trip: pick the Superchargers**: give a destination and set the **longest leg** (hours, or miles), the **longest day on the road** and which chargers your car can use (NACS plugs with the NACS adapter, a built-in CCS dock, or either). CarTrak picks the fastest set of stops where no leg is over your limits and the battery stays above your reserve.
+- A trip longer than your day limit is cut into days, with the night spent at a charger. **Plan this day below** fills the day's stops into the route planner, which adds real roads, the forecast and your car's usual efficiency.
+- Only sites that are open and let other makes charge are offered. The list comes from supercharge.info and is downloaded about once a week the first time it is needed; nothing about you or the trip is sent. A site can still be full or down, so check it before you go.
+
 ## 0.75.0
 
 ### 🐞 Send a bug report from any page

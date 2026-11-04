@@ -5,6 +5,7 @@ import { routeSummary } from './routesummary.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
 import { pasteListCard } from './companylist.js';
+import { tripChainCard } from './tripchain.js';
 
 const MAX = 11; // the start and up to ten destinations
 const clock = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
@@ -96,6 +97,7 @@ export async function multiStopCard(get, latest) {
   draw();
   return h('section', { class: 'card' }, h('h2', {}, 'Plan a route with stops'),
     h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
+    tripChainCard(get, () => stops[0], (day, i) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; out.replaceChildren(); draw(); msg.textContent = `Day ${i + 1} is filled in${i ? ': set the starting charge to about your charge target first' : ''}. Plan the route to see the roads, weather and charging.`; }),
     pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); out.replaceChildren(); draw(); msg.textContent = `${found.length} stops filled in. Check them, then plan the route.`; }),
     list, tick(best, 'ms-best', 'Best order (least driving)'), tick(back, 'ms-back', 'Return to the start'),
     h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', {}, h('button', { onclick: plan }, 'Plan the route')), msg, out);

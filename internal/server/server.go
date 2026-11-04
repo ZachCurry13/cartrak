@@ -62,6 +62,7 @@ type Server struct {
 	TileClient   *http.Client  // optional, for tests
 	Push         *push.Service // Web Push alerts (nil in some tests)
 	GasURL       string        // live gas price service; empty uses the EIA (tests point it at a fake)
+	SuperURL     string        // Supercharger list service; empty uses supercharge.info (tests point it at a fake)
 	GeoGap       time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo          geoState
 	gasLive      gasLiveState

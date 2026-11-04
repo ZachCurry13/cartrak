@@ -56,6 +56,11 @@ To see what it costs, an admin sets **Price per kWh at home** (and, if you like,
 
 It lists each stop: about how far into the trip, what charge you arrive with (your reserve), what to charge to (only as much as the rest of the trip needs, up to your target), and about how long it takes, then the charge you arrive with. It is a guide, not a route: hills, highway speed, wind and cold use more battery, and fast chargers slow down above 80%.
 
+## Long trips: pick the Superchargers
+Above the route card, **Long trip: pick the Superchargers** chooses charging stops for a trip. Find the destination, set the **longest leg** (2.5 hours by default, or a distance), the **longest day on the road** (12 hours) and which chargers you can use: NACS plugs (your car needs the NACS adapter), a built-in CCS dock (a "Magic Dock"), or either. CarTrak keeps only Superchargers that are open and let other makes charge, and finds the fastest set of stops where every leg is inside your limits and the battery stays above your reserve. When the trip is longer than your day limit it is cut into days, sleeping at a charger. Tap **Plan this day below** to fill a day into the route planner for real roads, weather and charging time.
+
+The list of sites comes from supercharge.info. It is downloaded the first time and then about weekly, and only the list is fetched: nothing about you or the trip is sent. Distances while choosing stops are estimates (a straight line made longer), and a site can still be full or out of service, so check it before you go.
+
 ## Plan a route with stops (and a day of customers)
 On **More, Road-trip planner**, admins get a **Plan a route with stops** card. Add a start and up to **ten destinations**: type an address and tap **Find**, or pick one of your named places (the start can be "Where the car is now"). Tick **Find the best order** and CarTrak puts the destinations in the order that takes the least driving time (it checks every order, so it is exact), and says how much time that saves over the order you typed. Tick **Come back to the start** to end the day at home. Set the time you are leaving and tap **Plan the route**.
 
