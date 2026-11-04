@@ -80,7 +80,7 @@ func (f *Fleet) build(c store.Car, primary bool) (*Runtime, error) {
 		_ = st.LogAlert(store.AlertLogEntry{Kind: a.Kind, Title: a.Title, Body: a.Body, Devices: devices, Wanted: wanted, Quiet: quiet, Sent: sent, URL: a.URL})
 	}
 	srv.Push = pushSvc
-	eng := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, BumpLevel: cfgs.BumpThreshold,
+	eng := &alerts.Engine{S: st, N: pushSvc, Async: true, ReminderTime: cfgs.PlugReminderTime, ReminderBelow: cfgs.PlugReminderBelow, BumpLevel: cfgs.BumpThreshold, Metric: func() bool { return cfgs.Value(settings.FuelUnitsKey) == "metric" },
 		LowBatteryLevel: cfgs.LowBatteryLevel, ChargeBudget: cfgs.ChargeBudget, MonthCost: srv.MonthChargingCost,
 		DiskSpace: func() (uint64, uint64, bool) { return diskfree.Space(f.Cfg.DataDir) }, Loc: cfgs.Location,
 		Link: func() (bool, int64) { s := p.Status(); return s.Linked, s.LastOK }}

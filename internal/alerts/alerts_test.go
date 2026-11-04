@@ -180,7 +180,7 @@ func TestTripStartAndEndComeFromTheTripRecords(t *testing.T) {
 	tr.EndTS, tr.DistanceKm, tr.Open = &end, 16.0934, false
 	s.UpdateTrip(tr)
 	e.Handle(reading(35, nil))
-	if r.kinds() != "trip_start,trip_end" || !strings.Contains(r.got[1].Body, "10.0 mi (16.1 km)") || r.got[1].URL != "#/trip/1" {
+	if r.kinds() != "trip_start,trip_end" || !strings.Contains(r.got[1].Body, "10.0 mi.") || r.got[1].URL != "#/trip/1" {
 		t.Fatalf("got %s %+v", r.kinds(), r.got)
 	}
 	// A blip the detector throws away was never announced as started, so there is no "ended" either.

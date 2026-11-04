@@ -26,7 +26,7 @@ func (e *Engine) trip(first bool) {
 		}
 		if e.openTrip != 0 {
 			if t, err := e.S.GetTrip(e.openTrip); err == nil && !t.Open {
-				e.send(push.Alert{Kind: push.TripEnd, Title: "Trip ended", Body: fmt.Sprintf("%.1f mi (%.1f km).", t.DistanceKm*0.621371, t.DistanceKm), URL: "#/trip/" + strconv.FormatInt(t.ID, 10)})
+				e.send(push.Alert{Kind: push.TripEnd, Title: "Trip ended", Body: e.distance(t.DistanceKm, 1) + ".", URL: "#/trip/" + strconv.FormatInt(t.ID, 10)})
 			}
 			if id != 0 {
 				e.send(push.Alert{Kind: push.TripStart, Title: "Trip started", Body: "CarTrak is recording a trip.", URL: "#/trip/" + strconv.FormatInt(id, 10)})

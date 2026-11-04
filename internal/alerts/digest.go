@@ -59,12 +59,12 @@ func (e *Engine) weeklyDigest() {
 			}
 		}
 	}
-	body := fmt.Sprintf("%.0f mi (%.0f km) in %d trip%s.", km*0.621371, km, n, plural(n))
+	body := fmt.Sprintf("%s in %d trip%s.", e.distance(km, 0), n, plural(n))
 	if sessions > 0 {
 		body += fmt.Sprintf(" %d charge%s added %.0f kWh.", sessions, plural(sessions), added)
 	}
 	if kwh > 0 {
-		body += fmt.Sprintf(" %.1f mi/kWh.", km*0.621371/kwh)
+		body += e.perEnergy(km, kwh)
 	}
 	_ = e.S.SetKV(kvDigestWeek, key)
 	e.send(push.Alert{Kind: push.WeeklySummary, Title: "Your week with the car", Body: body, URL: "#/insights"})

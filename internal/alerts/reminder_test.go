@@ -180,7 +180,7 @@ func TestTheWeeklySummaryComesOnceOnSundayEveningWithTheWeeksNumbers(t *testing.
 	mk(3, 60, 60, 50)  // 60 km on 10 kWh
 	mk(20, 500, 80, 10)
 	e.Tick()
-	if r.kinds() != "weekly_summary" || !strings.Contains(r.got[0].Body, "160 km") || !strings.Contains(r.got[0].Body, "2 trips") {
+	if r.kinds() != "weekly_summary" || !strings.Contains(r.got[0].Body, "99 mi in 2 trips") || !strings.Contains(r.got[0].Body, "2 trips") {
 		t.Fatalf("%s %+v", r.kinds(), r.got)
 	}
 	now = now.Add(30 * time.Minute)
