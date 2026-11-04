@@ -23,29 +23,30 @@ const (
 )
 
 // routeForDay is the best line for one trip: a phone GPS track, else an estimated road, else the car's own positions.
-func (s *Server) routeForDay(t *store.Trip, lookups *int) dayRoute {
+func (s *Server) routeForDay(t *store.Trip, lookups *int) []dayRoute {
 	end := time.Now().Unix()
 	if t.EndTS != nil {
 		end = *t.EndTS
 	}
 	out := dayRoute{TripID: t.ID, Points: [][2]float64{}}
 	var line [][2]float64
-	for _, p := range s.phoneRoute(t.StartTS, end) {
+	phone := s.phoneRoute(t.StartTS, end)
+	for _, p := range phone {
 		line = append(line, [2]float64{p.Lat, p.Lon})
 	}
 	if len(line) >= 2 {
 		out.Kind, out.Points = "phone", thinLine(line, dayRoutePoints)
-		return out
+		return s.fillPhoneGaps(t, end, phone, out)
 	}
 	fetch := *lookups < dayEstimateMax
 	if est := s.estimateFor(t, false); est != nil {
 		out.Kind, out.Points = "estimate", thinLine(est.Points, dayRoutePoints)
-		return out
+		return []dayRoute{out}
 	} else if fetch && s.routeLookupOn() {
 		*lookups++
 		if est := s.estimateFor(t, true); est != nil {
 			out.Kind, out.Points = "estimate", thinLine(est.Points, dayRoutePoints)
-			return out
+			return []dayRoute{out}
 		}
 	}
 	line = line[:0]
@@ -59,7 +60,7 @@ func (s *Server) routeForDay(t *store.Trip, lookups *int) dayRoute {
 		}
 	}
 	out.Kind, out.Points = "car", thinLine(line, dayRoutePoints)
-	return out
+	return []dayRoute{out}
 }
 
 // dayView is everything on one day: the trips with their routes, the stops between them, and the day's totals.
@@ -124,8 +125,10 @@ func (s *Server) dayView(w http.ResponseWriter, r *http.Request) {
 		if t.Open {
 			continue
 		}
-		if rt := s.routeForDay(t, &lookups); len(rt.Points) >= 2 {
-			routes = append(routes, rt)
+		for _, rt := range s.routeForDay(t, &lookups) {
+			if len(rt.Points) >= 2 {
+				routes = append(routes, rt)
+			}
 		}
 		if e, ok := trips.EnergyUsed(t, capacity); ok {
 			used += e.Kwh

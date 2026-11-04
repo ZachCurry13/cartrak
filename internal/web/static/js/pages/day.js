@@ -85,7 +85,9 @@ export default async function day(root, [date, action], session) {
     let map = null;
     if (mc.enabled && x.routes.length) {
       const m = createMap(mc, { height: 340 });
-      const routes = x.routes.map((r, i) => ({ points: r.points, color: COLORS[i % COLORS.length], width: 5,
+      const tripNo = new Map(); // a trip's recorded line and its dotted gaps share one colour
+      for (const r of x.routes) if (!tripNo.has(r.tripId)) tripNo.set(r.tripId, tripNo.size);
+      const routes = x.routes.map((r) => ({ points: r.points, color: COLORS[tripNo.get(r.tripId) % COLORS.length], width: 5,
         ...(r.kind === 'estimate' ? { dash: '0.1 9', cap: 'round', opacity: 0.85 } : {}) }));
       const first = x.routes[0].points[0], lastR = x.routes[x.routes.length - 1].points;
       const markers = [{ lat: first[0], lon: first[1], color: '#059669' }, { lat: lastR[lastR.length - 1][0], lon: lastR[lastR.length - 1][1] },

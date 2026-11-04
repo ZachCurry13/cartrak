@@ -23,6 +23,9 @@
 - **Open in Google Maps** for each day and for the whole trip, split into parts of ten stops, and **Save this trip** to open it again later.
 - Lists are downloaded about once a week; nothing about you or the trip is sent. A site can still be full or down, so check it before you go.
 
+### 🗺️ A tidier Day map when GPS comes on partway
+- When the phone's GPS was switched on partway through a drive, the day map drew only the part it recorded, as if the drive were shorter. The part before (or after) is now filled in with a dotted line from the car's own positions, in the same colour as the drive.
+
 ### 🏷️ Charges name themselves
 - A charge near a known Supercharger or Electrify America site is named after it, and otherwise shows its city, instead of "Unnamed place".
 
