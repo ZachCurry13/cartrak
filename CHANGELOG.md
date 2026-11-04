@@ -21,6 +21,8 @@
 - **Superchargers first, Electrify America if you want it.** Only open Superchargers that let other makes charge are offered, from supercharge.info. Tick **Also use Electrify America** (it needs a free charger list key, pasted in Settings) and it is used when it saves enough to matter. When you left it off, CarTrak says how much time adding it would have saved.
 - **Reviews and avoiding.** Each charger links to its reviews on PlugShare, and **Avoid this charger** plans around it from then on (**Allow again** brings it back).
 - **Open in Google Maps** for each day and for the whole trip, split into parts of ten stops, and **Save this trip** to open it again later.
+- **Each day reads like the Day view**: a row for every drive and charge with clock times, the battery on the way in and out, the energy added and what it should cost. The cost uses what a kWh has actually cost you at Superchargers and at Electrify America (so a subscription discount is already in it), or your average away from home when there are too few charges yet. Set **Leaving at** in the Stops tab to set the clock.
+- **A hotel night names the closest charger** and how far it is, to charge there that evening or first thing next morning.
 - Lists are downloaded about once a week; nothing about you or the trip is sent. A site can still be full or down, so check it before you go.
 
 ### 🗺️ A tidier Day map when GPS comes on partway

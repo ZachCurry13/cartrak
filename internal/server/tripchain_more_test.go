@@ -28,13 +28,16 @@ type chainOut struct {
 	}
 }
 
-func chainServers(t *testing.T) (*httptest.Server, *Server, *http.Client) {
+func chainServers(t *testing.T, teslaLats ...float64) (*httptest.Server, *Server, *http.Client) {
+	if len(teslaLats) == 0 {
+		teslaLats = []float64{45.8, 47.3}
+	}
 	ts, srv := healthServer(t, fakeProv{}, false, false)
 	admin := adminClient(t, ts.URL)
 	seedUsualDriving(t, srv)
 	tesla := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var s []string
-		for _, lat := range []float64{45.8, 47.3} {
+		for _, lat := range teslaLats {
 			s = append(s, fmt.Sprintf(`{"name":"Super %.1f","status":"OPEN","gps":{"latitude":%.1f,"longitude":-93.2},"powerKilowatt":250,"otherEVs":true,"plugshareId":4242,"plugs":{"nacs":8}}`, lat, lat))
 		}
 		w.Write([]byte("[" + strings.Join(s, ",") + "]"))
@@ -48,8 +51,9 @@ func chainServers(t *testing.T) (*httptest.Server, *Server, *http.Client) {
 	return ts, srv, admin
 }
 
-func TestTripChainOffersElectrifyAmericaAsAnOptionAndUsesItWhenAsked(t *testing.T) {
-	ts, srv, admin := chainServers(t)
+func TestTripChainUsesElectrifyAmericaOnlyWhenAskedAndSaysWhatItWouldSave(t *testing.T) {
+	// Superchargers at 45.8 and 47.5 need two stops; the Electrify America charger at 46.75 does it in one
+	ts, srv, admin := chainServers(t, 45.9, 47.5)
 	post := func(body string) (int, string) { return do(t, admin, "POST", ts.URL+"/api/trip-chain", body, xh) }
 	if c, _ := post(chainBody(`,"ea":true`)); c != 400 {
 		t.Fatalf("Electrify America without a key gave %d", c)
@@ -58,15 +62,26 @@ func TestTripChainOffersElectrifyAmericaAsAnOptionAndUsesItWhenAsked(t *testing.
 	_, out := post(chainBody(``))
 	var r chainOut
 	json.Unmarshal([]byte(out), &r)
-	if r.Alt == nil || r.Alt.MinutesSaved < 10 || strings.Contains(out, "Electrify America") {
+	if r.Alt == nil || r.Alt.MinutesSaved < 5 || strings.Contains(out, "Electrify America") {
 		t.Fatalf("Tesla only should name no other network but say what it would save: %s", out)
 	}
-	_, out = post(chainBody(`,"ea":true`))
-	if !strings.Contains(out, "Electrify America: Mall") || strings.Contains(out, `"alt"`) {
+	if _, out = post(chainBody(`,"ea":true`)); !strings.Contains(out, `"days"`) || strings.Contains(out, `"alt"`) {
 		t.Fatalf("with Electrify America: %s", out)
 	}
-	if c, _ := post(chainBody(`,"avoid":["45.8000,-93.2000"]`)); c != 422 {
+	if c, _ := post(chainBody(`,"avoid":["45.9000,-93.2000"]`)); c != 422 {
 		t.Fatalf("avoiding a needed Supercharger gave %d", c)
+	}
+}
+
+func TestTripChainReachesAGapOnlyElectrifyAmericaFills(t *testing.T) {
+	ts, srv, admin := chainServers(t, 45.8) // the next Supercharger is too far away
+	srv.Cfg.Set(settings.AFDCKeyKey, "test-key")
+	if c, _ := do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(``), xh); c != 422 {
+		t.Fatalf("Tesla only has a gap: %d", c)
+	}
+	_, out := do(t, admin, "POST", ts.URL+"/api/trip-chain", chainBody(`,"ea":true`), xh)
+	if !strings.Contains(out, "Electrify America: Mall") {
+		t.Fatalf("the Electrify America charger fills the gap: %s", out)
 	}
 }
 

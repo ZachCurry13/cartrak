@@ -84,3 +84,14 @@ func TestABookedHotelEndsTheDay(t *testing.T) {
 		t.Fatalf("%+v", days)
 	}
 }
+
+func TestAPreferredNetworkWinsUnlessTheOtherSavesEnough(t *testing.T) {
+	p := base()
+	p.Dest = st("There", 43)
+	tesla := Station{Name: "Tesla", Lat: 41.5, Lon: -93, Kw: 250}
+	other := Station{Name: "Other", Lat: 41.5, Lon: -93, Kw: 250, Penalty: 10}
+	days, err := Plan(p, []Station{other, tesla}, nil)
+	if err != nil || days[0].Stops[1].Name != "Tesla" {
+		t.Fatalf("equal chargers: the one without a penalty wins: %v %+v", err, days)
+	}
+}

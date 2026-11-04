@@ -42,6 +42,14 @@ type Stop struct {
 	Kind string `json:"kind"` // start, charge, overnight, dest
 	// Near is the closest charger to a night stop that is not one itself (a hotel), filled in by the caller.
 	Near *Near `json:"near,omitempty"`
+	// The day's timeline at this stop: minutes from the start of the day, the battery on arriving and leaving, and the charge taken.
+	ArriveMin float64  `json:"arriveMin"`
+	DepartMin float64  `json:"departMin"`
+	ArrivePct float64  `json:"arrivePct"`
+	DepartPct float64  `json:"departPct"`
+	Kwh       float64  `json:"kwh"`            // energy added here
+	ChargeMin float64  `json:"chargeMin"`      // time plugged in here
+	Cost      *float64 `json:"cost,omitempty"` // what the energy added here is expected to cost, set by the caller
 }
 
 // Near is a charger close to a stop.
@@ -58,6 +66,7 @@ type Day struct {
 	DriveMin    float64 `json:"driveMin"`
 	ChargeMin   float64 `json:"chargeMin"`
 	ChargeStops int     `json:"chargeStops"`
+	DepartTS    int64   `json:"departTs"` // when the day starts, set by the caller
 }
 
 const (
@@ -180,7 +189,7 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 			}
 			cost := best[u] + m
 			if v != n-1 {
-				cost += chargeMin(p, nodes[v]) + nodes[v].Penalty
+				cost += chargeMin(p, nodes[v], km) + nodes[v].Penalty
 			}
 			if cost < best[v] {
 				best[v], prev[v] = cost, u
@@ -199,20 +208,27 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 
 func minutes(p Params, km float64) float64 { return km / p.SpeedKph * 60 }
 
-// chargeMin is a typical stop: from the reserve most of the way to the target, at what the charger and the car allow.
-func chargeMin(p Params, s Station) float64 {
+// chargeMin is what a stop costs when it replaces the energy the leg into it used: the time to park and plug in, plus that energy
+// at what the charger and the car allow.
+func chargeMin(p Params, s Station, legKm float64) float64 {
 	kw := p.CarKw
 	if s.Kw > 0 && float64(s.Kw) < kw {
 		kw = float64(s.Kw)
 	}
-	return overhead + (p.TargetPct-p.ReservePct)*0.7/100*p.CapacityKwh/kw*60
+	return overhead + legKm*p.KwhPerKm/kw*60
 }
 
+// margin is the percent of battery kept above the reserve on leaving a charger.
+const margin = 5.0
+
 // split cuts the chain into days: when the next leg would pass the day limit, the night is spent at the stop already reached.
+// It also carries the battery along: a stop charges only as far as the next leg needs (never past the target), at the power of the
+// charger or the car, whichever is lower.
 func split(p Params, chain []link) []Day {
-	day := Day{StartPct: p.StartPct, Stops: []Stop{{Station: chain[0].Station, Kind: "start"}}}
+	drop := func(km float64) float64 { return km * p.KwhPerKm / p.CapacityKwh * 100 }
+	day := Day{StartPct: p.StartPct, Stops: []Stop{{Station: chain[0].Station, Kind: "start", DepartPct: p.StartPct, ArrivePct: p.StartPct}}}
 	days := []Day{}
-	elapsed := 0.0
+	elapsed, pct := 0.0, p.StartPct
 	for i := 1; i < len(chain); i++ {
 		a, b := chain[i-1], chain[i]
 		km := haversineKm(a.Station, b.Station) * bend
@@ -220,19 +236,37 @@ func split(p Params, chain []link) []Day {
 		if i > 1 && (a.night || (p.DayMin > 0 && elapsed+m > p.DayMin)) {
 			day.Stops[len(day.Stops)-1].Kind = "overnight"
 			days = append(days, day)
-			day = Day{StartPct: a.pct, Stops: []Stop{{Station: a.Station, Kind: "overnight"}}}
+			if a.kind == "charge" { // a night at a charger fills the battery
+				pct = p.TargetPct
+			}
+			day = Day{StartPct: pct, Stops: []Stop{{Station: a.Station, Kind: "overnight", ArrivePct: pct, DepartPct: pct}}}
 			elapsed = 0
 		}
+		arrive := pct - drop(km)
 		day.Km += km
 		day.DriveMin += m
 		elapsed += m
+		st := Stop{Station: b.Station, Kind: b.kind, ArriveMin: elapsed, ArrivePct: arrive, DepartPct: arrive}
 		if b.kind == "charge" {
-			c := chargeMin(p, b.Station)
-			day.ChargeMin += c
+			depart := p.TargetPct
+			if i+1 < len(chain) {
+				next := drop(haversineKm(b.Station, chain[i+1].Station) * bend)
+				depart = math.Min(p.TargetPct, math.Max(arrive, p.ReservePct+next+margin))
+			}
+			kw := p.CarKw
+			if b.Kw > 0 && float64(b.Kw) < kw {
+				kw = float64(b.Kw)
+			}
+			st.Kwh = math.Max(0, (depart-arrive)/100*p.CapacityKwh)
+			st.ChargeMin = overhead + st.Kwh/kw*60
+			st.DepartPct = depart
+			day.ChargeMin += st.ChargeMin
 			day.ChargeStops++
-			elapsed += c
+			elapsed += st.ChargeMin
 		}
-		day.Stops = append(day.Stops, Stop{Station: b.Station, Kind: b.kind})
+		st.DepartMin = elapsed
+		pct = st.DepartPct
+		day.Stops = append(day.Stops, st)
 	}
 	return append(days, day)
 }

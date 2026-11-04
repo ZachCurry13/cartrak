@@ -102,7 +102,7 @@ export async function multiStopCard(get, latest) {
       list, tick(best, 'ms-best', 'Best order (least driving)'), tick(back, 'ms-back', 'Return to the start'),
       h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', {}, h('button', { onclick: plan }, 'Plan the route')), msg, out),
     list: pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); toStops(`${found.length} stops filled in. Check them, then plan the route.`); }),
-    long: tripChainCard(get, () => stops[0], (day, i, pct) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; toStops(`Day ${i + 1} is filled in${i ? `: set the starting charge to about ${Math.round(pct)}% first` : ''}. Plan the route to see the roads, weather and charging.`); }),
+    long: tripChainCard(() => ({ ...get(), departTs: Math.floor(new Date(when.value).getTime() / 1000) || 0 }), () => stops[0], (day, i, pct) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; toStops(`Day ${i + 1} is filled in${i ? `: set the starting charge to about ${Math.round(pct)}% first` : ''}. Plan the route to see the roads, weather and charging.`); }),
   };
   const tabBtn = {};
   const tabs = h('div', { class: 'seg', role: 'group', 'aria-label': 'What to plan' },

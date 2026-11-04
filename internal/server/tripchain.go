@@ -12,8 +12,8 @@ import (
 const (
 	highwayKph   = 105.0
 	chainStopMax = 6000
-	altMinSaving = 10.0 // minutes: a smaller saving is not worth mentioning
-	eaPenaltyMin = 20.0 // Superchargers first: Electrify America is used when it saves more than this
+	altMinSaving = 5.0  // minutes: a smaller saving is not worth mentioning
+	eaPenaltyMin = 10.0 // Superchargers first: Electrify America is used when it saves more than this
 )
 
 type chainVia struct {
@@ -33,9 +33,10 @@ type chainIn struct {
 	MaxLegKm  float64    `json:"maxLegKm"`
 	MaxLegMin float64    `json:"maxLegMin"`
 	DayMin    float64    `json:"dayMin"`
-	Plugs     string     `json:"plugs"` // Tesla Superchargers: nacs, dock, both, or none
-	EA        bool       `json:"ea"`    // also use Electrify America
-	Avoid     []string   `json:"avoid"` // chargers never to use, as "lat,lon" to four places
+	Plugs     string     `json:"plugs"`    // Tesla Superchargers: nacs, dock, both, or none
+	EA        bool       `json:"ea"`       // also use Electrify America
+	Avoid     []string   `json:"avoid"`    // chargers never to use, as "lat,lon" to four places
+	DepartTS  int64      `json:"departTs"` // when the trip leaves; 0 is the next morning at eight
 }
 
 func chargerKey(lat, lon float64) string { return fmt.Sprintf("%.4f,%.4f", lat, lon) }
@@ -165,7 +166,8 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.addNearby(days, use, avoid)
-	out := map[string]any{"days": days, "sites": n}
+	prices := s.fillTimesAndCosts(days, in.DepartTS)
+	out := map[string]any{"days": days, "sites": n, "prices": prices, "currency": s.currency()}
 	if !useEA && len(ea) > 0 { // what adding Electrify America would change
 		if alt, _, aerr := plan(tesla, ea); aerr == nil {
 			m0, s0 := total(days)

@@ -1,8 +1,9 @@
-import { h, chip, dist, isMetric } from './ui.js';
+import { h, isMetric } from './ui.js';
 import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
+import { tripDay } from './tripdays.js';
 
 const toKm = (v) => (isMetric() ? v : v / 0.621371);
 const PLUGS = [['both', 'Superchargers: NACS plugs or a built-in CCS dock'], ['nacs', 'Superchargers: NACS plugs only (with the adapter)'], ['dock', 'Superchargers: built-in CCS dock only'], ['none', 'No Superchargers']];
@@ -66,17 +67,10 @@ export function tripChainCard(get, start, use) {
   };
 
   const links = (points, what) => routeUrls(points).map((href, i, all) => h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, all.length > 1 ? `${what}: part ${i + 1} of ${all.length}` : `${what} in Google Maps`));
-  const stopRow = (s, j) => h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('span', { style: 'flex:0 0 1.4em;text-align:center' }, j === 0 ? 'A' : String(j)),
-    h('div', { style: 'flex:1 1 9em;min-width:0;overflow-wrap:anywhere' }, s.name, s.kw ? h('span', { class: 'muted' }, ` · ${s.kw} kW`) : null, s.kind === 'overnight' && j > 0 ? [' ', chip('work', 'Overnight')] : null),
-    s.near ? h('div', { class: 'muted', style: 'flex:1 1 100%' }, `Closest charger: ${s.near.name}${s.near.kw ? ` (${s.near.kw} kW)` : ''}, ${dist(s.near.km, 1)} away. Charge there this evening or first thing tomorrow. `,
-      h('a', { href: review(s.near), target: '_blank', rel: 'noopener' }, 'Reviews on PlugShare')) : null,
-    s.net || s.ps || s.kw ? h('div', { class: 'seg', style: 'flex:1 1 100%' }, h('a', { class: 'text sm', href: review(s), target: '_blank', rel: 'noopener' }, 'Reviews on PlugShare'),
-      s.kind === 'charge' ? h('button', { class: 'text sm', type: 'button', onclick: () => { const a = readAvoid(); a[key(s)] = s.name; writeAvoid(a); go(); } }, 'Avoid this charger') : null) : null);
-  const dayCard = (d, i, n) => h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
-    h('p', { style: 'margin:0 0 4px' }, h('b', {}, n > 1 ? `Day ${i + 1}` : 'The trip'), ' ', h('span', { class: 'muted' }, `${dist(d.km, 0)} · ${hm(d.driveMin)} driving${d.chargeMin ? ` + about ${hm(d.chargeMin)} charging` : ''} · ${d.chargeStops} charge stop${d.chargeStops === 1 ? '' : 's'}`)),
-    ...d.stops.map(stopRow), i > 0 ? h('p', { class: 'muted', style: 'margin:4px 0' }, `Starts about ${Math.round(d.startPct)}%.`) : null,
-    h('p', { class: 'seg', style: 'margin:6px 0 0' }, h('button', { type: 'button', onclick: () => use(d.stops.map((s) => ({ name: s.name, label: s.name, lat: s.lat, lon: s.lon })), i, d.startPct) }, 'Plan this day in the planner'),
-      ...links(d.stops.map((s) => [s.lat, s.lon]), n > 1 ? `Open day ${i + 1}` : 'Open the trip')));
+  const avoidSite = (x) => { const a = readAvoid(); a[key(x)] = x.name; writeAvoid(a); go(); };
+  const dayCard = (d, i, n) => tripDay(d, i, n, { currency: last.result.currency || '$', review, avoid: avoidSite,
+    use: (day, k) => use(day.stops.map((x) => ({ name: x.name, label: x.name, lat: x.lat, lon: x.lon })), k, day.startPct),
+    links: (day, k, count) => links(day.stops.map((x) => [x.lat, x.lon]), count > 1 ? `Open day ${k + 1}` : 'Open the trip') });
 
   function show(r, body) {
     last = { body, result: r };
@@ -95,7 +89,7 @@ export function tripChainCard(get, start, use) {
     if (!s || s.lat == null) { msg.textContent = 'The Stops tab needs its starting point first.'; return null; }
     if (vias.some((v) => !v.pick.get())) { msg.textContent = 'Finish or remove the places you added.'; return null; }
     return { start: { name: s.name || 'Start', lat: s.lat, lon: s.lon }, dest: d, via: vias.map((v) => ({ ...v.pick.get(), charge: v.charge, night: v.night })), startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct,
-      chargeKw: g.chargeKw, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
+      chargeKw: g.chargeKw, departTs: g.departTs || 0, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
   };
   async function go() {
     const b = body();
