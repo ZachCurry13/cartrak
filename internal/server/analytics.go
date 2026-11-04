@@ -51,6 +51,9 @@ func (s *Server) analyticsCharges(from int64) ([]analytics.Charge, error) {
 		if a.Place == "" && c.Where != "home" {
 			a.Place = places.Name(c.Lat, c.Lon, named)
 		}
+		if a.Place == "" && c.Where != "home" {
+			a.Place = s.chargerAt(c.Lat, c.Lon)
+		}
 		out = append(out, a)
 	}
 	return out, nil

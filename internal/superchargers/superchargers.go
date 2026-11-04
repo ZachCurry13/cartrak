@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strings"
 )
@@ -20,8 +21,10 @@ type Site struct {
 	Lon    float64 `json:"lo"`
 	Kw     int     `json:"kw"`
 	Stalls int     `json:"st"`
-	NACS   bool    `json:"nacs"` // has NACS plugs: a Mach-E needs the NACS adapter
-	Dock   bool    `json:"dock"` // has stalls with a built-in CCS connector (a "Magic Dock")
+	NACS   bool    `json:"nacs"`         // has NACS plugs: a Mach-E needs the NACS adapter
+	Dock   bool    `json:"dock"`         // has stalls with a built-in CCS connector (a "Magic Dock")
+	PS     int     `json:"ps,omitempty"` // PlugShare number, for reviews
+	Net    string  `json:"nw,omitempty"` // the network when it is not Tesla
 }
 
 type raw struct {
@@ -38,6 +41,7 @@ type raw struct {
 	Kw         int            `json:"powerKilowatt"`
 	OtherEVs   bool           `json:"otherEVs"`
 	Plugs      map[string]int `json:"plugs"`
+	PlugShare  int            `json:"plugshareId"`
 }
 
 // Parse keeps the open sites that let other cars charge and have NACS plugs or a CCS dock.
@@ -51,7 +55,7 @@ func Parse(r io.Reader) ([]Site, error) {
 		if x.Status != "OPEN" || !x.OtherEVs || (x.GPS.Latitude == 0 && x.GPS.Longitude == 0) {
 			continue
 		}
-		s := Site{Name: x.Name, Lat: x.GPS.Latitude, Lon: x.GPS.Longitude, Kw: x.Kw, Stalls: x.StallCount, NACS: x.Plugs["nacs"] > 0, Dock: x.Plugs["multi"] > 0 || x.Plugs["ccs1"] > 0}
+		s := Site{Name: x.Name, Lat: x.GPS.Latitude, Lon: x.GPS.Longitude, Kw: x.Kw, Stalls: x.StallCount, NACS: x.Plugs["nacs"] > 0, Dock: x.Plugs["multi"] > 0 || x.Plugs["ccs1"] > 0, PS: x.PlugShare}
 		if s.NACS || s.Dock {
 			out = append(out, s)
 		}
@@ -98,4 +102,27 @@ func Usable(sites []Site, plugs string) []Site {
 		out = append(out, s)
 	}
 	return out
+}
+
+// Nearest is the site within maxM meters of a point, if any.
+func Nearest(sites []Site, lat, lon, maxM float64) (Site, bool) {
+	best, bestD := Site{}, maxM
+	dLat := maxM / 111000 * 1.5
+	for _, s := range sites {
+		if s.Lat < lat-dLat || s.Lat > lat+dLat {
+			continue
+		}
+		if d := distM(lat, lon, s.Lat, s.Lon); d <= bestD {
+			best, bestD = s, d
+		}
+	}
+	return best, bestD < maxM || (bestD == maxM && best.Name != "")
+}
+
+func distM(la1, lo1, la2, lo2 float64) float64 {
+	const r = 6371000.0
+	p1, p2 := la1*math.Pi/180, la2*math.Pi/180
+	dp, dl := p2-p1, (lo2-lo1)*math.Pi/180
+	h := math.Sin(dp/2)*math.Sin(dp/2) + math.Cos(p1)*math.Cos(p2)*math.Sin(dl/2)*math.Sin(dl/2)
+	return 2 * r * math.Asin(math.Sqrt(h))
 }

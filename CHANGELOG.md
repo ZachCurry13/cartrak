@@ -13,10 +13,18 @@
 - Each name is found by its number if you confirmed it before, then among your saved places, then by an address search near Home. Sure matches are filled in; doubtful ones show the choices and wait for your pick. Anything can be skipped.
 - Places you pick are remembered by the number, so the next list fills them in by itself. Up to 10 companies are used per list; paste the rest as another day.
 
-### 🔌 Long trips: pick the Superchargers
+### 🔌 Long trips: pick the chargers
+- **The route planner is tidier**: one **Plan a route** card with three tabs, **Stops**, **Paste a list** and **Long trip**, so only one is open at a time.
 - In the Road-trip planner, **Long trip: pick the Superchargers**: give a destination and set the **longest leg** (hours, or miles), the **longest day on the road** and which chargers your car can use (NACS plugs with the NACS adapter, a built-in CCS dock, or either). CarTrak picks the fastest set of stops where no leg is over your limits and the battery stays above your reserve.
 - A trip longer than your day limit is cut into days, with the night spent at a charger. **Plan this day below** fills the day's stops into the route planner, which adds real roads, the forecast and your car's usual efficiency.
-- Only sites that are open and let other makes charge are offered. The list comes from supercharge.info and is downloaded about once a week the first time it is needed; nothing about you or the trip is sent. A site can still be full or down, so check it before you go.
+- **Places you insist on.** Add a town to take one road and not another (like going up through the Upper Peninsula), or a **hotel you already booked** to end a day there. Each can be a stop to plug in at or just a place to drive through.
+- **Superchargers first, Electrify America if you want it.** Only open Superchargers that let other makes charge are offered, from supercharge.info. Tick **Also use Electrify America** (it needs a free charger list key, pasted in Settings) and it is used when it saves enough to matter. When you left it off, CarTrak says how much time adding it would have saved.
+- **Reviews and avoiding.** Each charger links to its reviews on PlugShare, and **Avoid this charger** plans around it from then on (**Allow again** brings it back).
+- **Open in Google Maps** for each day and for the whole trip, split into parts of ten stops, and **Save this trip** to open it again later.
+- Lists are downloaded about once a week; nothing about you or the trip is sent. A site can still be full or down, so check it before you go.
+
+### 🏷️ Charges name themselves
+- A charge near a known Supercharger or Electrify America site is named after it, and otherwise shows its city, instead of "Unnamed place".
 
 ## 0.75.0
 

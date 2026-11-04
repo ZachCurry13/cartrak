@@ -95,10 +95,18 @@ export async function multiStopCard(get, latest) {
     } catch (e) { msg.textContent = e.message; }
   }
   draw();
-  return h('section', { class: 'card' }, h('h2', {}, 'Plan a route with stops'),
-    h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
-    tripChainCard(get, () => stops[0], (day, i) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; out.replaceChildren(); draw(); msg.textContent = `Day ${i + 1} is filled in${i ? ': set the starting charge to about your charge target first' : ''}. Plan the route to see the roads, weather and charging.`; }),
-    pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); out.replaceChildren(); draw(); msg.textContent = `${found.length} stops filled in. Check them, then plan the route.`; }),
-    list, tick(best, 'ms-best', 'Best order (least driving)'), tick(back, 'ms-back', 'Return to the start'),
-    h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', {}, h('button', { onclick: plan }, 'Plan the route')), msg, out);
+  const show = (k) => { for (const [id, p] of Object.entries(panels)) p.hidden = id !== k; for (const [id, b] of Object.entries(tabBtn)) { b.classList.toggle('on', id === k); b.setAttribute('aria-pressed', String(id === k)); } };
+  const toStops = (note) => { out.replaceChildren(); draw(); msg.textContent = note; show('stops'); };
+  const panels = {
+    stops: h('div', {}, h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
+      list, tick(best, 'ms-best', 'Best order (least driving)'), tick(back, 'ms-back', 'Return to the start'),
+      h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', {}, h('button', { onclick: plan }, 'Plan the route')), msg, out),
+    list: pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); toStops(`${found.length} stops filled in. Check them, then plan the route.`); }),
+    long: tripChainCard(get, () => stops[0], (day, i, pct) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; toStops(`Day ${i + 1} is filled in${i ? `: set the starting charge to about ${Math.round(pct)}% first` : ''}. Plan the route to see the roads, weather and charging.`); }),
+  };
+  const tabBtn = {};
+  const tabs = h('div', { class: 'seg', role: 'group', 'aria-label': 'What to plan' },
+    ...[['stops', 'Stops'], ['list', 'Paste a list'], ['long', 'Long trip']].map(([k, t]) => (tabBtn[k] = h('button', { class: 'sec', type: 'button', onclick: () => show(k) }, t))));
+  show('stops');
+  return h('section', { class: 'card' }, h('h2', {}, 'Plan a route'), tabs, ...Object.values(panels));
 }

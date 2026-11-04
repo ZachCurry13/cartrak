@@ -15,6 +15,10 @@ type Station struct {
 	Lat  float64 `json:"lat"`
 	Lon  float64 `json:"lon"`
 	Kw   int     `json:"kw"`
+	PS   int     `json:"ps,omitempty"`  // the site's PlugShare number, for its reviews
+	Net  string  `json:"net,omitempty"` // the network when it is not Tesla
+	// Penalty is minutes added to using this charger, so a preferred network wins unless the other saves more than that.
+	Penalty float64 `json:"-"`
 }
 
 // Params are the trip and the limits.
@@ -66,8 +70,22 @@ func haversineKm(a, b Station) float64 {
 	return 2 * r * math.Asin(math.Sqrt(h))
 }
 
-// Plan chooses the chargers from stations, and the days.
-func Plan(p Params, stations []Station) ([]Day, error) {
+// Via is a place the trip must pass, in the order given (to take one road and not another).
+type Via struct {
+	Station
+	Charge bool // plug in here: true when it has a charger, false to drive through on what is left
+	Night  bool // the day ends here: a hotel already booked
+}
+
+type link struct {
+	Station
+	kind  string
+	night bool    // the day must end here
+	pct   float64 // the charge on leaving
+}
+
+// Plan chooses the chargers from stations, and the days. Each via is passed in order; the trip is planned from one to the next.
+func Plan(p Params, stations []Station, vias []Via) ([]Day, error) {
 	if p.SpeedKph <= 0 {
 		p.SpeedKph = 105
 	}
@@ -77,29 +95,53 @@ func Plan(p Params, stations []Station) ([]Day, error) {
 	if p.CapacityKwh <= 0 || p.KwhPerKm <= 0 {
 		return nil, errors.New("the battery size and efficiency are needed")
 	}
-	direct := haversineKm(p.Start, p.Dest)
-	nodes := []Station{p.Start}
+	chain := []link{{Station: p.Start, kind: "start", pct: p.StartPct}}
+	cur, pct := p.Start, p.StartPct
+	for i := 0; i <= len(vias); i++ {
+		target, kind := p.Dest, "dest"
+		if i < len(vias) {
+			target, kind = vias[i].Station, "via"
+		}
+		seg, lastKm, err := segment(p, cur, target, pct, stations)
+		if err != nil {
+			return nil, err
+		}
+		for _, st := range seg[1 : len(seg)-1] {
+			chain = append(chain, link{Station: st, kind: "charge", pct: p.TargetPct})
+		}
+		if kind == "via" && vias[i].Charge {
+			kind = "charge"
+		}
+		from := p.TargetPct
+		if len(seg) == 2 {
+			from = pct
+		}
+		pct = from - lastKm*p.KwhPerKm/p.CapacityKwh*100
+		if kind == "charge" {
+			pct = p.TargetPct
+		}
+		chain = append(chain, link{Station: target, kind: kind, night: kind != "dest" && vias[i].Night, pct: pct})
+		cur = target
+	}
+	return split(p, chain), nil
+}
+
+// segment finds the best chargers between two places: the nodes (start, chargers, end) and the length of the last leg.
+func segment(p Params, from, to Station, startPct float64, stations []Station) ([]Station, float64, error) {
+	direct := haversineKm(from, to)
+	nodes := []Station{from}
 	for _, s := range stations {
-		if haversineKm(p.Start, s)+haversineKm(s, p.Dest) <= direct*corridorX+corridorKm {
+		if haversineKm(from, s)+haversineKm(s, to) <= direct*corridorX+corridorKm {
 			nodes = append(nodes, s)
 		}
 	}
-	nodes = append(nodes, p.Dest)
+	nodes = append(nodes, to)
 	n := len(nodes)
 	toDest := make([]float64, n)
 	for i := range nodes {
-		toDest[i] = haversineKm(nodes[i], p.Dest)
+		toDest[i] = haversineKm(nodes[i], to)
 	}
 	rng := func(pct float64) float64 { return (pct - p.ReservePct) / 100 * p.CapacityKwh / p.KwhPerKm }
-	minutes := func(km float64) float64 { return km / p.SpeedKph * 60 }
-	chargeMin := func(s Station) float64 { // a typical stop: from the reserve most of the way to the target
-		kw := p.CarKw
-		if s.Kw > 0 && float64(s.Kw) < kw {
-			kw = float64(s.Kw)
-		}
-		return overhead + (p.TargetPct-p.ReservePct)*0.7/100*p.CapacityKwh/kw*60
-	}
-	// nodes in order of distance still to go, so a leg only ever goes forward
 	order := make([]int, n)
 	for i := range order {
 		order[i] = i
@@ -117,20 +159,20 @@ func Plan(p Params, stations []Station) ([]Day, error) {
 		}
 		reach := rng(p.TargetPct)
 		if u == 0 {
-			reach = rng(p.StartPct)
+			reach = rng(startPct)
 		}
 		for _, v := range order {
 			if v == u || v == 0 || toDest[v] >= toDest[u] {
 				continue
 			}
 			km := haversineKm(nodes[u], nodes[v]) * bend
-			m := minutes(km)
+			m := minutes(p, km)
 			if km > reach || (p.MaxLegKm > 0 && km > p.MaxLegKm) || (p.MaxLegMin > 0 && m > p.MaxLegMin) {
 				continue
 			}
 			cost := best[u] + m
 			if v != n-1 {
-				cost += chargeMin(nodes[v])
+				cost += chargeMin(p, nodes[v]) + nodes[v].Penalty
 			}
 			if cost < best[v] {
 				best[v], prev[v] = cost, u
@@ -138,42 +180,51 @@ func Plan(p Params, stations []Station) ([]Day, error) {
 		}
 	}
 	if math.IsInf(best[n-1], 1) {
-		return nil, ErrNoChain
+		return nil, 0, ErrNoChain
 	}
-	var chain []int
+	var seg []Station
 	for v := n - 1; v != -1; v = prev[v] {
-		chain = append([]int{v}, chain...)
+		seg = append([]Station{nodes[v]}, seg...)
 	}
-	return split(p, nodes, chain, minutes, chargeMin), nil
+	return seg, haversineKm(seg[len(seg)-2], seg[len(seg)-1]) * bend, nil
 }
 
-// split cuts the chain into days: when the next leg would pass the day limit, the night is spent at the charger already reached.
-func split(p Params, nodes []Station, chain []int, minutes func(float64) float64, chargeMin func(Station) float64) []Day {
-	day := Day{StartPct: p.StartPct, Stops: []Stop{{Station: nodes[chain[0]], Kind: "start"}}}
+func minutes(p Params, km float64) float64 { return km / p.SpeedKph * 60 }
+
+// chargeMin is a typical stop: from the reserve most of the way to the target, at what the charger and the car allow.
+func chargeMin(p Params, s Station) float64 {
+	kw := p.CarKw
+	if s.Kw > 0 && float64(s.Kw) < kw {
+		kw = float64(s.Kw)
+	}
+	return overhead + (p.TargetPct-p.ReservePct)*0.7/100*p.CapacityKwh/kw*60
+}
+
+// split cuts the chain into days: when the next leg would pass the day limit, the night is spent at the stop already reached.
+func split(p Params, chain []link) []Day {
+	day := Day{StartPct: p.StartPct, Stops: []Stop{{Station: chain[0].Station, Kind: "start"}}}
 	days := []Day{}
 	elapsed := 0.0
 	for i := 1; i < len(chain); i++ {
-		a, b := nodes[chain[i-1]], nodes[chain[i]]
-		km := haversineKm(a, b) * bend
-		m := minutes(km)
-		if p.DayMin > 0 && i > 1 && elapsed+m > p.DayMin {
+		a, b := chain[i-1], chain[i]
+		km := haversineKm(a.Station, b.Station) * bend
+		m := minutes(p, km)
+		if i > 1 && (a.night || (p.DayMin > 0 && elapsed+m > p.DayMin)) {
 			day.Stops[len(day.Stops)-1].Kind = "overnight"
 			days = append(days, day)
-			day = Day{StartPct: p.TargetPct, Stops: []Stop{{Station: a, Kind: "overnight"}}}
+			day = Day{StartPct: a.pct, Stops: []Stop{{Station: a.Station, Kind: "overnight"}}}
 			elapsed = 0
 		}
 		day.Km += km
 		day.DriveMin += m
 		elapsed += m
-		if i == len(chain)-1 {
-			day.Stops = append(day.Stops, Stop{Station: b, Kind: "dest"})
-			continue
+		if b.kind == "charge" {
+			c := chargeMin(p, b.Station)
+			day.ChargeMin += c
+			day.ChargeStops++
+			elapsed += c
 		}
-		c := chargeMin(b)
-		day.ChargeMin += c
-		day.ChargeStops++
-		elapsed += c
-		day.Stops = append(day.Stops, Stop{Station: b, Kind: "charge"})
+		day.Stops = append(day.Stops, Stop{Station: b.Station, Kind: b.kind})
 	}
 	return append(days, day)
 }

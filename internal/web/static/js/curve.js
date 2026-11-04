@@ -49,7 +49,7 @@ export function chargersCompared(sessions) {
     if (c.open || !c.endTs || c.peakKw < 40 || c.addedKwh == null) continue;
     const hours = (c.endTs - c.startTs) / 3600;
     if (hours < 5 / 60) continue;
-    const k = c.place || 'Unnamed place';
+    const k = c.place || c.city || 'Unnamed place';
     const g = by.get(k) || { n: 0, peak: 0, kw: 0 };
     g.n++; g.peak += c.peakKw; g.kw += c.addedKwh / hours;
     by.set(k, g);
@@ -57,7 +57,7 @@ export function chargersCompared(sessions) {
   if (!by.size) return null;
   const rows = [...by].sort((a, b) => b[1].kw / b[1].n - a[1].kw / a[1].n);
   return h('section', { class: 'card' }, h('h2', {}, 'Fast chargers compared'),
-    h('p', { class: 'muted' }, 'Sessions that reached 40 kW or more. Name a place under More, Places to see it here by name.'),
+    h('p', { class: 'muted' }, 'Sessions that reached 40 kW or more. Name a place under More, Places to give it your own name here; otherwise the city is shown.'),
     ...rows.map(([name, g]) => h('div', { class: 'row' }, h('span', { class: 'grow' }, name, h('span', { class: 'muted' }, ` · ${g.n} session${g.n === 1 ? '' : 's'}`)),
       h('span', {}, h('b', {}, num(g.kw / g.n, 0, ' kW')), h('div', { class: 'muted' }, `avg · peak ${num(g.peak / g.n, 0)}`)))));
 }

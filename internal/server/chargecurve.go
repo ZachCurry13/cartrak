@@ -69,17 +69,27 @@ func (s *Server) chargeCurve(w http.ResponseWriter, r *http.Request) {
 type chargeOut struct {
 	charging.Session
 	Place string              `json:"place"`
+	City  string              `json:"city"`          // the city, when it is not a place you named and the city is known
 	Gas   *history.GasCompare `json:"gas,omitempty"` // the same range in the gas car, when a gas car is set
 }
 
-// withPlaces adds the name of the named place each session was at.
+// withPlaces adds the name of the named place each session was at, or else its city (from what is already known; the rest is
+// looked up in the background and shows next time).
 func (s *Server) withPlaces(ss []charging.Session) []chargeOut {
 	all, _ := s.S.ListNamedPlaces()
+	cities := s.cityNamer()
+	defer cities.lookupLater()
 	out := make([]chargeOut, 0, len(ss))
 	for _, x := range ss {
 		o := chargeOut{Session: x}
 		if len(all) > 0 && x.Lat != nil && x.Lon != nil {
 			o.Place = places.Name(x.Lat, x.Lon, all)
+		}
+		if o.Place == "" {
+			o.Place = s.chargerAt(x.Lat, x.Lon)
+		}
+		if o.Place == "" {
+			o.City = cities.name(x.Lat, x.Lon)
 		}
 		out = append(out, o)
 	}

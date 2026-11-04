@@ -1,67 +1,139 @@
 import { h, chip, dist, isMetric } from './ui.js';
 import { api } from './api.js';
+import { routeUrls } from './maplinks.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
 
 const toKm = (v) => (isMetric() ? v : v / 0.621371);
-const PLUGS = [['both', 'Either: NACS plugs or a built-in CCS dock'], ['nacs', 'NACS plugs only (with the NACS adapter)'], ['dock', 'Built-in CCS dock (Magic Dock) only']];
+const PLUGS = [['both', 'Superchargers: NACS plugs or a built-in CCS dock'], ['nacs', 'Superchargers: NACS plugs only (with the adapter)'], ['dock', 'Superchargers: built-in CCS dock only'], ['none', 'No Superchargers']];
+const AVOID = 'cartrak.avoid';
+const key = (s) => `${s.lat.toFixed(4)},${s.lon.toFixed(4)}`;
+const readAvoid = () => { try { return JSON.parse(localStorage.getItem(AVOID)) || {}; } catch (e) { return {}; } };
+const writeAvoid = (a) => { try { localStorage.setItem(AVOID, JSON.stringify(a)); } catch (e) { /* storage blocked */ } };
+const review = (s) => (s.ps ? `https://www.plugshare.com/location/${s.ps}` : `https://www.plugshare.com/?latitude=${s.lat}&longitude=${s.lon}&zoom=17`);
 
-// A long trip: give a destination and your limits and CarTrak picks the Superchargers your car may use, no leg over your time or
-// distance, and cuts the trip into days. `get()` gives the planner's charge settings, `start()` where the trip begins and
-// `use(stops, day)` fills one day into the route planner below, which adds the real roads, weather and battery.
-export function tripChainCard(get, start, use) {
-  let dest = null;
-  const unit = isMetric() ? 'km' : 'miles';
-  const q = h('input', { placeholder: 'Final address or business', maxlength: 200, 'aria-label': 'Destination' });
-  const found = h('div'), out = h('div'), msg = h('p', { class: 'muted', role: 'status' });
-  const legH = h('input', { id: 'tc-h', type: 'number', inputmode: 'decimal', min: 0.5, step: 0.25, value: 2.5 });
-  const legD = h('input', { id: 'tc-d', type: 'number', inputmode: 'decimal', min: 0, step: 10, value: isMetric() ? 320 : 200 });
-  const dayH = h('input', { id: 'tc-day', type: 'number', inputmode: 'decimal', min: 2, step: 0.5, value: 12 });
-  const plugs = h('select', { id: 'tc-plugs' }, ...PLUGS.map(([v, t]) => h('option', { value: v }, t)));
-  const field = (id, label, input) => [h('label', { for: id }, label), input];
-
-  const showDest = () => {
-    found.replaceChildren(dest ? h('p', {}, h('b', {}, dest.name), ' ', h('button', { class: 'text sm', onclick: () => { dest = null; showDest(); } }, 'Change')) : '');
+// A place you search for and choose: set(place) fills it, get() reads it.
+function picker(label) {
+  let place = null;
+  const q = h('input', { placeholder: label, maxlength: 200, 'aria-label': label });
+  const found = h('div'), box = h('div');
+  const draw = () => {
+    box.replaceChildren(place ? h('p', { style: 'margin:4px 0' }, h('b', {}, place.name), ' ', h('button', { class: 'text sm', type: 'button', onclick: () => { place = null; draw(); } }, 'Change'))
+      : h('div', {}, q, h('p', { style: 'margin:4px 0' }, h('button', { class: 'sec', type: 'button', onclick: search }, 'Find')), found));
   };
   async function search() {
     found.replaceChildren(h('p', { class: 'muted' }, 'Searching...'));
     try {
       const r = await api(`/api/named-places/search?q=${encodeURIComponent(q.value.trim())}`);
-      found.replaceChildren(...(r.length ? r.map((m) => h('button', { class: 'sec', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal',
-        onclick: () => { dest = { name: m.name || m.label, lat: m.lat, lon: m.lon }; showDest(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m))))
+      found.replaceChildren(...(r.length ? r.map((m) => h('button', { class: 'sec', type: 'button', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal',
+        onclick: () => { place = { name: m.name || m.label, lat: m.lat, lon: m.lon }; draw(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m))))
         : [h('p', { class: 'muted' }, 'Not found. Add the town, or type the address.')]));
     } catch (e) { found.replaceChildren(h('p', { class: 'muted' }, e.message)); }
   }
   q.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+  draw();
+  return { el: box, get: () => place, set: (p) => { place = p; draw(); } };
+}
 
-  const day = (d, i, n) => {
-    const stops = d.stops;
-    return h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
-      h('p', { style: 'margin:0 0 4px' }, h('b', {}, n > 1 ? `Day ${i + 1}` : 'The trip'), ' ', h('span', { class: 'muted' }, `${dist(d.km, 0)} · ${hm(d.driveMin)} driving${d.chargeMin ? ` + about ${hm(d.chargeMin)} charging` : ''} · ${d.chargeStops} charge stop${d.chargeStops === 1 ? '' : 's'}`)),
-      ...stops.map((s, j) => h('div', { class: 'row', style: 'gap:8px' }, h('span', { style: 'flex:0 0 1.4em;text-align:center' }, j === 0 ? 'A' : String(j)),
-        h('div', { class: 'grow', style: 'min-width:0;overflow-wrap:anywhere' }, s.name, s.kw ? h('span', { class: 'muted' }, ` · ${s.kw} kW`) : null),
-        s.kind === 'overnight' && j > 0 ? chip('work', 'Overnight') : null, s.kind === 'charge' ? chip('ok', 'Charge') : null)),
-      i > 0 ? h('p', { class: 'muted', style: 'margin:4px 0' }, 'Starts about the charge target after charging overnight.') : null,
-      h('p', { style: 'margin:6px 0 0' }, h('button', { onclick: () => use(stops.map((s) => ({ name: s.name, label: s.name, lat: s.lat, lon: s.lon })), i) }, 'Plan this day below')));
+// A long trip: a destination, places you insist on (a town on the road you want, a hotel already booked), the networks you accept
+// and your limits. CarTrak picks the chargers, splits the trip into days and hands a day to the route planner. `get()` gives the
+// planner's charge settings, `start()` where the trip begins and `use(stops, day)` fills one day into the planner.
+export function tripChainCard(get, start, use) {
+  const unit = isMetric() ? 'km' : 'miles';
+  const dest = picker('Final address or business');
+  const vias = []; // { pick, charge, night }
+  const viaBox = h('div'), out = h('div'), msg = h('p', { class: 'muted', role: 'status' }), saved = h('div'), avoidBox = h('div');
+  const input = (id, val, min, step) => h('input', { id, type: 'number', inputmode: 'decimal', min, step, value: val });
+  const legH = input('tc-h', 2.5, 0.5, 0.25), legD = input('tc-d', isMetric() ? 320 : 200, 0, 10), dayH = input('tc-day', 12, 2, 0.5);
+  const plugs = h('select', { id: 'tc-plugs' }, ...PLUGS.map(([v, t]) => h('option', { value: v }, t)));
+  const ea = h('input', { type: 'checkbox', id: 'tc-ea' });
+  const field = (id, label, el) => [h('label', { for: id }, label), el];
+  let last = null; // what was last planned: { body, result }
+
+  const newVia = (v = {}) => { const pick = picker('A town, or the hotel you booked'); if (v.lat != null) pick.set({ name: v.name, lat: v.lat, lon: v.lon }); return { pick, charge: v.charge !== false, night: !!v.night }; };
+  const drawVias = () => viaBox.replaceChildren(...vias.map((v, i) => h('div', { class: 'card', style: 'margin:6px 0;padding:8px' },
+    h('div', { class: 'muted' }, `Place ${i + 1}, in the order you drive them`), v.pick.el,
+    h('select', { 'aria-label': 'What happens here', onchange: (e) => { v.night = e.target.value === 'night'; } },
+      h('option', { value: 'pass', selected: !v.night }, 'Drive through it'), h('option', { value: 'night', selected: v.night }, 'Stop for the night here (a hotel)')),
+    h('label', { style: 'display:flex;gap:8px;align-items:center;min-height:44px' }, h('input', { type: 'checkbox', checked: v.charge, onchange: (e) => { v.charge = e.target.checked; } }), 'Plug in here, or at a charger beside it'),
+    h('button', { class: 'text sm', type: 'button', onclick: () => { vias.splice(i, 1); drawVias(); } }, 'Remove')))
+    .concat(vias.length < 6 ? [h('button', { class: 'sec', type: 'button', onclick: () => { vias.push(newVia()); drawVias(); } }, 'Add a place')] : []));
+
+  const drawAvoid = () => {
+    const a = readAvoid(), keys = Object.keys(a);
+    avoidBox.replaceChildren(keys.length ? h('details', {}, h('summary', {}, `Chargers you avoid (${keys.length})`), ...keys.map((k) => h('div', { class: 'row' }, h('div', { class: 'grow' }, a[k]),
+      h('button', { class: 'text sm', type: 'button', onclick: () => { const b = readAvoid(); delete b[k]; writeAvoid(b); drawAvoid(); } }, 'Allow again')))) : '');
   };
 
+  const links = (points, what) => routeUrls(points).map((href, i, all) => h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, all.length > 1 ? `${what}: part ${i + 1} of ${all.length}` : `${what} in Google Maps`));
+  const stopRow = (s, j) => h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('span', { style: 'flex:0 0 1.4em;text-align:center' }, j === 0 ? 'A' : String(j)),
+    h('div', { style: 'flex:1 1 9em;min-width:0;overflow-wrap:anywhere' }, s.name, s.kw ? h('span', { class: 'muted' }, ` · ${s.kw} kW`) : null, s.kind === 'overnight' && j > 0 ? [' ', chip('work', 'Overnight')] : null),
+    s.net || s.ps || s.kw ? h('div', { class: 'seg', style: 'flex:1 1 100%' }, h('a', { class: 'text sm', href: review(s), target: '_blank', rel: 'noopener' }, 'Reviews on PlugShare'),
+      s.kind === 'charge' ? h('button', { class: 'text sm', type: 'button', onclick: () => { const a = readAvoid(); a[key(s)] = s.name; writeAvoid(a); go(); } }, 'Avoid this charger') : null) : null);
+  const dayCard = (d, i, n) => h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
+    h('p', { style: 'margin:0 0 4px' }, h('b', {}, n > 1 ? `Day ${i + 1}` : 'The trip'), ' ', h('span', { class: 'muted' }, `${dist(d.km, 0)} · ${hm(d.driveMin)} driving${d.chargeMin ? ` + about ${hm(d.chargeMin)} charging` : ''} · ${d.chargeStops} charge stop${d.chargeStops === 1 ? '' : 's'}`)),
+    ...d.stops.map(stopRow), i > 0 ? h('p', { class: 'muted', style: 'margin:4px 0' }, `Starts about ${Math.round(d.startPct)}%.`) : null,
+    h('p', { class: 'seg', style: 'margin:6px 0 0' }, h('button', { type: 'button', onclick: () => use(d.stops.map((s) => ({ name: s.name, label: s.name, lat: s.lat, lon: s.lon })), i, d.startPct) }, 'Plan this day in the planner'),
+      ...links(d.stops.map((s) => [s.lat, s.lon]), n > 1 ? `Open day ${i + 1}` : 'Open the trip')));
+
+  function show(r, body) {
+    last = { body, result: r };
+    const all = r.days.flatMap((d, i) => (i ? d.stops.slice(1) : d.stops)).map((s) => [s.lat, s.lon]);
+    out.replaceChildren(
+      r.alt ? h('p', { class: 'banner' }, `Adding Electrify America would save about ${hm(r.alt.minutesSaved)} (${r.alt.chargeStops} charge stop${r.alt.chargeStops === 1 ? '' : 's'} instead of ${r.alt.was}). `,
+        h('button', { class: 'sec', type: 'button', onclick: () => { ea.checked = true; go(); } }, 'Plan it with Electrify America')) : null,
+      ...r.days.map((d, i) => dayCard(d, i, r.days.length)),
+      r.days.length > 1 ? h('p', { class: 'seg' }, ...links(all, 'Open the whole trip')) : null,
+      h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: saveTrip }, 'Save this trip')),
+      h('p', { class: 'muted' }, 'Stops are picked with estimated distances; planning a day in the planner uses real roads, the forecast and your car\'s usual efficiency. Superchargers come first, and Electrify America is used when it saves enough to be worth it. A site can be full or down, so check its reviews before you go.'));
+  }
+  const body = () => {
+    const s = start(), d = dest.get(), g = get();
+    if (!d) { msg.textContent = 'Find the destination first.'; return null; }
+    if (!s || s.lat == null) { msg.textContent = 'The Stops tab needs its starting point first.'; return null; }
+    if (vias.some((v) => !v.pick.get())) { msg.textContent = 'Finish or remove the places you added.'; return null; }
+    return { start: { name: s.name || 'Start', lat: s.lat, lon: s.lon }, dest: d, via: vias.map((v) => ({ ...v.pick.get(), charge: v.charge, night: v.night })), startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct,
+      chargeKw: g.chargeKw, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
+  };
   async function go() {
-    const s = start();
-    if (!dest) { msg.textContent = 'Find the destination first.'; return; }
-    if (!s || s.lat == null) { msg.textContent = 'The route planner below needs its starting point first.'; return; }
-    const g = get();
-    msg.textContent = 'Finding chargers...'; out.replaceChildren();
+    const b = body();
+    if (!b) return;
+    msg.textContent = 'Finding chargers...'; out.replaceChildren(); drawAvoid();
     try {
-      const r = await api('/api/trip-chain', { method: 'POST', body: { start: { name: s.name || 'Start', lat: s.lat, lon: s.lon }, dest, startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct,
-        chargeKw: g.chargeKw, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value } });
-      msg.textContent = `${r.sites} Superchargers open to other cars were considered.`;
-      out.replaceChildren(...r.days.map((d, i) => day(d, i, r.days.length)),
-        h('p', { class: 'muted' }, 'Stops are picked with estimated distances; planning a day below uses real roads, the forecast and your car\'s usual efficiency. A site that lets other cars charge can still be full or down: check it in the Tesla app or Google Maps before you go.'));
+      const r = await api('/api/trip-chain', { method: 'POST', body: b });
+      msg.textContent = `${r.sites} chargers were considered.`;
+      show(r, b);
     } catch (e) { msg.textContent = e.message; }
   }
-  return h('details', { class: 'card', style: 'margin:8px 0;padding:10px' }, h('summary', {}, 'Long trip: pick the Superchargers'),
-    h('p', { class: 'muted' }, 'Set how long a leg may be and how long a day on the road, and CarTrak chooses chargers your car can use between the start and the destination. The list of sites is downloaded from supercharge.info about once a week; nothing about you or the trip is sent.'),
-    ...field('tc-q', 'Destination', h('div', {}, q, h('p', {}, h('button', { class: 'sec', onclick: search }, 'Find')), found)),
+
+  async function loadSaved() {
+    try {
+      const l = await api('/api/saved-trips');
+      saved.replaceChildren(l.length ? h('details', {}, h('summary', {}, `Saved trips (${l.length})`), ...l.map((t) => h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, t.name)),
+        h('button', { class: 'text sm', type: 'button', onclick: () => open(t) }, 'Open'),
+        h('button', { class: 'text sm', type: 'button', onclick: async () => { if (confirm(`Delete ${t.name}?`)) { await api(`/api/saved-trips/${t.id}`, { method: 'DELETE' }); loadSaved(); } } }, 'Delete')))) : '');
+    } catch (e) { saved.replaceChildren(); }
+  }
+  function open(t) {
+    try {
+      const x = JSON.parse(t.body), b = x.body;
+      dest.set(b.dest);
+      vias.splice(0, vias.length, ...b.via.map(newVia));
+      legH.value = b.maxLegMin / 60; legD.value = isMetric() ? Math.round(b.maxLegKm) : Math.round(b.maxLegKm * 0.621371); dayH.value = b.dayMin / 60;
+      plugs.value = b.plugs; ea.checked = !!b.ea; drawVias(); msg.textContent = `Opened ${t.name}. Find the chargers again for today's battery and charger list.`; show(x.result, b);
+    } catch (e) { msg.textContent = 'That saved trip could not be opened.'; }
+  }
+  async function saveTrip() {
+    const name = prompt('Name this trip', `${last.body.dest.name} trip`);
+    if (!name) return;
+    try { await api('/api/saved-trips', { method: 'POST', body: { name, body: { body: last.body, result: last.result } } }); msg.textContent = `Saved as ${name}.`; loadSaved(); } catch (e) { msg.textContent = e.message; }
+  }
+  loadSaved(); drawAvoid(); drawVias();
+  return h('div', {},
+    h('p', { class: 'muted' }, 'Set how long a leg may be and how long a day on the road, and CarTrak chooses chargers your car can use between the start and the destination. Lists of chargers are downloaded about once a week; nothing about you or the trip is sent.'),
+    ...field('tc-q', 'Destination', dest.el), h('h3', {}, 'Places you insist on'),
+    h('p', { class: 'muted' }, 'Add a town to take one road and not another, or a hotel you already booked to end a day there. They are passed in the order you add them.'), viaBox,
     ...field('tc-h', 'Longest leg (hours)', legH), ...field('tc-d', `Or no more than (${unit})`, legD), ...field('tc-day', 'Longest day on the road (hours)', dayH), ...field('tc-plugs', 'Chargers', plugs),
-    h('p', {}, h('button', { onclick: go }, 'Find the chargers')), msg, out);
+    h('label', { for: 'tc-ea', style: 'display:flex;gap:8px;align-items:center;min-height:44px' }, ea, 'Also use Electrify America (needs the charger list key in Settings)'),
+    h('p', {}, h('button', { onclick: go }, 'Find the chargers')), msg, out, avoidBox, saved);
 }

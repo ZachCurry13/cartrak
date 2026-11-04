@@ -27,3 +27,13 @@ func TestParseKeepsOpenSitesOthersCanUse(t *testing.T) {
 		t.Errorf("both: %d", n)
 	}
 }
+
+func TestNearestFindsTheSiteAtThePoint(t *testing.T) {
+	sites := []Site{{Name: "A", Lat: 45, Lon: -93}, {Name: "B", Lat: 45.5, Lon: -93}}
+	if s, ok := Nearest(sites, 45.0004, -93.0004, 200); !ok || s.Name != "A" {
+		t.Fatalf("%v %v", s, ok)
+	}
+	if _, ok := Nearest(sites, 45.2, -93, 200); ok {
+		t.Fatal("nothing is within 200 m of the middle")
+	}
+}

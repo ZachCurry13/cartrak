@@ -53,6 +53,6 @@ export function pasteListCard(use) {
       h('p', { class: 'muted' }, 'Places you pick are remembered by their number, so the next list fills them in by itself.'));
     draw();
   }
-  return h('details', { class: 'card', style: 'margin:8px 0;padding:10px' }, h('summary', {}, 'Paste a list of companies'),
+  return h('div', {},
     h('p', { class: 'muted' }, 'Paste the names, one per line. The trailing number and country are read and dropped. Names are searched near Home.'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
 }

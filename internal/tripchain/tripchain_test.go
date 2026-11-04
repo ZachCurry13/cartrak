@@ -21,7 +21,7 @@ func ladder(to float64) []Station {
 }
 
 func TestEveryLegInsideTheLimits(t *testing.T) {
-	days, err := Plan(base(), ladder(48))
+	days, err := Plan(base(), ladder(48), nil)
 	if err != nil || len(days) < 2 {
 		t.Fatalf("%v %d", err, len(days))
 	}
@@ -45,14 +45,14 @@ func TestEveryLegInsideTheLimits(t *testing.T) {
 func TestShortTripNeedsNoStop(t *testing.T) {
 	p := base()
 	p.Dest = st("Near", 41)
-	days, err := Plan(p, ladder(48))
+	days, err := Plan(p, ladder(48), nil)
 	if err != nil || len(days) != 1 || len(days[0].Stops) != 2 {
 		t.Fatalf("%v %+v", err, days)
 	}
 }
 
 func TestGapWithoutAChargerFails(t *testing.T) {
-	if _, err := Plan(base(), ladder(44)); !errors.Is(err, ErrNoChain) {
+	if _, err := Plan(base(), ladder(44), nil); !errors.Is(err, ErrNoChain) {
 		t.Fatalf("want ErrNoChain, got %v", err)
 	}
 }
@@ -61,7 +61,7 @@ func TestStationsOffTheRouteAreIgnored(t *testing.T) {
 	p := base()
 	p.Dest = st("Near", 41.5)
 	far := Station{Name: "Far east", Lat: 41, Lon: -80, Kw: 250}
-	days, err := Plan(p, []Station{far})
+	days, err := Plan(p, []Station{far}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,5 +69,18 @@ func TestStationsOffTheRouteAreIgnored(t *testing.T) {
 		if s.Name == "Far east" {
 			t.Fatal("went far off the road")
 		}
+	}
+}
+
+func TestABookedHotelEndsTheDay(t *testing.T) {
+	p := base()
+	p.Dest = st("There", 46)
+	days, err := Plan(p, ladder(48), []Via{{Station: st("Hotel", 43), Night: true, Charge: true}})
+	if err != nil || len(days) != 2 {
+		t.Fatalf("%v %+v", err, days)
+	}
+	last := days[0].Stops[len(days[0].Stops)-1]
+	if last.Name != "Hotel" || last.Kind != "overnight" || days[1].Stops[0].Name != "Hotel" || days[1].StartPct != p.TargetPct {
+		t.Fatalf("%+v", days)
 	}
 }
