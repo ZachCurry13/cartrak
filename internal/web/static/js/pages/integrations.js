@@ -1,6 +1,7 @@
 import { h, chip, ago } from '../ui.js';
 import { api } from '../api.js';
 import { refreshAttention } from '../attention.js';
+import { dataUpdatesCard } from '../dataupdates.js';
 
 const STATE = { on: ['ok', 'On'], off: ['work', 'Off'], needs: ['bad', 'Set up'], info: ['work', 'Own page'] };
 
@@ -20,7 +21,7 @@ export default async function integrations(root, _a, session) {
   if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   const box = h('div');
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Integrations')),
-    h('p', { class: 'muted' }, 'The outside services CarTrak uses, all in one place. Keys stay on your server and are never shown again. A value set in an environment variable shows as locked.'), box);
+    h('p', { class: 'muted' }, 'The outside services CarTrak uses, all in one place. Keys stay on your server and are never shown again. A value set in an environment variable shows as locked.'), dataUpdatesCard(refreshAttention), box);
 
   async function load() {
     const [d, st] = await Promise.all([api('/api/integrations'), api('/api/admin/settings')]);

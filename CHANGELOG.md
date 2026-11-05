@@ -2,6 +2,11 @@
 
 ## 0.79.0
 
+### 🔄 Data updates
+- At the top of **More, Integrations**, **Data updates** lists the lists CarTrak downloads and keeps (the Supercharger list, the Electrify America list and the gas prices): where each comes from, when it was last updated and how many entries it has.
+- CarTrak **checks by itself once a day** (when the app is opened) whether a newer one is out. A list with a newer version shows **Update available** and puts the red dot on **More**; tapping **Update** fetches it. Nothing changes until you tap. **Check now** looks straight away.
+- It also shows whether a **newer CarTrak** is out, with what is new. CarTrak cannot install itself (it runs in a container you stop and start on your server), so it says so.
+
 ### 🔗 Share a trip plan
 - **Share** on a saved trip (Long trip tab, Saved trips) makes a link anyone can open with no sign-in, showing the plan as a plain page: the times, each charger with the energy, charge time and cost, and an **Open in Google Maps** button. It works for 1, 7 or 30 days, shows how often it was opened, and can be stopped at any time.
 - By default it **hides where the trip starts** (usually home) and leaves that out of the maps link; tick "Show where the trip starts" to include it.

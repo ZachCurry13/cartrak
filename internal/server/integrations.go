@@ -145,12 +145,12 @@ func attention(l []integration) int {
 // listIntegrations: GET /api/integrations. Admin only.
 func (s *Server) listIntegrations(w http.ResponseWriter, r *http.Request) {
 	l := s.integrations()
-	ok(w, map[string]any{"items": l, "attention": attention(l)})
+	ok(w, map[string]any{"items": l, "attention": attention(l) + s.dataUpdatesAvailable()})
 }
 
 // integrationAttention: GET /api/integrations/attention. Just the count, for the badge on the More menu.
 func (s *Server) integrationAttention(w http.ResponseWriter, r *http.Request) {
-	ok(w, map[string]int{"attention": attention(s.integrations())})
+	ok(w, map[string]int{"attention": attention(s.integrations()) + s.dataUpdatesAvailable()})
 }
 
 // testIntegration: POST /api/integrations/test {"id": "weather"}. Asks the service once, with a short wait, and keeps what happened.

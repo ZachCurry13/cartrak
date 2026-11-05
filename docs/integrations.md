@@ -18,6 +18,11 @@ Each card says what the service is for, **what it sends** (so you can decide), a
 | Electrify America (NLR charger list) | Adds Electrify America chargers to long trips | A free key from developer.nlr.gov/signup |
 | Push alerts | Alerts on this phone | Its own page |
 
+## Data updates
+At the top of the page, **Data updates** lists the lists CarTrak downloads and keeps: the Supercharger list (supercharge.info), the Electrify America list (the NLR charger list, needs its key) and the weekly gas prices (EIA, needs its key). Each shows when it was last updated and how many entries it holds. CarTrak checks once a day, when the app is opened, whether something newer is out: the Supercharger list is compared with the server's own identifier for the file, the others by age (a month for chargers, eight days for gas prices). A list with something newer shows **Update available** and puts the red dot on More; **Update** fetches it and **Check now** looks immediately. Nothing is fetched until you tap, except the Supercharger list refreshing itself when you plan a long trip and it is over a week old.
+
+The same card says whether a newer CarTrak is out (this uses the update check switch in More, About). CarTrak cannot update itself: stop and start it on the server.
+
 ## Test connection
 Weather, road estimates, city names, gas prices and Electrify America have **Test connection**: it asks the service once and says whether it answered and the key works. The last result stays on the card.
 

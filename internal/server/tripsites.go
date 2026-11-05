@@ -63,7 +63,11 @@ func (s *Server) superSites(ctx context.Context) ([]superchargers.Site, time.Tim
 		url = superchargers.DefaultURL
 	}
 	return s.keptList(superKey, superAtKey, func(c context.Context) ([]superchargers.Site, error) {
-		return superchargers.Fetch(c, nil, url, "CarTrak/"+s.Version+" (+https://github.com/ZachCurry13/cartrak)")
+		sites, err := superchargers.Fetch(c, nil, url, "CarTrak/"+s.Version+" (+https://github.com/ZachCurry13/cartrak)")
+		if err == nil {
+			_ = s.S.SetKV(validatorKey, s.superValidator(c)) // so the daily check knows this is the list it has
+		}
+		return sites, err
 	}, ctx)
 }
 
