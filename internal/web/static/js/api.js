@@ -3,6 +3,7 @@ import { saveAnswer, loadAnswer, forgetOffline } from './offlinestore.js';
 import { windowKey } from './offlinekey.js';
 import { showOffline, hideOffline } from './offlinebar.js';
 import { toast } from './toast.js';
+import { noteRequest } from './reqtimes.js';
 
 export class AuthError extends Error {}
 
@@ -29,8 +30,10 @@ export async function api(path, opts = {}) {
   const keep = init.method === 'GET' && !opts.noOffline && !NEVER_KEPT.test(path);
   const prefix = `${car || ''}|${units}|`, key = prefix + path, wkey = keep ? windowKey(prefix, path) : null;
   let r;
+  const began = performance.now();
   try {
     r = await fetch(path, init);
+    noteRequest(path, performance.now() - began);
   } catch (e) {
     if (!(e instanceof TypeError)) throw e; // fetch() rejects with a TypeError when there is no connection
     if (!keep) throw new Error('You are offline. This needs a connection.');

@@ -1,4 +1,6 @@
 // The last few things that went wrong in the app on this phone, kept on the phone only, so a debug report can include them.
+import { slowestRequests } from './reqtimes.js';
+
 const KEY = 'cartrak.errors';
 
 export function recentErrors() {
@@ -26,9 +28,11 @@ export function watchErrors() {
 const loaded = (import.meta.url.match(/\/v([^/]+)\/js\//) || [])[1] || 'unknown';
 
 export function phoneSection() {
+  const slow = slowestRequests();
   const errs = recentErrors();
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   return ['', 'THIS PHONE (added by the page)', `    app loaded as v${loaded}, ${standalone ? 'installed' : 'in the browser'}, screen ${innerWidth}x${innerHeight}, ${navigator.onLine ? 'online' : 'offline'}`,
     errs.length ? '    recent app errors (newest last):' : '    no app errors kept',
-    ...errs.map((e) => `      ${new Date(e.t * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC | ${e.page} | ${e.msg}`)].join('\n');
+    ...errs.map((e) => `      ${new Date(e.t * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC | ${e.page} | ${e.msg}`),
+    slow.length ? '    slowest requests on this phone since the app opened (includes the connection):' : '    no requests timed yet', ...slow].join('\n');
 }

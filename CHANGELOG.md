@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.81.0
+
+### ⏱️ Finding out why a page is slow
+- A debug report now also lists the slowest requests **as this phone saw them** (the connection included), next to the server's own times. Comparing the two says whether a slow page was the server or the connection. It is kept in memory only and shown nowhere else in the app.
+
 ## 0.80.0
 
 ### 📡 Know when CarTrak is down, and when it is back
