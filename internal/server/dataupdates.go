@@ -177,7 +177,7 @@ func (s *Server) checkDatasets(ctx context.Context) dataState {
 
 // dueCheck starts the daily check in the background when it is due, so opening the app is what triggers it and nothing waits.
 func (s *Server) dueCheck() {
-	if time.Since(time.Unix(s.loadDataState().CheckedAt, 0)) < dataCheckEvery || !dataBusy.TryLock() {
+	if !s.DataChecks || time.Since(time.Unix(s.loadDataState().CheckedAt, 0)) < dataCheckEvery || !dataBusy.TryLock() {
 		return
 	}
 	go func() {

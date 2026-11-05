@@ -72,6 +72,7 @@ type Server struct {
 	routeOpts    routeOptCache
 	etaHist      etaHistory // what the charging time estimate learned from past sessions
 	brief        briefCache
+	DataChecks   bool        // the daily check of the downloaded lists may run in the background (on in the running app, off in tests)
 	CityLookups  bool        // the trip list may look up the cities of new places in the background (on in the running app, off in tests)
 	cityBusy     atomic.Bool // such a lookup is running
 	tiles        tileFlight

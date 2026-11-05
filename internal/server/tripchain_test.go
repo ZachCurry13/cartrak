@@ -15,7 +15,9 @@ func TestTripChainPicksChargersOthersCanUseAndKeepsTheList(t *testing.T) {
 	seedUsualDriving(t, srv)
 	hits := 0
 	svc := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hits++
+		if r.Method != http.MethodHead { // the list is counted once however often its version is asked
+			hits++
+		}
 		var sites []string
 		for lat := 45.5; lat < 51; lat += 0.5 {
 			sites = append(sites, fmt.Sprintf(`{"name":"Site %.1f","status":"OPEN","gps":{"latitude":%.1f,"longitude":-93.2},"stallCount":8,"powerKilowatt":250,"otherEVs":true,"plugs":{"nacs":8}}`, lat, lat))
