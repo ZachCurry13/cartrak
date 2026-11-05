@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.82.1 (2026-11-05, image :0.82.1 and :latest): every outside service setting is shared by all cars (fleet/kv.go serviceKeys, ShareServiceKeys at start; AFDC key and heartbeat URL added to inheritedKeys). Found from a tracking export: car 3 got a 400 from /api/trip-chain because the charger-list key was only on car 1. The owner's server was still on 0.79.0 then.
+
 - Released: v0.82.0 (2026-11-05, image :0.82.0 and :latest): Home cards flow down columns on wide screens and the top bar lines up with the page (css/responsive.css; Needs attention can now land lower on Home on a computer). The first release run failed once on a flaky temp-folder cleanup in internal/fleet TestMigrationKeepsPeopleAndMakesTheFirstCar and passed on re-run; look at it if it recurs. Desktop layout of the other pages is still to review.
 
 - Released: v0.81.0 (2026-11-05, image :0.81.0 and :latest): backups made as a job with progress (server/backupjob.go, js/backupjob.js: POST /api/backup/start, GET status and file; Cloudflare gives up on a silent 100 s answer); bug reports for everyone signed in, all cars in the front car's store (fleet frontPaths /api/bug-reports, authSite), public /r/ and /t/ links routed to their car; BugReportCount instead of loading every report; phone-side request timings in debug reports (js/reqtimes.js); charge-level list 80-20, 90-20, 90-10 with the 10% spare explained; Free up space says it is never automatic.
