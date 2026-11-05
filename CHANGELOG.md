@@ -5,6 +5,9 @@
 ### 🦃 Holiday voices no longer guess where you are
 - The holiday wording for trip and unplug alerts said things like "Home for the feast: trip ended" or "Home safe" even when the trip ended at a customer or anywhere else. Those lines no longer name a place: they just say the trip started or ended.
 
+### 🛣️ A simpler notice for a trip with no road
+- The notice is now one plain question: "the odometer says 18.0 mi but the shortest road is 10.3 mi. Which is right?", with one button for each. Before, it had four buttons and a long sentence. A trip with only one of the two distances still offers **Choose the road** and **Dismiss**.
+
 ## 0.82.4
 
 ### 📋 Pasting a customer list

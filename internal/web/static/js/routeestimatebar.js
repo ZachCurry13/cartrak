@@ -9,30 +9,33 @@ export async function routeEstimateBar() {
   const kept = ((await api('/api/trips/route-problems').catch(() => null)) || {}).items || [];
   if (!d || !d.enabled || (!(d.pending > 0) && !kept.length)) return null;
   const msg = h('span', {}, d.pending > 0 ? `${d.pending} older trip${d.pending === 1 ? ' is' : 's are'} drawn as a straight line.`
-    : `${kept.length} trip${kept.length === 1 ? '' : 's'} could not get a road, so ${kept.length === 1 ? 'it is' : 'they are'} drawn as a straight line. Open one to choose the road, or pick which distance is right: the road's length or the odometer's.`);
+    : `${kept.length} trip${kept.length === 1 ? '' : 's'} ${kept.length === 1 ? 'has' : 'have'} no road, so ${kept.length === 1 ? 'it is' : 'they are'} drawn as a straight line.`);
   const btn = h('button', { class: 'sec', hidden: !(d.pending > 0) }, 'Estimate their roads');
   const list = h('ul', { class: 'muted', style: 'flex-basis:100%;margin:0;padding-left:18px' });
   // One trip that could not get a road. When a road was found but its length is far from the odometer's, the odometer may have
   // updated late, so the owner can choose the road's length instead.
   const failRow = (f) => {
-    const li = h('li', {}, h('a', { href: `#/trip/${f.id}` }, when(f.startTs)), `: ${f.why}. `);
+    const li = h('li', { style: 'list-style:none;margin:10px 0' });
     li.dataset.id = f.id;
-    const gone = h('button', { class: 'text', style: 'min-height:44px;padding:2px 10px', title: 'Leave this trip as a straight line and stop offering it', onclick: () => dismiss([f.id]) }, 'Dismiss');
-    if (f.odoKm > 0) { // the odometer's figure is the right one: keep it and stop asking
-      const keep = h('button', { class: 'sec', style: 'min-height:44px;padding:2px 10px', title: 'The odometer is right: keep its distance and draw this trip as a straight line', onclick: async () => {
-        keep.disabled = true;
-        try { await api(`/api/trips/${f.id}/distance`, { method: 'POST', body: { use: 'odometer' } }); await dismiss([f.id]); } catch (e) { li.append(` ${e.message}`); keep.disabled = false; }
-      } }, `Keep odometer ${dist(f.odoKm, 1)}`);
-      li.append(keep);
+    const link = h('a', { href: `#/trip/${f.id}` }, when(f.startTs));
+    const pick = (use, km, label) => {
+      const b = h('button', { class: 'sec', style: 'min-height:44px;padding:2px 14px', onclick: async () => {
+        b.disabled = true;
+        try {
+          await api(`/api/trips/${f.id}/distance`, { method: 'POST', body: { use } });
+          if (use === 'road') li.replaceChildren(`Trip updated to ${dist(km, 1)}, and its road is drawn.`); else await dismiss([f.id]);
+        } catch (e) { li.append(` ${e.message}`); b.disabled = false; }
+      } }, `${dist(km, 1)} ${label}`);
+      return b;
+    };
+    if (f.odoKm > 0 && f.roadKm > 0) { // both distances are known: one question, one tap
+      li.append(h('div', {}, link, ': the odometer says ', h('b', {}, dist(f.odoKm, 1)), ' but the shortest road is ', h('b', {}, dist(f.roadKm, 1)), '. Which is right?'),
+        h('div', { class: 'seg' }, pick('odometer', f.odoKm, '(odometer)'), pick('road', f.roadKm, '(road)')));
+      return li;
     }
-    if (f.roadKm > 0) {
-      const use = h('button', { class: 'sec', style: 'min-height:44px;padding:2px 10px', onclick: async () => {
-        use.disabled = true;
-        try { await api(`/api/trips/${f.id}/distance`, { method: 'POST', body: { use: 'road' } }); li.replaceChildren(`Trip updated to ${dist(f.roadKm, 1)}, and its road is drawn.`); } catch (e) { li.append(` ${e.message}`); use.disabled = false; }
-      } }, `Use road ${dist(f.roadKm, 1)}`);
-      li.append(use);
-    }
-    li.append(h('a', { class: 'btn sec', href: `#/trip/${f.id}`, style: 'min-height:44px;padding:2px 10px' }, 'Choose the road'), gone);
+    li.append(h('div', {}, link, `: ${f.why}.`), h('div', { class: 'seg' },
+      h('a', { class: 'btn sec', href: `#/trip/${f.id}`, style: 'min-height:44px;padding:2px 14px' }, 'Choose the road'),
+      h('button', { class: 'text', style: 'min-height:44px;padding:2px 10px', title: 'Leave this trip as a straight line and stop offering it', onclick: () => dismiss([f.id]) }, 'Dismiss')));
     return li;
   };
   // The owner accepts that these stay a straight line, so they are not offered again.
