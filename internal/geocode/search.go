@@ -137,3 +137,6 @@ func haversineKm(lat1, lon1, lat2, lon2 float64) float64 {
 	a := math.Sin((lat2-lat1)*rad/2)*math.Sin((lat2-lat1)*rad/2) + math.Cos(lat1*rad)*math.Cos(lat2*rad)*math.Sin((lon2-lon1)*rad/2)*math.Sin((lon2-lon1)*rad/2)
 	return 6371 * 2 * math.Asin(math.Sqrt(a))
 }
+
+// DistanceKm is the straight-line distance between two places, in kilometers.
+func DistanceKm(lat1, lon1, lat2, lon2 float64) float64 { return haversineKm(lat1, lon1, lat2, lon2) }

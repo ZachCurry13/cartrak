@@ -63,6 +63,7 @@ type Server struct {
 	Push         *push.Service // Web Push alerts (nil in some tests)
 	GasURL       string        // live gas price service; empty uses the EIA (tests point it at a fake)
 	SuperURL     string        // Supercharger list service; empty uses supercharge.info (tests point it at a fake)
+	PlacesURL    string        // Google Places text search; empty uses the real one (tests point it at a fake)
 	AFDCURL      string        // Electrify America list service; empty uses the real one (tests point it at a fake)
 	GeoGap       time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo          geoState

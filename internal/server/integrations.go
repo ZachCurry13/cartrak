@@ -11,6 +11,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/afdc"
 	"github.com/ZachCurry13/cartrak/internal/alerts"
 	"github.com/ZachCurry13/cartrak/internal/gasprice"
+	"github.com/ZachCurry13/cartrak/internal/googleplaces"
 	"github.com/ZachCurry13/cartrak/internal/routeest"
 	"github.com/ZachCurry13/cartrak/internal/settings"
 	"github.com/ZachCurry13/cartrak/internal/weather"
@@ -107,6 +108,8 @@ func (s *Server) integrations() []integration {
 			State: onOff(sites > 0), Note: chargeNote},
 		{ID: "ea", Name: "Electrify America (NLR charger list)", Purpose: "Adds Electrify America chargers to long trips.", Sends: "Your key, to download the public list.",
 			State: onOff(eaOn), Note: eaNote, Keys: []string{settings.AFDCKeyKey}, Testable: eaOn},
+		{ID: "places", Name: "Google Places (finding companies)", Purpose: "Finding the businesses in a pasted company list the way Google does.", Sends: "A company name and Home's rough area, with your key.",
+			State: onOff(c.GooglePlacesKey() != ""), Note: "Without it the map's own search is used, which does not list many small businesses.", Keys: []string{settings.GooglePlacesKeyKey}, Testable: c.GooglePlacesKey() != ""},
 		{ID: "uptime", Name: "Uptime monitor", Purpose: "Telling you when CarTrak itself is down, and when it is back. It cannot announce its own outage, so it asks an outside monitor every five minutes; the monitor alerts you when that stops.", Sends: "Only a request to the address you give, every five minutes.",
 			State: onOff(c.HeartbeatURL() != ""), Note: "Without it, CarTrak still tells you when it is back after being offline for over five minutes.", Keys: []string{settings.HeartbeatURLKey}, Testable: c.HeartbeatURL() != ""},
 		{ID: "push", Name: "Push alerts", Purpose: "Alerts on this phone when something happens.", Sends: "The alert text, through your phone's own push service.", State: "info", Link: "#/notifications", LinkText: "Open Notifications"},
@@ -200,6 +203,12 @@ func (s *Server) testIntegration(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = alerts.PingURL(ctx, nil, s.Cfg.HeartbeatURL())
+	case "places":
+		if s.Cfg.GooglePlacesKey() == "" {
+			fail(w, 400, "add the key first")
+			return
+		}
+		err = googleplaces.Ping(ctx, nil, s.PlacesURL, s.Cfg.GooglePlacesKey())
 	case "ea":
 		if s.Cfg.AFDCKey() == "" {
 			fail(w, 400, "add the key first")

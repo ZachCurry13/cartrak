@@ -1,8 +1,11 @@
 # Changelog
 
-## 0.82.7
+## 0.83.0
 
-### 🔎 A pasted list stays in your country and near Home
+### 🔎 Finding companies the way Google does
+- **More, Integrations, Google Places** takes a Google Places key. With it, a pasted company list and the "search by another name" box find businesses by name through Google, which knows far more small businesses than the map's own search. Only the company name and Home's rough area are sent. Without a key nothing changes. **Test connection** checks the key, and the key is shared by every car and never shown again.
+
+### 🌎 A pasted list stays in your country and near Home
 - With US units, company names are now searched only in the United States. A business name used to match places on other continents (a company in Ukraine, an agency in the Philippines), and the list showed them as if they might be the company.
 - A match more than about 1,500 miles from Home is not offered at all, and one is only taken without asking when it is within about 500 miles. Anything further waits for you to pick it.
 

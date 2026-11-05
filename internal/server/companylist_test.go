@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -92,5 +93,29 @@ func TestAPlaceOnAnotherContinentIsNeverOfferedAndANearMatchIsAskedForCountry(t 
 	}
 	if gotCountry != "us" {
 		t.Fatalf("US units keep the search to the United States: %q", gotCountry)
+	}
+}
+
+func TestWithAGooglePlacesKeyACompanyIsFoundThereFirstAndKeyIsNeverSent(t *testing.T) {
+	var gotKey string
+	google := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotKey = r.Header.Get("X-Goog-Api-Key")
+		w.Write([]byte(`{"places":[{"displayName":{"text":"Acme Widgets"},"formattedAddress":"1 Main St, Townsville, MN","location":{"latitude":44.95,"longitude":-93.25}}]}`))
+	}))
+	defer google.Close()
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.PlacesURL = google.URL
+	srv.Cfg.Set(settings.GooglePlacesKeyKey, "secret-key")
+	if err := srv.S.SaveNamedPlace(&store.NamedPlace{Name: "Home", Lat: 44.9, Lon: -93.2, RadiusM: 150}); err != nil {
+		t.Fatal(err)
+	}
+	admin := adminClient(t, ts.URL)
+	b, _ := json.Marshal(map[string]string{"text": "Acme Widgets, Inc.-111-U.S.A."})
+	code, body := do(t, admin, "POST", ts.URL+"/api/company-list/resolve", string(b), xh)
+	if code != 200 || gotKey != "secret-key" || !strings.Contains(body, `"status":"found"`) {
+		t.Fatalf("%d %q %s", code, gotKey, body)
+	}
+	if strings.Contains(body, "secret-key") {
+		t.Fatal("the key must never be sent to the browser")
 	}
 }

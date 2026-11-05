@@ -9,6 +9,7 @@ import (
 
 	"github.com/ZachCurry13/cartrak/internal/companylist"
 	"github.com/ZachCurry13/cartrak/internal/geocode"
+	"github.com/ZachCurry13/cartrak/internal/googleplaces"
 )
 
 type companyPick struct {
@@ -57,6 +58,10 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 	if s.Cfg != nil && s.Cfg.LiveGasUnits() {
 		country = "us"
 	}
+	gkey := ""
+	if s.Cfg != nil {
+		gkey = s.Cfg.GooglePlacesKey()
+	}
 	ctx, cancel := context.WithTimeout(r.Context(), 90*time.Second)
 	defer cancel()
 	rows := make([]companyRow, 0, len(entries))
@@ -71,9 +76,16 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 				row.Status, row.Pick = "saved", &companyPick{Name: p.Name, Lat: p.Lat, Lon: p.Lon}
 			}
 		}
-		if row.Pick == nil && c != nil {
-			found, err := c.SearchIn(ctx, companylist.SearchName(e.Name), near, country)
-			if (err != nil || len(found) == 0) && companylist.SearchName(e.Name) != e.Name { // the name as written, in case cleaning it hid it
+		if row.Pick == nil && (c != nil || gkey != "") {
+			var found []geocode.Match
+			var err error
+			if gkey != "" { // Google knows far more businesses than the map's own search
+				found, err = googleplaces.Search(ctx, nil, s.PlacesURL, gkey, e.Name, strings.ToUpper(country), near)
+			}
+			if (gkey == "" || err != nil || len(found) == 0) && c != nil {
+				found, err = c.SearchIn(ctx, companylist.SearchName(e.Name), near, country)
+			}
+			if (err != nil || len(found) == 0) && c != nil && companylist.SearchName(e.Name) != e.Name { // the name as written, in case cleaning it hid it
 				found, err = c.SearchIn(ctx, e.Name, near, country)
 			}
 			found = withinReach(found)
@@ -89,7 +101,7 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 		}
 		rows = append(rows, row)
 	}
-	ok(w, map[string]any{"rows": rows, "more": more, "lookupOff": c == nil})
+	ok(w, map[string]any{"rows": rows, "more": more, "lookupOff": c == nil && gkey == ""})
 }
 
 // A company a long way from Home is a stop for another trip: places further than this are not offered, and one is only taken without

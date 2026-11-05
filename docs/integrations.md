@@ -16,6 +16,7 @@ Each card says what the service is for, **what it sends** (so you can decide), a
 | Gas prices (EIA) | Comparing charges with gas prices | A free key |
 | Superchargers (supercharge.info) | Which Tesla sites other cars can use | Nothing: the public list is downloaded |
 | Electrify America (NLR charger list) | Adds Electrify America chargers to long trips | A free key from developer.nlr.gov/signup |
+| Google Places (finding companies) | Finding the businesses in a pasted company list the way Google does | A Google Places API key (optional; without it the map's own search is used) |
 | Uptime monitor | Telling you when CarTrak itself is down and when it is back ([guide](uptime.md)) | An address from a monitoring service |
 | Push alerts | Alerts on this phone | Its own page |
 
@@ -25,7 +26,7 @@ At the top of the page, **Data updates** lists the lists CarTrak downloads and k
 The same card says whether a newer CarTrak is out (this uses the update check switch in More, About). CarTrak cannot update itself: stop and start it on the server.
 
 ## Test connection
-Weather, road estimates, city names, gas prices and Electrify America have **Test connection**: it asks the service once and says whether it answered and the key works. The last result stays on the card.
+Weather, road estimates, city names, gas prices, Electrify America and Google Places have **Test connection**: it asks the service once and says whether it answered and the key works. The last result stays on the card.
 
 ## Needs attention
 A small red dot appears on the **More** tab (administrators only) when Ford is not set up, or when the last test of a service that is on failed. It clears when the problem is fixed or a new test works.

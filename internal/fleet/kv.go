@@ -20,11 +20,11 @@ var inheritedKeys = []string{"setting:FORD_CLIENT_ID", "setting:FORD_CLIENT_SECR
 	"setting:CARTRAK_TZ", "setting:CARTRAK_GEOCODE_ENABLED", "setting:CARTRAK_GEOCODE_URL", "setting:CARTRAK_MAP_ENABLED",
 	"setting:CARTRAK_MAP_TILE_URL", "setting:CARTRAK_MAP_ATTRIBUTION", "setting:CARTRAK_ROUTE_LOOKUP", "setting:CARTRAK_ROUTE_URL",
 	"setting:CARTRAK_WEATHER_LOOKUP", "setting:CARTRAK_CURRENCY", "setting:CARTRAK_EIA_KEY", "setting:CARTRAK_GAS_ADJUST",
-	"setting:CARTRAK_AFDC_KEY", "setting:CARTRAK_HEARTBEAT_URL"}
+	"setting:CARTRAK_AFDC_KEY", "setting:CARTRAK_HEARTBEAT_URL", "setting:CARTRAK_GOOGLE_PLACES_KEY"}
 
 // serviceKeys are keys for outside services that every car shares. Whichever car they are entered under, the installation gets
 // them when it has none, so the other cars use them too (a charger-list key entered on the second car was not found on the first).
-var serviceKeys = []string{"setting:CARTRAK_EIA_KEY", "setting:CARTRAK_AFDC_KEY", "setting:CARTRAK_HEARTBEAT_URL",
+var serviceKeys = []string{"setting:CARTRAK_EIA_KEY", "setting:CARTRAK_AFDC_KEY", "setting:CARTRAK_HEARTBEAT_URL", "setting:CARTRAK_GOOGLE_PLACES_KEY",
 	"setting:CARTRAK_GEOCODE_ENABLED", "setting:CARTRAK_GEOCODE_URL", "setting:CARTRAK_MAP_ENABLED", "setting:CARTRAK_MAP_TILE_URL",
 	"setting:CARTRAK_MAP_ATTRIBUTION", "setting:CARTRAK_ROUTE_LOOKUP", "setting:CARTRAK_ROUTE_URL", "setting:CARTRAK_WEATHER_LOOKUP"}
 
