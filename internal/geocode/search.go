@@ -30,6 +30,11 @@ type Match struct {
 // (nil for none), matches around it come first, so "Main St" finds the one in your own region, not the other side of the world;
 // only a box about 300 miles wide is sent, rounded to a whole degree, never the exact place.
 func (c *Client) Search(ctx context.Context, query string, near *[2]float64) ([]Match, error) {
+	return c.SearchIn(ctx, query, near, "")
+}
+
+// SearchIn is Search kept to some countries ("us", or "us,ca"): a business name often matches places on the other side of the world.
+func (c *Client) SearchIn(ctx context.Context, query string, near *[2]float64, countries string) ([]Match, error) {
 	query = strings.TrimSpace(query)
 	if len(query) < 3 || len(query) > 200 {
 		return nil, fmt.Errorf("type a business name, or a street and a town")
@@ -40,6 +45,9 @@ func (c *Client) Search(ctx context.Context, query string, near *[2]float64) ([]
 		return nil, err
 	}
 	q := url.Values{"format": {"jsonv2"}, "limit": {"8"}, "addressdetails": {"1"}, "accept-language": {"en"}, "q": {query}}
+	if countries != "" {
+		q.Set("countrycodes", countries)
+	}
 	if near != nil {
 		lat, lon := math.Round(near[0]), math.Round(near[1])
 		q.Set("viewbox", fmt.Sprintf("%.0f,%.0f,%.0f,%.0f", lon-3, lat+3, lon+3, lat-3)) // left, top, right, bottom

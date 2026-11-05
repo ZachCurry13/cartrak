@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/settings"
+	"github.com/ZachCurry13/cartrak/internal/store"
 )
 
 func TestCompanyListFindsRemembersAndAsks(t *testing.T) {
@@ -48,5 +49,48 @@ func TestCompanyListFindsRemembersAndAsks(t *testing.T) {
 	}
 	if r = ask("Mystery Metals-7654321-U.S.A."); r.Rows[0].Status != "remembered" {
 		t.Fatalf("second: %+v", r)
+	}
+}
+
+func TestAPlaceOnAnotherContinentIsNeverOfferedAndANearMatchIsAskedForCountry(t *testing.T) {
+	var gotCountry string
+	svc := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotCountry = r.URL.Query().Get("countrycodes")
+		switch r.URL.Query().Get("q") {
+		case "Faraway Goods": // the same name, far from Home
+			w.Write([]byte(`[{"lat":"49.99","lon":"36.23","display_name":"Faraway Goods, Kharkiv","name":"Faraway Goods","type":"office"}]`))
+		case "Nearby Goods":
+			w.Write([]byte(`[{"lat":"44.95","lon":"-93.25","display_name":"Nearby Goods, 1 Main St, Townsville","name":"Nearby Goods","type":"office"}]`))
+		default:
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer svc.Close()
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.GeoGap = time.Millisecond
+	srv.Cfg.Set(settings.GeocodeURLKey, svc.URL)
+	if err := srv.S.SaveNamedPlace(&store.NamedPlace{Name: "Home", Lat: 44.9, Lon: -93.2, RadiusM: 150}); err != nil {
+		t.Fatal(err)
+	}
+	admin := adminClient(t, ts.URL)
+	b, _ := json.Marshal(map[string]string{"text": "Faraway Goods, Inc.-111-U.S.A.\nNearby Goods LLC-222-U.S.A."})
+	code, body := do(t, admin, "POST", ts.URL+"/api/company-list/resolve", string(b), xh)
+	var r struct {
+		Rows []struct {
+			Name, Status string
+			Options      []struct{ Name string }
+		}
+	}
+	if code != 200 || json.Unmarshal([]byte(body), &r) != nil || len(r.Rows) != 2 {
+		t.Fatalf("resolve: %d %s", code, body)
+	}
+	if r.Rows[0].Status != "none" || len(r.Rows[0].Options) != 0 {
+		t.Fatalf("a place on another continent is not offered: %+v", r.Rows[0])
+	}
+	if r.Rows[1].Status != "found" {
+		t.Fatalf("a near place with the same name is taken: %+v", r.Rows[1])
+	}
+	if gotCountry != "us" {
+		t.Fatalf("US units keep the search to the United States: %q", gotCountry)
 	}
 }

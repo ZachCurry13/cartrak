@@ -53,6 +53,10 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 		near = &[2]float64{*x.Lat, *x.Lon}
 	}
 	c := s.geoClient()
+	country := "" // customers are in the owner's country: a name that matches a place on another continent is not them
+	if s.Cfg != nil && s.Cfg.LiveGasUnits() {
+		country = "us"
+	}
 	ctx, cancel := context.WithTimeout(r.Context(), 90*time.Second)
 	defer cancel()
 	rows := make([]companyRow, 0, len(entries))
@@ -68,16 +72,17 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if row.Pick == nil && c != nil {
-			found, err := c.Search(ctx, companylist.SearchName(e.Name), near)
+			found, err := c.SearchIn(ctx, companylist.SearchName(e.Name), near, country)
 			if (err != nil || len(found) == 0) && companylist.SearchName(e.Name) != e.Name { // the name as written, in case cleaning it hid it
-				found, err = c.Search(ctx, e.Name, near)
+				found, err = c.SearchIn(ctx, e.Name, near, country)
 			}
+			found = withinReach(found)
 			if err != nil {
 				row.Error = err.Error()
 			}
 			if err == nil && len(found) > 0 {
 				row.Options, row.Status = found, "check"
-				if companylist.Same(e.Name, found[0].Name) {
+				if companylist.Same(e.Name, found[0].Name) && (found[0].DistKm == nil || *found[0].DistKm <= autoPickKm) {
 					row.Status, row.Pick = "found", &companyPick{Name: e.Name, Address: found[0].Address, Lat: found[0].Lat, Lon: found[0].Lon}
 				}
 			}
@@ -85,6 +90,23 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 		rows = append(rows, row)
 	}
 	ok(w, map[string]any{"rows": rows, "more": more, "lookupOff": c == nil})
+}
+
+// A company a long way from Home is a stop for another trip: places further than this are not offered, and one is only taken without
+// asking when it is closer than autoPickKm.
+const (
+	reachKm    = 2500.0
+	autoPickKm = 800.0
+)
+
+func withinReach(in []geocode.Match) []geocode.Match {
+	out := in[:0:0]
+	for _, m := range in {
+		if m.DistKm == nil || *m.DistKm <= reachKm {
+			out = append(out, m)
+		}
+	}
+	return out
 }
 
 // rememberCompany keeps the place chosen for a company's number, so the next list finds it by itself:

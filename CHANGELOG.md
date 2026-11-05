@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.82.7
+
+### 🔎 A pasted list stays in your country and near Home
+- With US units, company names are now searched only in the United States. A business name used to match places on other continents (a company in Ukraine, an agency in the Philippines), and the list showed them as if they might be the company.
+- A match more than about 1,500 miles from Home is not offered at all, and one is only taken without asking when it is within about 500 miles. Anything further waits for you to pick it.
+
 ## 0.82.6
 
 ### 🔎 Finding the companies in a pasted list
