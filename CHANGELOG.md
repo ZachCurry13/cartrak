@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.82.0
+
+### 🖥️ A tidier Home on a computer
+- On a wide screen the Home cards now flow down the columns, so a short card no longer leaves a big empty gap beside a tall one, and the top bar lines up with the page instead of sitting at the far left of the screen. Phones are unchanged.
+
 ## 0.81.0
 
 ### 💾 Backups that say what they are doing
