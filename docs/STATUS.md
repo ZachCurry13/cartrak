@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.82.2 (2026-11-05, image :0.82.2 and :latest): route-problem notice has Keep odometer (js/routeestimatebar.js, uses /api/trips/{id}/distance use=odometer then dismiss), guide highlight re-measured after the page settles and uses .page-title (js/tourui.js, tour.js), guide says the owner enters what was paid, longest-day label says charging included. Not checked in the browser: the guide ring fix (demo binary was not rebuilt).
+
 - Released: v0.82.1 (2026-11-05, image :0.82.1 and :latest): every outside service setting is shared by all cars (fleet/kv.go serviceKeys, ShareServiceKeys at start; AFDC key and heartbeat URL added to inheritedKeys). Found from a tracking export: car 3 got a 400 from /api/trip-chain because the charger-list key was only on car 1. The owner's server was still on 0.79.0 then.
 
 - Released: v0.82.0 (2026-11-05, image :0.82.0 and :latest): Home cards flow down columns on wide screens and the top bar lines up with the page (css/responsive.css; Needs attention can now land lower on Home on a computer). The first release run failed once on a flaky temp-folder cleanup in internal/fleet TestMigrationKeepsPeopleAndMakesTheFirstCar and passed on re-run; look at it if it recurs. Desktop layout of the other pages is still to review.
