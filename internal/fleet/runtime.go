@@ -58,6 +58,7 @@ func (f *Fleet) build(c store.Car, primary bool) (*Runtime, error) {
 	if primary {
 		ShareInherited(st, f.Core)
 	}
+	ShareServiceKeys(st, f.Core)
 	cfgs := settings.New(&CarKV{Car: st, Core: f.Core, Primary: primary}, f.Cfg.Lookup)
 	prov, link, prober, redirects, err := f.provider(cfgs, st)
 	if err != nil {

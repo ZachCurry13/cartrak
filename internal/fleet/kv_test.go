@@ -56,3 +56,30 @@ func TestAKeySavedOnTheFirstCarBeforeItWasSharedReachesTheInstallationAtStart(t 
 		t.Fatal("a value already in the installation is never overwritten")
 	}
 }
+
+func TestAChargerListKeyEnteredOnAnyCarIsUsedByEveryCar(t *testing.T) {
+	core, _ := store.Open(t.TempDir())
+	first, _ := store.Open(t.TempDir())
+	second, _ := store.Open(t.TempDir())
+	t.Cleanup(func() { core.Close(); first.Close(); second.Close() })
+	k := "setting:CARTRAK_AFDC_KEY"
+	a, b := &CarKV{Car: first, Core: core, Primary: true}, &CarKV{Car: second, Core: core}
+	_ = b.SetKV(k, "from-second") // entered on the second car
+	if a.GetKV(k) != "from-second" {
+		t.Fatalf("the first car uses it too: %q", a.GetKV(k))
+	}
+	_ = b.SetKV(k, "changed-on-second")
+	if a.GetKV(k) != "from-second" {
+		t.Fatalf("a second car cannot overwrite what the installation already holds: %q", a.GetKV(k))
+	}
+	_ = a.SetKV(k, "from-first")
+	if b.GetKV(k) != "changed-on-second" || core.GetKV(k) != "from-first" {
+		t.Fatalf("the first car sets the installation's value; a car with its own keeps it: %q %q", b.GetKV(k), core.GetKV(k))
+	}
+	// a key kept only on a car by an older version reaches the installation at start
+	_ = first.SetKV("setting:CARTRAK_HEARTBEAT_URL", "https://example.test/ping")
+	ShareServiceKeys(first, core)
+	if (&CarKV{Car: second, Core: core}).GetKV("setting:CARTRAK_HEARTBEAT_URL") == "" {
+		t.Fatal("shared at start")
+	}
+}

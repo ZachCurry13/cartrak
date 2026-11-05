@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.82.1
+
+### 🔑 Charger-list key found on every car
+- The Electrify America (charger list) key and the uptime monitor address were kept on the one car they were entered under, so another car said a key was needed even though it had been entered. They are now shared by every car, like the gas price key. A key already entered is shared the next time CarTrak starts, and a key entered on any car is used by all of them.
+
 ## 0.82.0
 
 ### 🖥️ A tidier Home on a computer

@@ -19,7 +19,12 @@ var globalKeys = []string{"vapid_private", "vapid_public", "update_check", "onbo
 var inheritedKeys = []string{"setting:FORD_CLIENT_ID", "setting:FORD_CLIENT_SECRET", "setting:FORD_REDIRECT_URL", "setting:FORD_AUTH_URL",
 	"setting:CARTRAK_TZ", "setting:CARTRAK_GEOCODE_ENABLED", "setting:CARTRAK_GEOCODE_URL", "setting:CARTRAK_MAP_ENABLED",
 	"setting:CARTRAK_MAP_TILE_URL", "setting:CARTRAK_MAP_ATTRIBUTION", "setting:CARTRAK_ROUTE_LOOKUP", "setting:CARTRAK_ROUTE_URL",
-	"setting:CARTRAK_WEATHER_LOOKUP", "setting:CARTRAK_CURRENCY", "setting:CARTRAK_EIA_KEY", "setting:CARTRAK_GAS_ADJUST"}
+	"setting:CARTRAK_WEATHER_LOOKUP", "setting:CARTRAK_CURRENCY", "setting:CARTRAK_EIA_KEY", "setting:CARTRAK_GAS_ADJUST",
+	"setting:CARTRAK_AFDC_KEY", "setting:CARTRAK_HEARTBEAT_URL"}
+
+// serviceKeys are keys for outside services that every car shares. Whichever car they are entered under, the installation gets
+// them when it has none, so the other cars use them too (a charger-list key entered on the second car was not found on the first).
+var serviceKeys = []string{"setting:CARTRAK_EIA_KEY", "setting:CARTRAK_AFDC_KEY", "setting:CARTRAK_HEARTBEAT_URL"}
 
 // GlobalKeys is what ImportIdentity copies from the first car's database: the global keys and the inherited defaults.
 func GlobalKeys() []string { return append(append([]string{}, globalKeys...), inheritedKeys...) }
@@ -28,6 +33,18 @@ func GlobalKeys() []string { return append(append([]string{}, globalKeys...), in
 // became inherited in a later version (the EIA key) was saved on the first car alone, so the other cars would never see it.
 func ShareInherited(car, core *store.Store) {
 	for _, k := range inheritedKeys {
+		if core.GetKV(k) == "" {
+			if v := car.GetKV(k); v != "" {
+				_ = core.SetKV(k, v)
+			}
+		}
+	}
+}
+
+// ShareServiceKeys gives the installation the service keys other cars hold when it has none: keys entered on a car other than the
+// first before they were shared. It runs for every car when it starts.
+func ShareServiceKeys(car, core *store.Store) {
+	for _, k := range serviceKeys {
 		if core.GetKV(k) == "" {
 			if v := car.GetKV(k); v != "" {
 				_ = core.SetKV(k, v)
@@ -72,7 +89,7 @@ func (k *CarKV) SetKV(key, val string) error {
 	case in(globalKeys, key) || strings.HasPrefix(key, "global:"):
 		return k.Core.SetKV(key, val)
 	case in(inheritedKeys, key):
-		if k.Primary {
+		if k.Primary || (in(serviceKeys, key) && k.Core.GetKV(key) == "") {
 			if err := k.Core.SetKV(key, val); err != nil {
 				return err
 			}
