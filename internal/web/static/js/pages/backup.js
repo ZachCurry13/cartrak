@@ -2,6 +2,7 @@ import { h, when } from '../ui.js';
 import { api } from '../api.js';
 import { restoreCard } from '../restorecard.js';
 import { storageCard } from '../storagecard.js';
+import { backupButton } from '../backupjob.js';
 
 const size = (b) => (b >= 1e9 ? `${(b / 1e9).toFixed(1)} GB` : `${Math.max(1, Math.round(b / 1e6))} MB`);
 
@@ -14,7 +15,7 @@ export default async function backup(root, _a, session) {
     h('section', { class: 'card' }, h('h2', {}, session.cars.length > 1 ? 'This car’s data' : 'Your data'),
       h('p', {}, `CarTrak's database is ${size(d.dbBytes)}${d.firstReading ? `, kept since ${when(d.firstReading)}` : ''}. Nothing is deleted as it ages.`),
       h('p', { class: 'muted' }, 'Most of the size is the raw copy of every reading from Ford. Trips, charging, places, settings and charts are small.'),
-      h('p', { class: 'seg' }, link('/api/backup?small=1', 'Download small backup'), link('/api/backup', 'Download full backup', true)),
+      h('p', { class: 'seg' }, backupButton('Download small backup', true), backupButton('Download full backup', false, true)),
       h('p', { class: 'muted' }, 'The small backup leaves out the raw Ford readings, so Car data history for old readings will be empty. A large database can take a while to back up and slows the app meanwhile. Sign-in sessions are never included.'),
       h('p', { class: 'banner' }, 'A backup contains the Ford sign-in of this car. Keep it private, like a password.')),
     session.me.siteRole === 'admin' && session.cars.length > 1 ? h('section', { class: 'card' }, h('h2', {}, 'Every car and every person'),

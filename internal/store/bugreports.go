@@ -212,3 +212,13 @@ func (s *Store) DeleteFixedBugReports(before int64) (int64, error) {
 	}
 	return res.RowsAffected()
 }
+
+// BugReportCount is how many reports are kept, counted without reading any of them.
+func (s *Store) BugReportCount() int {
+	if s.bugInit() != nil {
+		return 0
+	}
+	var n int
+	_ = s.DB.QueryRow(`SELECT count(*) FROM bug_reports`).Scan(&n)
+	return n
+}

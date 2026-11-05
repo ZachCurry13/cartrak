@@ -63,7 +63,7 @@ func (s *Server) addReport(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "part of that report is too long")
 		return
 	}
-	if all, _ := s.S.BugReports(false); len(all) >= reportMaxKept {
+	if s.S.BugReportCount() >= reportMaxKept {
 		fail(w, 400, "There are a lot of reports: clear some first")
 		return
 	}

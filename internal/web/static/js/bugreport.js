@@ -24,13 +24,18 @@ function sheet(info) {
   const withDebug = h('input', { type: 'checkbox', class: 'check', id: 'br-debug' });
   const send = h('button', { type: 'button', onclick: async () => {
     send.disabled = true;
-    msg.textContent = 'Saving…';
+    const began = Date.now();
+    const tick = setInterval(() => { if (msg.dataset.phase) msg.textContent = `${msg.dataset.phase} ${Math.round((Date.now() - began) / 1000)} s`; }, 1000);
+    const phase = (t) => { msg.dataset.phase = t; msg.textContent = t; };
     try {
-      const debug = withDebug.checked ? await debugText() : '';
+      phase('Saving…');
+      let debug = '';
+      if (withDebug.checked) { phase('Collecting the debug report (this part can be slow)…'); debug = await debugText(); phase('Saving…'); }
       const r = await api('/api/bug-reports', { method: 'POST', body: { note: note.value, page: info.page, device: info.device, text: info.text, layout: info.layout, html: info.html, debug } });
       msg.replaceChildren(`Saved as report #${r.id}. `, h('a', { href: '#/bugreports', onclick: close }, 'Open Bug reports'), ' to make a link for Claude.');
       send.hidden = true;
-    } catch (e) { msg.textContent = e.message; send.disabled = false; }
+    } catch (e) { delete msg.dataset.phase; msg.textContent = e.message; send.disabled = false; }
+    clearInterval(tick); delete msg.dataset.phase;
   } }, 'Save report');
   const dlg = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Send a bug report', tabindex: '-1' }, h('h2', {}, 'Send a bug report'),
     h('p', { class: 'muted' }, `Saved in the app as text from this page (${info.page}): its words, a copy of how it looks, and your screen (${info.device.split(';')[0]}).`), note,

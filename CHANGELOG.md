@@ -2,6 +2,12 @@
 
 ## 0.81.0
 
+### 💾 Backups that say what they are doing
+- **Download small backup** and **Download full backup** now make the copy as a job: the button says it is working (with the seconds so far), and the download starts when the copy is ready. Before, the page waited silently while a large database was copied, and the connection could give up first, so it looked as if nothing happened.
+
+### 🐞 Bug reports save faster and say why they are slow
+- Saving a report no longer reads every kept report just to count them. While saving, the sheet says whether it is collecting the debug report (the slow part, only when ticked) or saving, with the seconds so far.
+
 ### ⏱️ Finding out why a page is slow
 - A debug report now also lists the slowest requests **as this phone saw them** (the connection included), next to the server's own times. Comparing the two says whether a slow page was the server or the connection. It is kept in memory only and shown nowhere else in the app.
 
