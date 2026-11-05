@@ -52,7 +52,7 @@ func (s *Server) tripRange(w http.ResponseWriter, r *http.Request) {
 	cold, hot := weather(-5), weather(35)
 	var wins []rangeWindow
 	seen := map[[2]float64]bool{}
-	for _, p := range [][2]float64{{target, reserve}, {90, 20}, {80, 20}, {80, 10}} {
+	for _, p := range [][2]float64{{target, reserve}, {80, 20}, {90, 20}, {90, 10}} {
 		if seen[p] || p[0] <= p[1] {
 			continue
 		}

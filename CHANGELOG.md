@@ -9,6 +9,8 @@
 - **How far a charge goes** says where the suggested longest leg comes from (about 10% spare on the shortest figure, rounded down to a round number in miles or kilometres) and why 90% to 20% goes further than 80% to 20% (the points of battery between them).
 - **Free up space** says plainly that nothing is removed automatically; picking 30, 90, 180 or 365 days only shows what is older than that.
 
+- The **Other charge levels** list no longer shows two levels that go the same distance (they covered the same points of battery). It now compares 80% to 20%, 90% to 20% and 90% to 10%.
+
 ### 🐞 Bug reports save faster and say why they are slow
 - Saving a report no longer reads every kept report just to count them. While saving, the sheet says whether it is collecting the debug report (the slow part, only when ticked) or saving, with the seconds so far.
 
