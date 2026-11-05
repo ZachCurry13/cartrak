@@ -19,14 +19,14 @@ export async function routeEstimateBar() {
     li.dataset.id = f.id;
     const gone = h('button', { class: 'text', style: 'min-height:44px;padding:2px 10px', title: 'Leave this trip as a straight line and stop offering it', onclick: () => dismiss([f.id]) }, 'Dismiss');
     if (f.odoKm > 0) { // the odometer's figure is the right one: keep it and stop asking
-      const keep = h('button', { class: 'sec', style: 'min-height:36px;padding:2px 10px', title: 'The odometer is right: keep its distance and draw this trip as a straight line', onclick: async () => {
+      const keep = h('button', { class: 'sec', style: 'min-height:44px;padding:2px 10px', title: 'The odometer is right: keep its distance and draw this trip as a straight line', onclick: async () => {
         keep.disabled = true;
         try { await api(`/api/trips/${f.id}/distance`, { method: 'POST', body: { use: 'odometer' } }); await dismiss([f.id]); } catch (e) { li.append(` ${e.message}`); keep.disabled = false; }
       } }, `Keep odometer ${dist(f.odoKm, 1)}`);
       li.append(keep);
     }
     if (f.roadKm > 0) {
-      const use = h('button', { class: 'sec', style: 'min-height:36px;padding:2px 10px', onclick: async () => {
+      const use = h('button', { class: 'sec', style: 'min-height:44px;padding:2px 10px', onclick: async () => {
         use.disabled = true;
         try { await api(`/api/trips/${f.id}/distance`, { method: 'POST', body: { use: 'road' } }); li.replaceChildren(`Trip updated to ${dist(f.roadKm, 1)}, and its road is drawn.`); } catch (e) { li.append(` ${e.message}`); use.disabled = false; }
       } }, `Use road ${dist(f.roadKm, 1)}`);

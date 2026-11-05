@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.82.3
+
+### 🧹 Smaller fixes
+- The **Use road** and **Keep odometer** buttons on the straight-line trip notice are a full-size tap target.
+- Bug reports no longer list a screen-reader-only word (such as "Trips" at the top of a page) as cut off by its box: it is hidden on purpose.
+
 ## 0.82.2
 
 ### 🛣️ A trip that could not get a road: keep the odometer
