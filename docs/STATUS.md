@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.82.4 (2026-11-05, image :0.82.4 and :latest): pasted customer lists ignore the last-contact lines (companylist.activity), and each company that was not found has a Search by another name box (js/companylist.js, uses /api/named-places/search; the pick is remembered by account number). Not tried in a browser. Never put the owner's real customer names or account numbers in tests or docs (the repo is public); tests use made-up names.
+
 - Released: v0.82.3 (2026-11-05, image :0.82.3 and :latest): route-notice buttons 44 px, layoutfacts ignores .vh text. Open from reports: #23 (company list lines with extra details from the owner's work system; needs sample lines; companylist.Parse/Same), low contrast 3.92 on a result line in the paste-a-list results (element unknown), #10 auto-lock, #16 unknown text, #20 desktop layout beyond Home. One push to main failed once with a GitHub-side error and worked on retry.
 
 - Released: v0.82.2 (2026-11-05, image :0.82.2 and :latest): route-problem notice has Keep odometer (js/routeestimatebar.js, uses /api/trips/{id}/distance use=odometer then dismiss), guide highlight re-measured after the page settles and uses .page-title (js/tourui.js, tour.js), guide says the owner enters what was paid, longest-day label says charging included. Not checked in the browser: the guide ring fix (demo binary was not rebuilt).
