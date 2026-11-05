@@ -23,6 +23,7 @@ type companyRow struct {
 	Status  string          `json:"status"` // remembered, saved, found (the search agrees), check (pick one) or none
 	Pick    *companyPick    `json:"pick"`
 	Options []geocode.Match `json:"options"`
+	Error   string          `json:"error,omitempty"` // the lookup service did not answer: not the same as "nothing found"
 }
 
 // resolveCompanies reads a pasted list and finds each company: POST /api/company-list/resolve {"text": "..."}. A company is
@@ -67,7 +68,14 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if row.Pick == nil && c != nil {
-			if found, err := c.Search(ctx, e.Name, near); err == nil && len(found) > 0 {
+			found, err := c.Search(ctx, companylist.SearchName(e.Name), near)
+			if (err != nil || len(found) == 0) && companylist.SearchName(e.Name) != e.Name { // the name as written, in case cleaning it hid it
+				found, err = c.Search(ctx, e.Name, near)
+			}
+			if err != nil {
+				row.Error = err.Error()
+			}
+			if err == nil && len(found) > 0 {
 				row.Options, row.Status = found, "check"
 				if companylist.Same(e.Name, found[0].Name) {
 					row.Status, row.Pick = "found", &companyPick{Name: e.Name, Address: found[0].Address, Lat: found[0].Lat, Lon: found[0].Lon}

@@ -62,6 +62,16 @@ func Words(s string) []string {
 	return w
 }
 
+// SearchName is the name to ask a map for: without the commas (a map reads "Acme, Inc." as a place called Inc. in something called
+// Acme) and without "Inc", "LLC" and the like on the end, which a map rarely has.
+func SearchName(s string) string {
+	f := strings.Fields(strings.NewReplacer(",", " ", ";", " ").Replace(s))
+	for len(f) > 1 && noise[strings.ToLower(strings.Trim(f[len(f)-1], ".()"))] {
+		f = f[:len(f)-1]
+	}
+	return strings.Join(f, " ")
+}
+
 // Same says whether two names mean the same company: the same words, or one name's words all inside the other's (and at least four letters
 // long, so a short word does not match everything).
 func Same(a, b string) bool {

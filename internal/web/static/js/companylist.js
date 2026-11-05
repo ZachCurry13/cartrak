@@ -41,10 +41,10 @@ export function pasteListCard(use) {
         const [kind, label] = LABEL[x.status];
         const chosen = pick[i];
         return h('div', { class: 'card', style: `margin:8px 0;padding:10px;${skip[i] ? 'opacity:.55' : ''}` },
-          h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('b', { class: 'grow', style: 'flex:1 1 8em;min-width:0;overflow-wrap:anywhere' }, x.name), chip(kind, chosen ? label : x.options.length ? label : 'Not found')),
+          h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('b', { class: 'grow', style: 'flex:1 1 8em;min-width:0;overflow-wrap:anywhere' }, x.name), chip(kind, chosen ? label : x.options.length ? label : x.error ? 'Lookup failed' : 'Not found')),
           chosen ? h('div', { class: 'muted' }, chosen.address || (x.status === 'saved' ? 'One of your places' : '')) : null,
           !chosen && !skip[i] ? h('div', {}, ...x.options.map((m) => h('button', { class: 'sec', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal', onclick: () => { pick[i] = { name: x.name, address: m.address, lat: m.lat, lon: m.lon }; draw(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m)))),
-            x.options.length ? null : h('p', { class: 'muted' }, 'No match. Search it under another name below, skip it, or add the town to the name and paste again.')) : null,
+            x.options.length ? null : h('p', { class: 'muted' }, x.error ? `The lookup service did not answer (${x.error}), so this is not the same as nothing being found. Wait a minute and paste again, or search below.` : 'No match. Search it under another name below, skip it, or add the town to the name and paste again.')) : null,
           !chosen && !skip[i] ? another(x) : null,
           h('div', { class: 'seg' }, chosen && !skip[i] && x.status !== 'saved' ? h('button', { class: 'text sm', onclick: () => { pick[i] = null; draw(); } }, 'Change') : null,
             h('button', { class: 'text sm', onclick: () => { skip[i] = !skip[i]; draw(); } }, skip[i] ? 'Put back' : 'Skip')));

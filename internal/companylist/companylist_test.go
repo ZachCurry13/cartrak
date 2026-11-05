@@ -54,3 +54,18 @@ func TestTheActivityLineUnderEachCompanyIsNotACompany(t *testing.T) {
 		t.Fatalf("a plain name stays: %+v", got)
 	}
 }
+
+func TestTheSearchNameHasNoCommasOrCompanySuffix(t *testing.T) {
+	for in, want := range map[string]string{
+		"Acme Widgets, Inc.":         "Acme Widgets",
+		"Blue-Sky Supplies, LLC":     "Blue-Sky Supplies",
+		"NORTH STAR GOODS":           "NORTH STAR GOODS",
+		"Fifth & Main Co":            "Fifth & Main",
+		"Inc":                        "Inc",
+		"Royal Forms & Printing Inc": "Royal Forms & Printing",
+	} {
+		if got := SearchName(in); got != want {
+			t.Fatalf("%q: got %q want %q", in, got, want)
+		}
+	}
+}

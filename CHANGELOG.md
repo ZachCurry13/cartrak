@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.82.6
+
+### 🔎 Finding the companies in a pasted list
+- Names are now searched without the commas and without "Inc", "LLC", "Corp" and the like on the end. A map reads "Acme, Inc." as a place called Inc. inside something called Acme, so many companies were missed only because of how the name was written. If the cleaned name finds nothing, the name as written is tried too.
+- A lookup that **failed** (the service did not answer or turned CarTrak away) now says **Lookup failed** instead of **Not found**, so a company is not taken to be missing when the service never answered.
+- The map data behind the lookup (OpenStreetMap) simply does not list many small businesses. For those, use the search box under the company with the town or the street address.
+
 ## 0.82.5
 
 ### 🦃 Holiday voices no longer guess where you are
