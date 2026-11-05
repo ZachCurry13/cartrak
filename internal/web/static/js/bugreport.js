@@ -16,7 +16,7 @@ async function debugText() {
   return d.text + phoneSection();
 }
 
-function sheet(info) {
+function sheet(info, admin) {
   const close = () => { bg.remove(); document.removeEventListener('keydown', onKey); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   const msg = h('p', { class: 'muted', role: 'status' });
@@ -32,14 +32,15 @@ function sheet(info) {
       let debug = '';
       if (withDebug.checked) { phase('Collecting the debug report (this part can be slow)…'); debug = await debugText(); phase('Saving…'); }
       const r = await api('/api/bug-reports', { method: 'POST', body: { note: note.value, page: info.page, device: info.device, text: info.text, layout: info.layout, html: info.html, debug } });
-      msg.replaceChildren(`Saved as report #${r.id}. `, h('a', { href: '#/bugreports', onclick: close }, 'Open Bug reports'), ' to make a link for Claude.');
+      if (admin) msg.replaceChildren(`Saved as report #${r.id}. `, h('a', { href: '#/bugreports', onclick: close }, 'Open Bug reports'), ' to make a link for Claude.');
+      else msg.textContent = `Saved as report #${r.id}. Thank you.`;
       send.hidden = true;
     } catch (e) { delete msg.dataset.phase; msg.textContent = e.message; send.disabled = false; }
     clearInterval(tick); delete msg.dataset.phase;
   } }, 'Save report');
   const dlg = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Send a bug report', tabindex: '-1' }, h('h2', {}, 'Send a bug report'),
     h('p', { class: 'muted' }, `Saved in the app as text from this page (${info.page}): its words, a copy of how it looks, and your screen (${info.device.split(';')[0]}).`), note,
-    h('label', { for: 'br-debug', style: 'display:flex;align-items:center;gap:10px;margin-top:10px' }, withDebug, 'Include the debug report (only for a problem with the numbers; it is long)'),
+    admin ? h('label', { for: 'br-debug', style: 'display:flex;align-items:center;gap:10px;margin-top:10px' }, withDebug, 'Include the debug report (only for a problem with the numbers; it is long)') : null,
     h('p', {}, send, ' ', h('button', { class: 'text', type: 'button', onclick: close }, 'Close')), msg);
   const bg = h('div', { class: 'sheetbg' }, dlg);
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
@@ -51,8 +52,8 @@ function sheet(info) {
 
 export function mountBugReport(session) {
   const foot = document.getElementById('bugfoot');
-  if (!foot || session.me.role !== 'admin') return;
-  const btn = h('button', { class: 'text sm', type: 'button', onclick: () => sheet({ page: location.hash || '#/', device: deviceInfo(), text: pageText(), layout: layoutFacts(), html: pageSnapshot() }) }, 'Send a bug report');
+  if (!foot) return; // everyone signed in can send one; only an administrator reads them
+  const btn = h('button', { class: 'text sm', type: 'button', onclick: () => sheet({ page: location.hash || '#/', device: deviceInfo(), text: pageText(), layout: layoutFacts(), html: pageSnapshot() }, session.me.role === 'admin') }, 'Send a bug report');
   foot.replaceChildren(btn);
   const place = () => { foot.hidden = HIDDEN_ON.some((p) => location.hash.startsWith(p)); };
   addEventListener('hashchange', place);

@@ -1,6 +1,6 @@
 # Bug reports from the app
 
-At the foot of every page (for administrators) is **Send a bug report**. It keeps a **text copy of the page** with a short note, inside CarTrak, so a problem can be read later instead of described. Nothing leaves your server unless you make a link.
+At the foot of every page (for everyone signed in; only an administrator can read the reports, and all cars share one set of reports and one link) is **Send a bug report**. It keeps a **text copy of the page** with a short note, inside CarTrak, so a problem can be read later instead of described. Nothing leaves your server unless you make a link.
 
 ## What is kept
 - Your note.

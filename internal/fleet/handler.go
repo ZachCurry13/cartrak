@@ -13,7 +13,7 @@ import (
 // devices and the whole installation's settings. They use only the core database, and keeping them on one server keeps
 // one count of wrong passwords.
 var frontPaths = []string{"/api/login", "/api/setup", "/api/logout", "/api/me", "/api/users", "/api/security",
-	"/api/push/", "/api/cars", "/api/inbox", "/api/connector", "/api/backup/site", "/api/changelog", "/api/settings/update-check", "/api/admin/remote", "/api/site/", "/healthz"}
+	"/api/push/", "/api/cars", "/api/inbox", "/api/connector", "/api/backup/site", "/api/bug-reports", "/api/changelog", "/api/settings/update-check", "/api/admin/remote", "/api/site/", "/healthz"}
 
 func isFront(path string) bool {
 	for _, p := range frontPaths {
@@ -62,6 +62,14 @@ func (f *Fleet) pick(r *http.Request) *Runtime {
 		tok, _, _ := strings.Cut(strings.TrimPrefix(p, "/s/"), "/")
 		for _, rt := range f.all() {
 			if rt.Srv.HasShare(tok) {
+				return rt
+			}
+		}
+		return f.Front()
+	case strings.HasPrefix(p, "/r/") || strings.HasPrefix(p, "/t/"):
+		tok, _, _ := strings.Cut(p[3:], "/")
+		for _, rt := range f.all() {
+			if (p[1] == 'r' && rt.Srv.HasReportLink(tok)) || (p[1] == 't' && rt.Srv.HasTripLink(tok)) {
 				return rt
 			}
 		}

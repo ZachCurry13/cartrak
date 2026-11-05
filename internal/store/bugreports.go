@@ -222,3 +222,14 @@ func (s *Store) BugReportCount() int {
 	_ = s.DB.QueryRow(`SELECT count(*) FROM bug_reports`).Scan(&n)
 	return n
 }
+
+// HasReportLink says whether the hash is this car's current report link, without counting an opening, so the server can find
+// which car a link belongs to.
+func (s *Store) HasReportLink(hash string) bool {
+	if s.bugInit() != nil {
+		return false
+	}
+	var n int
+	_ = s.DB.QueryRow(`SELECT count(*) FROM report_links WHERE token_hash=?`, hash).Scan(&n)
+	return n > 0
+}

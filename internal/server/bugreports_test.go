@@ -167,3 +167,24 @@ func TestAFixedReportIsClearedAtOnceWhenTheOwnerChoosesThat(t *testing.T) {
 		t.Fatalf("a report marked fixed is gone at once: %s", b)
 	}
 }
+
+func TestAViewerCanSendAReportButOnlyAnAdministratorCanReadThem(t *testing.T) {
+	ts, _ := healthServer(t, readyProv{}, true, true)
+	c := adminClient(t, ts.URL)
+	do(t, c, "POST", ts.URL+"/api/users", `{"name":"fam","password":"viewer-password-1","role":"viewer"}`, xh)
+	vj, _ := cookieJar()
+	v := &http.Client{Jar: vj}
+	do(t, v, "POST", ts.URL+"/api/login", `{"name":"fam","password":"viewer-password-1"}`, nil)
+	if code, b := do(t, v, "POST", ts.URL+"/api/bug-reports", `{"note":"the page is odd","page":"#/","device":"Phone"}`, xh); code != 200 {
+		t.Fatalf("a viewer sends one: %d %s", code, b)
+	}
+	if code, _ := do(t, v, "GET", ts.URL+"/api/bug-reports", "", nil); code == 200 {
+		t.Fatalf("a viewer must not read the reports: %d", code)
+	}
+	if code, b := do(t, c, "GET", ts.URL+"/api/bug-reports", "", nil); code != 200 || !strings.Contains(b, "the page is odd") {
+		t.Fatalf("the administrator reads it: %d %s", code, b)
+	}
+	if code, _ := do(t, &http.Client{}, "POST", ts.URL+"/api/bug-reports", `{"note":"x"}`, xh); code != 401 {
+		t.Fatalf("anonymous: %d", code)
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/store"
 )
@@ -55,4 +56,12 @@ func CarFromState(state string) int64 {
 		return 0
 	}
 	return id
+}
+
+// HasReportLink and HasTripLink say whether a public link was made on this car, so a link made on another car than the first
+// reaches the right one.
+func (s *Server) HasReportLink(token string) bool { return s.S.HasReportLink(store.TokenHash(token)) }
+func (s *Server) HasTripLink(token string) bool {
+	t, _, _ := s.S.TripByShare(store.TokenHash(token), time.Now().Unix())
+	return t != nil
 }

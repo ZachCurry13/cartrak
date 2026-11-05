@@ -11,6 +11,11 @@
 
 - The **Other charge levels** list no longer shows two levels that go the same distance (they covered the same points of battery). It now compares 80% to 20%, 90% to 20% and 90% to 10%.
 
+### 🐞 Bug reports for everyone, in one place
+- **Anyone signed in can send a bug report**, not only administrators (viewers do not get the debug report option). Only an administrator can read the reports, make the link and mark them fixed.
+- **All cars share one set of reports and one link.** Before, each car kept its own, so a link made while another car was chosen could answer "not found". Public report and trip links now also find the car they were made on.
+- Saving is faster, and the sheet says whether it is collecting the debug report or saving.
+
 ### 🐞 Bug reports save faster and say why they are slow
 - Saving a report no longer reads every kept report just to count them. While saving, the sheet says whether it is collecting the debug report (the slow part, only when ticked) or saving, with the seconds so far.
 
