@@ -25,7 +25,7 @@ export function storageCard() {
       try { await api('/api/storage/trim', { method: 'POST', body: { days, confirm: 'TRIM' } }); load(); } catch (e) { msg.textContent = e.message; go.disabled = false; }
     }
     box.replaceChildren(...[h('h2', {}, 'Free up space (optional)'),
-      h('p', { class: 'muted' }, `The database is ${size(d.dbBytes)}. Most of it is the full raw copy of every reading from Ford. You can remove that detail for older readings and keep everything CarTrak uses: trips, charging, places, charts, and each reading's main numbers. Car data for those older readings will show less.`),
+      h('p', { class: 'muted' }, `The database is ${size(d.dbBytes)}. Most of it is the full raw copy of every reading from Ford. You can remove that detail for older readings and keep everything CarTrak uses: trips, charging, places, charts, and each reading's main numbers. Car data for those older readings will show less. Nothing is removed automatically: picking a number below only shows how much is older than that, and nothing is removed until you type TRIM and tap Free up space.`),
       sel,
       h('p', {}, d.samples ? `${d.samples} readings and ${d.snapshots} raw copies are older than that.` : 'Nothing is older than that yet.'),
       d.samples ? h('div', {}, h('p', { class: 'banner' }, 'This cannot be undone, except by restoring a backup. Make a full backup first if you may want the old detail. The file does not get smaller by itself; the freed space is reused for new readings, so it stops growing for a while.'),

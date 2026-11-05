@@ -5,6 +5,10 @@
 ### 💾 Backups that say what they are doing
 - **Download small backup** and **Download full backup** now make the copy as a job: the button says it is working (with the seconds so far), and the download starts when the copy is ready. Before, the page waited silently while a large database was copied, and the connection could give up first, so it looked as if nothing happened.
 
+### ✍️ Clearer wording
+- **How far a charge goes** says where the suggested longest leg comes from (a tenth under the shortest figure, rounded down) and why 90% to 20% goes further than 80% to 20% (the points of battery between them).
+- **Free up space** says plainly that nothing is removed automatically; picking 30, 90, 180 or 365 days only shows what is older than that.
+
 ### 🐞 Bug reports save faster and say why they are slow
 - Saving a report no longer reads every kept report just to count them. While saving, the sheet says whether it is collecting the debug report (the slow part, only when ticked) or saving, with the seconds so far.
 
