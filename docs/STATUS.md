@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.83.0 (2026-11-05, image :0.83.0 and :latest): Google Places key (settings CARTRAK_GOOGLE_PLACES_KEY, shared service key in fleet/kv.go; internal/googleplaces; Integrations card with test; used by company-list resolve and /api/named-places/search, OpenStreetMap as fallback); pasted lists are limited to the US with US units and to 1,500 mi of Home (reachKm, autoPickKm 500 mi). Not tried against real Google: the owner must make a key (Places API (New)). Next: check with the owner whether it finds their companies.
+
 - Released: v0.82.6 (2026-11-05, image :0.82.6 and :latest): pasted company lists search the name without commas and company suffixes (companylist.SearchName, then the name as written) and a failed lookup shows Lookup failed instead of Not found (companyRow.Error). Report 24 had 9 of 10 not found; OpenStreetMap lacks many small businesses, so an address per line may be the next step (ask the owner if their customer system has addresses). Open: contrast warning on the grey result lines in the paste results, #10 auto-lock, #16, desktop layout beyond Home.
 
 - Released: v0.82.5 (2026-11-05, image :0.82.5 and :latest): holiday voice lines no longer name a place (push/voice.go; test fails on "home" or "feast" in start, end and unplug lines), and the no-road trip notice is one question with a button for each distance (js/routeestimatebar.js). Not tried in a browser.
