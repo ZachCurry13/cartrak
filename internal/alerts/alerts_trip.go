@@ -68,14 +68,19 @@ func (e *Engine) Tick() {
 	}
 }
 
-// Run checks for a silent connection every ten minutes until ctx ends.
+// Run says at the start whether CarTrak was offline, then every minute notes that it is running (and pings the uptime monitor when one
+// is set), and every ten minutes checks for a silent connection, until ctx ends.
 func (e *Engine) Run(ctx context.Context) {
-	for {
+	e.upCheck()
+	for n := 1; ; n++ {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(10 * time.Minute):
-			e.Tick()
+		case <-time.After(time.Minute):
+			e.beat()
+			if n%10 == 0 {
+				e.Tick()
+			}
 		}
 	}
 }

@@ -5,6 +5,7 @@ package alerts
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -47,8 +48,11 @@ type Engine struct {
 	LowBatteryLevel func() float64                       // the battery reserve, warned about on devices that turned the alert on; 0 or nil is off
 	ChargeBudget    func() float64                       // monthly charging budget; 0 or nil is none
 	MonthCost       func() (float64, bool)               // what this month's charging has cost, when it can be told
-	Metric          func() bool                          // distances in kilometers; nil or false is miles
-	BumpLevel       func() float64                       // the motion level that counts as a bump while parked; 0 or nil is off
+	HeartbeatURL    func() string                        // an outside uptime monitor to ping every few minutes; "" for none
+	HTTP            *http.Client                         // for that ping (nil uses a ten second client)
+	lastPing        time.Time
+	Metric          func() bool    // distances in kilometers; nil or false is miles
+	BumpLevel       func() float64 // the motion level that counts as a bump while parked; 0 or nil is off
 	Loc             func() *time.Location
 
 	mu                     sync.Mutex

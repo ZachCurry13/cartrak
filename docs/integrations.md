@@ -16,6 +16,7 @@ Each card says what the service is for, **what it sends** (so you can decide), a
 | Gas prices (EIA) | Comparing charges with gas prices | A free key |
 | Superchargers (supercharge.info) | Which Tesla sites other cars can use | Nothing: the public list is downloaded |
 | Electrify America (NLR charger list) | Adds Electrify America chargers to long trips | A free key from developer.nlr.gov/signup |
+| Uptime monitor | Telling you when CarTrak itself is down and when it is back ([guide](uptime.md)) | An address from a monitoring service |
 | Push alerts | Alerts on this phone | Its own page |
 
 ## Data updates

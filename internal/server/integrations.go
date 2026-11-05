@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/afdc"
+	"github.com/ZachCurry13/cartrak/internal/alerts"
 	"github.com/ZachCurry13/cartrak/internal/gasprice"
 	"github.com/ZachCurry13/cartrak/internal/routeest"
 	"github.com/ZachCurry13/cartrak/internal/settings"
@@ -106,10 +107,18 @@ func (s *Server) integrations() []integration {
 			State: onOff(sites > 0), Note: chargeNote},
 		{ID: "ea", Name: "Electrify America (NLR charger list)", Purpose: "Adds Electrify America chargers to long trips.", Sends: "Your key, to download the public list.",
 			State: onOff(eaOn), Note: eaNote, Keys: []string{settings.AFDCKeyKey}, Testable: eaOn},
+		{ID: "uptime", Name: "Uptime monitor", Purpose: "Telling you when CarTrak itself is down, and when it is back. It cannot announce its own outage, so it asks an outside monitor every five minutes; the monitor alerts you when that stops.", Sends: "Only a request to the address you give, every five minutes.",
+			State: onOff(c.HeartbeatURL() != ""), Note: "Without it, CarTrak still tells you when it is back after being offline for over five minutes.", Keys: []string{settings.HeartbeatURLKey}, Testable: c.HeartbeatURL() != ""},
 		{ID: "push", Name: "Push alerts", Purpose: "Alerts on this phone when something happens.", Sends: "The alert text, through your phone's own push service.", State: "info", Link: "#/notifications", LinkText: "Open Notifications"},
 	}
 	for i := range list {
 		list[i].Last = s.lastTest(list[i].ID)
+		if list[i].ID == "uptime" && list[i].State == "on" { // the pings CarTrak makes by itself are its own test
+			var h alerts.HeartbeatResult
+			if json.Unmarshal([]byte(s.S.GetKV("heartbeat_last")), &h) == nil && h.TS > 0 {
+				list[i].Last = &testResult{TS: h.TS, OK: h.OK, Msg: h.Msg}
+			}
+		}
 	}
 	return list
 }
@@ -185,6 +194,12 @@ func (s *Server) testIntegration(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_, err = gasprice.Fetch(ctx, nil, s.GasURL, s.Cfg.EIAKey(), gasprice.ForState("MN"), time.Now().AddDate(0, 0, -30))
+	case "uptime":
+		if s.Cfg.HeartbeatURL() == "" {
+			fail(w, 400, "add the address first")
+			return
+		}
+		err = alerts.PingURL(ctx, nil, s.Cfg.HeartbeatURL())
 	case "ea":
 		if s.Cfg.AFDCKey() == "" {
 			fail(w, 400, "add the key first")
