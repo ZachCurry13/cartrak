@@ -6,7 +6,7 @@
 - **Download small backup** and **Download full backup** now make the copy as a job: the button says it is working (with the seconds so far), and the download starts when the copy is ready. Before, the page waited silently while a large database was copied, and the connection could give up first, so it looked as if nothing happened.
 
 ### ✍️ Clearer wording
-- **How far a charge goes** says where the suggested longest leg comes from (a tenth under the shortest figure, rounded down) and why 90% to 20% goes further than 80% to 20% (the points of battery between them).
+- **How far a charge goes** says where the suggested longest leg comes from (about 10% spare on the shortest figure, rounded down to a round number in miles or kilometres) and why 90% to 20% goes further than 80% to 20% (the points of battery between them).
 - **Free up space** says plainly that nothing is removed automatically; picking 30, 90, 180 or 365 days only shows what is older than that.
 
 ### 🐞 Bug reports save faster and say why they are slow

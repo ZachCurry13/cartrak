@@ -82,14 +82,14 @@ export function tripChainCard(get, start, use, named = []) {
   api(`/api/trip-chain/range?reserve=${g0.reservePct}&target=${g0.targetPct}`).then((r) => {
     if (!r.ready) return;
     const shown = (km) => (isMetric() ? km : km * 0.621371);
-    const w0 = r.windows[0], low = [w0.coldKm, w0.hotKm].filter(Boolean), worst = Math.min(w0.km, ...low), safe = Math.floor((worst * 0.9) / 10) * 10;
+    const w0 = r.windows[0], low = [w0.coldKm, w0.hotKm].filter(Boolean), worst = Math.min(w0.km, ...low), safe = Math.floor((shown(worst) * 0.9) / 10) * 10 / (isMetric() ? 1 : 0.621371); // 10% spare, rounded down to a round number in the unit shown
     const others = r.windows.slice(1);
     rangeBox.replaceChildren(h('div', { class: 'card', style: 'margin:8px 0;padding:10px' }, h('b', {}, 'How far a charge goes'),
       h('p', {}, `On your settings (charge to ${Math.round(w0.from)}%, keep ${Math.round(w0.to)}%) your car goes about `, h('b', {}, dist(w0.km, 0)), ` at ${speed(r.speedKph)}, about ${hm(w0.minutes)} of driving.`,
         w0.coldKm || w0.hotKm ? ` In the weather you have driven in it ranges from ${dist(worst, 0)} to ${dist(Math.max(w0.km, ...low), 0)}.` : ''),
       others.length ? h('details', {}, h('summary', {}, 'Other charge levels'), h('ul', { style: 'margin:0;padding-left:1.2em' }, ...others.map((w) => h('li', {}, `${Math.round(w.from)}% down to ${Math.round(w.to)}% (${Math.round(w.from - w.to)} points of battery): about ${dist(w.km, 0)} (${hm(w.minutes)})`)))) : null,
       h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => { legD.value = Math.round(shown(safe)); msg.textContent = `Longest distance between chargers set to ${dist(safe, 0)}.`; } }, `Set the longest leg to ${dist(safe, 0)}`)),
-      h('p', { class: 'muted' }, `That is one tenth under the shortest figure above (${dist(worst, 0)}), rounded down to a round number, so a cold day or a headwind still fits. Each level counts the points of battery between where you leave a charger and where you arrive at the next, so 90% to 20% (70 points) goes further than 80% to 20% (60 points). Only Superchargers that Tesla has opened to other cars are used (newer V3 and V4 stalls); destination chargers are not included, and the older stalls that do not work with the adapter are not on the list.`)));
+      h('p', { class: 'muted' }, `I keep about 10% spare on the shortest figure (${dist(worst, 0)}) so a cold day, a headwind or a detour still fits, then round down to a round number. It is only a starting point: change the longest leg to whatever you are comfortable with. Each charge level below counts the battery between leaving a charger and reaching the next, so 90% to 20% (70 points) goes further than 80% to 20% (60 points). Only Superchargers that Tesla has opened to other cars are used (newer V3 and V4 stalls); destination chargers are not included, and the older stalls that do not work with the adapter are not on the list.`)));
   }).catch(() => {});
   let last = null; // what was last planned: { body, result }
   let mc = null; mapConfig().then((c) => { mc = c; }).catch(() => {});
