@@ -7,6 +7,7 @@
 
 ### ✍️ Clearer wording
 - **Longest day on the road** now says it counts charging as well as driving.
+- The Charging step of the guide says the car's **owner** can enter what they paid (it said administrators), and points to **Prices and settings** for what a kWh costs.
 
 ## 0.82.1
 
