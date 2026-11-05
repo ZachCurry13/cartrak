@@ -40,3 +40,17 @@ func TestSame(t *testing.T) {
 		}
 	}
 }
+
+func TestTheActivityLineUnderEachCompanyIsNotACompany(t *testing.T) {
+	list := "Acme Widgets, Inc.-111111111-U.S.A.\n12 - Visit\nBlue-Sky Supplies, LLC-222222222-U.S.A.\n007 - Phone call\nNORTH STAR GOODS-1234567890-U.S.A.\n5 - Visit\n"
+	got, more := Parse(list)
+	if len(got) != 3 || more != 0 {
+		t.Fatalf("three companies and nothing left out: %d, %d: %+v", len(got), more, got)
+	}
+	if got[1].Name != "Blue-Sky Supplies, LLC" || got[1].Ref != "222222222" || got[2].Name != "NORTH STAR GOODS" || got[2].Ref != "1234567890" {
+		t.Fatalf("names and numbers: %+v", got)
+	}
+	if got, _ := Parse("Fifth Street Cafe\n2 - Visit"); len(got) != 1 || got[0].Name != "Fifth Street Cafe" {
+		t.Fatalf("a plain name stays: %+v", got)
+	}
+}

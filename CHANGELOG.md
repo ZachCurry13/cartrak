@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.82.4
+
+### 📋 Pasting a customer list
+- A list copied from a customer system often has a line under each company that only says when you last met (like "12 - Visit"). Those lines used to count as companies, used up the ten places and came back as "not found". They are now ignored, so only the companies are looked up.
+- A company that goes by another name on the map than on your list: each company that was not found has a **Search by another name or town** box. The one you pick is remembered by its account number, so the next list fills it in by itself.
+
 ## 0.82.3
 
 ### 🧹 Smaller fixes

@@ -24,6 +24,18 @@ export function pasteListCard(use) {
     const skip = r.rows.map(() => false);
     const list = h('div'), go = h('button', {}, 'Use these as stops');
     const ready = () => { const n = r.rows.filter((_, i) => !skip[i]).length; go.disabled = !n || r.rows.some((_, i) => !skip[i] && !pick[i]); };
+    // A company can go by another name on the map than on the list: search for it under that name; the pick is remembered by its number.
+    const another = (x) => {
+      const q = h('input', { type: 'search', placeholder: 'Search by another name or town', 'aria-label': `Another name for ${x.name}`, style: 'flex:1 1 10em;min-width:0' });
+      const note = h('div', { class: 'muted', role: 'status' });
+      const go = async () => {
+        if (!q.value.trim()) return;
+        note.textContent = 'Searching...';
+        try { x.options = await api(`/api/named-places/search?q=${encodeURIComponent(q.value.trim())}`); note.textContent = x.options.length ? '' : 'Nothing found. Try the town or the address.'; draw(); } catch (e) { note.textContent = e.message; }
+      };
+      q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+      return h('div', { style: 'margin-top:6px' }, h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, q, h('button', { class: 'sec', type: 'button', onclick: go }, 'Search')), note);
+    };
     const draw = () => {
       list.replaceChildren(...r.rows.map((x, i) => {
         const [kind, label] = LABEL[x.status];
@@ -32,7 +44,8 @@ export function pasteListCard(use) {
           h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('b', { class: 'grow', style: 'flex:1 1 8em;min-width:0;overflow-wrap:anywhere' }, x.name), chip(kind, chosen ? label : x.options.length ? label : 'Not found')),
           chosen ? h('div', { class: 'muted' }, chosen.address || (x.status === 'saved' ? 'One of your places' : '')) : null,
           !chosen && !skip[i] ? h('div', {}, ...x.options.map((m) => h('button', { class: 'sec', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal', onclick: () => { pick[i] = { name: x.name, address: m.address, lat: m.lat, lon: m.lon }; draw(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m)))),
-            x.options.length ? null : h('p', { class: 'muted' }, 'No match. Skip it, or add the town to the name and paste again.')) : null,
+            x.options.length ? null : h('p', { class: 'muted' }, 'No match. Search it under another name below, skip it, or add the town to the name and paste again.')) : null,
+          !chosen && !skip[i] ? another(x) : null,
           h('div', { class: 'seg' }, chosen && !skip[i] && x.status !== 'saved' ? h('button', { class: 'text sm', onclick: () => { pick[i] = null; draw(); } }, 'Change') : null,
             h('button', { class: 'text sm', onclick: () => { skip[i] = !skip[i]; draw(); } }, skip[i] ? 'Put back' : 'Skip')));
       }));
@@ -54,5 +67,5 @@ export function pasteListCard(use) {
     draw();
   }
   return h('div', {},
-    h('p', { class: 'muted' }, 'Paste one company per line. Account numbers and country codes after the name are ignored. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
+    h('p', { class: 'muted' }, 'Paste one company per line. Account numbers and country codes after the name are ignored, and so are the lines under a name that only say when you last met (such as "12 - Visit"). Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
 }

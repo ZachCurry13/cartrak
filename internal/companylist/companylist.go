@@ -19,12 +19,16 @@ const MaxLines = 10
 
 var tail = regexp.MustCompile(`^(.*?)\s*[-–—]\s*(\d{3,})\s*(?:[-–—]\s*[A-Za-z][A-Za-z .]{1,30})?$`)
 
+// activity is a line a customer system puts under each company: the days since the last contact and how it was made. It names no
+// company, so it is not one.
+var activity = regexp.MustCompile(`^\d{1,4}\s*[-–—:]\s*[A-Za-z][A-Za-z /&]{1,40}$`)
+
 // Parse splits pasted text into entries, dropping blank lines and repeats. more is how many were left out past MaxLines.
 func Parse(text string) (out []Entry, more int) {
 	seen := map[string]bool{}
 	for _, line := range strings.Split(strings.ReplaceAll(text, "\r", ""), "\n") {
 		line = strings.TrimSpace(strings.TrimLeft(strings.TrimSpace(line), "-*•· "))
-		if line == "" {
+		if line == "" || (activity.MatchString(line) && tail.FindStringSubmatch(line) == nil) {
 			continue
 		}
 		e := Entry{Raw: line, Name: line}
