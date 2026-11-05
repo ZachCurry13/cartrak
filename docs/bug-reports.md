@@ -19,7 +19,7 @@ No picture is taken. Reports are text.
 - **Clear older than 30 days** and **Clear all**.
 
 ## Fixed reports
-**Mark fixed** on a report (More, Bug reports, open the report) when it is dealt with, or **Open it again**. Whoever holds the link can mark one fixed too. A fixed report leaves the link's index and is cleared a week later; **Clear the fixed ones** removes them now.
+**Mark fixed** on a report (More, Bug reports, open the report) when it is dealt with, or **Open it again**. Whoever holds the link can mark one fixed too. What happens next is your choice under **When a report is marked fixed**: **clear it at once**, **after a day** or **after a week** (the default). A fixed report always leaves the link's index straight away, and **Clear the fixed ones** removes them now.
 
 ## A link to read them
 **Make a link** on the Bug reports page (works for 1, 7 or 30 days). The address stays on the page, with **Copy the link** and **Copy a message for Claude** (a ready-to-paste note with the link). A report's **See the page as it looked** button opens its copy; through the link it is at `/r/<secret>/<number>/page`. Opening it shows a short index of the open reports (the note, page, device and layout facts of each) as plain text, with no sign-in, so it can be read by a tool as well as a person. A report is at `/r/<secret>/<number>`, its debug report at `/r/<secret>/<number>/debug`. It needs CarTrak's public address (More, Remote access).

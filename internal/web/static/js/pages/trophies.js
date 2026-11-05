@@ -1,7 +1,7 @@
 import { h } from '../ui.js';
 import { api } from '../api.js';
 import { badgeRow } from '../funcharts.js';
-import { compareEnergyTier, compareDistance } from '../funwords.js';
+import { compareEnergyTier, compareDistance, valueText } from '../funwords.js';
 
 // Your trophy collection: every trophy this car can earn. The ones not yet earned are grayed out with how far along they are, so
 // you can see what is coming. Trophies that cannot apply to this car (charging ones for a gas car, the tank ones for an electric
@@ -39,11 +39,13 @@ export default async function trophies(root) {
   const list = await api('/api/analytics/badges').catch(() => []);
   if (!list.length) return root.append(h('p', { class: 'muted' }, 'Trophies appear once CarTrak has some trips to look at.'));
   const earned = list.filter((b) => b.earned).length;
+  const tracked = ((list.find((b) => b.key === 'km160') || {}).value) || 0; // every kilometer of every trip CarTrak has recorded
   const known = new Set(GROUPS.flatMap(([, keys]) => keys));
   const groups = [...GROUPS, ['More', list.filter((b) => !known.has(b.key)).map((b) => b.key)]];
   const next = list.filter((b) => !b.earned && b.progress > 0).sort((a, b) => b.progress - a.progress).slice(0, 3);
   root.append(
-    h('section', { class: 'card' }, h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${earned} of ${list.length}`), h('span', {}, 'earned'))),
+    h('section', { class: 'card' }, h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${earned} of ${list.length}`), h('span', {}, 'earned')),
+        tracked ? h('div', {}, h('b', {}, valueText('km', tracked)), h('span', {}, 'tracked with CarTrak')) : null),
       h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.round((earned / list.length) * 100)}%` }))),
     next.length ? h('section', { class: 'card' }, h('h2', {}, 'Next up'), ...next.map((b) => badgeRow(b, list.indexOf(b), '$'))) : null,
     ...groups.map(([title, keys]) => {

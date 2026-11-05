@@ -20,7 +20,15 @@ func (s *Server) listSavedTrips(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	ok(w, t)
+	shares, _ := s.S.TripShares()
+	out := make([]savedTripOut, len(t))
+	for i, x := range t {
+		out[i] = savedTripOut{SavedTrip: x}
+		if sh, on := shares[x.ID]; on && sh.Expires > time.Now().Unix() {
+			out[i].Share = &tripShareOut{Expires: sh.Expires, Opens: sh.Opens, HideStart: sh.HideStart, URL: s.publicBase() + "/t/" + sh.Token}
+		}
+	}
+	ok(w, out)
 }
 
 // addSavedTrip: POST /api/saved-trips {"name": "...", "body": {...}}. The body is whatever the page needs to open the trip again.

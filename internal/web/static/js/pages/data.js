@@ -1,16 +1,13 @@
-import { h, ago } from '../ui.js';
+import { h } from '../ui.js';
 import { api } from '../api.js';
 import { currentCar } from '../car.js';
 import { carWords } from '../carwords.js';
 import { isSaver } from '../mode.js';
 import { dataRow } from '../datarows.js';
-import { timelineChart } from '../timeline.js';
+import { carDataHead } from '../cardatahead.js';
 
 const KEY = 'cartrak.datatab';
 const keep = { get: () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } }, set: (v) => { try { localStorage.setItem(KEY, v); } catch (e) { /* ignore */ } } };
-const pad = (n) => String(n).padStart(2, '0');
-const dayOf = (ts) => { const d = new Date(ts * 1000); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
-const timeOf = (ts) => { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const dayRange = (ts) => { const d = new Date(ts * 1000); d.setHours(0, 0, 0, 0); const a = Math.floor(d.getTime() / 1000); return [a, a + 86399]; };
 const stamp = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -59,21 +56,9 @@ export default async function data(root, _a, session) {
       body.replaceChildren();
       return;
     }
-    const date = h('input', { type: 'date', value: dayOf(d.ts), min: d.first ? dayOf(d.first) : undefined, 'aria-label': 'Day' });
-    const time = h('input', { type: 'time', value: timeOf(d.ts), 'aria-label': 'Time' });
-    const go = () => { const t = new Date(`${date.value}T${time.value || '00:00'}`).getTime() / 1000; if (t) load(Math.floor(t)); };
     const [from, to] = dayRange(d.ts);
     const line = await api(`/api/timeline?from=${from}&to=${to}`).catch(() => null);
-    head.replaceChildren(h('section', { class: 'card' },
-      h('div', {}, h('b', {}, stamp(d.ts)), ' ', d.latest ? h('span', { class: 'chip ok' }, 'latest reading') : h('span', { class: 'chip work' }, `${ago(d.ts)}`)),
-      h('p', { class: 'seg' },
-        h('button', { class: 'sec', disabled: !d.prev, onclick: () => load(d.prev) }, '◀ Earlier'),
-        h('button', { class: 'sec', disabled: !d.next, onclick: () => load(d.next) }, 'Later ▶'),
-        d.latest ? null : h('button', { onclick: () => load(0) }, 'Latest')),
-      h('div', { class: 'cols2' }, h('div', {}, h('label', {}, 'Day'), date), h('div', {}, h('label', {}, 'Time'), time)),
-      h('p', {}, h('button', { class: 'sec', onclick: go }, 'Show the car at this time'),
-        h('span', { class: 'muted' }, ' It shows the last reading CarTrak had by then.')),
-      line && line.points.length > 1 ? timelineChart(line.points, from, to, d.ts, (t) => load(t), carWords(session).fuel) : null));
+    head.replaceChildren(carDataHead(d, line, { from, to, fuel: carWords(session).fuel, load }));
   }
 
   function drawBody() {

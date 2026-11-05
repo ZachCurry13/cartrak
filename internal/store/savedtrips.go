@@ -49,6 +49,7 @@ func (s *Store) DeleteSavedTrip(id int64) error {
 	if _, err := s.DB.Exec(savedTripDDL); err != nil {
 		return err
 	}
+	_ = s.ClearTripShare(id) // its link goes with it
 	_, err := s.DB.Exec(`DELETE FROM saved_trips WHERE id=?`, id)
 	return err
 }

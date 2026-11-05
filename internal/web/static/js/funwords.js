@@ -63,6 +63,8 @@ export function valueText(kind, v, cur = '$') {
     case 'gal': return volText(v);
     case 'pricePerGal': return priceText(cur, v);
     case 'days': return `${Math.round(v)} days`;
+    case 'hours': return v < 1 ? `${Math.round(v * 60)} min` : `${Math.floor(v)} h ${Math.round((v % 1) * 60)} min`;
+    case 'trips': return `${Math.round(v)} trips`;
     case 'towns': return `${Math.round(v)} towns`;
     default: return Math.round(v).toLocaleString();
   }

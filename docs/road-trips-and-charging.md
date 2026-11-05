@@ -65,6 +65,9 @@ Tap **Plan this day in the planner** to fill a day into the Stops tab for real r
 
 The list of sites comes from supercharge.info. It is downloaded the first time and then about weekly, and only the list is fetched: nothing about you or the trip is sent. Distances while choosing stops are estimates (a straight line made longer), and a site can still be full or out of service, so check it before you go.
 
+## Share a trip plan
+Save a trip (Long trip tab), then open **Saved trips** and tap **Share** on it. **Make a link** (1, 7 or 30 days) gives an address anyone can open with no sign-in: a plain page with the plan, the times, each charger with its energy, charge time and cost, and an Open in Google Maps button. It shows how often it was opened and **Stop sharing** ends it. The start is hidden by default, because it is usually home; tick **Show where the trip starts** to include it.
+
 ## Plan a route with stops (and a day of customers)
 On **More, Road-trip planner**, admins get a **Plan a route with stops** card. Add a start and up to **ten destinations**: type an address and tap **Find**, or pick one of your named places (the start can be "Where the car is now"). Tick **Find the best order** and CarTrak puts the destinations in the order that takes the least driving time (it checks every order, so it is exact), and says how much time that saves over the order you typed. Tick **Come back to the start** to end the day at home. Set the time you are leaving and tap **Plan the route**.
 

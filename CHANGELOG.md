@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.79.0
+
+### 🔗 Share a trip plan
+- **Share** on a saved trip (Long trip tab, Saved trips) makes a link anyone can open with no sign-in, showing the plan as a plain page: the times, each charger with the energy, charge time and cost, and an **Open in Google Maps** button. It works for 1, 7 or 30 days, shows how often it was opened, and can be stopped at any time.
+- By default it **hides where the trip starts** (usually home) and leaves that out of the maps link; tick "Show where the trip starts" to include it.
+
+### 📈 Car data, easier to use
+- The top of **Car data** is new: arrows to change the day, the time in large type, a taller chart with a battery scale (0, 50 and 100%), and a **slider** to drag through the day. Letting go shows the car at that time. Tapping the chart still jumps there. The date and time boxes and the button are gone.
+
+### 🔋 12 V battery at rest
+- **Vehicle health** now shows the 12 V battery's **resting voltage**: the average of the readings taken after the car sat for at least 30 minutes without driving or charging, over the last 14 days, with how many readings it is from. The live reading is the charging system's (about 14 V) and says little about the battery. About 12.4 V or more reads as healthy, under 12 V as low; a shop test is still the better measure.
+
+### 🏆 More records and trophies
+- New personal bests: **Longest charging session**, **Most trips in a day** and **Farthest between charges**.
+- The Trophies page shows **miles tracked with CarTrak** at the top.
+
+### 🔌 Charging and long trips
+- Charges that are not at a place you named or a known Supercharger or Electrify America site are now named for their **city** ("Public charging in …") instead of one lump, and a charger is recognised from a little further away.
+- **How far a charge goes** is cleaner: one clear line for your settings, other levels folded away, and a button for the longest leg. It says that only Superchargers Tesla has opened to other cars are used (newer V3 and V4 stalls, never destination chargers or the older stalls the adapter does not work with).
+- The paste-a-list help no longer shows an example you found confusing, and a long label no longer gets cut off.
+
+### 🐞 Bug reports
+- **Bug reports** is now on the Developer page, with how many are open.
+- A new choice, **When a report is marked fixed**: clear it at once, after a day or after a week. With "at once", marking a report fixed (by you, or by whoever holds the link) removes it straight away.
+
 ## 0.78.0
 
 ### 🚦 This outing: any category

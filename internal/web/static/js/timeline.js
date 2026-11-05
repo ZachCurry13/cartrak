@@ -11,7 +11,7 @@ const el = (tag, attrs) => {
 // (blue) or charging (green). Tap or click anywhere to jump to that moment. No chart library.
 export function timelineChart(points, from, to, markTs, onPick, fuel = false) {
   const w = 400;
-  const ht = 130;
+  const ht = 170;
   const x = (ts) => ((ts - from) / (to - from)) * w;
   const y = (soc) => ht - 14 - (soc / 100) * (ht - 28);
   const svg = el('svg', { viewBox: `0 0 ${w} ${ht}`, class: 'tl', role: 'img', 'aria-label': 'Battery through the day' });
@@ -21,8 +21,16 @@ export function timelineChart(points, from, to, markTs, onPick, fuel = false) {
     svg.append(el('rect', { x: x(p.ts), y: 0, width: Math.max(2, x(points[i].ts) - x(p.ts)), height: ht - 14, style: `fill:${p.charging ? 'var(--ok)' : 'var(--personal)'}`, opacity: 0.25 }));
   }
   const line = points.filter((p) => p.soc != null);
+  // a battery scale, so the line can be read: 0, 50 and 100 percent
+  for (const v of [0, 50, 100]) {
+    svg.append(el('line', { x1: 0, x2: w, y1: y(v), y2: y(v), stroke: 'currentColor', opacity: 0.12 }));
+    const t = el('text', { x: 3, y: y(v) - 3, 'font-size': 10, fill: 'currentColor', opacity: 0.6 });
+    t.textContent = `${v}%`;
+    svg.append(t);
+  }
+  if (line.length > 1) svg.append(el('polygon', { points: `${x(line[0].ts).toFixed(1)},${y(0)} ${line.map((p) => `${x(p.ts).toFixed(1)},${y(p.soc).toFixed(1)}`).join(' ')} ${x(line[line.length - 1].ts).toFixed(1)},${y(0)}`, fill: 'currentColor', opacity: 0.07 }));
   if (line.length > 1) svg.append(el('polyline', { points: line.map((p) => `${x(p.ts).toFixed(1)},${y(p.soc).toFixed(1)}`).join(' '), fill: 'none', stroke: 'currentColor', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }));
-  for (const hr of [0, 6, 12, 18, 24]) {
+  for (const hr of [0, 3, 6, 9, 12, 15, 18, 21, 24]) {
     const t = from + (hr / 24) * (to - from);
     svg.append(el('line', { x1: x(t), x2: x(t), y1: ht - 14, y2: ht - 10, stroke: 'currentColor', opacity: 0.4 }));
     const label = el('text', { x: Math.min(w - 14, Math.max(8, x(t))), y: ht - 1, 'font-size': 10, 'text-anchor': 'middle', fill: 'currentColor', opacity: 0.7 });

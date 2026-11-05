@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Record is a personal best. Kind says how to write Value: km, kmPerKwh, kph, tempC, kw, kwh, price or days.
+// Record is a personal best. Kind says how to write Value: km, kmPerKwh, kph, tempC, kw, kwh, price, days, hours or trips.
 type Record struct {
 	Key      string  `json:"key"`
 	Title    string  `json:"title"`
@@ -43,7 +43,9 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 	peak := best("peakKw", "Fastest charging", "kw", more)
 	biggest := best("bigCharge", "Most energy in one charge", "kwh", more)
 	cheapest := best("cheapest", "Cheapest public charge (paid, 5 kWh or more)", "price", less)
+	longestPlug := best("longestPlug", "Longest charging session", "hours", more)
 	days := map[string]float64{}
+	tripsPerDay := map[string]int{}
 	ceiling := EffCeiling(ts)
 	for _, t := range ts {
 		if t.Km < 0.3 {
@@ -62,9 +64,14 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 			coldest(*t.TempC, t.Start, t.ID, 0)
 			hottest(*t.TempC, t.Start, t.ID, 0)
 		}
-		days[time.Unix(t.Start, 0).In(loc).Format("2006-01-02")] += t.Km
+		day := time.Unix(t.Start, 0).In(loc).Format("2006-01-02")
+		days[day] += t.Km
+		tripsPerDay[day]++
 	}
 	for _, c := range cs {
+		if c.End > c.Start {
+			longestPlug(float64(c.End-c.Start)/3600, c.Start, 0, c.ID)
+		}
 		if c.PeakKw > 0 {
 			peak(c.PeakKw, c.Start, 0, c.ID)
 		}
@@ -81,6 +88,12 @@ func Records(ts []Trip, cs []Charge, loc *time.Location) []Record {
 	}
 	if d, km := biggestDay(days); d != "" {
 		out = append(out, Record{Key: "bigDay", Title: "Most driving in a day", Kind: "km", Value: km, Date: d})
+	}
+	if d, n := busiestDay(tripsPerDay); n > 1 {
+		out = append(out, Record{Key: "mostTrips", Title: "Most trips in a day", Kind: "trips", Value: float64(n), Date: d})
+	}
+	if km, at, id := farthestBetweenCharges(ts, cs); id != 0 {
+		out = append(out, Record{Key: "farthestCharge", Title: "Farthest between charges", Kind: "km", Value: km, TS: at, ChargeID: id})
 	}
 	if d, n := streak(days); n > 1 {
 		out = append(out, Record{Key: "streak", Title: "Most days in a row with driving", Kind: "days", Value: float64(n), Date: d})
@@ -140,4 +153,37 @@ func streak(days map[string]float64) (string, int) {
 		}
 	}
 	return bestEnd, best
+}
+
+// busiestDay is the day with the most trips, and how many.
+func busiestDay(perDay map[string]int) (string, int) {
+	best, day := 0, ""
+	for d, n := range perDay {
+		if n > best || (n == best && d > day) {
+			best, day = n, d
+		}
+	}
+	return day, best
+}
+
+// farthestBetweenCharges is the most driven between the end of one charging session and the start of the next, with the charge it
+// ended at. It needs at least three sessions to mean anything.
+func farthestBetweenCharges(ts []Trip, cs []Charge) (km float64, at, charge int64) {
+	if len(cs) < 3 {
+		return 0, 0, 0
+	}
+	sorted := append([]Charge(nil), cs...)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Start < sorted[j].Start })
+	for i := 1; i < len(sorted); i++ {
+		var run float64
+		for _, t := range ts {
+			if t.Start >= sorted[i-1].End && t.Start < sorted[i].Start {
+				run += t.Km
+			}
+		}
+		if run > km {
+			km, at, charge = run, sorted[i].Start, sorted[i].ID
+		}
+	}
+	return km, at, charge
 }
