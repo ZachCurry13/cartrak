@@ -1,6 +1,7 @@
 package push
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -74,7 +75,20 @@ func TestHolidayVoicesChangeTheWordsNotTheFacts(t *testing.T) {
 
 func TestTheShamrockVoiceIsFound(t *testing.T) {
 	a := TouchWith(Alert{Kind: TripEnd, Title: "Trip ended", Body: "12 mi"}, "", day(2026, time.March, 17), true)
-	if a.Title != "☘️ Home safe, bless ye: trip ended" {
+	if a.Title != "☘️ Safe and sound, bless ye: trip ended" {
 		t.Fatalf("a leprechaun: %+v", a)
+	}
+}
+
+func TestNoHolidayLineSaysWhereATripWasGoingOrEnded(t *testing.T) {
+	for emoji, v := range voices {
+		for kind, line := range v.Titles {
+			if kind != TripStart && kind != TripEnd && kind != PlugOut {
+				continue
+			}
+			if strings.Contains(strings.ToLower(line), "home") || strings.Contains(strings.ToLower(line), "feast") {
+				t.Fatalf("%s %s: %q names a destination the trip may not have", emoji, kind, line)
+			}
+		}
 	}
 }

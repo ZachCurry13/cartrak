@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.82.5
+
+### 🦃 Holiday voices no longer guess where you are
+- The holiday wording for trip and unplug alerts said things like "Home for the feast: trip ended" or "Home safe" even when the trip ended at a customer or anywhere else. Those lines no longer name a place: they just say the trip started or ended.
+
 ## 0.82.4
 
 ### 📋 Pasting a customer list
