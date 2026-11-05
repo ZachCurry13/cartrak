@@ -53,6 +53,9 @@ export function startTour(session) {
     target = e;
     if (e) e.scrollIntoView({ block: 'center', behavior: 'instant' });
     place();
+    // the page may still be drawing (it fades in and fills its title a moment later), so look again and re-measure: the ring must
+    // surround the whole thing, not what was there at the first look
+    for (const ms of [150, 500, 1100]) setTimeout(() => { if (mine !== token) return; const again = step.target && step.target(); if (again) target = again; place(); }, ms);
     next.focus({ preventScroll: true });
   };
   const key = (e) => { if (e.key === 'Escape') stop(); else if (e.key === 'ArrowRight' && i < steps.length - 1) go(i + 1); else if (e.key === 'ArrowLeft') go(i - 1); };

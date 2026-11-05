@@ -21,10 +21,10 @@ export function tourSteps(session) {
   ];
   if (admin) {
     steps.push(
-      { icon: '📊', title: 'Reports', text: 'Download a spreadsheet of your trips or charging, build your own with just the columns you want, or make a mileage log for expenses.', route: '#/reports', target: first('#view h2') },
-      { icon: '📣', title: 'Notifications', text: 'Choose which alerts you want on this phone: trip start and end, charging, a door left open, low battery and more. Turn on notifications here first.', route: '#/notifications', target: first('#view h2') },
+      { icon: '📊', title: 'Reports', text: 'Download a spreadsheet of your trips or charging, build your own with just the columns you want, or make a mileage log for expenses.', route: '#/reports', target: first('#view .page-title', '#view h2') },
+      { icon: '📣', title: 'Notifications', text: 'Choose which alerts you want on this phone: trip start and end, charging, a door left open, low battery and more. Turn on notifications here first.', route: '#/notifications', target: first('#view .page-title', '#view h2') },
       { icon: '🔗', title: 'Share a trip or a day', text: 'The share button on a trip, or on a whole day, makes a short private link. Anyone with it sees just that, and you can turn it off any time.', route: '#/trips', target: first('#view .tcard .ico') },
-      { icon: '🚙', title: 'Cars and people', text: 'Add another car, rename one, and choose who can see it. People with the viewer role can look but not change anything.', route: '#/cars', target: first('#view h2') },
+      { icon: '🚙', title: 'Cars and people', text: 'Add another car, rename one, and choose who can see it. People with the viewer role can look but not change anything.', route: '#/cars', target: first('#view .page-title', '#view h2') },
     );
   }
   steps.push(

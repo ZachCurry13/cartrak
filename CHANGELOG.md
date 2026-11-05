@@ -5,6 +5,9 @@
 ### 🛣️ A trip that could not get a road: keep the odometer
 - The notice about a trip drawn as a straight line now has one button for each distance: **Use road 10.3 mi** or **Keep odometer 18.0 mi**, next to **Choose the road** and **Dismiss**. Before, only the road's length could be picked, so when the odometer was the right one there was no button that said so.
 
+### 🧭 The guide's highlight fits
+- In the guide, the highlight ring around a page's title could be measured before the page had finished drawing, so it cut across the first letters and left the rest outside. It now surrounds the whole title row, and is measured again once the page has settled.
+
 ### ✍️ Clearer wording
 - **Longest day on the road** now says it counts charging as well as driving.
 - The Charging step of the guide says the car's **owner** can enter what they paid (it said administrators), and points to **Prices and settings** for what a kWh costs.
