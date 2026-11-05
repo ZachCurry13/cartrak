@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.82.6 (2026-11-05, image :0.82.6 and :latest): pasted company lists search the name without commas and company suffixes (companylist.SearchName, then the name as written) and a failed lookup shows Lookup failed instead of Not found (companyRow.Error). Report 24 had 9 of 10 not found; OpenStreetMap lacks many small businesses, so an address per line may be the next step (ask the owner if their customer system has addresses). Open: contrast warning on the grey result lines in the paste results, #10 auto-lock, #16, desktop layout beyond Home.
+
 - Released: v0.82.5 (2026-11-05, image :0.82.5 and :latest): holiday voice lines no longer name a place (push/voice.go; test fails on "home" or "feast" in start, end and unplug lines), and the no-road trip notice is one question with a button for each distance (js/routeestimatebar.js). Not tried in a browser.
 
 - Released: v0.82.4 (2026-11-05, image :0.82.4 and :latest): pasted customer lists ignore the last-contact lines (companylist.activity), and each company that was not found has a Search by another name box (js/companylist.js, uses /api/named-places/search; the pick is remembered by account number). Not tried in a browser. Never put the owner's real customer names or account numbers in tests or docs (the repo is public); tests use made-up names.
