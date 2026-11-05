@@ -34,20 +34,30 @@ type Params struct {
 	MaxLegMin   float64 // 0 for no limit
 	DayMin      float64 // the longest day on the road, charging included; 0 for no limit
 	SpeedKph    float64 // average speed used to turn distance into time
-	// Real, when set, gives the road distance and driving time between two places once they are known, so a leg is not left as a
-	// straight line made longer (which is wrong across water or round a lake).
-	Real func(a, b Station) (km, min float64, ok bool)
+	// Real, when set, gives the road distance, the driving time and the energy per kilometer between two places once they are known, so a
+	// leg is not left as a straight line made longer (which is wrong across water or round a lake) and its energy follows the speed it is
+	// driven at. A zero energy means the one in KwhPerKm.
+	Real func(a, b Station) (km, min, kwhPerKm float64, ok bool)
 }
 
 // leg is the distance and driving time between two places: the real road when known, else an estimate.
 func (p Params) leg(a, b Station) (km, min float64) {
+	km, min, _ = p.legFull(a, b)
+	return km, min
+}
+
+// legFull is leg and the energy it takes, in kWh.
+func (p Params) legFull(a, b Station) (km, min, kwh float64) {
 	if p.Real != nil {
-		if km, min, ok := p.Real(a, b); ok {
-			return km, min
+		if km, min, e, ok := p.Real(a, b); ok {
+			if e <= 0 {
+				e = p.KwhPerKm
+			}
+			return km, min, km * e
 		}
 	}
 	km = haversineKm(a, b) * bend
-	return km, minutes(p, km)
+	return km, minutes(p, km), km * p.KwhPerKm
 }
 
 // Stop is a place on a day's route.
@@ -134,7 +144,7 @@ func Plan(p Params, stations []Station, vias []Via) ([]Day, error) {
 		if i < len(vias) {
 			target, kind = vias[i].Station, "via"
 		}
-		seg, lastKm, err := segment(p, cur, target, pct, stations)
+		seg, lastKwh, err := segment(p, cur, target, pct, stations)
 		if err != nil {
 			return nil, err
 		}
@@ -148,7 +158,7 @@ func Plan(p Params, stations []Station, vias []Via) ([]Day, error) {
 		if len(seg) == 2 {
 			from = pct
 		}
-		pct = from - lastKm*p.KwhPerKm/p.CapacityKwh*100
+		pct = from - lastKwh/p.CapacityKwh*100
 		if kind == "charge" {
 			pct = p.TargetPct
 		}
@@ -158,7 +168,7 @@ func Plan(p Params, stations []Station, vias []Via) ([]Day, error) {
 	return split(p, chain), nil
 }
 
-// segment finds the best chargers between two places: the nodes (start, chargers, end) and the length of the last leg.
+// segment finds the best chargers between two places: the nodes (start, chargers, end) and the energy of the last leg.
 func segment(p Params, from, to Station, startPct float64, stations []Station) ([]Station, float64, error) {
 	direct := haversineKm(from, to)
 	nodes := []Station{from}
@@ -173,7 +183,7 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 	for i := range nodes {
 		toDest[i] = haversineKm(nodes[i], to)
 	}
-	rng := func(pct float64) float64 { return (pct - p.ReservePct) / 100 * p.CapacityKwh / p.KwhPerKm }
+	avail := func(pct float64) float64 { return (pct - p.ReservePct) / 100 * p.CapacityKwh } // kWh above the reserve
 	order := make([]int, n)
 	for i := range order {
 		order[i] = i
@@ -189,21 +199,21 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 		if math.IsInf(best[u], 1) {
 			continue
 		}
-		reach := rng(p.TargetPct)
+		reach := avail(p.TargetPct)
 		if u == 0 {
-			reach = rng(startPct)
+			reach = avail(startPct)
 		}
 		for _, v := range order {
 			if v == u || v == 0 || toDest[v] >= toDest[u] {
 				continue
 			}
-			km, m := p.leg(nodes[u], nodes[v])
-			if km > reach || (p.MaxLegKm > 0 && km > p.MaxLegKm) || (p.MaxLegMin > 0 && m > p.MaxLegMin) {
+			km, m, kwh := p.legFull(nodes[u], nodes[v])
+			if kwh > reach || (p.MaxLegKm > 0 && km > p.MaxLegKm) || (p.MaxLegMin > 0 && m > p.MaxLegMin) {
 				continue
 			}
 			cost := best[u] + m
 			if v != n-1 {
-				cost += chargeMin(p, nodes[v], km) + nodes[v].Penalty
+				cost += chargeMin(p, nodes[v], kwh) + nodes[v].Penalty
 			}
 			if cost < best[v] {
 				best[v], prev[v] = cost, u
@@ -217,20 +227,20 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 	for v := n - 1; v != -1; v = prev[v] {
 		seg = append([]Station{nodes[v]}, seg...)
 	}
-	lastKm, _ := p.leg(seg[len(seg)-2], seg[len(seg)-1])
-	return seg, lastKm, nil
+	_, _, lastKwh := p.legFull(seg[len(seg)-2], seg[len(seg)-1])
+	return seg, lastKwh, nil
 }
 
 func minutes(p Params, km float64) float64 { return km / p.SpeedKph * 60 }
 
 // chargeMin is what a stop costs when it replaces the energy the leg into it used: the time to park and plug in, plus that energy
-// at what the charger and the car allow.
-func chargeMin(p Params, s Station, legKm float64) float64 {
+// (kWh) at what the charger and the car allow.
+func chargeMin(p Params, s Station, legKwh float64) float64 {
 	kw := p.CarKw
 	if s.Kw > 0 && float64(s.Kw) < kw {
 		kw = float64(s.Kw)
 	}
-	return overhead + legKm*p.KwhPerKm/kw*60
+	return overhead + legKwh/kw*60
 }
 
 // margin is the percent of battery kept above the reserve on leaving a charger.
@@ -240,13 +250,13 @@ const margin = 5.0
 // It also carries the battery along: a stop charges only as far as the next leg needs (never past the target), at the power of the
 // charger or the car, whichever is lower.
 func split(p Params, chain []link) []Day {
-	drop := func(km float64) float64 { return km * p.KwhPerKm / p.CapacityKwh * 100 }
+	drop := func(kwh float64) float64 { return kwh / p.CapacityKwh * 100 }
 	day := Day{StartPct: p.StartPct, Stops: []Stop{{Station: chain[0].Station, Kind: "start", DepartPct: p.StartPct, ArrivePct: p.StartPct}}}
 	days := []Day{}
 	elapsed, pct := 0.0, p.StartPct
 	for i := 1; i < len(chain); i++ {
 		a, b := chain[i-1], chain[i]
-		km, m := p.leg(a.Station, b.Station)
+		km, m, kwh := p.legFull(a.Station, b.Station)
 		if i > 1 && (a.night || (p.DayMin > 0 && elapsed+m > p.DayMin)) {
 			day.Stops[len(day.Stops)-1].Kind = "overnight"
 			days = append(days, day)
@@ -256,7 +266,7 @@ func split(p Params, chain []link) []Day {
 			day = Day{StartPct: pct, Stops: []Stop{{Station: a.Station, Kind: "overnight", ArrivePct: pct, DepartPct: pct}}}
 			elapsed = 0
 		}
-		arrive := pct - drop(km)
+		arrive := pct - drop(kwh)
 		day.Km += km
 		day.DriveMin += m
 		elapsed += m
@@ -264,8 +274,8 @@ func split(p Params, chain []link) []Day {
 		if b.kind == "charge" {
 			depart := p.TargetPct
 			if i+1 < len(chain) {
-				nextKm, _ := p.leg(b.Station, chain[i+1].Station)
-				next := drop(nextKm)
+				_, _, nextKwh := p.legFull(b.Station, chain[i+1].Station)
+				next := drop(nextKwh)
 				depart = math.Min(p.TargetPct, math.Max(arrive, p.ReservePct+next+margin))
 			}
 			kw := p.CarKw

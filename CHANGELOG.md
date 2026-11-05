@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.80.0
+
+### 🏎️ Highway pace on long trips
+- The Long trip tab has a new **Highway pace over the limit** (5 mph by default, kept on that phone). It is added to the highway stretches of each leg, which makes the drive shorter, and the **energy of each leg now follows its own speed**, from how your car has actually driven at those speeds, instead of one fixed highway figure. Legs checked on real roads use each road's own speed, so a stretch of town driving is not sped up.
+- The routing service gives its own speed for each road (from the map's speed limits where they are tagged, with its own allowances), not the posted limit itself, so "over the limit" is an approximation.
+
 ## 0.79.0
 
 ### 🔄 Data updates

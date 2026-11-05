@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	highwayKph           = 105.0
-	chainStopMax         = 6000
-	altMinSaving         = 5.0     // minutes: a smaller saving is not worth mentioning
-	eaPenaltyMin         = 10.0    // Superchargers first: Electrify America is used when it saves more than this
-	viaSnapM     float64 = 25000.0 // "find a charger here": the closest usable charger within this many meters of the place
+	highwayKph             = 105.0
+	defaultPaceKph         = 8.0 // about 5 mph over
+	chainStopMax           = 6000
+	altMinSaving           = 5.0     // minutes: a smaller saving is not worth mentioning
+	eaPenaltyMin           = 10.0    // Superchargers first: Electrify America is used when it saves more than this
+	viaSnapM       float64 = 25000.0 // "find a charger here": the closest usable charger within this many meters of the place
 )
 
 type chainVia struct {
@@ -37,6 +38,7 @@ type chainIn struct {
 	DayMin    float64    `json:"dayMin"`
 	Plugs     string     `json:"plugs"`    // Tesla Superchargers: nacs, dock, both, or none
 	EA        bool       `json:"ea"`       // also use Electrify America
+	PaceKph   *float64   `json:"paceKph"`  // how much faster than the road's own speed you drive on highways; unset is 5 mph
 	Avoid     []string   `json:"avoid"`    // chargers never to use, as "lat,lon" to four places
 	DepartTS  int64      `json:"departTs"` // when the trip leaves; 0 is the next morning at eight
 }
@@ -88,10 +90,18 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 	if in.DayMin <= 0 || in.DayMin > 24*60 {
 		in.DayMin = 12 * 60
 	}
-	kmPerKwh := base.ExpectedKmPerKwh(highwayKph, "")
-	if kmPerKwh <= 0 {
-		kmPerKwh = base.Overall
+	pace := defaultPaceKph
+	if in.PaceKph != nil && *in.PaceKph >= 0 && *in.PaceKph <= 40 {
+		pace = *in.PaceKph
 	}
+	energyAt := func(kph float64) float64 { // kWh per km at an average speed, from how this car has driven at it
+		v := base.ExpectedKmPerKwh(kph, "")
+		if v <= 0 {
+			v = base.Overall
+		}
+		return 1 / v
+	}
+	kmPerKwh := 1 / energyAt(highwayKph+pace) // for a leg not yet checked on a real road
 	var tesla, ea []superchargers.Site
 	if in.Plugs != "none" {
 		all, _, err := s.superSites(r.Context())
@@ -164,8 +174,9 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 	}
 	params := tripchain.Params{Start: station(in.Start, "Start"), Dest: station(in.Dest, "Destination"), StartPct: in.StartPct, ReservePct: in.Reserve,
 		TargetPct: in.Target, CapacityKwh: *capacity, KwhPerKm: 1 / kmPerKwh, CarKw: in.ChargeKw, MaxLegKm: in.MaxLegKm, MaxLegMin: in.MaxLegMin,
-		DayMin: in.DayMin, SpeedKph: highwayKph}
+		DayMin: in.DayMin, SpeedKph: highwayKph + pace}
 	rl := newRoadLegs(r.Context(), s) // the real roads of the legs, asked as the plan is made
+	rl.paceKph, rl.energyAt = pace, energyAt
 	plan := func(lists ...[]superchargers.Site) ([]tripchain.Day, int, error) {
 		var st []tripchain.Station
 		for _, list := range lists {

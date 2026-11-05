@@ -60,6 +60,12 @@ export function tripChainCard(get, start, use, named = []) {
   const viaBox = h('div'), out = h('div'), msg = h('p', { class: 'muted', role: 'status' }), saved = h('div'), avoidBox = h('div');
   const input = (id, val, min, step) => h('input', { id, type: 'number', inputmode: 'decimal', min, step, value: val });
   const legH = input('tc-h', 2.5, 0.5, 0.25), legD = input('tc-d', isMetric() ? 320 : 200, 0, 10), dayH = input('tc-day', 12, 2, 0.5);
+  // how much faster than the road's own speed you drive on highway stretches (about 5 mph over by default), kept on this phone
+  const PACE = 'cartrak.pace';
+  let savedPace = null;
+  try { savedPace = localStorage.getItem(PACE); } catch (e) { /* storage blocked */ }
+  const pace = h('input', { id: 'tc-pace', type: 'number', inputmode: 'decimal', min: 0, max: 25, step: 1, value: savedPace != null ? savedPace : isMetric() ? 8 : 5 });
+  pace.addEventListener('change', () => { try { localStorage.setItem(PACE, pace.value); } catch (e) { /* ignore */ } });
   const plugs = h('select', { id: 'tc-plugs' }, ...PLUGS.map(([v, t]) => h('option', { value: v }, t)));
   const ea = h('input', { type: 'checkbox', id: 'tc-ea' });
   const eaText = h('span', {}, 'Also use Electrify America (CCS, no adapter; needs the charger list key in Settings)');
@@ -137,7 +143,7 @@ export function tripChainCard(get, start, use, named = []) {
     if (!d) { msg.textContent = 'Find the destination first.'; return null; }
     if (vias.some((v) => !v.pick.get())) { msg.textContent = 'Finish or remove the places you added.'; return null; }
     return { start: { name: s.name || 'Start', lat: s.lat, lon: s.lon }, dest: d, via: vias.map((v) => ({ ...v.pick.get(), mode: v.mode, charge: v.charge })), startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct,
-      chargeKw: g.chargeKw, departTs: Math.floor(new Date(leaveAt.value).getTime() / 1000) || g.departTs || 0, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
+      chargeKw: g.chargeKw, departTs: Math.floor(new Date(leaveAt.value).getTime() / 1000) || g.departTs || 0, paceKph: Math.min(40, Math.max(0, Number(pace.value) || 0)) * (isMetric() ? 1 : 1.609344), maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
   };
   async function go() {
     const b = body();
@@ -179,7 +185,8 @@ export function tripChainCard(get, start, use, named = []) {
     h('p', { class: 'muted' }, 'Set how long a leg may be and how long a day on the road, and CarTrak chooses chargers your car can use between the start and the destination. Lists of chargers are downloaded about once a week; nothing about you or the trip is sent.'),
     ...field('tc-from', 'Starting from', from.el), ...field('tc-q', 'Destination', dest.el), ...field('tc-leave', 'Leaving at', leaveAt), ...field('tc-arrive', 'Arrive by (suggests when to leave)', arriveBy), h('h3', {}, 'Places you insist on'),
     h('p', { class: 'muted' }, 'Add a town to take one road and not another, or a hotel you already booked to end a day there. They are passed in the order you add them.'), viaBox,
-    ...field('tc-h', 'Longest leg (hours)', legH), ...field('tc-d', `Or no more than (${unit})`, legD), rangeBox, ...field('tc-day', 'Longest day on the road (hours)', dayH), ...field('tc-plugs', 'Tesla Superchargers', plugs),
+    ...field('tc-h', 'Longest leg (hours)', legH), ...field('tc-d', `Or no more than (${unit})`, legD), rangeBox, ...field('tc-day', 'Longest day on the road (hours)', dayH), ...field('tc-pace', `Highway pace over the limit (${isMetric() ? 'km/h' : 'mph'})`, pace),
+    h('p', { class: 'muted' }, 'How much faster than the road\'s own speed you drive on highway stretches. It makes the drive shorter and uses more energy, from how your car has driven at those speeds.'), ...field('tc-plugs', 'Tesla Superchargers', plugs),
     h('p', { class: 'muted' }, 'Every open Supercharger that lets other cars charge has NACS plugs, so you need the NACS adapter for them. Magic Dock sites are the ones with a CCS plug built into the stall, so they work without the adapter. Electrify America is CCS too.'),
     h('label', { for: 'tc-ea', style: 'display:flex;gap:8px;align-items:center;min-height:44px' }, ea, eaText),
     h('p', {}, h('button', { onclick: go }, 'Find the chargers')), msg, out, avoidBox, saved);
