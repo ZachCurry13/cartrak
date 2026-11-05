@@ -2,8 +2,8 @@
 
 ## 0.82.1
 
-### 🔑 Charger-list key found on every car
-- The Electrify America (charger list) key and the uptime monitor address were kept on the one car they were entered under, so another car said a key was needed even though it had been entered. They are now shared by every car, like the gas price key. A key already entered is shared the next time CarTrak starts, and a key entered on any car is used by all of them.
+### 🔑 Outside services are set up once for every car
+- The Electrify America (charger list) key and the uptime monitor address were kept on the one car they were entered under, so another car said a key was needed even though it had been entered. Every outside service setting is now shared by all cars: the charger list key, gas prices, weather, maps, place names, road estimates and the uptime monitor. Whichever car it is entered on, the others use it, and a car can still keep its own value. Anything entered before is shared the next time CarTrak starts. Ford sign-in details stay per Ford account.
 
 ## 0.82.0
 
