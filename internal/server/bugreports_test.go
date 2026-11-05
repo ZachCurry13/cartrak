@@ -134,3 +134,36 @@ func TestAFixedReportLeavesTheIndexAndIsClearedAWeekLater(t *testing.T) {
 		t.Fatalf("a report fixed over a week ago is cleared: %s", b)
 	}
 }
+
+func TestAFixedReportIsClearedAtOnceWhenTheOwnerChoosesThat(t *testing.T) {
+	ts, srv := healthServer(t, fakeProv{}, false, false)
+	srv.Cfg.Set(keyAddress, "cartrak.example.test")
+	admin := adminClient(t, ts.URL)
+	anon := &http.Client{}
+	api := ts.URL + "/api/bug-reports"
+	do(t, admin, "POST", api, `{"note":"one","page":"#/a","device":"phone"}`, xh)
+	do(t, admin, "POST", api, `{"note":"two","page":"#/b","device":"phone"}`, xh)
+	_, out := do(t, admin, "POST", api+"/link", `{"days":7}`, xh)
+	var link struct{ Path string }
+	json.Unmarshal([]byte(out), &link)
+	if c, _ := do(t, admin, "PUT", api+"/keep", `{"fixedDays":3}`, xh); c != 400 {
+		t.Fatalf("only at once, 1 or 7 days: %d", c)
+	}
+	// the default keeps a fixed report for a week: it is hidden but still there
+	do(t, anon, "POST", ts.URL+link.Path+"/1/fixed", "", nil)
+	if _, b := do(t, admin, "GET", api, "", nil); !strings.Contains(b, "one") || !strings.Contains(b, `"fixedDays":7`) {
+		t.Fatalf("by default a fixed report waits: %s", b)
+	}
+	if c, b := do(t, admin, "PUT", api+"/keep", `{"fixedDays":0}`, xh); c != 200 || !strings.Contains(b, `"fixedDays":0`) {
+		t.Fatalf("choosing clear at once: %d %s", c, b)
+	}
+	if _, b := do(t, admin, "GET", api, "", nil); strings.Contains(b, `"note":"one"`) {
+		t.Fatalf("choosing it clears the reports already fixed: %s", b)
+	}
+	if c, b := do(t, anon, "POST", ts.URL+link.Path+"/2/fixed", "", nil); c != 200 || !strings.Contains(b, "cleared") {
+		t.Fatalf("through the link: %d %s", c, b)
+	}
+	if _, b := do(t, admin, "GET", api, "", nil); strings.Contains(b, `"note":"two"`) {
+		t.Fatalf("a report marked fixed is gone at once: %s", b)
+	}
+}

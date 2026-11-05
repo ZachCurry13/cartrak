@@ -75,13 +75,14 @@ export function tripChainCard(get, start, use, named = []) {
   api(`/api/trip-chain/range?reserve=${g0.reservePct}&target=${g0.targetPct}`).then((r) => {
     if (!r.ready) return;
     const shown = (km) => (isMetric() ? km : km * 0.621371);
-    const row = (w) => h('li', {}, `${Math.round(w.from)}% down to ${Math.round(w.to)}%: about ${dist(w.km, 0)}, ${hm(w.minutes)} at ${speed(r.speedKph)}`,
-      w.coldKm || w.hotKm ? h('span', { class: 'muted' }, ` (${[w.coldKm ? `${dist(w.coldKm, 0)} when it is cold` : null, w.hotKm ? `${dist(w.hotKm, 0)} when it is hot` : null].filter(Boolean).join(', ')})`) : null);
-    const w0 = r.windows[0], safe = Math.floor((Math.min(w0.km, w0.coldKm || w0.km) * 0.9) / 10) * 10;
+    const w0 = r.windows[0], low = [w0.coldKm, w0.hotKm].filter(Boolean), worst = Math.min(w0.km, ...low), safe = Math.floor((worst * 0.9) / 10) * 10;
+    const others = r.windows.slice(1);
     rangeBox.replaceChildren(h('div', { class: 'card', style: 'margin:8px 0;padding:10px' }, h('b', {}, 'How far a charge goes'),
-      h('p', { class: 'muted' }, 'From how your car has actually driven at highway speed. The first line uses your charge target and reserve; the rest are other ideas.'),
-      h('ul', { style: 'margin:0;padding-left:1.2em' }, ...r.windows.map(row)),
-      h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => { legD.value = Math.round(shown(safe)); msg.textContent = `Longest distance between chargers set to ${dist(safe, 0)}, a little under what a charge covers.`; } }, `Use ${dist(safe, 0)} as the longest leg`))));
+      h('p', {}, `On your settings (charge to ${Math.round(w0.from)}%, keep ${Math.round(w0.to)}%) your car goes about `, h('b', {}, dist(w0.km, 0)), ` at ${speed(r.speedKph)}, about ${hm(w0.minutes)} of driving.`,
+        w0.coldKm || w0.hotKm ? ` In the weather you have driven in it ranges from ${dist(worst, 0)} to ${dist(Math.max(w0.km, ...low), 0)}.` : ''),
+      others.length ? h('details', {}, h('summary', {}, 'Other charge levels'), h('ul', { style: 'margin:0;padding-left:1.2em' }, ...others.map((w) => h('li', {}, `${Math.round(w.from)}% down to ${Math.round(w.to)}%: about ${dist(w.km, 0)} (${hm(w.minutes)})`)))) : null,
+      h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => { legD.value = Math.round(shown(safe)); msg.textContent = `Longest distance between chargers set to ${dist(safe, 0)}.`; } }, `Set the longest leg to ${dist(safe, 0)}`)),
+      h('p', { class: 'muted' }, `That is a little under the shortest figure, so a cold day or a headwind still fits. Only Superchargers that Tesla has opened to other cars are used (newer V3 and V4 stalls); destination chargers are not included, and the older stalls that do not work with the adapter are not on the list.`)));
   }).catch(() => {});
   let last = null; // what was last planned: { body, result }
   let mc = null; mapConfig().then((c) => { mc = c; }).catch(() => {});
@@ -173,7 +174,7 @@ export function tripChainCard(get, start, use, named = []) {
   loadSaved(); drawAvoid(); drawVias();
   const el = h('div', {},
     h('p', { class: 'muted' }, 'Set how long a leg may be and how long a day on the road, and CarTrak chooses chargers your car can use between the start and the destination. Lists of chargers are downloaded about once a week; nothing about you or the trip is sent.'),
-    ...field('tc-from', 'Starting from', from.el), ...field('tc-q', 'Destination', dest.el), ...field('tc-leave', 'Leaving at', leaveAt), ...field('tc-arrive', 'Or the time you want to arrive by (it suggests when to leave)', arriveBy), h('h3', {}, 'Places you insist on'),
+    ...field('tc-from', 'Starting from', from.el), ...field('tc-q', 'Destination', dest.el), ...field('tc-leave', 'Leaving at', leaveAt), ...field('tc-arrive', 'Arrive by (suggests when to leave)', arriveBy), h('h3', {}, 'Places you insist on'),
     h('p', { class: 'muted' }, 'Add a town to take one road and not another, or a hotel you already booked to end a day there. They are passed in the order you add them.'), viaBox,
     ...field('tc-h', 'Longest leg (hours)', legH), ...field('tc-d', `Or no more than (${unit})`, legD), rangeBox, ...field('tc-day', 'Longest day on the road (hours)', dayH), ...field('tc-plugs', 'Tesla Superchargers', plugs),
     h('p', { class: 'muted' }, 'Every open Supercharger that lets other cars charge has NACS plugs, so you need the NACS adapter for them. Magic Dock sites are the ones with a CCS plug built into the stall, so they work without the adapter. Electrify America is CCS too.'),

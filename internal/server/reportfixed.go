@@ -6,7 +6,16 @@ import (
 	"time"
 )
 
-const fixedKeep = 7 * 24 * time.Hour // a report marked fixed is cleared this long afterwards
+const fixedKeepKey = "report_fixed_keep_days"
+
+// fixedKeepDays is how many days a report marked fixed is kept before it is cleared: 0 clears it at once, 7 is the default.
+func (s *Server) fixedKeepDays() int {
+	v := s.S.GetKV(fixedKeepKey)
+	if n, err := strconv.Atoi(v); v != "" && err == nil && n >= 0 && n <= 90 {
+		return n
+	}
+	return 7
+}
 
 // markFixed: PUT /api/bug-reports/{id}/fixed {"fixed": true}. The owner marks a report fixed, or open again.
 func (s *Server) markFixed(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +35,7 @@ func (s *Server) markFixed(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "db error")
 		return
 	}
+	s.pruneReports() // with "clear at once" a report marked fixed is gone now
 	ok(w, map[string]bool{"fixed": in.Fixed})
 }
 
@@ -52,6 +62,11 @@ func (s *Server) linkMarkFixed(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := s.S.SetBugReportFixed(id, time.Now().Unix()); err != nil {
 		http.Error(w, "could not save", http.StatusInternalServerError)
+		return
+	}
+	if s.fixedKeepDays() == 0 {
+		s.pruneReports()
+		_, _ = w.Write([]byte("marked fixed and cleared\n"))
 		return
 	}
 	_, _ = w.Write([]byte("marked fixed\n"))

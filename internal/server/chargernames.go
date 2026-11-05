@@ -7,7 +7,7 @@ import (
 	"github.com/ZachCurry13/cartrak/internal/superchargers"
 )
 
-const chargerNameM = 200.0 // a charge this close to a known charger was at it
+const chargerNameM = 300.0 // a charge this close to a known charger was at it (a large site is parked on away from its centre)
 
 var chargerKept struct {
 	mu    sync.Mutex

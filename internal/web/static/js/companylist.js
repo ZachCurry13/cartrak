@@ -54,5 +54,5 @@ export function pasteListCard(use) {
     draw();
   }
   return h('div', {},
-    h('p', { class: 'muted' }, 'One company per line. A number and country on the end, like -1234567-U.S.A., are read and set aside. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
+    h('p', { class: 'muted' }, 'Paste one company per line. Account numbers and country codes after the name are ignored. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
 }

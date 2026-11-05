@@ -9,6 +9,8 @@ const clock = (ts) => new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeri
 // Developer: the tools for working out what went wrong, in one place. Tracking records everything while the owner uses the app and
 // exports it when they stop.
 export default async function developer(root, _a, session) {
+  const bugs = h('span', { class: 'muted' }); // how many reports are open, filled in once it is known
+  api('/api/bug-reports').then((d) => { const open = d.reports.filter((r) => !r.fixed).length; bugs.textContent = `(${open} open)`; }).catch(() => {});
   if (session.me.role !== 'admin') return root.append(h('div', { class: 'banner' }, 'Admins only.'));
   const box = h('section', { class: 'card' });
   const msg = h('p', { class: 'muted', role: 'status' });
@@ -47,6 +49,7 @@ export default async function developer(root, _a, session) {
   root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Developer')),
     h('p', { class: 'muted' }, 'Tools for finding out why something looks wrong.'),
     h('section', { class: 'card' }, h('h2', {}, 'Reports'),
+      h('a', { class: 'row', href: '#/bugreports' }, h('span', { class: 'grow' }, 'Bug reports ', bugs), '›'),
       h('a', { class: 'row', href: '#/debug' }, h('span', { class: 'grow' }, 'Debug report'), '›'),
       h('a', { class: 'row', href: '#/fieldcheck' }, h('span', { class: 'grow' }, 'Field check'), '›'),
       h('a', { class: 'row', href: '#/fields' }, h('span', { class: 'grow' }, 'Field watcher'), '›')), box);

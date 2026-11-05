@@ -26,6 +26,15 @@ function attention(report) {
       r.note ? h('span', { class: 'hn muted' }, r.note) : null)));
 }
 
+// The 12 V battery at rest: the average voltage once the car has sat for half an hour without driving or charging. The reading while the
+// car is awake is the charging system's (about 14 V); this is the one that says how the battery itself holds up.
+function restingEl(r) {
+  if (!r || r.n < 2) return h('p', { class: 'muted' }, 'Resting voltage shows here once the car has sat idle for half an hour or more a few times.');
+  const [kind, word] = r.avg >= 12.4 ? ['ok', 'Healthy'] : r.avg >= 12.0 ? ['work', 'Fair'] : ['bad', 'Low'];
+  return h('div', { class: 'hrow' }, h('span', { class: 'hl' }, 'Resting voltage'), h('span', { class: 'hv' }, h('b', {}, `${r.avg.toFixed(2)} V`), ' ', chip(kind, word)),
+    h('span', { class: 'hn muted' }, `The average of ${r.n} reading${r.n === 1 ? '' : 's'} in the last ${r.spanDays} days, taken after the car sat at least ${r.idleMin} minutes without driving or charging (from ${r.min.toFixed(1)} to ${r.max.toFixed(1)} V). About 12.4 V or more is healthy; under 12 V is low. A shop test is still the better measure.`));
+}
+
 // The owner can record that the 12 V battery was tested and is fine, which pauses its warnings and alert.
 function testedBox(until, admin) {
   const active = until * 1000 > Date.now();
@@ -60,7 +69,7 @@ export default async function vehicleHealth(root, _a, session) {
   root.append(attention(d.report));
   for (const s of d.report.sections) {
     root.append(h('section', { class: 'card' }, h('h2', {}, s.title), s.intro ? h('p', { class: 'muted' }, s.intro) : null,
-      ...s.rows.map(rowEl), s.id === '12v' ? testedBox(d.tested12vUntil, session.me.role === 'admin') : null, ...(s.series || []).map((x) => spark(x, format))));
+      ...s.rows.map(rowEl), s.id === '12v' ? restingEl(d.resting) : null, s.id === '12v' ? testedBox(d.tested12vUntil, session.me.role === 'admin') : null, ...(s.series || []).map((x) => spark(x, format))));
   }
   const bat = await batteryCard();
   if (bat) root.append(bat);

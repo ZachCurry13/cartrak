@@ -33,6 +33,8 @@ func (s *Server) analyticsCharges(from int64) ([]analytics.Charge, error) {
 	}
 	named, _ := s.S.ListNamedPlaces()
 	eq := s.gasEquivalents(sessions)
+	cities := s.cityNamer() // a charge that is not at a named place or a known charger is named for its city
+	defer cities.lookupLater()
 	var out []analytics.Charge
 	for _, c := range sessions {
 		if c.Open || c.EndTS == nil || c.StartTS < from || c.AddedKwh == nil {
@@ -53,6 +55,11 @@ func (s *Server) analyticsCharges(from int64) ([]analytics.Charge, error) {
 		}
 		if a.Place == "" && c.Where != "home" {
 			a.Place = s.chargerAt(c.Lat, c.Lon)
+		}
+		if a.Place == "" && c.Where != "home" {
+			if city := cities.name(c.Lat, c.Lon); city != "" {
+				a.Place = "Public charging in " + city
+			}
 		}
 		out = append(out, a)
 	}

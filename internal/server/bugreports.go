@@ -21,7 +21,12 @@ const (
 
 // pruneReports forgets reports older than the keep setting (0 keeps them all).
 func (s *Server) pruneReports() {
-	_, _ = s.S.DeleteFixedBugReports(time.Now().Add(-fixedKeep).Unix()) // a fixed report goes a week after it was fixed
+	// a fixed report goes after the delay the owner chose (at once, a day or a week)
+	before := time.Now().AddDate(0, 0, -s.fixedKeepDays()).Unix()
+	if s.fixedKeepDays() == 0 {
+		before = time.Now().Unix() + 1
+	}
+	_, _ = s.S.DeleteFixedBugReports(before)
 	if d, _ := strconv.Atoi(s.S.GetKV(reportKeepKey)); d > 0 {
 		_, _ = s.S.DeleteBugReports(0, time.Now().AddDate(0, 0, -d).Unix())
 	}
@@ -42,7 +47,7 @@ func (s *Server) listReports(w http.ResponseWriter, r *http.Request) {
 		url = s.publicBase() + "/r/" + link.Token
 		link.Token = ""
 	}
-	ok(w, map[string]any{"reports": l, "keepDays": keep, "link": link, "linkUrl": url, "addressKnown": s.publicBase() != ""})
+	ok(w, map[string]any{"reports": l, "keepDays": keep, "fixedDays": s.fixedKeepDays(), "link": link, "linkUrl": url, "addressKnown": s.publicBase() != ""})
 }
 
 // addReport: POST /api/bug-reports. A report is text: the note, what the page said, the device and screen, facts about the layout and
@@ -122,15 +127,24 @@ func (s *Server) clearReports(w http.ResponseWriter, r *http.Request) {
 // keepReports: PUT /api/bug-reports/keep {"days": 30}; 0 keeps them until cleared.
 func (s *Server) keepReports(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		Days int `json:"days"`
+		Days      *int `json:"days"`      // how long reports are kept: 0 (until cleared), 30, 60 or 90
+		FixedDays *int `json:"fixedDays"` // how long a report marked fixed is kept: 0 (clear it at once), 1 or 7
 	}
-	if decode(r, &in) != nil || (in.Days != 0 && in.Days != 30 && in.Days != 60 && in.Days != 90) {
-		fail(w, 400, "keep reports for 0 (until cleared), 30, 60 or 90 days")
+	if decode(r, &in) != nil || (in.Days == nil && in.FixedDays == nil) ||
+		(in.Days != nil && *in.Days != 0 && *in.Days != 30 && *in.Days != 60 && *in.Days != 90) ||
+		(in.FixedDays != nil && *in.FixedDays != 0 && *in.FixedDays != 1 && *in.FixedDays != 7) {
+		fail(w, 400, "keep reports for 0 (until cleared), 30, 60 or 90 days; clear a fixed one at once (0), after 1 day or after 7")
 		return
 	}
-	_ = s.S.SetKV(reportKeepKey, strconv.Itoa(in.Days))
+	if in.Days != nil {
+		_ = s.S.SetKV(reportKeepKey, strconv.Itoa(*in.Days))
+	}
+	if in.FixedDays != nil {
+		_ = s.S.SetKV(fixedKeepKey, strconv.Itoa(*in.FixedDays))
+	}
 	s.pruneReports()
-	ok(w, map[string]int{"keepDays": in.Days})
+	keep, _ := strconv.Atoi(s.S.GetKV(reportKeepKey))
+	ok(w, map[string]int{"keepDays": keep, "fixedDays": s.fixedKeepDays()})
 }
 
 // publicBase is the address CarTrak is reached at from outside, or "".

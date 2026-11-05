@@ -53,6 +53,7 @@ func (s *Server) vehicleHealth(w http.ResponseWriter, r *http.Request) {
 		"model":          modelName(f),
 		"report":         report,
 		"tested12vUntil": unixOrZero(s.tested12V()),
+		"resting":        s.restingVoltage(),
 	})
 }
 

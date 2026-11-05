@@ -21,6 +21,8 @@ export default async function bugReports(root, _a, session) {
     const keep = h('select', { id: 'br-keep', 'aria-label': 'How long reports are kept', onchange: async (e) => { await api('/api/bug-reports/keep', { method: 'PUT', body: { days: Number(e.target.value) } }); load(); } },
       ...KEEP.map(([v, t]) => h('option', { value: v, selected: v === d.keepDays }, t)));
     const link = d.link;
+    const fixedKeep = h('select', { id: 'br-fixed', 'aria-label': 'When a report is marked fixed', onchange: async (e) => { await api('/api/bug-reports/keep', { method: 'PUT', body: { fixedDays: Number(e.target.value) } }); load(); } },
+      ...[[0, 'Clear it at once'], [1, 'After a day'], [7, 'After a week']].map(([v, t]) => h('option', { value: v, selected: v === d.fixedDays }, t)));
     box.replaceChildren(
       h('section', { class: 'card' }, h('h2', {}, 'A link to read them'),
         link ? h('div', {}, h('p', { class: 'muted' }, `A link is open until ${when(link.expires)}. ${link.opens ? `Opened ${link.opens} time${link.opens === 1 ? '' : 's'}, last ${ago(link.lastUsed)}.` : 'Not opened yet.'}`),
@@ -32,9 +34,9 @@ export default async function bugReports(root, _a, session) {
         h('p', { class: 'seg' }, h('button', { type: 'button', onclick: async () => { await api('/api/bug-reports/link', { method: 'POST', body: { days: Number(days.value) } }); load(); } }, link ? 'Make a new link' : 'Make a link'),
           link ? h('button', { class: 'sec', type: 'button', onclick: async () => { await api('/api/bug-reports/link', { method: 'DELETE' }); load(); } }, 'Stop the link') : null),
         h('p', { class: 'muted' }, 'Anyone with the link can read every report, including the debug report, until it expires or you stop it. A new link replaces the old one.')),
-      h('section', { class: 'card' }, h('h2', {}, 'Keeping and clearing'), h('label', { for: 'br-keep' }, 'Keep reports'), keep,
+      h('section', { class: 'card' }, h('h2', {}, 'Keeping and clearing'), h('label', { for: 'br-keep' }, 'Keep reports'), keep, h('label', { for: 'br-fixed' }, 'When a report is marked fixed'), fixedKeep,
         h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => clear(30) }, 'Clear older than 30 days'), h('button', { class: 'sec', type: 'button', onclick: clearFixed }, 'Clear the fixed ones'), h('button', { class: 'sec', type: 'button', onclick: () => clear(0) }, 'Clear all')),
-        h('p', { class: 'muted' }, 'A report marked fixed is cleared by itself a week later. Whoever has the link can mark one fixed when it is dealt with.'), msg),
+        h('p', { class: 'muted' }, 'Whoever has the link can mark a report fixed when it is dealt with. With "Clear it at once" it is removed straight away; otherwise it is hidden and cleared after the time you chose.'), msg),
       h('section', { class: 'card' }, h('h2', {}, `Reports (${d.reports.length})`),
         ...(d.reports.length ? d.reports.map((r) => h('details', { 'data-id': String(r.id), open: open.has(String(r.id)), ontoggle: (e) => { if (e.target.open) show(e.target, r.id); } },
           h('summary', {}, `${r.fixed ? '✓ Fixed · ' : ''}#${r.id} · ${when(r.ts)} · ${r.page}`, r.note ? ` · ${r.note.split('\n')[0].slice(0, 60)}` : ''))) : [h('p', { class: 'muted' }, 'Nothing here yet.')])));
