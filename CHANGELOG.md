@@ -5,6 +5,9 @@
 ### 🛣️ A trip that could not get a road: keep the odometer
 - The notice about a trip drawn as a straight line now has one button for each distance: **Use road 10.3 mi** or **Keep odometer 18.0 mi**, next to **Choose the road** and **Dismiss**. Before, only the road's length could be picked, so when the odometer was the right one there was no button that said so.
 
+### ✍️ Clearer wording
+- **Longest day on the road** now says it counts charging as well as driving.
+
 ## 0.82.1
 
 ### 🔑 Outside services are set up once for every car
