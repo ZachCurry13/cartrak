@@ -16,7 +16,7 @@ export function tripDay(d, i, n, ctx) {
   d.stops.forEach((s, j) => {
     if (j > 0) {
       const p = d.stops[j - 1];
-      rows.push(eventRow({ kind: 'driving', start: at(p.departMin), end: at(s.arriveMin), fromPlace: p.name, place: s.name, distanceKm: bendKm(p, s), startSoc: p.departPct, endSoc: s.arrivePct }, undefined, ctx.currency));
+      rows.push(eventRow({ kind: 'driving', start: at(p.departMin), end: at(s.arriveMin), fromPlace: p.name, place: s.name, distanceKm: s.legKm || bendKm(p, s), startSoc: p.departPct, endSoc: s.arrivePct }, undefined, ctx.currency));
     }
     if (s.chargeMin > 0) {
       const row = eventRow({ kind: 'charging', where: '', place: s.net || s.name.startsWith("Supercharger: ") ? s.name : `Supercharger: ${s.name}`, start: at(s.arriveMin), end: at(s.departMin), addedKwh: s.kwh, cost: s.cost == null ? null : s.cost, costActual: false, startSoc: s.arrivePct, endSoc: s.departPct }, undefined, ctx.currency, j);

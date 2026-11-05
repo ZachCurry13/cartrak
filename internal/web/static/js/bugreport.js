@@ -21,7 +21,7 @@ function sheet(info) {
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   const msg = h('p', { class: 'muted', role: 'status' });
   const note = h('textarea', { rows: 4, maxlength: 4000, placeholder: 'What went wrong? What did you expect?', 'aria-label': 'What went wrong', style: 'width:100%;box-sizing:border-box' });
-  const withDebug = h('input', { type: 'checkbox', class: 'check', id: 'br-debug', checked: true });
+  const withDebug = h('input', { type: 'checkbox', class: 'check', id: 'br-debug' });
   const send = h('button', { type: 'button', onclick: async () => {
     send.disabled = true;
     msg.textContent = 'Saving…';
@@ -34,7 +34,7 @@ function sheet(info) {
   } }, 'Save report');
   const dlg = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Send a bug report', tabindex: '-1' }, h('h2', {}, 'Send a bug report'),
     h('p', { class: 'muted' }, `Saved in the app as text from this page (${info.page}): its words, a copy of how it looks, and your screen (${info.device.split(';')[0]}).`), note,
-    h('label', { for: 'br-debug', style: 'display:flex;align-items:center;gap:10px;margin-top:10px' }, withDebug, 'Include the debug report (the last 24 hours)'),
+    h('label', { for: 'br-debug', style: 'display:flex;align-items:center;gap:10px;margin-top:10px' }, withDebug, 'Include the debug report (only for a problem with the numbers; it is long)'),
     h('p', {}, send, ' ', h('button', { class: 'text', type: 'button', onclick: close }, 'Close')), msg);
   const bg = h('div', { class: 'sheetbg' }, dlg);
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });

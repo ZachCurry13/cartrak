@@ -34,6 +34,20 @@ type Params struct {
 	MaxLegMin   float64 // 0 for no limit
 	DayMin      float64 // the longest day on the road, charging included; 0 for no limit
 	SpeedKph    float64 // average speed used to turn distance into time
+	// Real, when set, gives the road distance and driving time between two places once they are known, so a leg is not left as a
+	// straight line made longer (which is wrong across water or round a lake).
+	Real func(a, b Station) (km, min float64, ok bool)
+}
+
+// leg is the distance and driving time between two places: the real road when known, else an estimate.
+func (p Params) leg(a, b Station) (km, min float64) {
+	if p.Real != nil {
+		if km, min, ok := p.Real(a, b); ok {
+			return km, min
+		}
+	}
+	km = haversineKm(a, b) * bend
+	return km, minutes(p, km)
 }
 
 // Stop is a place on a day's route.
@@ -49,6 +63,7 @@ type Stop struct {
 	DepartPct float64  `json:"departPct"`
 	Kwh       float64  `json:"kwh"`            // energy added here
 	ChargeMin float64  `json:"chargeMin"`      // time plugged in here
+	LegKm     float64  `json:"legKm"`          // the distance of the drive into this stop
 	Cost      *float64 `json:"cost,omitempty"` // what the energy added here is expected to cost, set by the caller
 }
 
@@ -182,8 +197,7 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 			if v == u || v == 0 || toDest[v] >= toDest[u] {
 				continue
 			}
-			km := haversineKm(nodes[u], nodes[v]) * bend
-			m := minutes(p, km)
+			km, m := p.leg(nodes[u], nodes[v])
 			if km > reach || (p.MaxLegKm > 0 && km > p.MaxLegKm) || (p.MaxLegMin > 0 && m > p.MaxLegMin) {
 				continue
 			}
@@ -203,7 +217,8 @@ func segment(p Params, from, to Station, startPct float64, stations []Station) (
 	for v := n - 1; v != -1; v = prev[v] {
 		seg = append([]Station{nodes[v]}, seg...)
 	}
-	return seg, haversineKm(seg[len(seg)-2], seg[len(seg)-1]) * bend, nil
+	lastKm, _ := p.leg(seg[len(seg)-2], seg[len(seg)-1])
+	return seg, lastKm, nil
 }
 
 func minutes(p Params, km float64) float64 { return km / p.SpeedKph * 60 }
@@ -231,8 +246,7 @@ func split(p Params, chain []link) []Day {
 	elapsed, pct := 0.0, p.StartPct
 	for i := 1; i < len(chain); i++ {
 		a, b := chain[i-1], chain[i]
-		km := haversineKm(a.Station, b.Station) * bend
-		m := minutes(p, km)
+		km, m := p.leg(a.Station, b.Station)
 		if i > 1 && (a.night || (p.DayMin > 0 && elapsed+m > p.DayMin)) {
 			day.Stops[len(day.Stops)-1].Kind = "overnight"
 			days = append(days, day)
@@ -246,11 +260,12 @@ func split(p Params, chain []link) []Day {
 		day.Km += km
 		day.DriveMin += m
 		elapsed += m
-		st := Stop{Station: b.Station, Kind: b.kind, ArriveMin: elapsed, ArrivePct: arrive, DepartPct: arrive}
+		st := Stop{Station: b.Station, Kind: b.kind, ArriveMin: elapsed, ArrivePct: arrive, DepartPct: arrive, LegKm: km}
 		if b.kind == "charge" {
 			depart := p.TargetPct
 			if i+1 < len(chain) {
-				next := drop(haversineKm(b.Station, chain[i+1].Station) * bend)
+				nextKm, _ := p.leg(b.Station, chain[i+1].Station)
+				next := drop(nextKm)
 				depart = math.Min(p.TargetPct, math.Max(arrive, p.ReservePct+next+margin))
 			}
 			kw := p.CarKw

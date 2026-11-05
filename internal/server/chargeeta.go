@@ -18,6 +18,7 @@ type etaHistory struct {
 	mu       sync.Mutex
 	at       time.Time
 	sessions []chargeeta.Session
+	loading  bool // a refresh is running
 }
 
 const (
@@ -60,13 +61,33 @@ func sessionFrom(rows []*store.Sample) chargeeta.Session {
 	return s
 }
 
+// etaSessions are the sessions the estimate learns from. Once they have been read, the last answer is returned at once, however old,
+// and a newer one is read in the background: reading forty sessions takes seconds, and the page must not wait for that every time.
 func (s *Server) etaSessions() []chargeeta.Session {
 	h := &s.etaHist
 	h.mu.Lock()
-	defer h.mu.Unlock()
-	if h.sessions != nil && time.Since(h.at) < etaKeep {
-		return h.sessions
+	cur, have := h.sessions, h.sessions != nil
+	if have && time.Since(h.at) >= etaKeep && !h.loading {
+		h.loading = true
+		go func() {
+			out := s.readEtaSessions()
+			h.mu.Lock()
+			h.sessions, h.at, h.loading = out, time.Now(), false
+			h.mu.Unlock()
+		}()
 	}
+	h.mu.Unlock()
+	if have {
+		return cur
+	}
+	out := s.readEtaSessions() // the very first time there is nothing to show yet
+	h.mu.Lock()
+	h.sessions, h.at = out, time.Now()
+	h.mu.Unlock()
+	return out
+}
+
+func (s *Server) readEtaSessions() []chargeeta.Session {
 	out := []chargeeta.Session{}
 	cs, _ := s.S.ListCharges(etaSessions * 2)
 	for _, c := range cs {
@@ -81,7 +102,6 @@ func (s *Server) etaSessions() []chargeeta.Session {
 			out = append(out, sess)
 		}
 	}
-	h.sessions, h.at = out, time.Now()
 	return out
 }
 

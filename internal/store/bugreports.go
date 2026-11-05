@@ -8,17 +8,19 @@ import (
 // BugReport is a note about a problem with a text copy of the screen it was about: the page's words, the device, layout facts and
 // the debug report. Reports stay in the app until cleared.
 type BugReport struct {
-	ID      int64  `json:"id"`
-	TS      int64  `json:"ts"`
-	Version string `json:"version"`
-	Note    string `json:"note"`
-	Page    string `json:"page"`
-	Device  string `json:"device"`
-	Text    string `json:"text"`
-	Layout  string `json:"layout"`
-	Debug   string `json:"debug"`
-	HTML    string `json:"html,omitempty"` // the page as it looked: its markup and styles, without scripts
-	HasPage bool   `json:"hasPage"`        // there is a page copy to open
+	ID       int64  `json:"id"`
+	TS       int64  `json:"ts"`
+	Version  string `json:"version"`
+	Note     string `json:"note"`
+	Page     string `json:"page"`
+	Device   string `json:"device"`
+	Text     string `json:"text"`
+	Layout   string `json:"layout"`
+	Debug    string `json:"debug"`
+	HTML     string `json:"html,omitempty"` // the page as it looked: its markup and styles, without scripts
+	HasPage  bool   `json:"hasPage"`        // there is a page copy to open
+	HasDebug bool   `json:"hasDebug"`       // there is a debug report to open
+	Fixed    int64  `json:"fixed"`          // when it was marked fixed, or 0 while it is open
 }
 
 const bugDDL = `CREATE TABLE IF NOT EXISTS bug_reports (id INTEGER PRIMARY KEY, ts INTEGER NOT NULL, version TEXT NOT NULL DEFAULT '', note TEXT NOT NULL DEFAULT '',
@@ -31,6 +33,7 @@ func (s *Store) bugInit() error {
 	}
 	_, _ = s.DB.Exec(`ALTER TABLE bug_reports ADD COLUMN html TEXT NOT NULL DEFAULT ''`) // already there on later runs
 	_, _ = s.DB.Exec(`ALTER TABLE report_links ADD COLUMN token TEXT NOT NULL DEFAULT ''`)
+	_, _ = s.DB.Exec(`ALTER TABLE bug_reports ADD COLUMN fixed INTEGER NOT NULL DEFAULT 0`)
 	return nil
 }
 
@@ -52,9 +55,9 @@ func (s *Store) BugReports(full bool) ([]BugReport, error) {
 	if err := s.bugInit(); err != nil {
 		return nil, err
 	}
-	q := `SELECT id,ts,version,note,page,device,'','','',html<>'' FROM bug_reports ORDER BY ts DESC, id DESC`
+	q := `SELECT id,ts,version,note,page,device,'','','',html<>'',fixed FROM bug_reports ORDER BY ts DESC, id DESC`
 	if full {
-		q = `SELECT id,ts,version,note,page,device,text,layout,debug,html<>'' FROM bug_reports ORDER BY ts DESC, id DESC`
+		q = `SELECT id,ts,version,note,page,device,text,layout,debug,html<>'',fixed FROM bug_reports ORDER BY ts DESC, id DESC`
 	}
 	rows, err := s.DB.Query(q)
 	if err != nil {
@@ -64,7 +67,29 @@ func (s *Store) BugReports(full bool) ([]BugReport, error) {
 	out := []BugReport{}
 	for rows.Next() {
 		var r BugReport
-		if err := rows.Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug, &r.HasPage); err != nil {
+		if err := rows.Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug, &r.HasPage, &r.Fixed); err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
+// BugReportBriefs lists the reports newest first with what a short index needs (the note, page, device and layout facts) and
+// whether each has a page copy and a debug report, but not their bodies.
+func (s *Store) BugReportBriefs() ([]BugReport, error) {
+	if err := s.bugInit(); err != nil {
+		return nil, err
+	}
+	rows, err := s.DB.Query(`SELECT id,ts,version,note,page,device,layout,html<>'',debug<>'',fixed FROM bug_reports ORDER BY ts DESC, id DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []BugReport{}
+	for rows.Next() {
+		var r BugReport
+		if err := rows.Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Layout, &r.HasPage, &r.HasDebug, &r.Fixed); err != nil {
 			return nil, err
 		}
 		out = append(out, r)
@@ -78,11 +103,11 @@ func (s *Store) BugReport(id int64) (*BugReport, error) {
 		return nil, err
 	}
 	var r BugReport
-	err := s.DB.QueryRow(`SELECT id,ts,version,note,page,device,text,layout,debug,html FROM bug_reports WHERE id=?`, id).Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug, &r.HTML)
+	err := s.DB.QueryRow(`SELECT id,ts,version,note,page,device,text,layout,debug,html,fixed FROM bug_reports WHERE id=?`, id).Scan(&r.ID, &r.TS, &r.Version, &r.Note, &r.Page, &r.Device, &r.Text, &r.Layout, &r.Debug, &r.HTML, &r.Fixed)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	r.HasPage = r.HTML != ""
+	r.HasPage, r.HasDebug = r.HTML != "", r.Debug != ""
 	return &r, err
 }
 
@@ -159,4 +184,31 @@ func (s *Store) CurrentReportLink() *ReportLink {
 		return nil
 	}
 	return &l
+}
+
+// SetBugReportFixed marks a report fixed (at the time given) or open again (0).
+func (s *Store) SetBugReportFixed(id, at int64) error {
+	if err := s.bugInit(); err != nil {
+		return err
+	}
+	_, err := s.DB.Exec(`UPDATE bug_reports SET fixed=? WHERE id=?`, at, id)
+	return err
+}
+
+// DeleteFixedBugReports removes the reports marked fixed before a time (0 removes every fixed one).
+func (s *Store) DeleteFixedBugReports(before int64) (int64, error) {
+	if err := s.bugInit(); err != nil {
+		return 0, err
+	}
+	var res sql.Result
+	var err error
+	if before > 0 {
+		res, err = s.DB.Exec(`DELETE FROM bug_reports WHERE fixed>0 AND fixed<?`, before)
+	} else {
+		res, err = s.DB.Exec(`DELETE FROM bug_reports WHERE fixed>0`)
+	}
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
 }

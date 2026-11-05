@@ -39,7 +39,11 @@ func TestReplayingAMonthOfReadingsIsQuick(t *testing.T) {
 	if err != nil || len(nt) < 25 {
 		t.Fatalf("%v, %d trips", err, len(nt))
 	}
-	if took > 8*time.Second {
+	limit := 8 * time.Second // a month replays in about a second; the race detector makes it about twenty times slower
+	if raceOn {
+		limit = 120 * time.Second
+	}
+	if took > limit {
 		t.Fatalf("a month took %v: the scratch database is syncing every write", took)
 	}
 }

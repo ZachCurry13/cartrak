@@ -40,7 +40,8 @@ export function chargeEta(latest, target = getTarget(), fordMinutesToFull = null
   return { minutes: Math.round(hours * 60), source: 'estimate' };
 }
 
-export function minutesText(m) {
+export function minutesText(minutes) {
+  const m = Math.round(minutes); // the learned estimate is not a whole number
   if (m < 1) return 'under a minute';
   return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
 }

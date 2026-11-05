@@ -63,12 +63,14 @@ export default async function plan(root, _a, session) {
   for (const i of [distance, start, kw, weather]) i.addEventListener('input', show);
   kw.addEventListener('input', () => write(Number(kw.value) || 100)); // remembered only when you set it yourself
 
-  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Road-trip planner')),
-    h('section', { class: 'card' }, h('h2', {}, 'Your trip'),
+  // the route planner comes first, as the main thing on this page; the quick distance estimate sits below it
+  const planner = session && session.me.role === 'admin' ? await multiStopCard(() => ({ startPct: Number(start.value) || 100, reservePct: low, targetPct: high, chargeKw: Number(kw.value) || 100 }), latest) : null;
+  root.append(h('p', {}, h('a', { href: '#/settings' }, '← More')), h('div', { class: 'page-title' }, h('h2', {}, 'Road-trip planner')), planner,
+    h('section', { class: 'card' }, h('h2', {}, planner ? 'Quick estimate' : 'Your trip'), planner ? h('p', { class: 'muted' }, 'Just a distance: will one charge do it, and when would you need to stop?') : null,
       avgKmPerPct ? h('p', { class: 'muted' }, `Your battery goes about ${dist(avgKmPerPct, 1)} per percent${band.source === 'trips' ? ', from your recent driving' : ", from the car's own range figure"}. The reserve (${low}%) and charge target (${high}%) are your settings.`)
         : h('p', { class: 'banner' }, 'CarTrak does not know how far your battery goes yet. It needs a reading with the range, or a few trips.'),
       field('pd', `Trip distance (${unit})`, distance), field('ps', 'Starting charge (%)', start),
       band && ((band.byTemp && band.byTemp.length) || band.nowBand) ? field('pw', 'Weather', weather, 'Based on how far you really got on trips in that weather. Cold and hot weather both use more.') : null, field('pk', 'Average charging power (kW)', kw, (saved() ? '' : winKw ? `Started from your own fast charges: ${win.sessions} session${win.sessions === 1 ? '' : 's'} averaged ${winKw} kW between ${low}% and ${high}%. ` : histKw ? `Started from your own fast charges (${fast.sessions} session${fast.sessions === 1 ? '' : 's'} averaged ${histKw} kW). ` : '') + 'The average over a stop, between the reserve and the target. Many cars average well below their peak.')),
-    out, session && session.me.role === 'admin' ? await multiStopCard(() => ({ startPct: Number(start.value) || 100, reservePct: low, targetPct: high, chargeKw: Number(kw.value) || 100 }), latest) : null);
+    out);
   show();
 }

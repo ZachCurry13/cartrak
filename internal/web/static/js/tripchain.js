@@ -4,6 +4,8 @@ import { routeUrls } from './maplinks.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
 import { tripDay } from './longtripdays.js';
+import { mapConfig } from './map.js';
+import { routeMap, daylightNote, leaveFor } from './longtripextras.js';
 
 const toKm = (v) => (isMetric() ? v : v / 0.621371);
 // Every open Supercharger that lets other cars charge has NACS plugs, so a car needs the NACS adapter for them. Some of those sites
@@ -17,25 +19,25 @@ const writeAvoid = (a) => { try { localStorage.setItem(AVOID, JSON.stringify(a))
 const review = (s) => (s.ps ? `https://www.plugshare.com/location/${s.ps}` : `https://www.plugshare.com/?latitude=${s.lat}&longitude=${s.lon}&zoom=17`);
 
 // A place you search for and choose: set(place) fills it, get() reads it.
-function picker(label, named = []) {
+function picker(label, named = [], changed = () => {}) {
   let place = null;
   const q = h('input', { placeholder: label, maxlength: 200, 'aria-label': label });
   const found = h('div'), box = h('div');
   const draw = () => {
-    box.replaceChildren(place ? h('p', { style: 'margin:4px 0' }, h('b', {}, place.name), ' ', h('button', { class: 'text sm', type: 'button', onclick: () => { place = null; draw(); } }, 'Change'))
+    box.replaceChildren(place ? h('p', { style: 'margin:4px 0' }, h('b', {}, place.name), ' ', h('button', { class: 'text sm', type: 'button', onclick: () => { place = null; draw(); changed(); } }, 'Change'))
       : h('div', {}, q, h('p', { style: 'margin:4px 0' }, h('button', { class: 'sec', type: 'button', onclick: search }, 'Find')), found, own()));
   };
   // one of the places you have saved (Home, the office, a cabin): no search needed
   const own = () => (named.length ? h('select', { 'aria-label': 'Or one of your places', style: 'margin-top:4px', onchange: (e) => {
     const p = named.find((x) => String(x.id) === e.target.value);
-    if (p) { place = { name: p.name, lat: p.lat, lon: p.lon }; draw(); }
+    if (p) { place = { name: p.name, lat: p.lat, lon: p.lon }; draw(); changed(); }
   } }, h('option', { value: '' }, 'or one of your places'), ...named.map((p) => h('option', { value: String(p.id) }, p.name))) : null);
   async function search() {
     found.replaceChildren(h('p', { class: 'muted' }, 'Searching...'));
     try {
       const r = await api(`/api/named-places/search?q=${encodeURIComponent(q.value.trim())}`);
       found.replaceChildren(...(r.length ? r.map((m) => h('button', { class: 'sec', type: 'button', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal',
-        onclick: () => { place = { name: m.name || m.label, lat: m.lat, lon: m.lon }; draw(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m))))
+        onclick: () => { place = { name: m.name || m.label, lat: m.lat, lon: m.lon }; draw(); changed(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m))))
         : [h('p', { class: 'muted' }, 'Not found. Add the town, or type the address.')]));
     } catch (e) { found.replaceChildren(h('p', { class: 'muted' }, e.message)); }
   }
@@ -49,10 +51,10 @@ function picker(label, named = []) {
 // planner's charge settings, `start()` where the trip begins and `use(stops, day)` fills one day into the planner.
 export function tripChainCard(get, start, use, named = []) {
   const unit = isMetric() ? 'km' : 'miles';
-  const from = picker('Where the trip starts', named);
+  const from = picker('Where the trip starts', named, () => stale());
   const s0 = start();
   if (s0 && s0.lat != null) from.set({ name: s0.name || 'Where the car is', lat: s0.lat, lon: s0.lon }); // the car's position, unless you change it
-  const dest = picker('Final address or business', named);
+  const dest = picker('Final address or business', named, () => stale());
   const vias = []; // { pick, charge, night }
   const viaBox = h('div'), out = h('div'), msg = h('p', { class: 'muted', role: 'status' }), saved = h('div'), avoidBox = h('div');
   const input = (id, val, min, step) => h('input', { id, type: 'number', inputmode: 'decimal', min, step, value: val });
@@ -82,17 +84,23 @@ export function tripChainCard(get, start, use, named = []) {
       h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => { legD.value = Math.round(shown(safe)); msg.textContent = `Longest distance between chargers set to ${dist(safe, 0)}, a little under what a charge covers.`; } }, `Use ${dist(safe, 0)} as the longest leg`))));
   }).catch(() => {});
   let last = null; // what was last planned: { body, result }
+  let mc = null; mapConfig().then((c) => { mc = c; }).catch(() => {});
+  const tmr = new Date(Date.now() + 86400000); tmr.setHours(8, 0, 0, 0); // by default the next morning at eight
+  const local = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  const leaveAt = h('input', { id: 'tc-leave', type: 'datetime-local', value: local(tmr) }), arriveBy = h('input', { id: 'tc-arrive', type: 'datetime-local' });
+  // once a plan is showing, any change to the trip makes it out of date: say so, with a way to update it
+  function stale() { if (last && !out.querySelector('.stale')) out.prepend(h('p', { class: 'banner stale' }, 'You changed something. ', h('button', { class: 'sec', type: 'button', onclick: go }, 'Find the chargers again'))); }
 
   // a saved trip from before the three choices has night and charge flags instead of a mode
   const modeOf = (v) => v.mode || (v.night ? 'night' : v.charge === false ? 'pass' : 'charge');
-  const newVia = (v = {}) => { const pick = picker('A town, or the hotel you booked', named); if (v.lat != null) pick.set({ name: v.name, lat: v.lat, lon: v.lon }); return { pick, mode: modeOf(v), charge: v.mode === 'night' ? v.charge === true : false }; };
-  const drawVias = () => viaBox.replaceChildren(...vias.map((v, i) => h('div', { class: 'card', style: 'margin:6px 0;padding:8px' },
+  const newVia = (v = {}) => { const pick = picker('A town, or the hotel you booked', named, () => stale()); if (v.lat != null) pick.set({ name: v.name, lat: v.lat, lon: v.lon }); return { pick, mode: modeOf(v), charge: v.mode === 'night' ? v.charge === true : false }; };
+  const drawVias = () => { stale(); viaBox.replaceChildren(...vias.map((v, i) => h('div', { class: 'card', style: 'margin:6px 0;padding:8px' },
     h('div', { class: 'muted' }, `Place ${i + 1}, in the order you drive them`), v.pick.el,
     h('select', { 'aria-label': 'What happens here', onchange: (e) => { v.mode = e.target.value; drawVias(); } }, ...MODES.map(([k, t]) => h('option', { value: k, selected: v.mode === k }, t))),
     v.mode === 'charge' ? h('p', { class: 'muted' }, 'CarTrak picks the closest charger you can use to this place and stops there to charge.') : null,
     v.mode === 'night' ? h('label', { style: 'display:flex;gap:8px;align-items:center;min-height:44px' }, h('input', { type: 'checkbox', checked: v.charge, onchange: (e) => { v.charge = e.target.checked; } }), 'The hotel has a charger') : null,
     h('button', { class: 'text sm', type: 'button', onclick: () => { vias.splice(i, 1); drawVias(); } }, 'Remove')))
-    .concat(vias.length < 6 ? [h('button', { class: 'sec', type: 'button', onclick: () => { vias.push(newVia()); drawVias(); } }, 'Add a place')] : []));
+    .concat(vias.length < 6 ? [h('button', { class: 'sec', type: 'button', onclick: () => { vias.push(newVia()); drawVias(); } }, 'Add a place')] : [])); };
 
   const drawAvoid = () => {
     const a = readAvoid(), keys = Object.keys(a);
@@ -112,7 +120,11 @@ export function tripChainCard(get, start, use, named = []) {
     out.replaceChildren(
       r.alt ? h('p', { class: 'banner' }, `Adding Electrify America would save about ${hm(r.alt.minutesSaved)} (${r.alt.chargeStops} charge stop${r.alt.chargeStops === 1 ? '' : 's'} instead of ${r.alt.was}). `,
         h('button', { class: 'sec', type: 'button', onclick: () => { ea.checked = true; go(); } }, 'Plan it with Electrify America')) : null,
+      routeMap(mc, r.days),
+      leaveFor(arriveBy.value, r.days) ? h('p', { class: 'banner' }, `To arrive by ${new Date(arriveBy.value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}, leave at ${leaveFor(arriveBy.value, r.days).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}. `,
+        h('button', { class: 'sec', type: 'button', onclick: () => { leaveAt.value = local(leaveFor(arriveBy.value, r.days)); go(); } }, 'Use that time')) : null,
       ...r.days.map((d, i) => dayCard(d, i, r.days.length)),
+      h('ul', { class: 'muted', style: 'margin:0;padding-left:1.2em' }, ...r.days.map((d, i) => daylightNote(d, i, r.days.length)).filter(Boolean)),
       r.days.length > 1 ? h('p', { class: 'seg' }, ...links(all, 'Open the whole trip')) : null,
       h('p', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: saveTrip }, 'Save this trip')),
       h('p', { class: 'muted' }, 'Stops are picked with estimated distances; planning a day in the planner uses real roads, the forecast and your car\'s usual efficiency. Superchargers come first, and Electrify America is used when it saves enough to be worth it. A site can be full or down, so check its reviews before you go.'));
@@ -123,7 +135,7 @@ export function tripChainCard(get, start, use, named = []) {
     if (!d) { msg.textContent = 'Find the destination first.'; return null; }
     if (vias.some((v) => !v.pick.get())) { msg.textContent = 'Finish or remove the places you added.'; return null; }
     return { start: { name: s.name || 'Start', lat: s.lat, lon: s.lon }, dest: d, via: vias.map((v) => ({ ...v.pick.get(), mode: v.mode, charge: v.charge })), startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct,
-      chargeKw: g.chargeKw, departTs: g.departTs || 0, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
+      chargeKw: g.chargeKw, departTs: Math.floor(new Date(leaveAt.value).getTime() / 1000) || g.departTs || 0, maxLegMin: (Number(legH.value) || 0) * 60, maxLegKm: legD.value ? toKm(Number(legD.value)) : 0, dayMin: (Number(dayH.value) || 12) * 60, plugs: plugs.value, ea: ea.checked, avoid: Object.keys(readAvoid()) };
   };
   async function go() {
     const b = body();
@@ -131,7 +143,7 @@ export function tripChainCard(get, start, use, named = []) {
     msg.textContent = 'Finding chargers...'; out.replaceChildren(); drawAvoid();
     try {
       const r = await api('/api/trip-chain', { method: 'POST', body: b });
-      msg.textContent = `${r.sites} chargers were considered.`;
+      msg.textContent = `${r.sites} chargers were considered. ${r.exact ? "Every leg was checked on a real road." : r.roads ? "Some legs could not be checked on a real road, so their distances are estimates." : "Distances are estimates: turn on Road estimates in Settings to check them on real roads."}`;
       show(r, b);
     } catch (e) { msg.textContent = e.message; }
   }
@@ -159,12 +171,14 @@ export function tripChainCard(get, start, use, named = []) {
     try { await api('/api/saved-trips', { method: 'POST', body: { name, body: { body: last.body, result: last.result } } }); msg.textContent = `Saved as ${name}.`; loadSaved(); } catch (e) { msg.textContent = e.message; }
   }
   loadSaved(); drawAvoid(); drawVias();
-  return h('div', {},
+  const el = h('div', {},
     h('p', { class: 'muted' }, 'Set how long a leg may be and how long a day on the road, and CarTrak chooses chargers your car can use between the start and the destination. Lists of chargers are downloaded about once a week; nothing about you or the trip is sent.'),
-    ...field('tc-from', 'Starting from', from.el), ...field('tc-q', 'Destination', dest.el), h('h3', {}, 'Places you insist on'),
+    ...field('tc-from', 'Starting from', from.el), ...field('tc-q', 'Destination', dest.el), ...field('tc-leave', 'Leaving at', leaveAt), ...field('tc-arrive', 'Or the time you want to arrive by (it suggests when to leave)', arriveBy), h('h3', {}, 'Places you insist on'),
     h('p', { class: 'muted' }, 'Add a town to take one road and not another, or a hotel you already booked to end a day there. They are passed in the order you add them.'), viaBox,
     ...field('tc-h', 'Longest leg (hours)', legH), ...field('tc-d', `Or no more than (${unit})`, legD), rangeBox, ...field('tc-day', 'Longest day on the road (hours)', dayH), ...field('tc-plugs', 'Tesla Superchargers', plugs),
     h('p', { class: 'muted' }, 'Every open Supercharger that lets other cars charge has NACS plugs, so you need the NACS adapter for them. Magic Dock sites are the ones with a CCS plug built into the stall, so they work without the adapter. Electrify America is CCS too.'),
     h('label', { for: 'tc-ea', style: 'display:flex;gap:8px;align-items:center;min-height:44px' }, ea, eaText),
     h('p', {}, h('button', { onclick: go }, 'Find the chargers')), msg, out, avoidBox, saved);
+  el.addEventListener('change', stale); el.addEventListener('input', stale); // any edit after a plan makes it out of date
+  return el;
 }

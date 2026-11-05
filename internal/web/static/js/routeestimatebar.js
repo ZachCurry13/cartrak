@@ -17,7 +17,7 @@ export async function routeEstimateBar() {
   const failRow = (f) => {
     const li = h('li', {}, h('a', { href: `#/trip/${f.id}` }, when(f.startTs)), `: ${f.why}. `);
     li.dataset.id = f.id;
-    const gone = h('button', { class: 'text', style: 'min-height:36px;padding:2px 10px', title: 'Leave this trip as a straight line and stop offering it', onclick: () => dismiss([f.id]) }, 'Dismiss');
+    const gone = h('button', { class: 'text', style: 'min-height:44px;padding:2px 10px', title: 'Leave this trip as a straight line and stop offering it', onclick: () => dismiss([f.id]) }, 'Dismiss');
     if (f.roadKm > 0) {
       const use = h('button', { class: 'sec', style: 'min-height:36px;padding:2px 10px', onclick: async () => {
         use.disabled = true;
@@ -25,7 +25,7 @@ export async function routeEstimateBar() {
       } }, `Use ${dist(f.roadKm, 1)}`);
       li.append(use);
     }
-    li.append(h('a', { class: 'btn sec', href: `#/trip/${f.id}`, style: 'min-height:36px;padding:2px 10px' }, 'Choose the road'), gone);
+    li.append(h('a', { class: 'btn sec', href: `#/trip/${f.id}`, style: 'min-height:44px;padding:2px 10px' }, 'Choose the road'), gone);
     return li;
   };
   // The owner accepts that these stay a straight line, so they are not offered again.

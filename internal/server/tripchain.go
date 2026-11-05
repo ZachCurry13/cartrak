@@ -165,6 +165,7 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 	params := tripchain.Params{Start: station(in.Start, "Start"), Dest: station(in.Dest, "Destination"), StartPct: in.StartPct, ReservePct: in.Reserve,
 		TargetPct: in.Target, CapacityKwh: *capacity, KwhPerKm: 1 / kmPerKwh, CarKw: in.ChargeKw, MaxLegKm: in.MaxLegKm, MaxLegMin: in.MaxLegMin,
 		DayMin: in.DayMin, SpeedKph: highwayKph}
+	rl := newRoadLegs(r.Context(), s) // the real roads of the legs, asked as the plan is made
 	plan := func(lists ...[]superchargers.Site) ([]tripchain.Day, int, error) {
 		var st []tripchain.Station
 		for _, list := range lists {
@@ -182,7 +183,7 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 		if len(st) > chainStopMax {
 			st = st[:chainStopMax]
 		}
-		days, err := tripchain.Plan(params, st, vias)
+		days, err := rl.plan(params, st, vias)
 		return days, len(st), err
 	}
 	days, n, err := plan(use...)
@@ -196,7 +197,7 @@ func (s *Server) planChain(w http.ResponseWriter, r *http.Request) {
 	}
 	s.addNearby(days, use, avoid)
 	prices := s.fillTimesAndCosts(days, in.DepartTS)
-	out := map[string]any{"days": days, "sites": n, "prices": prices, "currency": s.currency()}
+	out := map[string]any{"days": days, "sites": n, "prices": prices, "currency": s.currency(), "exact": rl.exact(days), "roads": rl.on}
 	if !useEA && len(ea) > 0 { // what adding Electrify America would change
 		if alt, _, aerr := plan(tesla, ea); aerr == nil {
 			m0, s0 := total(days)

@@ -10,6 +10,24 @@
 - **Each place you add has three choices**: **Drive through it**, **Stop for the night here (a hotel)** (tick **The hotel has a charger** if it does), or **Find a charger here**, which stops at the closest charger you can use to that place.
 - **Plain charger choices with real numbers.** Every open Supercharger that lets other cars charge has NACS plugs, so you need the NACS adapter for them; the Magic Dock sites have a CCS plug built into the stall and need no adapter. The choices are now **All open Superchargers (I have the adapter)**, **Magic Dock sites only (no adapter)** and **No Superchargers**, each with how many sites it offers, and Electrify America (CCS) is a separate tick with its count.
 
+### 🛣️ Long trips: real roads, a map and your times
+- **Checked on real roads.** A plan is first worked out with straight lines made longer, which is badly wrong across water or round a lake (a leg that looks 130 miles can be 220 by road, like crossing the Mackinac Bridge). CarTrak now asks the routing service for the real road of each leg it picked and plans again until every leg is real, so stops are not missing where the road goes the long way round, and the times and distances shown are the real ones. It says when it could not check.
+- **A map** of the whole trip, with the stops numbered.
+- **Leaving at** and **the time you want to arrive by**: choose the day and time to leave, or give an arrival time and it suggests when to leave (for a trip that fits in a day). Each day says when the sun rises and sets and how much of the drive would be after dark.
+- **Out of date notice.** Change a place, the start or a limit after a plan is showing and it says the plan is out of date, with a button to find the chargers again.
+- **How far a charge goes**: from your own driving at highway speed, between your charge target and reserve and a few other levels, with the cold and hot figures when you have driven in them, and a button to use it as the longest leg.
+- The planner is now at the top of the **Road-trip planner** page; the quick distance estimate is below it. The paste-a-list box no longer shows a made-up example.
+
+### 🐞 Leaner bug reports
+- The link now opens a **short index**: the note, page, device and layout facts of each report, with where to open the rest. A report holds the note, layout facts and the page's words; the long **debug report** is at its own address and is only included when you tick it (it is off by default).
+- **Mark fixed** on a report (and whoever holds the link can mark one fixed once it is dealt with). Fixed reports leave the index and clear themselves a week later; **Clear the fixed ones** does it now.
+
+### 🔧 Smaller fixes
+- The charging time on the Charging page no longer shows a long string of decimals ("41.01459357160248 min"), and it no longer makes Home wait: the learned estimate is read in the background after the first time.
+- "Choose the road" and "Dismiss" on the Trips list are bigger to tap.
+- Category labels (Medical, Charity or ones you add) keep readable text on any colour.
+- The app now remembers which file and line an error came from, so a problem seen on a phone can be found.
+
 ## 0.77.0
 
 ### 🔌 Integrations, all in one place

@@ -7,7 +7,7 @@ const LABEL = { remembered: ['ok', 'Remembered'], saved: ['ok', 'Saved place'], 
 // Paste a list of companies (one per line, with or without the account number on the end) and get stops for the route planner.
 // Ones CarTrak is sure of are filled in; the doubtful ones wait for a pick. `use(stops)` gets the confirmed places.
 export function pasteListCard(use) {
-  const text = h('textarea', { rows: 6, style: 'width:100%;box-sizing:border-box', maxlength: 10000, 'aria-label': 'List of companies', placeholder: 'One company per line, for example:\nAcme Widgets-1234567-U.S.A.' });
+  const text = h('textarea', { rows: 6, style: 'width:100%;box-sizing:border-box', maxlength: 10000, 'aria-label': 'List of companies', placeholder: 'Paste the list here' });
   const msg = h('p', { class: 'muted', role: 'status' }), out = h('div');
 
   async function find() {
@@ -54,5 +54,5 @@ export function pasteListCard(use) {
     draw();
   }
   return h('div', {},
-    h('p', { class: 'muted' }, 'Paste the names, one per line. The trailing number and country are read and dropped. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
+    h('p', { class: 'muted' }, 'One company per line. A number and country on the end, like -1234567-U.S.A., are read and set aside. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
 }
