@@ -11,6 +11,8 @@ What you get:
 
 Browsers and phones cannot watch for your car in the background by themselves. An automation app on the phone does that and sends a message to CarTrak.
 
+(The Live page can also record the phone's GPS while CarTrak is open. A browser stops that when the screen turns off, so it has a tick, **Keep the screen on while recording**, that holds the screen on. It uses more battery and does not help once another app is in front.)
+
 ## 1. Pair the phone
 1. Open CarTrak, **More -> Phone tracking**, type a name, press **Create token**.
 2. Copy the token now. It is shown once and CarTrak keeps only a scrambled copy. Lost it? Remove the phone and add it again.

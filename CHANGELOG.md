@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.83.1
+
+### 📍 GPS from the phone can keep the screen on
+- On the Live page, **GPS from this phone** has a new tick, **Keep the screen on while recording**. A browser stops sending the phone's position as soon as the screen turns off, which is why most trips had no GPS points. With the tick, the screen stays on while CarTrak is open and recording. It uses more battery and it does not help once another app (such as a map) is in front. For recording with the phone in a pocket, use an automation app (More, Phone tracking).
+
+### 🔑 Fewer token requests to Ford
+- CarTrak now keeps the access token Ford gave it, so an update or restart carries on with the token it still has instead of asking Ford for a new one for every car at once. A burst of token requests is what Ford turns away with "too many requests" (HTTP 429), sometimes for hours.
+
+### ✍️ Smaller fixes
+- The **Why** card's sentence about temperature now reads "At 43°F the temperature was outside the range where your car is most efficient. Heating or cooling the cabin and a cold battery use extra energy."
+- Bug reports no longer list the map's tile pictures as wider than the window, or the map box as cutting off its credit. They are meant to run past the edge.
+
 ## 0.83.0
 
 ### 🔎 Finding companies the way Google does

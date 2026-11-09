@@ -14,7 +14,7 @@ function say(f, facts) {
         : `Slower, gentler speeds than your usual: ${speed(facts.avgKph)} on average while moving.`;
     case 'temperature':
       return f.pct > 0
-        ? `Colder or hotter than your best weather${facts.tempC != null ? ` (${temp(facts.tempC)})` : ''}. Heating, cooling and a cold battery all use energy.`
+        ? `${facts.tempC != null ? `At ${temp(facts.tempC)}` : 'In this weather'} the temperature was outside the range where your car is most efficient. Heating or cooling the cabin and a cold battery use extra energy.`
         : `Mild weather${facts.tempC != null ? ` (${temp(facts.tempC)})` : ''} helps the battery and needs little heating or cooling.`;
     case 'wind': {
       const w = facts.wind;

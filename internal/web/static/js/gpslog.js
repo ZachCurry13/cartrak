@@ -7,6 +7,9 @@ const KEY = 'cartrak.gpsq';
 const MAX_QUEUE = 3000;
 const MIN_GAP_MS = 3000; // at most one fix every 3 seconds
 const FLUSH_MS = 10000;
+const AWAKE_KEY = 'cartrak.gpsawake'; // "1": keep the screen on while recording, so the page keeps getting fixes
+export const keepAwake = () => { try { return localStorage.getItem(AWAKE_KEY) === '1'; } catch (e) { return false; } };
+export const setKeepAwake = (on) => { try { localStorage.setItem(AWAKE_KEY, on ? '1' : '0'); } catch (e) { /* storage blocked */ } };
 
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } };
 const save = (q) => { try { localStorage.setItem(KEY, JSON.stringify(q.slice(-MAX_QUEUE))); } catch (e) { /* storage blocked or full: carry on from memory */ } };
@@ -19,6 +22,13 @@ export function gpsLogger(onStatus) {
   let busy = false;
   let error = '';
   let queue = load();
+  let lock = null;
+  async function hold() { // the screen stays on while the page is open and visible; a browser that cannot do it just records as before
+    if (!keepAwake() || lock || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+    try { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } catch (e) { lock = null; }
+  }
+  const release = () => { if (lock) { lock.release().catch(() => {}); lock = null; } };
+  const onVisible = () => { if (watch !== null) hold(); };
   const report = () => onStatus({ on: watch !== null, sent, queued: queue.length, error });
 
   async function flush() {
@@ -62,6 +72,8 @@ export function gpsLogger(onStatus) {
       }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
       timer = setInterval(flush, FLUSH_MS);
       window.addEventListener('online', onOnline);
+      document.addEventListener('visibilitychange', onVisible);
+      hold();
       report();
       flush();
     },
@@ -70,6 +82,8 @@ export function gpsLogger(onStatus) {
       watch = null;
       clearInterval(timer);
       window.removeEventListener('online', onOnline);
+      document.removeEventListener('visibilitychange', onVisible);
+      release();
       report();
       return flush();
     },

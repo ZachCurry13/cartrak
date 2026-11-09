@@ -26,8 +26,8 @@ export function layoutFacts() {
   const out = [`Window ${innerWidth} x ${innerHeight}, page ${sw} wide${sw > innerWidth ? `: SCROLLS SIDEWAYS by ${sw - innerWidth} px` : ''}.`];
   try {
     const all = [...view().querySelectorAll('*')].filter(visible);
-    out.push(...list('Wider than the window', all.filter((e) => e.getBoundingClientRect().right > innerWidth + 1).map((e) => `${label(e)} ends at ${Math.round(e.getBoundingClientRect().right)} px`)));
-    out.push(...list('Cut off by their box', all.filter((e) => /hidden|clip/.test(getComputedStyle(e).overflowX) && e.scrollWidth > e.clientWidth + 2 && e.clientWidth > 0 && !e.classList.contains('vh')).map(label))); // screen-reader-only text is meant to be clipped
+    out.push(...list('Wider than the window', all.filter((e) => !e.closest('.map-tiles') && e.getBoundingClientRect().right > innerWidth + 1).map((e) => `${label(e)} ends at ${Math.round(e.getBoundingClientRect().right)} px`)));
+    out.push(...list('Cut off by their box', all.filter((e) => /hidden|clip/.test(getComputedStyle(e).overflowX) && e.scrollWidth > e.clientWidth + 2 && e.clientWidth > 0 && !e.classList.contains('vh') && !e.classList.contains('map')).map(label))); // screen-reader-only text is meant to be clipped
     const controls = [...view().querySelectorAll('button,.btn,select,input:not([type=checkbox]):not([type=radio]):not([type=hidden])')].filter(visible);
     out.push(...list('Controls under 38 px high', controls.filter((e) => e.getBoundingClientRect().height < 38).map((e) => `${label(e)} is ${Math.round(e.getBoundingClientRect().height)} px`)));
     const weak = [];

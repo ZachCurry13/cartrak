@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -57,6 +58,10 @@ func (c *Connect2) token(ctx context.Context, form url.Values) error {
 	c.mu.Lock()
 	c.acc, c.exp = t.Access, time.Now().Add(time.Duration(secs)*time.Second)
 	c.mu.Unlock()
+	// Kept, so that a restart (an update) carries on with the access token it still has instead of asking Ford for a new one: three cars
+	// restarting together all asking for tokens at once is the kind of burst Ford answers with HTTP 429 for hours.
+	_ = c.store.SetKV(accessKey, t.Access)
+	_ = c.store.SetKV(accessExpKey, strconv.FormatInt(time.Now().Add(time.Duration(secs)*time.Second).Unix(), 10))
 	if t.Refresh != "" {
 		return c.store.SetKV(refreshKey, t.Refresh)
 	}
@@ -77,6 +82,13 @@ func oauthReason(b []byte) string {
 
 func (c *Connect2) bearer(ctx context.Context) (string, error) {
 	c.mu.Lock()
+	if c.acc == "" { // after a restart: the access token kept last time, if it is still good
+		if exp, err := strconv.ParseInt(c.store.GetKV(accessExpKey), 10, 64); err == nil && c.store.GetKV(refreshKey) != "" && time.Until(time.Unix(exp, 0)) > time.Minute {
+			if a := c.store.GetKV(accessKey); a != "" {
+				c.acc, c.exp = a, time.Unix(exp, 0)
+			}
+		}
+	}
 	if c.acc != "" && time.Until(c.exp) > time.Minute {
 		defer c.mu.Unlock()
 		return c.acc, nil

@@ -27,6 +27,8 @@ const (
 	// An endpoint Ford refuses for this vehicle (403 or 404: a hybrid has no charge schedules) is tried again only this often, in case that changes.
 	unsupportedEvery = 24 * time.Hour
 	refreshKey       = "ford2_refresh"
+	accessKey        = "ford2_access"
+	accessExpKey     = "ford2_access_exp"
 )
 
 // slowEndpoints change rarely, so they are read at most every slowEvery.

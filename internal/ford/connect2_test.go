@@ -135,3 +135,27 @@ func TestFetchParsesMetricList(t *testing.T) {
 		t.Fatalf("status/location not parsed: %+v", s)
 	}
 }
+
+func TestARestartKeepsUsingTheAccessTokenItStillHasInsteadOfAskingFordAgain(t *testing.T) {
+	f := newFake2(t)
+	kv := memKV{refreshKey: "R0"}
+	first := f.client(kv)
+	if _, err := first.Fetch(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.tokenForms) != 1 || kv[accessKey] == "" || kv[accessExpKey] == "" {
+		t.Fatalf("the first run asks once and keeps what it got: %d %v", len(f.tokenForms), kv)
+	}
+	second := f.client(kv) // the same car after an update restart
+	if _, err := second.Fetch(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.tokenForms) != 1 {
+		t.Fatalf("a restart must not ask Ford for another token: %d requests", len(f.tokenForms))
+	}
+	delete(kv, refreshKey) // signed out: the kept access token is not used any more
+	third := f.client(kv)
+	if _, err := third.Fetch(context.Background()); err == nil {
+		t.Fatal("a car that is not linked must not carry on with an old token")
+	}
+}
