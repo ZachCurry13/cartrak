@@ -162,11 +162,12 @@ body:has(.sheetbg) .fab{display:none}
 .toursheet.bottom{border-radius:var(--r-lg) var(--r-lg) 0 0}
 /* A page with a floating button leaves room under its last line for it. */
 body:has(.fab) #view{padding-bottom:calc(var(--sp-5) + 64px)}
-/* Wide screens: the tabs are a left sidebar. These come last so the bottom bar's rules above (equal-width tabs, a pill around the
-   icon) do not stretch the items down the whole height of the screen. */
+/* Wide screens: the tabs run across the top. These come last so the bottom bar's rules above (equal-width tabs, a pill around the
+   icon) do not stretch the items across the whole bar. */
 @media (min-width:900px){
   nav#tabs{justify-content:flex-start;gap:var(--sp-1)}
-  nav#tabs a{flex:none;flex-direction:row;justify-content:flex-start;text-align:left;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);min-height:48px;border-radius:var(--r-full)}
+  nav#tabs a{flex:none;flex-direction:row;justify-content:flex-start;text-align:left;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);min-height:44px;border-radius:var(--r-full)}
   nav#tabs a svg,nav#tabs a.on svg{padding:0;background:none;animation:none}
   nav#tabs a.on{background:var(--tonal-hi);color:var(--text)}
+  nav#tabs a .attn{top:8px;right:8px;left:auto;margin-top:0}
 }

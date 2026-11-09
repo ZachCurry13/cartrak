@@ -37,7 +37,7 @@ nothing new costs almost nothing. What the device keeps for offline use is descr
 
 ## Layouts
 - **Phone:** one column, tabs along the bottom.
-- **Tablet and desktop:** the home page becomes a grid of two or three columns, trip and charging lists use several columns, and on wide screens the tabs move to a sidebar.
+- **Tablet and desktop:** the home page becomes a grid of two or three columns, trip and charging lists use several columns, and on wide screens the tabs move to the top of the page.
 
 ## Settings
 | Setting | Default | |

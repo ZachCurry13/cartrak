@@ -72,7 +72,7 @@ svg.tl{background:var(--card2)}
 .dock .tile.big .ts{font-size:var(--t-small)}
 .livegps{margin-top:8px}
 .empty{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px;border:1px dashed var(--line,currentColor);border-radius:var(--r-sm)}.empty p{margin:0}.empty .btn{margin-top:4px}
-@media (min-width:900px){.dock{height:calc(100dvh - 100px)}}
+@media (min-width:900px){.dock{height:calc(100dvh - 156px)}}
 @media (min-width:760px){.dock .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}.dock .tile.big{grid-column:span 2}}
 .finder{margin:0 0 10px}.finder input{width:100%;box-sizing:border-box}
 .item[hidden],.group[hidden]{display:none!important}

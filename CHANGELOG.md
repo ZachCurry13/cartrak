@@ -2,9 +2,9 @@
 
 ## 0.84.1
 
-### 🖥️ The sidebar on a computer
-- On a wide screen the tabs were spread down the whole height of the screen, with a large gap between each one. They now sit together at the top, each one a full-size row with its icon beside its name, and the page you are on is highlighted. Phones are unchanged.
-- On a very wide screen (an ultrawide monitor) the page column is wider (1500 px instead of 1180 px) and Home flows into four columns, so the content is not a narrow strip in the middle of a large empty screen. The top bar follows the page column.
+### 🖥️ Tabs across the top on a computer
+- On a wide screen the tabs used to be a sidebar whose items were spread down the whole height of the screen. They now run across the top, lined up with the page, each with its icon beside its name, and the page you are on is highlighted. The red dot on More sits in the corner of its tab. Phones keep the bar at the bottom.
+- On a very wide screen (an ultrawide monitor) the page column is wider (1500 px instead of 1180 px) and Home flows into four columns, so the content is not a narrow strip in the middle of a large empty screen. The tabs and the top bar follow the page column.
 - On the **Live** page, the **Battery and motor** readings spread across the width of a wide screen instead of being squeezed into one cramped line.
 
 ### ✍️ Clearer wording
