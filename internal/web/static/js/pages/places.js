@@ -61,12 +61,22 @@ export default async function places(root, _a, session) {
       openSearch = () => { show(true); return document.getElementById('pa'); };
       return h('section', { class: 'card' }, h('h2', {}, 'Add a place'), h('div', { class: 'seg' }, b1, b2), search, nowForm);
     }
+    // How wide the place is can be changed any time (a church with a big car park needs more than a house)
+    const resize = (p) => {
+      const sizes = [[100, 'Small'], [150, 'Normal'], [300, 'Large'], [600, 'Very large'], [1000, 'Huge']];
+      if (!sizes.some(([m]) => m === p.radiusM)) sizes.push([p.radiusM, 'Current']);
+      sizes.sort((x, y) => x[0] - y[0]);
+      const sel = h('select', { 'aria-label': `Size of ${p.name}`, style: 'min-height:44px' }, ...sizes.map(([m, n]) => h('option', { value: m, selected: m === p.radiusM }, `${n} (${shortDist(m)})`)));
+      sel.onchange = async () => { sel.disabled = true; try { await api(`/api/named-places/${p.id}`, { method: 'PATCH', body: { radiusM: Number(sel.value) } }); load(); } catch (e) { msg.textContent = e.message; sel.disabled = false; } };
+      return sel;
+    };
     async function here() {
       try { await api('/api/named-places', { method: 'POST', body: { name: name.value, radiusM: Number(size.value), here: true } }); load(); } catch (e) { msg.textContent = e.message; }
     }
     box.replaceChildren(...[
       h('section', { class: 'card' }, h('h2', {}, 'Your places'),
         ...(ps.length ? ps.map((p) => h('div', {}, h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, p.name), h('span', { class: 'muted' }, ` · within about ${shortDist(p.radiusM)}`)),
+          admin ? resize(p) : null,
           admin ? h('button', { class: 'text sm', onclick: async () => { if (confirm(`Remove ${p.name}?`)) { await api(`/api/named-places/${p.id}`, { method: 'DELETE' }); load(); } } }, 'Remove') : null), admin ? chargeBox(p, load, serviceKind(p, load)) : null))
           : [emptyState('No places yet', 'Drive to Home or the office and use the form below while the car is there.')])),
       admin ? addCard() : null].filter(Boolean));

@@ -154,15 +154,42 @@ func attention(l []integration) int {
 	return n
 }
 
+// attentionReasons says in words what the red dot on More is for: a service that needs setting up or failed its last test, a downloaded
+// list with something newer, or a newer CarTrak.
+func (s *Server) attentionReasons() []string {
+	out := []string{}
+	for _, x := range s.integrations() {
+		switch {
+		case x.State == "needs":
+			out = append(out, x.Name+" needs setting up")
+		case x.Last != nil && !x.Last.OK && x.State == "on":
+			out = append(out, x.Name+" failed its last test")
+		}
+	}
+	s.dueCheck()
+	avail := s.loadDataState().Avail
+	for _, d := range s.datasets() {
+		if _, ok := avail[d.ID]; ok {
+			out = append(out, d.Name+" has an update")
+		}
+	}
+	if s.Upd != nil && s.core().GetKV("update_check") != "off" && s.Upd.Info().Available {
+		out = append(out, "A newer CarTrak is available")
+	}
+	return out
+}
+
 // listIntegrations: GET /api/integrations. Admin only.
 func (s *Server) listIntegrations(w http.ResponseWriter, r *http.Request) {
 	l := s.integrations()
-	ok(w, map[string]any{"items": l, "attention": attention(l) + s.dataUpdatesAvailable()})
+	reasons := s.attentionReasons()
+	ok(w, map[string]any{"items": l, "attention": len(reasons), "reasons": reasons})
 }
 
 // integrationAttention: GET /api/integrations/attention. Just the count, for the badge on the More menu.
 func (s *Server) integrationAttention(w http.ResponseWriter, r *http.Request) {
-	ok(w, map[string]int{"attention": attention(s.integrations()) + s.dataUpdatesAvailable()})
+	reasons := s.attentionReasons()
+	ok(w, map[string]any{"attention": len(reasons), "reasons": reasons})
 }
 
 // testIntegration: POST /api/integrations/test {"id": "weather"}. Asks the service once, with a short wait, and keeps what happened.

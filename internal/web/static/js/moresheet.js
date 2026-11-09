@@ -5,6 +5,7 @@ import { current, page, icon } from './navlayout.js';
 import { openEditor } from './navedit.js';
 import { openSearch } from './searchsheet.js';
 import { dragToClose } from './sheetdrag.js';
+import { attentionReasons } from './attention.js';
 
 // The tiles are the person's own choice (Customize, below); everything else is in its natural home: charging prices on Charging,
 // trip rules on Trips, alert choices behind the bell, people, cars and backups under Settings and the Admin part of More.
@@ -22,6 +23,8 @@ export function openMore(session) {
     h('div', { class: 'mhead' }, h('h2', {}, 'More'), h('button', { class: 'ico', type: 'button', 'aria-label': 'Close', onclick: close }, icon('M6 6l12 12M18 6L6 18'))),
     // the way to any page in one step: type what you are looking for (the logs showed More, then "Everything else", then a hunt)
     h('button', { class: 'msearch', type: 'button', onclick: () => { close(); openSearch(session.me.role === 'admin'); } }, icon('o11,11,6.5|M16 16l4 4'), h('span', {}, 'Find a page or setting')),
+    // what the red dot on More is for
+    attentionReasons().length ? h('a', { class: 'banner notice', href: '#/integrations', onclick: close, style: 'display:block' }, h('b', {}, 'Needs attention: '), attentionReasons().join('; '), '. Open Integrations.') : null,
     h('div', { class: 'mgrid' }, ...current(session).tiles.map(tile)),
     h('hr', { style: 'border:0;border-top:1px solid var(--line);margin:14px 0 6px' }),
     row('M4 6h16M4 12h16M4 18h10', 'All pages and settings', { href: '#/settings', onclick: close }),

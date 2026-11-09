@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.83.2
+
+### 📍 Change how wide a place is
+- On **Places**, each place has a size menu (Small to Huge, about 1 km), so a church with a big car park can be widened without deleting it and adding it again.
+
+### 🔴 The red dot on More says why
+- Opening **More** now shows what the dot is for at the top (for example "Supercharger list has an update", "A newer CarTrak is available" or a service that needs setting up), with a link to Integrations. Before, the dot gave no hint.
+
 ## 0.83.1
 
 ### 📍 GPS from the phone can keep the screen on

@@ -76,8 +76,8 @@ func TestIntegrationsListEveryServiceAndTestAKey(t *testing.T) {
 	if c, _ := do(t, admin, "POST", ts.URL+"/api/integrations/test", `{"id":"nope"}`, xh); c != 400 {
 		t.Fatalf("an unknown service gave %d", c)
 	}
-	if _, b := do(t, admin, "GET", ts.URL+"/api/integrations/attention", "", nil); !strings.Contains(b, `"attention":`) {
-		t.Fatalf("attention: %s", b)
+	if _, b := do(t, admin, "GET", ts.URL+"/api/integrations/attention", "", nil); !strings.Contains(b, `"attention":`) || !strings.Contains(b, `failed its last test`) {
+		t.Fatalf("the dot says why: %s", b)
 	}
 }
 
