@@ -53,3 +53,11 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
   .tile.big .tv{font-size:clamp(3.5rem,9vw,7rem)}
 }
 #view:fullscreen{background:var(--bg);padding:16px;overflow:auto}
+
+/* Very wide screens (an ultrawide monitor): the page column is wider and Home flows into four columns, so the content is not a narrow strip
+   in the middle of a large empty screen. The top bar follows the page column. */
+@media (min-width:1800px){
+  main{max-width:1500px}
+  .dash{column-count:4}
+  header#top{padding-inline:max(16px,calc((100% - 1500px) / 2 + 16px))}
+}

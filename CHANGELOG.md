@@ -4,6 +4,7 @@
 
 ### 🖥️ The sidebar on a computer
 - On a wide screen the tabs were spread down the whole height of the screen, with a large gap between each one. They now sit together at the top, each one a full-size row with its icon beside its name, and the page you are on is highlighted. Phones are unchanged.
+- On a very wide screen (an ultrawide monitor) the page column is wider (1500 px instead of 1180 px) and Home flows into four columns, so the content is not a narrow strip in the middle of a large empty screen. The top bar follows the page column.
 
 ## 0.84.0
 
