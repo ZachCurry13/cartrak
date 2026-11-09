@@ -1,12 +1,14 @@
 import { h, chip, dist, speed, temp, num, tempBandLabel } from './ui.js';
 import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
+import { linkActions } from './copylink.js';
 import { routeSummary } from './routesummary.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
 import { pasteListCard } from './companylist.js';
 import { tripChainCard } from './tripchain.js';
 
+const kmBetween = (a, b, c, d) => { const r = (x) => (x * Math.PI) / 180, dl = r(d - b), dp = r(c - a), q = Math.sin(dp / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dl / 2) ** 2; return 12742 * Math.asin(Math.sqrt(q)); };
 const MAX = 11; // the start and up to ten destinations
 const clock = (ts) => new Date(ts * 1000).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -16,7 +18,11 @@ const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).
 export async function multiStopCard(get, latest) {
   const named = (await api('/api/named-places').catch(() => [])) || [];
   const stops = [{ name: '', label: '', lat: null, lon: null }, { name: '', label: '', lat: null, lon: null }];
-  if (latest && latest.lat != null && latest.lon != null) Object.assign(stops[0], { name: 'Where the car is', label: 'Where the car is', lat: latest.lat, lon: latest.lon });
+  if (latest && latest.lat != null && latest.lon != null) {
+    // Where the car is, by the name of the place it is at (Home, a friend's house) when it is at one of the saved places
+    const at = named.find((p) => kmBetween(p.lat, p.lon, latest.lat, latest.lon) * 1000 <= Math.max(p.radiusM || 150, 100));
+    Object.assign(stops[0], { name: at ? at.name : 'Where the car is', label: at ? `${at.name} (where the car is)` : 'Where the car is', lat: latest.lat, lon: latest.lon });
+  }
   const when = h('input', { type: 'datetime-local', id: 'ms-when', value: localInput(new Date()), 'aria-label': 'Leaving at' });
   const list = h('div'), out = h('div'), msg = h('p', { class: 'muted', role: 'status' });
   const best = h('input', { type: 'checkbox', id: 'ms-best', checked: true });
@@ -88,7 +94,7 @@ export async function multiStopCard(get, latest) {
       out.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'The route'), routeSummary(r, g.startPct),
         h('p', {}, charges ? chip('work', `${charges} charging stop${charges === 1 ? '' : 's'}`) : chip('ok', 'No charging needed'), ' ', h('span', { class: 'muted' }, `${dist(r.totalKm, 0)} · ${hm(r.drivingMinutes)} driving${r.chargingMinutes ? ` + ${hm(r.chargingMinutes)} charging` : ''} · ${num(r.totalKwh, 0, ' kWh')} · arrive with about ${Math.round(r.arrivePct)}%`)),
         r.savedMinutes > 0 ? h('p', { class: 'muted', style: 'margin:0' }, `Best order saves about ${hm(r.savedMinutes)} of driving.`) : null,
-        h('p', { class: 'seg', style: 'margin:8px 0' }, ...links.map((href, i) => h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, links.length > 1 ? `Open part ${i + 1} of ${links.length} in Google Maps` : 'Open this route in Google Maps'))),
+        h('p', { class: 'seg', style: 'margin:8px 0' }, ...links.flatMap((href, i) => [h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, links.length > 1 ? `Open part ${i + 1} of ${links.length} in Google Maps` : 'Open this route in Google Maps'), ...linkActions(href, links.length > 1 ? `part ${i + 1}` : 'link')])),
         links.length > 1 ? h('p', { class: 'muted' }, 'Google takes 10 legs at a time, so a long day is split in parts.') : null,
         ...r.warnings.map((x) => h('p', { class: 'banner' }, x)), ...r.legs.map(legRow), ...r.notes.map((x) => h('p', { class: 'muted' }, x)),
         h('p', { class: 'muted' }, `Each leg uses your car's real efficiency at that speed and temperature, plus the forecast wind and rain. Charging assumes a charger at the stop and ${g.chargeKw} kW. ${r.reservePct}% is kept in reserve. Google does not know the charging stops: add a charger to its route where you plug in.`)));

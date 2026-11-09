@@ -1,6 +1,7 @@
 import { h, dist, speed, isMetric } from './ui.js';
 import { api } from './api.js';
 import { routeUrls } from './maplinks.js';
+import { linkActions } from './copylink.js';
 import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
 import { tripDay } from './longtripdays.js';
@@ -116,7 +117,7 @@ export function tripChainCard(get, start, use, named = []) {
       h('button', { class: 'text sm', type: 'button', onclick: () => { const b = readAvoid(); delete b[k]; writeAvoid(b); drawAvoid(); } }, 'Allow again')))) : '');
   };
 
-  const links = (points, what) => routeUrls(points).map((href, i, all) => h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, all.length > 1 ? `${what}: part ${i + 1} of ${all.length}` : `${what} in Google Maps`));
+  const links = (points, what) => routeUrls(points).flatMap((href, i, all) => [h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, all.length > 1 ? `${what}: part ${i + 1} of ${all.length}` : `${what} in Google Maps`), ...linkActions(href, all.length > 1 ? `part ${i + 1}` : 'link')]);
   const avoidSite = (x) => { const a = readAvoid(); a[key(x)] = x.name; writeAvoid(a); go(); };
   const dayCard = (d, i, n) => tripDay(d, i, n, { currency: last.result.currency || '$', review, avoid: avoidSite,
     use: (day, k) => use(day.stops.map((x) => ({ name: x.name, label: x.name, lat: x.lat, lon: x.lon })), k, day.startPct),

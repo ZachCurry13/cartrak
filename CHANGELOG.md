@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.84.0
+
+### 🗺️ Sending a route to someone, and a route that ends where the car is
+- Next to **Open this route in Google Maps** there is now **Copy link** and, on phones that offer it, **Share**, on the route planner and the long-trip planner. Send the link to a family member or paste it anywhere.
+- When a route returns to where the car is, Google Maps could leave out the way back, because a destination that is exactly the start is dropped. The way back now ends a few meters from the start so Google keeps it.
+- The start no longer always reads "Where the car is". When the car is at one of your saved places, the planner names it ("Home (where the car is)", a friend's house) and the legs use that name.
+
 ## 0.83.2
 
 ### 📍 Change how wide a place is

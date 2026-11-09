@@ -9,6 +9,11 @@ export const directionsUrl = (lat, lon) => `https://www.google.com/maps/dir/?api
 // several links that carry on from where the one before ended. Points are [lat, lon].
 export function routeUrls(points) {
   const ll = (p) => `${p[0].toFixed(6)},${p[1].toFixed(6)}`;
+  // A route that ends where it began (back to the car): Google Maps drops a destination that is exactly the start, so the way home
+  // is never shown. Moving it a few meters keeps it as a stop of its own.
+  if (points.length > 2 && points[points.length - 1][0] === points[0][0] && points[points.length - 1][1] === points[0][1]) {
+    points = [...points.slice(0, -1), [points[0][0] + 0.00004, points[0][1] + 0.00004]];
+  }
   const urls = [];
   for (let from = 0; from < points.length - 1; from += 10) {
     const part = points.slice(from, from + 11);
