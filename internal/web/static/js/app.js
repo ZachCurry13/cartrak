@@ -35,9 +35,11 @@ import { applyBar, load as loadLayout, noteVisit } from './navlayout.js';
 import { applySeason, activeTheme, setBirthday, THEMES } from './seasons.js';
 import { playSeason } from './seasonfx.js';
 import { showWhatsNew } from './whatsnew.js';
+import { mountReflow } from './reflow.js';
 
 
 const view = document.getElementById('view');
+mountReflow(view); // cards glide to their new places when the window changes the number of columns
 document.querySelector('.skip').addEventListener('click', (e) => { e.preventDefault(); view.focus(); });
 const tabs = document.getElementById('tabs');
 applySeason();

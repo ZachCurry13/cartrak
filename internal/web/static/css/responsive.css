@@ -1,6 +1,5 @@
 /* Layouts for tablet and desktop. The phone layout (single column, bottom tabs) is the default. */
-:root{--page-w:1180px}
-@media (min-width:1800px){:root{--page-w:1500px}}
+:root{--page-w:clamp(760px,80vw,1700px)} /* the page column grows with the window, so it suits 1280, 1920, 2560 and ultrawide alike */
 nav#tabs a{font-size:var(--t-label);padding:14px 2px}
 
 /* the back link at the top of a page: a full-size tap target */
@@ -13,7 +12,7 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
 @media (min-width:760px){
   main{max-width:var(--page-w)}
   /* Home's cards flow down the columns, so a short card never leaves a gap beside a tall one */
-  .dash{column-count:2;column-gap:12px}
+  .dash{column-width:340px;column-gap:12px} /* as many columns as fit: two, three, four or five as the window allows */
   .dash>*{break-inside:avoid;margin:0 0 12px}
   .dash>.card,.dash>section.card{margin:0 0 12px}
   .dash>.banner,.dash>a.card,.dash>p,.dash>.notice{column-span:all}
@@ -21,9 +20,6 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
   .cols>.card,.cols>.tcard{margin:0}
   .cols>.daybreak{grid-column:1/-1;margin:14px 0 0}
   .login{margin-top:8vh}
-}
-@media (min-width:1100px){
-  .dash{column-count:3}
 }
 /* Wide screens: the tabs run across the top, lined up with the page column */
 @media (min-width:900px){
@@ -52,8 +48,3 @@ main p:not(.seg):not(.actions):not(.page-title),main li{max-width:72ch}
 }
 #view:fullscreen{background:var(--bg);padding:16px;overflow:auto}
 
-/* Very wide screens (an ultrawide monitor): the page column is wider and Home flows into four columns, so the content is not a narrow strip
-   in the middle of a large empty screen. The top bar follows the page column. */
-@media (min-width:1800px){
-  .dash{column-count:4}
-}
