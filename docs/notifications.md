@@ -25,7 +25,7 @@ CarTrak can send a notification to your phone or computer when something happens
 | Arrived at / Left a named place | The car arrived at or left a place named under More, Places |
 | Plug in tonight? | One reminder in the evening (9 pm by default) when the car is parked, not plugged in and below 60 percent. Off by default for each device: turn it on in Notifications. An admin can change the time and the level in Settings (Plug-in reminder). At most once a day, and only if the car has reported in the last two hours |
 | Low 12 V battery | The 12 V battery is below 11.8 V or under 50 percent charge. At most once a day |
-| Car left unlocked | The car has been parked and unlocked for more than 10 minutes (once per time it happens) |
+| Car left unlocked | The car has been parked and unlocked for more than 10 minutes (once per time it happens). CarTrak cannot lock the car for you: Ford only lets it read the car, never send a command, so this alert is the nearest it can do |
 | Trip started / Trip ended | CarTrak started or finished recording a trip; the end alert shows the distance |
 | Ford connection trouble | No reading from the car for 4 hours. Open Status to see why |
 

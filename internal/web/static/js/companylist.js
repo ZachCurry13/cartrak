@@ -67,5 +67,7 @@ export function pasteListCard(use) {
     draw();
   }
   return h('div', {},
-    h('p', { class: 'muted' }, 'Paste one company per line. Account numbers and country codes after the name are ignored, and so are the lines under a name that only say when you last met (such as "12 - Visit"). Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
+    h('p', { class: 'muted' }, 'Paste your list, one company per line. Only the company name is looked up. The account number and country some systems put after the name, and the lines under a name that only say when you last met, are skipped. These two lines are one search for "Acme Widgets":'),
+    h('pre', { class: 'muted', style: 'margin:4px 0 8px;white-space:pre-wrap;overflow-wrap:anywhere' }, 'Acme Widgets, Inc.-1234567-U.S.A.\n12 - Visit'),
+    h('p', { class: 'muted' }, 'The account number is only used to remember which place you picked, so next time that company is filled in by itself. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
 }

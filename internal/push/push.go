@@ -73,7 +73,7 @@ var Kinds = []Kind{
 	{ServerBack, "CarTrak back online", "CarTrak was offline for more than five minutes (the server, its power or its network was down) and is running again, with how long it was gone. It cannot warn you while it is down: for that, add an uptime monitor in More, Integrations."},
 	{CarSilent, "Car stopped reporting", "The car has not sent anything new for more than a day, which can mean a weak 12 V battery or no cell signal. At most once a day."},
 	{Low12V, "Low 12 V battery", "The small battery is low enough to risk the car not waking. At most once a day."},
-	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes."},
+	{Unlocked, "Car left unlocked", "Parked and unlocked for more than 10 minutes. CarTrak can only read the car, not lock it: Ford gives it no way to send a lock command."},
 	{TripStart, "Trip started", "A trip began."},
 	{TripEnd, "Trip ended", "A trip finished, with its distance."},
 	{ChargeInterrupted, "Charging stopped early", "Charging stopped while still plugged in at a lower level than your sessions usually end at, which can mean a loose cable or a charger fault."},

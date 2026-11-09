@@ -5,6 +5,11 @@
 ### 🖥️ The sidebar on a computer
 - On a wide screen the tabs were spread down the whole height of the screen, with a large gap between each one. They now sit together at the top, each one a full-size row with its icon beside its name, and the page you are on is highlighted. Phones are unchanged.
 - On a very wide screen (an ultrawide monitor) the page column is wider (1500 px instead of 1180 px) and Home flows into four columns, so the content is not a narrow strip in the middle of a large empty screen. The top bar follows the page column.
+- On the **Live** page, the **Battery and motor** readings spread across the width of a wide screen instead of being squeezed into one cramped line.
+
+### ✍️ Clearer wording
+- **Paste a list** now explains itself with an example (two made-up lines that become one search), what the account number is for (remembering which place you picked), and that the "last met" lines under a name are skipped.
+- **Doors and locks** (and the **Car left unlocked** alert) say plainly that CarTrak can only read the car: Ford gives it no way to send a lock command, so it cannot lock the doors itself. The alert is the nearest it can do.
 
 ## 0.84.0
 

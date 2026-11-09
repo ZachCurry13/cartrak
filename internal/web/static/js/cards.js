@@ -48,6 +48,7 @@ export function doorsCard(latest, extra, pickFn) {
     const names = [...open.map(doorName), ...(hoodOpen ? ['Hood'] : [])];
     rows.push(names.length ? h('p', {}, chip('bad', 'Open'), ` ${names.join(', ')}`) : h('p', { class: 'muted' }, 'All doors closed.'));
   }
+  rows.push(h('p', { class: 'muted' }, 'CarTrak can only read the car, not lock it: Ford gives it no way to send a command. To be told when the car is left unlocked, turn on "Car left unlocked" in Notifications.'));
   return card('Doors and locks', ...rows);
 }
 
