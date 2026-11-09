@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.84.1
+
+### 🖥️ The sidebar on a computer
+- On a wide screen the tabs were spread down the whole height of the screen, with a large gap between each one. They now sit together at the top, each one a full-size row with its icon beside its name, and the page you are on is highlighted. Phones are unchanged.
+
 ## 0.84.0
 
 ### 🗺️ Sending a route to someone, and a route that ends where the car is
