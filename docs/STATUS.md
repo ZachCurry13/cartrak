@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.84.1 (2026-11-12, image :0.84.1 and :latest): tabs run across the top on a computer with the More dot in its tab corner (css/responsive.css, material.css), the page column grows with the window up to 1700 px and Home uses as many columns as fit, cards glide when the column count changes (js/reflow.js), Live Battery and motor readings spread on wide screens, Paste a list explained with an example, Doors and locks say CarTrak cannot lock the car (companylist.js, push.go). Open from reports: #16 "1234567-U.S.A", contrast warning in the paste-a-list results.
+
 - Released: v0.84.0 (2026-11-09, image :0.84.0 and :latest): Copy link and Share next to the Google Maps links of the route planner and the long-trip planner (js/copylink.js linkActions), a route that ends where it began now ends a few meters away so Google Maps keeps the way back (maplinks.routeUrls), and the start is named after the saved place the car is at (multistop.js). Not tried in real Google Maps or a browser. Open from reports: #10 auto-lock, #16 "1234567-U.S.A", the rest of the desktop layout, contrast warning in the paste-a-list results.
 
 - Released: v0.83.2 (2026-11-09, image :0.83.2 and :latest): size menu on each place (js/pages/places.js, PATCH /api/named-places/{id} radiusM), the red dot on More says why (server/integrations.go attentionReasons; js/attention.js, moresheet.js). New doc docs/bug-report-links.md (the bug report and secure link design, written to be reused in another project). Google Places key worked for the owner.
