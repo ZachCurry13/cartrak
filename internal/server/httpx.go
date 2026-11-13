@@ -12,7 +12,8 @@ func secHeaders(next http.Handler) http.Handler {
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("X-Frame-Options", "DENY")
 		h.Set("Referrer-Policy", "same-origin")
-		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'")
+		h.Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains") // browsers act on it over https only
+		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'self'")
 		if strings.HasPrefix(r.URL.Path, "/api/") { // private vehicle data: never kept by a browser or a proxy unless a handler says otherwise (map tiles do)
 			h.Set("Cache-Control", "no-store")
 		}

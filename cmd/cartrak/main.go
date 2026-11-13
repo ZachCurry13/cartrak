@@ -43,7 +43,7 @@ func main() {
 		log.Fatalf("start: %v", err)
 	}
 
-	hs := &http.Server{Addr: cfg.Addr, Handler: f.Handler(), ReadHeaderTimeout: 10 * time.Second}
+	hs := &http.Server{Addr: cfg.Addr, Handler: f.Handler(), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 2 * time.Minute}
 	go func() {
 		<-ctx.Done()
 		sc, cancel := context.WithTimeout(context.Background(), 5*time.Second)
