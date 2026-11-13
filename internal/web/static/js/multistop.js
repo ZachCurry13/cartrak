@@ -8,6 +8,9 @@ import { hmMin as hm } from './format.js';
 import { pasteListCard } from './companylist.js';
 import { tripChainCard } from './tripchain.js';
 import { savedRoutes } from './savedroutes.js';
+import { calendarButtons } from './calendarfill.js';
+import { routeWarnings } from './wxalerts.js';
+import { liveCheck } from './livechargers.js';
 
 const kmBetween = (a, b, c, d) => { const r = (x) => (x * Math.PI) / 180, dl = r(d - b), dp = r(c - a), q = Math.sin(dp / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dl / 2) ** 2; return 12742 * Math.asin(Math.sqrt(q)); };
 const MAX = 11; // the start and up to ten destinations
@@ -70,7 +73,7 @@ export async function multiStopCard(get, latest) {
       ' ', h('span', { class: 'muted' }, `${stops.length - 1} of 10 stops`)));
   }
 
-  const legRow = (l) => {
+  const legRow = (l, at) => {
     const w = l.weather;
     const bits = w.known ? [w.label, w.sun ? w.sun.toLowerCase() : null, w.tempC != null ? temp(w.tempC) : null, Math.abs(w.headKph) >= 5 ? `${speed(Math.abs(w.headKph))} ${w.headKph >= 0 ? 'head' : 'tail'}wind` : null].filter(Boolean).join(' · ') : null;
     const extra = w.known ? Math.round(((1 + w.windPct / 100) * (1 + w.rainPct / 100) - 1) * 100) : 0;
@@ -79,7 +82,8 @@ export async function multiStopCard(get, latest) {
       h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, `${l.from} → ${l.to}`), h('div', { class: 'muted' }, `${dist(l.km, 0)}${l.estimated ? ' (straight line)' : ''} · ${hm(l.minutes)} · ${clock(l.departTs)} to ${clock(l.arriveTs)}`)),
         h('b', { class: l.short ? 'bad' : '' }, `${Math.round(l.arrivePct)}%`)),
       bits ? h('div', {}, h('span', {}, bits), extra >= 2 ? h('span', { class: 'muted' }, ` · wind and rain add about ${extra}%`) : null) : null,
-      h('div', { class: 'muted' }, `${num(l.kwh, 1, ' kWh')} used${w.tempBand ? ` · your usual efficiency at ${tempBandLabel(w.tempBand)}` : ''}${w.learned ? ' · rain from your own wet trips' : ''}`));
+      h('div', { class: 'muted' }, `${num(l.kwh, 1, ' kWh')} used${w.tempBand ? ` · your usual efficiency at ${tempBandLabel(w.tempBand)}` : ''}${w.learned ? ' · rain from your own wet trips' : ''}`),
+      l.charge && at && at.lat != null ? liveCheck(at.lat, at.lon, 1500) : null);
   };
   async function plan() {
     const bad = stops.findIndex((s) => s.lat == null);
@@ -97,16 +101,18 @@ export async function multiStopCard(get, latest) {
         r.savedMinutes > 0 ? h('p', { class: 'muted', style: 'margin:0' }, `Best order saves about ${hm(r.savedMinutes)} of driving.`) : null,
         h('p', { class: 'seg', style: 'margin:8px 0' }, ...links.flatMap((href, i) => [h('a', { class: 'btn', href, target: '_blank', rel: 'noopener' }, links.length > 1 ? `Open part ${i + 1} of ${links.length} in Google Maps` : 'Open this route in Google Maps'), ...linkActions(href, links.length > 1 ? `part ${i + 1}` : 'link')])),
         links.length > 1 ? h('p', { class: 'muted' }, 'Google takes 10 legs at a time, so a long day is split in parts.') : null,
-        ...r.warnings.map((x) => h('p', { class: 'banner' }, x)), ...r.legs.map(legRow), ...r.notes.map((x) => h('p', { class: 'muted' }, x)),
+        ...r.warnings.map((x) => h('p', { class: 'banner' }, x)), routeWarnings(r.stops), ...r.legs.map((l, i) => legRow(l, r.stops[i])), ...r.notes.map((x) => h('p', { class: 'muted' }, x)),
         h('p', { class: 'muted' }, `Each leg uses your car's real efficiency at that speed and temperature, plus the forecast wind and rain. Charging assumes a charger at the stop and ${g.chargeKw} kW. ${r.reservePct}% is kept in reserve. Google does not know the charging stops: add a charger to its route where you plug in.`)));
     } catch (e) { msg.textContent = e.message; }
   }
   draw();
-  const keep = savedRoutes({ stops, when, best, back, draw: () => { out.replaceChildren(); draw(); }, note: (t) => { msg.textContent = t; } });
+  const st = { stops, when, best, back, draw: () => { out.replaceChildren(); draw(); }, note: (t) => { msg.textContent = t; } };
+  const keep = savedRoutes(st);
+  const cal = calendarButtons(st);
   const show = (k) => { for (const [id, p] of Object.entries(panels)) p.hidden = id !== k; for (const [id, b] of Object.entries(tabBtn)) { b.classList.toggle('on', id === k); b.setAttribute('aria-pressed', String(id === k)); } };
   const toStops = (note) => { out.replaceChildren(); draw(); msg.textContent = note; show('stops'); };
   const panels = {
-    stops: h('div', {}, keep.el, h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
+    stops: h('div', {}, keep.el, cal, h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
       list, tick(best, 'ms-best', 'Best order (least driving)'), tick(back, 'ms-back', 'Return to the start'),
       h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', { class: 'seg' }, h('button', { onclick: plan }, 'Plan the route'), h('button', { class: 'sec', type: 'button', onclick: keep.save }, 'Save this route')), msg, out),
     list: pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); toStops(`${found.length} stops filled in. Check them, then plan the route.`); }),

@@ -108,8 +108,11 @@ func (s *Server) integrations() []integration {
 			State: onOff(sites > 0), Note: chargeNote},
 		{ID: "ea", Name: "Electrify America (NLR charger list)", Purpose: "Adds Electrify America chargers to long trips.", Sends: "Your key, to download the public list.",
 			State: onOff(eaOn), Note: eaNote, Keys: []string{settings.AFDCKeyKey}, Testable: eaOn},
-		{ID: "places", Name: "Google Places (finding companies)", Purpose: "Finding the businesses in a pasted company list the way Google does.", Sends: "A company name and Home's rough area, with your key.",
+		{ID: "places", Name: "Google Places (companies and free chargers)", Purpose: "Finding the businesses in a pasted company list the way Google does, and how many plugs are free at a charger right now.", Sends: "A company name and Home's rough area, or a charger's position when you tap Check now, with your key.",
 			State: onOff(c.GooglePlacesKey() != ""), Note: "Without it the map's own search is used, which does not list many small businesses.", Keys: []string{settings.GooglePlacesKeyKey}, Testable: c.GooglePlacesKey() != ""},
+		s.calendarCard(),
+		{ID: "nws", Name: "Weather warnings (National Weather Service)", Purpose: "Warnings such as winter storms, ice, floods and high wind where the car is, on planned routes and at tomorrow's appointments.", Sends: "A rounded area (about 10 km), with no account or name.",
+			State: onOff(c.WeatherAlerts()), Note: "US only.", Keys: []string{settings.WeatherAlertsKey}, Testable: true},
 		{ID: "uptime", Name: "Uptime monitor", Purpose: "Telling you when CarTrak itself is down, and when it is back. It cannot announce its own outage, so it asks an outside monitor every five minutes; the monitor alerts you when that stops.", Sends: "Only a request to the address you give, every five minutes.",
 			State: onOff(c.HeartbeatURL() != ""), Note: "Without it, CarTrak still tells you when it is back after being offline for over five minutes.", Keys: []string{settings.HeartbeatURLKey}, Testable: c.HeartbeatURL() != ""},
 		{ID: "push", Name: "Push alerts", Purpose: "Alerts on this phone when something happens.", Sends: "The alert text, through your phone's own push service.", State: "info", Link: "#/notifications", LinkText: "Open Notifications"},
@@ -247,8 +250,12 @@ func (s *Server) testIntegration(w http.ResponseWriter, r *http.Request) {
 		}
 		err = afdc.Ping(ctx, nil, base, s.Cfg.AFDCKey())
 	default:
-		fail(w, 400, "that service cannot be tested")
-		return
+		handled, e := s.testMore(ctx, in.ID)
+		if !handled {
+			fail(w, 400, "that service cannot be tested")
+			return
+		}
+		err = e
 	}
 	res := testResult{TS: time.Now().Unix(), OK: err == nil, Msg: "It answered."}
 	if err != nil {

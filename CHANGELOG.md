@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.86.0
+
+### 📅 Your calendar in CarTrak
+- **More → Integrations → Calendar**: paste your calendar's private ICS address (Google's "secret address in iCal format", or Outlook's published calendar). It stays on the server like a key.
+- **Home** shows **Today** (from 6 pm, **Tomorrow**): your appointments, the place each one goes to, and **Plan today's route**.
+- The route planner's **Stops** tab has **Today's appointments** and **Tomorrow's**, which fill the stops in the order of the day and set the leaving time to half an hour before the first one.
+- Appointments find their place among **Your accounts** and your saved places first, then by an address search of their location.
+- **Trips are named after the appointment they went to.** Choose **Work** under the calendar's settings to count those trips as work too.
+- Repeating appointments are followed: daily, weekly (every other week too), monthly and yearly, with dates taken out and single ones moved or cancelled.
+
+### 🌨️ Weather warnings
+- **More → Integrations → Weather warnings** turns on the US National Weather Service warnings (free, no account, only a rounded area is sent).
+- Winter storms, ice, floods, fog and high wind show on Home where the car is, and on each planned route.
+- A new **Weather warning** alert tells you about a road warning where the car is, once.
+- A new **Tomorrow's appointments** alert at 7 pm gives the first appointment, the low and any snow there, the warnings at your stops, and how much battery the day takes (with what to charge to).
+
+### 🔌 Free plugs now
+- With the Google Places key, the **Charging** page has **Chargers near the car** and each planned charging stop has **Free plugs now?**: how many plugs are free right now, as the networks report it to Google.
+- It only asks when you tap, since each check is a billed Google lookup, and keeps the answer for five minutes.
+
 ## 0.85.0
 
 ### 🗺️ Save a route and open it on your phone

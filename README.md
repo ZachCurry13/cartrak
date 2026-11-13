@@ -31,6 +31,9 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - **Integrations**: every outside service (Ford, maps, weather, gas prices, chargers and more) in one place, with its keys, what it sends and a test button ([details](docs/integrations.md))
 - **Long trips**: give a destination, the longest leg and the longest day, and CarTrak picks Superchargers your car can use and splits the trip into days
 - **Paste a list of companies** into the route planner: names are matched to your saved places or found by address search, the ones you pick are remembered by account number (and recognised by name), listed under **Your accounts** to change or forget, and the round trip is planned
+- **Calendar link**: paste your calendar's private ICS address and Home lists today's appointments, the planner fills them in as stops, trips that go to them are named after them, and an evening alert says what tomorrow holds ([details](docs/calendar-and-weather.md))
+- **Weather warnings** from the National Weather Service (winter storms, ice, floods, high wind) where the car is, on a planned route and at tomorrow's appointments
+- **Free plugs now**: how many plugs are free at chargers near the car or at a planned charging stop, from Google (needs the Google Places key)
 - **Saved routes**: save a day's stops on a computer and open them on the phone; each is cleared two weeks after it was saved
 - **Tires**: log each set and the day it went on, and see what winter tires do to your range at the same temperature, not blamed on the cold ([details](docs/tires.md))
 - **Send a bug report** from any page: it is kept in the app as text (the page's words, the screen it was on, layout facts and the debug report), cleared by hand or after 30, 60 or 90 days, and a link you make on demand lets someone read them ([details](docs/bug-reports.md))

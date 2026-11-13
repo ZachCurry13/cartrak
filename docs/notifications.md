@@ -24,6 +24,8 @@ CarTrak can send a notification to your phone or computer when something happens
 | Service due | A reminder from More, Maintenance came due by distance or time |
 | Arrived at / Left a named place | The car arrived at or left a place named under More, Places |
 | Plug in tonight? | One reminder in the evening (9 pm by default) when the car is parked, not plugged in and below 60 percent. Off by default for each device: turn it on in Notifications. An admin can change the time and the level in Settings (Plug-in reminder). At most once a day, and only if the car has reported in the last two hours |
+| Weather warning | The National Weather Service issued a road warning (winter storm, ice, flood, fog, high wind) where the car is. Each warning once. Needs Weather warnings on under More, Integrations. Off by default |
+| Tomorrow's appointments | At 7 pm, when the calendar has appointments tomorrow: the first one, the low temperature and snow there (with Weather on), any warnings at them, and how much battery the day takes. Off by default |
 | Low 12 V battery | The 12 V battery is below 11.8 V or under 50 percent charge. At most once a day. A 0 percent beside a healthy voltage is ignored: some cars never fill the percent in |
 | Car left unlocked | The car has been parked and unlocked for more than 10 minutes (once per time it happens: a car that stays unlocked is not announced again until it has been locked or driven, even when it reports again later). CarTrak cannot lock the car for you: Ford only lets it read the car, never send a command, so this alert is the nearest it can do |
 | Trip started / Trip ended | CarTrak started or finished recording a trip; the end alert shows the distance |

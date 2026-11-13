@@ -2,6 +2,7 @@ import { remoteChip } from '../remotestart.js';
 import { tripPlaces } from '../tripplaces.js';
 import { homeCards } from '../homecards.js';
 import { outingCard } from '../outingcard.js';
+import { todayCard } from '../todaycard.js';
 import { h, stat, chip, nice, chargerType, dist, speed, temp, pressure, pct, num, ago, duration, when } from '../ui.js';
 import { api } from '../api.js';
 import { notices } from '../notice.js';
@@ -123,6 +124,7 @@ export default async function dashboard(root, _args, session) {
         oldNote(x, 'xevBatteryStateOfCharge')));
     }
     if (session.me.role === 'admin') out.push(outingCard()); // under the battery: the answer comes first
+    if (!staleSince) out.push(todayCard(session.me.role === 'admin')); // the calendar and the weather warnings, when there are any
     const due = ((maint && maint.items) || []).filter((m) => m.state !== 'ok');
     if (due.length || unlabelled || short.length || fuelPending) {
       out.push(card('Needs attention',

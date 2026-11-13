@@ -7,6 +7,7 @@ import { api } from '../api.js';
 import { forecastCard } from '../chargeforecast.js';
 import { chargeNow } from '../chargenow.js';
 import { chargersCompared, recordsCard } from '../curve.js';
+import { nearCarCard } from '../livechargers.js';
 
 const money = (cur, v) => `${cur}${v.toFixed(2)}`;
 const monthName = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString([], { month: 'short', year: 'numeric' }); };
@@ -32,12 +33,13 @@ export default async function charging(root, _a, session) {
   const RECENT = 3; // the last few sessions come first; the rest are one tap away, not a long scroll
   root.append(h('div', { class: 'page-title' }, h('h2', {}, 'Charging')), h('nav', { class: 'linkrow', 'aria-label': 'More about charging' }, h('a', { href: '#/charging-settings' }, 'Prices and settings'), h('a', { href: '#/stats' }, 'Statistics'), h('a', { href: '#/history' }, 'History'), h('a', { href: '#/plan' }, 'Plan a trip')), now.el, box);
   async function load() {
-    const [cs, sum, savings, tips] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin), coachCard()]);
-    if (!cs.length) return box.replaceChildren(calc, emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
+    const [cs, sum, savings, tips, latest] = await Promise.all([api('/api/charges'), api('/api/charges/summary'), savingsCard(admin), coachCard(), api('/api/latest?summary=1').catch(() => null)]);
+    const near = nearCarCard(latest);
+    if (!cs.length) return box.replaceChildren(...[near, calc].filter(Boolean), emptyState('No charging sessions yet', 'Sessions appear on their own after the car charges. Set your electricity price to see what each one costs.', admin ? '#/admin' : null, 'Open Settings'));
     const rows = (list) => withDayBreaks(list, (c) => sessionCard(c, sum.currency, admin, load), 'charge');
     const list = h('div', { class: 'cols' }, ...rows(cs.slice(0, RECENT)));
     const all = cs.length > RECENT ? h('button', { class: 'outline', type: 'button', onclick: () => { list.replaceChildren(...rows(cs)); all.remove(); } }, `Show all ${cs.length} sessions`) : null;
-    box.replaceChildren(...[h('h3', {}, 'Recent charging'), list, all ? h('p', {}, all) : null, calc, summaryCard(sum), tips, savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV'))].filter(Boolean));
+    box.replaceChildren(...[h('h3', {}, 'Recent charging'), list, all ? h('p', {}, all) : null, near, calc, summaryCard(sum), tips, savings, recordsCard(cs), chargersCompared(cs), h('p', {}, h('a', { class: 'btn sec', href: '/api/export/charging.csv' }, 'Export CSV'))].filter(Boolean));
   }
   await load();
   return { cleanup: now.stop };

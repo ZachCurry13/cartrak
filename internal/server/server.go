@@ -35,6 +35,7 @@ type Server struct {
 	Link         Linker // nil when the provider needs no account link
 	Version      string
 	Cfg          *settings.Settings // admin-panel settings (nil in some tests)
+	cal          calCache           // the calendar, fetched at most every half hour
 	Prober       Prober             // optional: Ford diagnostics
 	Redirects    RedirectChecker    // optional: ask Ford which redirect addresses are registered
 	Tunnel       *tunnel.Supervisor // in-app Cloudflare connector (nil in some tests)
@@ -64,6 +65,8 @@ type Server struct {
 	GasURL       string        // live gas price service; empty uses the EIA (tests point it at a fake)
 	SuperURL     string        // Supercharger list service; empty uses supercharge.info (tests point it at a fake)
 	PlacesURL    string        // Google Places text search; empty uses the real one (tests point it at a fake)
+	NWSURL       string        // the National Weather Service; empty uses the real one (tests point it at a fake)
+	wx           wxCache       // weather warnings by area, kept ten minutes
 	AFDCURL      string        // Electrify America list service; empty uses the real one (tests point it at a fake)
 	GeoGap       time.Duration // spacing of city lookups; 0 uses the service default (tests shorten it)
 	geo          geoState
