@@ -393,6 +393,8 @@
 ### 🛣️ Estimate the route, told straight
 - **A trip with too few recorded positions says so** ("this trip has too few recorded positions to draw a road") instead of blaming the routing service, which was never asked. Your debug report showed the road lookup working (13 of 13 trips that had positions); the 14 failures were two trips with nothing to route between.
 
+## 0.67.0
+
 ### 🧭 Getting to a page in fewer taps
 - **The More sheet starts with "Find a page or setting".** Type what you want (Places, Fix a day, Notifications, a setting) and go straight there. Your logs showed More, then "Everything else", then a hunt through pages; "Everything else in More" is now **All pages and settings**.
 
