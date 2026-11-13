@@ -39,3 +39,24 @@ func TestTheLow12VAlertSaysHowOldItsReadingIs(t *testing.T) {
 		t.Fatalf("%v", r.got)
 	}
 }
+
+func TestAZeroPercentBesideAHealthyVoltageIsNotALow12VBattery(t *testing.T) {
+	e, r, _ := setup(t)
+	e.Handle(reading(0, func(s *ford.State) {
+		v := 12.2
+		s.Battery12V = &v
+		s.Extra["telemetry.metrics.batteryStateOfCharge.value"] = 0.0
+	}))
+	if len(r.got) != 0 {
+		t.Fatalf("12.2 V with a 0%% that the car never fills in is fine: %v", r.got)
+	}
+	e2, r2, _ := setup(t)
+	e2.Handle(reading(0, func(s *ford.State) {
+		v := 12.2
+		s.Battery12V = &v
+		s.Extra["telemetry.metrics.batteryStateOfCharge.value"] = 30.0
+	}))
+	if r2.kinds() != "low_12v" {
+		t.Fatalf("a real low percent still alerts: %v", r2.got)
+	}
+}

@@ -80,6 +80,8 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /api/named-places/search", s.auth(true, s.searchPlaces))
 	m.HandleFunc("POST /api/company-list/resolve", s.auth(true, s.resolveCompanies))
 	m.HandleFunc("POST /api/company-list/remember", s.auth(true, s.rememberCompany))
+	m.HandleFunc("GET /api/company-list/accounts", s.auth(true, s.listAccounts))
+	m.HandleFunc("DELETE /api/company-list/accounts/{ref}", s.auth(true, s.forgetAccount))
 	m.HandleFunc("POST /api/trip-chain", s.auth(true, s.planChain))
 	m.HandleFunc("GET /api/trip-chain/sources", s.auth(true, s.tripSources))
 	m.HandleFunc("GET /api/trip-chain/range", s.auth(true, s.tripRange))

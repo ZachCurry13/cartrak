@@ -6,6 +6,7 @@ import { matchDetail } from './placematch.js';
 import { hmMin as hm } from './format.js';
 import { tripDay } from './longtripdays.js';
 import { shareBox } from './tripsharebox.js';
+import { isRoute } from './savedroutes.js';
 import { mapConfig } from './map.js';
 import { routeMap, daylightNote, leaveFor } from './longtripextras.js';
 
@@ -159,7 +160,7 @@ export function tripChainCard(get, start, use, named = []) {
 
   async function loadSaved() {
     try {
-      const l = await api('/api/saved-trips');
+      const l = (await api('/api/saved-trips')).filter((t) => !isRoute(t)); // the route planner's saved routes are listed there
       const sharing = new Set([...saved.querySelectorAll('[data-share-open]')].map((e) => e.dataset.shareOpen)); // keep the share boxes that were open
       saved.replaceChildren(l.length ? h('details', { open: sharing.size > 0 }, h('summary', {}, `Saved trips (${l.length})`), ...l.map((t) => h('div', {}, h('div', { class: 'row' }, h('div', { class: 'grow' }, h('b', {}, t.name), t.share ? h('span', { class: 'muted' }, ' · shared') : null),
         h('button', { class: 'text sm', type: 'button', onclick: () => open(t) }, 'Open'),

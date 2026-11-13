@@ -31,7 +31,6 @@ const (
 	noReadingsFor = 4 * time.Hour
 	kv12V         = "alert_12v_at"
 	kvUnlocked    = "alert_unlocked_last"
-	unlockedAgain = 6 * time.Hour // without the car's own report time, the same unlocked car is not announced again sooner than this
 )
 
 type Engine struct {
@@ -168,6 +167,9 @@ func (e *Engine) battery12V(st *ford.State) {
 		return // the owner had the battery tested and it was fine
 	}
 	soc := ford.Number(st.Extra, "batteryStateOfCharge")
+	if soc != nil && *soc == 0 && st.Battery12V != nil && *st.Battery12V >= lowVoltage {
+		soc = nil // some cars always report 0% beside a healthy voltage: the percent is not reported, not empty
+	}
 	low := (st.Battery12V != nil && *st.Battery12V < lowVoltage) || (soc != nil && *soc < lowChargePct)
 	if !low {
 		return

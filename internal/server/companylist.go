@@ -22,6 +22,7 @@ type companyPick struct {
 type companyRow struct {
 	companylist.Entry
 	Status  string          `json:"status"` // remembered, saved, found (the search agrees), check (pick one) or none
+	Known   bool            `json:"known"`  // remembered by this line's own number; false when remembered by the name under another number
 	Pick    *companyPick    `json:"pick"`
 	Options []geocode.Match `json:"options"`
 	Error   string          `json:"error,omitempty"` // the lookup service did not answer: not the same as "nothing found"
@@ -64,12 +65,17 @@ func (s *Server) resolveCompanies(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 90*time.Second)
 	defer cancel()
+	known := s.accounts()
 	rows := make([]companyRow, 0, len(entries))
 	for _, e := range entries {
 		row := companyRow{Entry: e, Status: "none", Options: []geocode.Match{}}
 		var mem companyPick
-		if e.Ref != "" && json.Unmarshal([]byte(s.S.GetKV("company:"+e.Ref)), &mem) == nil && mem.Name != "" {
-			row.Status, row.Pick = "remembered", &mem
+		if e.Ref != "" && json.Unmarshal([]byte(s.S.GetKV(accountPrefix+e.Ref)), &mem) == nil && mem.Name != "" {
+			row.Status, row.Known, row.Pick = "remembered", true, &mem
+		}
+		if a := byName(known, e.Name); row.Pick == nil && a != nil { // a company picked before under another number, or a line with none
+			p := a.companyPick
+			row.Status, row.Pick = "remembered", &p
 		}
 		for _, p := range saved {
 			if row.Pick == nil && companylist.Same(e.Name, p.Name) {
@@ -133,7 +139,7 @@ func (s *Server) rememberCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	b, _ := json.Marshal(in.companyPick)
-	if err := s.S.SetKV("company:"+in.Ref, string(b)); err != nil {
+	if err := s.S.SetKV(accountPrefix+in.Ref, string(b)); err != nil {
 		fail(w, http.StatusInternalServerError, err.Error())
 		return
 	}

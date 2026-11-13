@@ -21,14 +21,29 @@ func (s *Server) listSavedTrips(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	shares, _ := s.S.TripShares()
-	out := make([]savedTripOut, len(t))
-	for i, x := range t {
-		out[i] = savedTripOut{SavedTrip: x}
-		if sh, on := shares[x.ID]; on && sh.Expires > time.Now().Unix() {
-			out[i].Share = &tripShareOut{Expires: sh.Expires, Opens: sh.Opens, HideStart: sh.HideStart, URL: s.publicBase() + "/t/" + sh.Token}
+	out := make([]savedTripOut, 0, len(t))
+	for _, x := range t {
+		if isRoute(x.Body) && time.Since(time.Unix(x.Created, 0)) > routeKeep {
+			_ = s.S.DeleteSavedTrip(x.ID) // a day's route is not wanted for ever
+			continue
 		}
+		o := savedTripOut{SavedTrip: x}
+		if sh, on := shares[x.ID]; on && sh.Expires > time.Now().Unix() {
+			o.Share = &tripShareOut{Expires: sh.Expires, Opens: sh.Opens, HideStart: sh.HideStart, URL: s.publicBase() + "/t/" + sh.Token}
+		}
+		out = append(out, o)
 	}
 	ok(w, out)
+}
+
+// routeKeep is how long a saved route of the route planner (a day of stops, body kind "route") is kept. Long trips stay until deleted.
+const routeKeep = 14 * 24 * time.Hour
+
+func isRoute(body string) bool {
+	var b struct {
+		Kind string `json:"kind"`
+	}
+	return json.Unmarshal([]byte(body), &b) == nil && b.Kind == "route"
 }
 
 // addSavedTrip: POST /api/saved-trips {"name": "...", "body": {...}}. The body is whatever the page needs to open the trip again.

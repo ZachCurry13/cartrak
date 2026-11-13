@@ -20,6 +20,8 @@ type Detector struct {
 	maxOdo   *float64 // the highest odometer seen: an old lower value on one reading is not a car that went back
 	lastOdo  *float64 // the odometer at the previous reading, to tell a car that has moved from one that only woke up
 	sawSpeed bool     // this feed has sent a speed before, so a reading without one is a gap, not a feed that has none
+	onAt     int64    // when the ignition went on, and the odometer then (see odoRoseWhileOn)
+	onOdo    *float64
 
 	endlessTrip    int64 // a trip just closed with no end position, waiting for the car to report one, and when it closed
 	endlessAt      int64
@@ -60,6 +62,7 @@ func (d *Detector) Process(st *ford.State) error {
 	if st.Plug != "" && !st.PlugConnected() {
 		d.lastDisconnect = st.TS.Unix()
 	}
+	d.noteIgnition(st)
 	err := d.settleEnd(st)
 	if err == nil {
 		err = d.trip(st)
@@ -85,16 +88,22 @@ func (d *Detector) trip(st *ford.State) error {
 		return err
 	}
 	now := st.TS.Unix()
-	if Driving(st) && open == nil && moving(st) && d.leftTheSpot(st) {
-		startLat, startLon := st.Lat, st.Lon
-		if startLat == nil || startLon == nil { // the car did not say where it began: it began where it was last seen parked
-			startLat, startLon = d.S.LastPositionBefore(now)
+	byOdo := Driving(st) && open == nil && !moving(st) && d.odoRoseWhileOn(st)
+	if Driving(st) && open == nil && (moving(st) || byOdo) && d.leftTheSpot(st) {
+		start, startOdo := now, d.leadOdo(st)
+		if byOdo {
+			start, startOdo = d.onAt, d.onOdo
+			d.S.LogDecision("trip_odometer", fmt.Sprintf("the ignition was on and the odometer went %.1f km with no speed reported: a drive was recorded from when the ignition went on", *st.OdometerKm-*d.onOdo))
 		}
-		t := &store.Trip{StartTS: now, StartLat: startLat, StartLon: startLon, StartOdo: d.leadOdo(st), StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
+		startLat, startLon := st.Lat, st.Lon
+		if startLat == nil || startLon == nil || byOdo { // the car did not say where it began: it began where it was last seen parked
+			startLat, startLon = d.S.LastPositionBefore(start)
+		}
+		t := &store.Trip{StartTS: start, StartLat: startLat, StartLon: startLon, StartOdo: startOdo, StartSoC: st.SoCPct, StartKwh: st.EnergyKwh}
 		var rid *int64
 		loc := d.zone(startLat, startLon)
 		t.TZ = loc.String()
-		t.Category, rid, t.CategorySource = d.classify(now, startLat, startLon, loc)
+		t.Category, rid, t.CategorySource = d.classify(start, startLat, startLon, loc)
 		t.RuleID = rid
 		return d.S.CreateTrip(t)
 	}

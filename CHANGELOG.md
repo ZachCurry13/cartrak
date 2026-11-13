@@ -1,6 +1,26 @@
 # Changelog
 
-## 0.84.2
+## 0.85.0
+
+### 🗺️ Save a route and open it on your phone
+- The route planner's **Stops** tab has a **Save this route** button next to **Plan the route**. It keeps the stops, the leaving time and the two ticks, named after the day unless you change it.
+- **Saved routes** at the top of the Stops tab lists them on every device you sign in on, so a route made on a computer opens on the phone. Each is cleared two weeks after it was saved, or sooner with **Delete**.
+
+### 🏢 Paste a list remembers your accounts better
+- **Your accounts**, under Paste a list, shows every account number with the place it goes to. **Change** searches for the right place and **Forget** makes the next list ask again.
+- A company you picked before is now recognised by its name too, when its line has no number or a new one. It shows as **Remembered by name**. Two branches of one company are still asked about.
+- Fixed: choosing a different place for a company that was already remembered was not kept, so the next list put back the old one.
+
+### 🚙 Smarter with gas and hybrid cars
+- **Low 12 V battery** no longer goes off every day for a healthy battery. Some hybrid and gas cars always report the 12 V charge as 0%, which was read as empty. The voltage still counts, so a real low battery still alerts.
+- **A drive that only shows on the odometer is recorded.** A car can report the ignition on, speed 0 and an odometer that stands still for several minutes, then jump kilometers ahead. That drive used to be lost until the car first reported a speed. It now counts from when the ignition went on.
+
+### 🔕 Fewer repeated alerts
+- **Left open** is told once for the same report from the car, not again every twelve hours while the car sleeps with that report.
+- **Car left unlocked** is told once each time the car is left unlocked. It is news again after the car has been locked or driven, not each time a sleeping car checks in or CarTrak restarts.
+
+### ⛽ Live gas prices
+- When the gas price service drops a connection, CarTrak tries once more a few seconds later, and the status says whether it did not answer in time or could not be reached.
 
 ### 🔒 Security and upkeep
 - **A way to crash the server is closed.** CarTrak is now built with Go 1.27.4, which fixes a fault in Go's own web server (a crafted request could stop it).

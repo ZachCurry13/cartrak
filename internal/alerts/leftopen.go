@@ -133,11 +133,12 @@ func (e *Engine) leftOpen(st *ford.State) {
 	key := strings.Join(things, ",")
 	if !e.openSent && st.TS.Sub(e.openFrom) >= openAfter {
 		e.openSent = true
-		// The same things open: at most one alert in openRepeat, kept across restarts. A sleeping car repeats its last report
-		// (and Ford's list of doors sometimes comes without them), which would otherwise alert again and again.
+		// The same things open: the same report of the car once, and at most one alert in openRepeat, kept across restarts. A
+		// sleeping car repeats its last report for days (and Ford's list of doors sometimes comes without them), which would
+		// otherwise alert every twelve hours about a door shut long ago.
 		if k, rest, ok := strings.Cut(e.S.GetKV(kvOpen), "|"); ok && k == key {
-			at, _, _ := strings.Cut(rest, "|")
-			if n, err := strconv.ParseInt(at, 10, 64); err == nil && st.TS.Sub(time.Unix(n, 0)) < openRepeat {
+			at, was, _ := strings.Cut(rest, "|")
+			if n, err := strconv.ParseInt(at, 10, 64); (err == nil && st.TS.Sub(time.Unix(n, 0)) < openRepeat) || (stamp != "" && was == stamp) {
 				return
 			}
 		}

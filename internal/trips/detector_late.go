@@ -59,3 +59,31 @@ func (d *Detector) leadOdo(st *ford.State) *float64 {
 	}
 	return d.maxOdo
 }
+
+// A car with the ignition on can keep sending speed 0 and an odometer that stands still, then a reading kilometers further on:
+// a hybrid drove 14 km that way with no speed ever reported, and only the drive after it was recorded. The rise is a drive, and
+// it began when the ignition went on.
+
+// noteIgnition keeps when the ignition went on and the odometer then (the highest before it).
+func (d *Detector) noteIgnition(st *ford.State) {
+	if !Driving(st) {
+		d.onAt, d.onOdo = 0, nil
+		return
+	}
+	if d.onAt == 0 {
+		d.onAt, d.onOdo = st.TS.Unix(), d.maxOdo
+		if d.onOdo == nil {
+			d.onOdo = st.OdometerKm
+		}
+	}
+}
+
+// odoRoseWhileOn says the odometer has gone at least a kilometer since the ignition went on, at a speed a car can do, on a
+// reading after the first one with the ignition on.
+func (d *Detector) odoRoseWhileOn(st *ford.State) bool {
+	if d.onAt == 0 || d.onOdo == nil || st.OdometerKm == nil || st.TS.Unix() <= d.onAt {
+		return false
+	}
+	rise, gap := *st.OdometerKm-*d.onOdo, float64(st.TS.Unix()-d.onAt)
+	return rise >= 1 && rise/(gap/3600) <= 200
+}

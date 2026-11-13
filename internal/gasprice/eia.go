@@ -3,8 +3,10 @@ package gasprice
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,6 +16,9 @@ import (
 
 // DefaultURL is the EIA open data service.
 const DefaultURL = "https://api.eia.gov"
+
+// retryPause is how long a failed request waits before its one retry (a variable so tests need not wait).
+var retryPause = 3 * time.Second
 
 // Point is the average price (dollars per gallon) for the week starting on Date.
 type Point struct {
@@ -38,8 +43,19 @@ func Fetch(ctx context.Context, hc *http.Client, base, key string, a Area, since
 		return nil, fmt.Errorf("the gas price request could not be made")
 	}
 	resp, err := hc.Do(req)
+	if err != nil && ctx.Err() == nil { // the EIA now and then drops a connection or is slow: one more try after a pause
+		select {
+		case <-ctx.Done():
+		case <-time.After(retryPause):
+			resp, err = hc.Do(req.Clone(ctx))
+		}
+	}
 	if err != nil {
-		return nil, fmt.Errorf("the gas price service could not be reached")
+		var ne net.Error
+		if errors.As(err, &ne) && ne.Timeout() {
+			return nil, fmt.Errorf("the gas price service did not answer in time (tried twice)")
+		}
+		return nil, fmt.Errorf("the gas price service could not be reached (tried twice)") // the reason is not shown: it holds the address, with the key
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 403 || resp.StatusCode == 401 {

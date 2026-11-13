@@ -1,6 +1,7 @@
 import { h, chip } from './ui.js';
 import { api } from './api.js';
 import { matchDetail } from './placematch.js';
+import { accountList } from './companyaccounts.js';
 
 const LABEL = { remembered: ['ok', 'Remembered'], saved: ['ok', 'Saved place'], found: ['ok', 'Found'], check: ['work', 'Pick one'], none: ['bad', 'Not found'] };
 
@@ -9,6 +10,7 @@ const LABEL = { remembered: ['ok', 'Remembered'], saved: ['ok', 'Saved place'], 
 export function pasteListCard(use) {
   const text = h('textarea', { rows: 6, style: 'width:100%;box-sizing:border-box', maxlength: 10000, 'aria-label': 'List of companies', placeholder: 'Paste the list here' });
   const msg = h('p', { class: 'muted', role: 'status' }), out = h('div');
+  const accounts = accountList();
 
   async function find() {
     msg.textContent = 'Looking them up...'; out.replaceChildren();
@@ -41,7 +43,7 @@ export function pasteListCard(use) {
         const [kind, label] = LABEL[x.status];
         const chosen = pick[i];
         return h('div', { class: 'card', style: `margin:8px 0;padding:10px;${skip[i] ? 'opacity:.55' : ''}` },
-          h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('b', { class: 'grow', style: 'flex:1 1 8em;min-width:0;overflow-wrap:anywhere' }, x.name), chip(kind, chosen ? label : x.options.length ? label : x.error ? 'Lookup failed' : 'Not found')),
+          h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap' }, h('b', { class: 'grow', style: 'flex:1 1 8em;min-width:0;overflow-wrap:anywhere' }, x.name), chip(kind, chosen ? (chosen === x.pick && x.status === 'remembered' && !x.known ? 'Remembered by name' : label) : x.options.length ? label : x.error ? 'Lookup failed' : 'Not found')),
           chosen ? h('div', { class: 'muted' }, chosen.address || (x.status === 'saved' ? 'One of your places' : '')) : null,
           !chosen && !skip[i] ? h('div', {}, ...x.options.map((m) => h('button', { class: 'sec', style: 'display:block;width:100%;text-align:left;margin:4px 0;white-space:normal', onclick: () => { pick[i] = { name: x.name, address: m.address, lat: m.lat, lon: m.lon }; draw(); } }, h('b', {}, m.name), h('div', { class: 'muted' }, matchDetail(m)))),
             x.options.length ? null : h('p', { class: 'muted' }, x.error ? `The lookup service did not answer (${x.error}), so this is not the same as nothing being found. Wait a minute and paste again, or search below.` : 'No match. Search it under another name below, skip it, or add the town to the name and paste again.')) : null,
@@ -58,8 +60,10 @@ export function pasteListCard(use) {
         if (skip[i]) continue;
         const p = pick[i], x = r.rows[i];
         stops.push({ name: p.name, label: p.address ? `${p.name}, ${p.address}` : p.name, lat: p.lat, lon: p.lon });
-        if (x.ref && x.status !== 'remembered' && x.status !== 'saved') await api('/api/company-list/remember', { method: 'POST', body: { ref: x.ref, name: p.name, address: p.address || '', lat: p.lat, lon: p.lon } }).catch(() => {});
+        // kept under this line's number unless that number already gives this very place (a changed pick is kept too)
+        if (x.ref && !(p === x.pick && (x.known || x.status === 'saved'))) await api('/api/company-list/remember', { method: 'POST', body: { ref: x.ref, name: p.name, address: p.address || '', lat: p.lat, lon: p.lon } }).catch(() => {});
       }
+      accounts.load();
       use(stops);
     };
     out.replaceChildren(r.more ? h('p', { class: 'banner' }, `Only the first 10 are used. ${r.more} more left out: paste them as the next day's list.`) : null, list, h('p', {}, go),
@@ -69,5 +73,5 @@ export function pasteListCard(use) {
   return h('div', {},
     h('p', { class: 'muted' }, 'Paste your list, one company per line. Only the company name is looked up. The account number and country some systems put after the name, and the lines under a name that only say when you last met, are skipped. These two lines are one search for "Acme Widgets":'),
     h('pre', { class: 'muted', style: 'margin:4px 0 8px;white-space:pre-wrap;overflow-wrap:anywhere' }, 'Acme Widgets, Inc.-1234567-U.S.A.\n12 - Visit'),
-    h('p', { class: 'muted' }, 'The account number is only used to remember which place you picked, so next time that company is filled in by itself. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out);
+    h('p', { class: 'muted' }, 'The account number is only used to remember which place you picked, so next time that company is filled in by itself. A company you picked before is also recognised by its name. Names are searched near Home. The trip starts from the Start on the Stops tab (the car position unless you changed it).'), text, h('p', {}, h('button', { onclick: find }, 'Find them')), msg, out, accounts.el);
 }
