@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.84.2
+
+### 🔒 Security and upkeep
+- **A way to crash the server is closed.** CarTrak is now built with Go 1.27.4, which fixes a fault in Go's own web server (a crafted request could stop it).
+- **Two more browser protections.** Once you have opened CarTrak over https, your browser is told to always use https for it, and the page policy is a little stricter. Nothing changes on screen.
+- **Remote access uses a newer Cloudflare connector (2026.10.7)**, and the database library is newer. After updating, look once at **More → Integrations → Remote access** to see it still says connected.
+
+### 📜 Changelog
+- **0.67.0 is back in this list.** Its notes had slipped under 0.68.0 when that version was written.
+
 ## 0.84.1
 
 ### 🖥️ Tabs across the top on a computer
