@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // Row is one stored reading, flattened to dotted-path -> value (the form ford.Flatten gives).
@@ -160,20 +159,6 @@ func Analyze(rows []Row) []Stat {
 		return out[i].Metric < out[j].Metric
 	})
 	return out
-}
-
-// Age is a short "3 h ago" for the page's help text in tests and logs.
-func Age(ts, now int64) string {
-	d := time.Duration(now-ts) * time.Second
-	switch {
-	case ts == 0:
-		return "never"
-	case d < time.Hour:
-		return fmt.Sprintf("%d min ago", int(d.Minutes()))
-	case d < 48*time.Hour:
-		return fmt.Sprintf("%d h ago", int(d.Hours()))
-	}
-	return fmt.Sprintf("%d d ago", int(d.Hours()/24))
 }
 
 // private says whether a metric holds where the car is or who it is. Its activity is listed, its value never is: the

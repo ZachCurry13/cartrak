@@ -9,9 +9,6 @@ import (
 // These helpers let other packages read a flattened reading (State.Extra) by metric name,
 // ignoring case and underscores, the same way the parser does.
 
-// Find returns the value of the first metric found, trying each name in turn.
-func Find(f map[string]any, names ...string) (any, bool) { return lookup(f, names...) }
-
 // Text returns a metric as text ("" when absent).
 func Text(f map[string]any, names ...string) string { return strAt(f, names...) }
 

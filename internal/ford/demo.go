@@ -22,9 +22,6 @@ type Demo struct {
 	fuel float64
 }
 
-// NewDemo is the default demo: a battery-electric car.
-func NewDemo() *Demo { return NewDemoKind("") }
-
 // NewDemoKind makes a demo of the given type ("ev", "gas", "hev" or "phev"; anything else is "ev").
 func NewDemoKind(kind string) *Demo {
 	k := Powertrain(strings.ToLower(strings.TrimSpace(kind)))

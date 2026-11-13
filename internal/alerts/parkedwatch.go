@@ -29,22 +29,6 @@ func motionVec(f map[string]any) ([3]float64, bool) {
 	return v, any
 }
 
-// Motion is how hard the car's motion sensors say it is being pushed (meters per second squared, gravity taken
-// out), or false when the car reported none. A parked car reads close to zero.
-func Motion(f map[string]any) (float64, bool) {
-	x, y, z := ford.Number(f, "acceleration.value.x"), ford.Number(f, "acceleration.value.y"), ford.Number(f, "acceleration.value.z")
-	if x == nil && y == nil && z == nil {
-		return 0, false
-	}
-	sq := func(v *float64) float64 {
-		if v == nil {
-			return 0
-		}
-		return *v * *v
-	}
-	return math.Sqrt(sq(x) + sq(y) + sq(z)), true
-}
-
 // alarmGoingOff reads the alarm and panic-alarm states. Ford's exact words are not documented, so any state that
 // says the alarm is active, triggered or sounding counts, and a state that says armed, disarmed, off or
 // inactive does not.

@@ -188,16 +188,6 @@ func (s *Server) dueCheck() {
 	}()
 }
 
-// dataUpdatesAvailable counts the lists with something newer, and a newer CarTrak, for the dot on More.
-func (s *Server) dataUpdatesAvailable() int {
-	s.dueCheck()
-	n := len(s.loadDataState().Avail)
-	if s.Upd != nil && s.core().GetKV("update_check") != "off" && s.Upd.Info().Available {
-		n++
-	}
-	return n
-}
-
 // dataUpdatesView: GET /api/data-updates. Admin only.
 func (s *Server) dataUpdatesView(w http.ResponseWriter, r *http.Request) {
 	s.dueCheck()
