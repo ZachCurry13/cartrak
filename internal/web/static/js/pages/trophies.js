@@ -2,6 +2,7 @@ import { h } from '../ui.js';
 import { api } from '../api.js';
 import { badgeRow } from '../funcharts.js';
 import { compareEnergyTier, compareDistance, valueText } from '../funwords.js';
+import { lifetimeCard } from '../lifetimecard.js';
 
 // Your trophy collection: every trophy this car can earn. The ones not yet earned are grayed out with how far along they are, so
 // you can see what is coming. Trophies that cannot apply to this car (charging ones for a gas car, the tank ones for an electric
@@ -43,7 +44,7 @@ export default async function trophies(root) {
   const known = new Set(GROUPS.flatMap(([, keys]) => keys));
   const groups = [...GROUPS, ['More', list.filter((b) => !known.has(b.key)).map((b) => b.key)]];
   const next = list.filter((b) => !b.earned && b.progress > 0).sort((a, b) => b.progress - a.progress).slice(0, 3);
-  root.append(
+  root.append(lifetimeCard(),
     h('section', { class: 'card' }, h('div', { class: 'bigfig' }, h('div', {}, h('b', {}, `${earned} of ${list.length}`), h('span', {}, 'earned')),
         tracked ? h('div', {}, h('b', {}, valueText('km', tracked)), h('span', {}, 'tracked with CarTrak')) : null),
       h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: `width:${Math.round((earned / list.length) * 100)}%` }))),

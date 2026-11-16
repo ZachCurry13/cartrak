@@ -16,6 +16,9 @@ func (s *Server) allBadges(ts []analytics.Trip, cs []analytics.Charge, towns map
 	fills, _ := s.S.ListRefuels()
 	all := append(analytics.Badges(ts, cs, towns, loc), analytics.MoreBadges(ts, cs, fills, loc)...)
 	all = analytics.WithEstimates(all, ts, time.Now())
+	if l, ok := s.lifetime(ts, cs); ok { // trophies the car had reached before CarTrak began
+		all = analytics.WithLifetime(all, l)
+	}
 	s.addWhere(all, cs)
 	info := s.vehicleInfo()
 	out := make([]analytics.Badge, 0, len(all))

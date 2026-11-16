@@ -62,7 +62,7 @@ func (s *Server) newBadges(ctx context.Context) {
 			continue
 		}
 		have = append(have, b.Key)
-		if prev != "" && !known[b.Key] {
+		if prev != "" && !known[b.Key] && !strings.Contains(b.Note, "CarTrak began") { // one reached before tracking is not news
 			s.tell(ctx, push.Alert{Kind: push.Achievement, Title: "Achievement: " + b.Name + " " + b.Emoji, Body: "Trophy earned. " + b.About + ".", URL: "#/trophies"})
 		}
 	}

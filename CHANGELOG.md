@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.87.0
+
+### 🔋 Your car's whole life, estimated
+- **Insights** and **Trophies** have a new card, **Since the car was new (estimated)**. From the odometer and the driving CarTrak has recorded, it estimates the electricity that went into the battery over the car's life, what came from chargers with charging losses, what that cost at the price a kWh has cost you, and what the same miles would have cost in your gas car.
+- The energy is a range. CarTrak may only have seen cold months, so it runs from your tracked efficiency to what mild weather gives (measured once CarTrak has mild-weather trips, assumed 20% better until then). It narrows as more seasons come in.
+
+### 🏆 Trophies from before CarTrak
+- The distance trophies (100, 1,000 and 10,000 miles, Around the world) count the miles the odometer already had, and show "Already reached when CarTrak began".
+- The energy trophies (1, 10 and 100 MWh) count the energy estimated before tracking, using the low end of the range so none is earned too early. One not reached yet says how much of its progress is estimated.
+- Trophies about a moment (a 150 kW charge, an early start, a 1,000-mile month) still need CarTrak to see them.
+- Reaching these does not send an Achievement alert: they are not news.
+
+### 🖥️ One top bar on a computer
+- From 1280 px wide, the name, the car picker, the tabs, the car's status and the icons share one row at the top instead of two stacked bars.
+- From 1700 px wide, the first three pages of your More list join the tabs.
+
+This release also has everything under 0.86.1 below, which was not released on its own.
+
 ## 0.86.1
 
 ### 🗺️ Trips your phone only half recorded get their road

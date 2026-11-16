@@ -4,6 +4,7 @@ import { createMap, mapConfig } from '../map.js';
 import { flowChart, dayRing, ringKey, badgeGrid } from '../funcharts.js';
 import { periodTitle, clockText } from '../funwords.js';
 import { isFuelCar } from '../navlayout.js';
+import { lifetimeCard } from '../lifetimecard.js';
 
 // Insights: Wrapped for a month or the year, everywhere you have driven, achievements, where the energy goes and a typical day.
 // Under them, the detailed charts (#/analytics/charging, driving, records, battery).
@@ -125,5 +126,6 @@ export default async function analytics(root, args, session) {
   }
   root.append(...head, wrappedCards());
   const [glow, badges, visited] = await Promise.all([glowCard(), badgesCard(), placesCard()]);
-  root.append(...[glow, visited, badges, ...(session.vehicle && session.vehicle.plug === false ? [] : lifeCards()), await careCard(session)].filter(Boolean));
+  const plug = !(session.vehicle && session.vehicle.plug === false);
+  root.append(...[glow, visited, badges, plug ? lifetimeCard() : null, ...(plug ? lifeCards() : []), await careCard(session)].filter(Boolean));
 }

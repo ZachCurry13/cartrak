@@ -34,6 +34,7 @@ by hand or with rules like "Mon-Fri 8am-5pm is work".
 - **Calendar link**: paste your calendar's private ICS address and Home lists today's appointments, the planner fills them in as stops, trips that go to them are named after them, and an evening alert says what tomorrow holds ([details](docs/calendar-and-weather.md))
 - **Weather warnings** from the National Weather Service (winter storms, ice, floods, high wind) where the car is, on a planned route and at tomorrow's appointments
 - **Free plugs now**: how many plugs are free at chargers near the car or at a planned charging stop, from Google (needs the Google Places key)
+- **Since the car was new**: an estimate of the electricity, cost and gas saved over the odometer's whole life, from your own driving, and trophies reached before CarTrak began
 - **Saved routes**: save a day's stops on a computer and open them on the phone; each is cleared two weeks after it was saved
 - **Tires**: log each set and the day it went on, and see what winter tires do to your range at the same temperature, not blamed on the cold ([details](docs/tires.md))
 - **Send a bug report** from any page: it is kept in the app as text (the page's words, the screen it was on, layout facts and the debug report), cleared by hand or after 30, 60 or 90 days, and a link you make on demand lets someone read them ([details](docs/bug-reports.md))

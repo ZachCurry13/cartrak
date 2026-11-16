@@ -37,7 +37,7 @@ nothing new costs almost nothing. What the device keeps for offline use is descr
 
 ## Layouts
 - **Phone:** one column, tabs along the bottom.
-- **Tablet and desktop:** the home page becomes a grid of two or three columns, trip and charging lists use several columns, and on wide screens the tabs move to the top of the page.
+- **Tablet and desktop:** the home page becomes a grid of two or three columns, trip and charging lists use several columns, and on wide screens the tabs move to the top of the page. From 1280 px wide the name, car picker, tabs, status and icons share one row, and from 1700 px the first three pages of your More list join the tabs.
 
 ## Settings
 | Setting | Default | |

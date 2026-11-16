@@ -36,6 +36,7 @@ import { applySeason, activeTheme, setBirthday, THEMES } from './seasons.js';
 import { playSeason } from './seasonfx.js';
 import { showWhatsNew } from './whatsnew.js';
 import { mountReflow } from './reflow.js';
+import { mountTopbar, extraTabs } from './topbar.js';
 
 
 const view = document.getElementById('view');
@@ -157,7 +158,7 @@ async function render() {
       } else {
         await Promise.all([loadAbout(), loadVehicle()]); // independent of each other
         await loadLayout(session);
-        applyBar(tabs, session);
+        applyBar(tabs, session, extraTabs());
         showWhatsNew(session); // after an update: what changed, once
         if (await firstRunTour()) return; // hashchange re-renders onto the tour
       }
@@ -209,7 +210,8 @@ async function syncLabel() {
 
 // The More tab slides a sheet up over the page, as the app on a phone usually does; the whole More page is one row down in it.
 tabs.querySelector('a[href="#/settings"]').addEventListener('click', (e) => { if (session.me) { e.preventDefault(); openMore(session); } });
-addEventListener('layoutchange', () => { if (session.me) { applyBar(tabs, session); render(); } });
+addEventListener('layoutchange', () => { if (session.me) { applyBar(tabs, session, extraTabs()); render(); } });
+mountTopbar(() => { if (session.me) applyBar(tabs, session, extraTabs()); });
 addEventListener('hashchange', render);
 setInterval(() => { if (!document.hidden) syncLabel(); }, effective() === 'saver' ? 300000 : 30000);
 // Ford may send the browser back to the site root (the redirect address registered on the Ford app may have

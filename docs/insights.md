@@ -65,3 +65,10 @@ back it up, and the card is not shown at all when there is nothing worth saying:
 
 ### Ladders and where you earned it
 Trophies that are rungs of one climb are shown as **ladders**: the rung you are on in full, the ones you have passed checked off above it. A line under a ladder puts the rung in perspective: for energy, how long it would run a home (and, for the biggest rung, a city for seconds or minutes); for distance, a marathon, Route 66 or the Moon. An earned trophy also says **where** it was earned (a place you named, else the town of the trip or charge that finished then); trophies already reached when CarTrak began have no place.
+
+## Since the car was new (estimated)
+On Insights and Trophies, **Since the car was new (estimated)** works out the car's whole life from the odometer and the driving CarTrak has recorded: the electricity that went into the battery, what came from chargers (with the charging losses your own sessions show), what that cost at the price a kWh has cost you since CarTrak began, and what the same miles would have cost in the gas car of your gas comparison. It needs five trips and about 30 miles with energy figures first, and only shows for a car that plugs in.
+
+The energy is a range: from the efficiency of the trips CarTrak recorded to that of mild weather (50 °F and up). Mild weather is measured from your own trips once there are about 30 miles of them, and taken as 20% better than cold driving until then. The middle figure is between the two. Prices are today's, not what electricity and gas cost in past years.
+
+The same estimate counts toward trophies. Distance trophies count the miles the odometer already had when CarTrak began (a fact, not a guess). Energy trophies count the low end of the energy estimated before CarTrak began, so one is never earned too early. Trophies reached this way say so instead of a date, and do not send an Achievement alert.

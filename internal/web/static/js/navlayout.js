@@ -108,11 +108,13 @@ export function icon(d) {
   return s;
 }
 
-// Puts the chosen pages in the bottom bar, before More (which stays, with its own click handler).
-export function applyBar(tabs, session) {
+// Puts the chosen pages in the bottom bar, before More (which stays, with its own click handler). extra: how many of the More
+// sheet's first pages join them, on a wide screen with room for more tabs.
+export function applyBar(tabs, session, extra = 0) {
   const more = tabs.querySelector('a[href="#/settings"]');
   for (const a of [...tabs.querySelectorAll('a')]) if (a !== more) a.remove();
-  for (const key of current(session).bar) {
+  const c = current(session);
+  for (const key of [...c.bar, ...c.tiles.slice(0, extra)]) {
     const [, href, label, d] = page(key);
     const a = document.createElement('a');
     a.href = href;

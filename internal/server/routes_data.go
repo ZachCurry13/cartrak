@@ -82,6 +82,7 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("POST /api/company-list/remember", s.auth(true, s.rememberCompany))
 	m.HandleFunc("GET /api/company-list/accounts", s.auth(true, s.listAccounts))
 	m.HandleFunc("GET /api/calendar/day", s.auth(true, s.calendarDay))
+	m.HandleFunc("GET /api/lifetime", s.auth(false, s.lifetimeAPI))
 	m.HandleFunc("GET /api/weather-alerts", s.auth(false, s.weatherAlerts))
 	m.HandleFunc("GET /api/chargers/live", s.auth(false, s.liveChargers))
 	m.HandleFunc("DELETE /api/company-list/accounts/{ref}", s.auth(true, s.forgetAccount))
