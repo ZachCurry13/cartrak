@@ -120,8 +120,12 @@ func (s *Server) chargeCostFrom(from time.Time) map[int64]string {
 			continue
 		}
 		switch {
+		case c.Cost == nil && c.AddedKwh == nil && !c.Warmup:
+			out[c.ID] = "not priced: nothing went into the battery and the car reported no power drawn"
 		case c.Cost == nil:
 			out[c.ID] = "not priced (no price set for " + dashIf(c.Where) + ")"
+		case c.Warmup:
+			out[c.ID] = fmt.Sprintf("warm-up before a drive: %.1f kWh drawn from the charger, %s, %.2f in all", *c.WallKwh, c.PriceFrom, *c.Cost)
 		case c.WallKwh != nil && *c.WallKwh > 0.5:
 			out[c.ID] = fmt.Sprintf("%s, %.2f a kWh delivered (%.1f kWh at the charger), %s", c.PriceFrom, *c.Cost / *c.WallKwh, *c.WallKwh, dashIf(c.Where))
 		default:

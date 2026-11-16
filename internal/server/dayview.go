@@ -34,7 +34,7 @@ func (s *Server) routeForDay(t *store.Trip, lookups *int) []dayRoute {
 	for _, p := range phone {
 		line = append(line, [2]float64{p.Lat, p.Lon})
 	}
-	if len(line) >= 2 {
+	if phoneFull(phone) {
 		out.Kind, out.Points = "phone", thinLine(line, dayRoutePoints)
 		return s.fillPhoneGaps(t, end, phone, out)
 	}

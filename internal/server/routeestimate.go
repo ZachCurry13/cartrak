@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/ZachCurry13/cartrak/internal/charging"
@@ -72,16 +73,36 @@ func (s *Server) hasPhoneTrack(t *store.Trip) bool {
 	if t.EndTS != nil {
 		end = *t.EndTS
 	}
-	return len(s.phoneRoute(t.StartTS, end)) >= 2
+	return phoneFull(s.phoneRoute(t.StartTS, end))
 }
 
 // recordedPoints are the positions a trip has: the car's own, with its start and end added when they are missing.
 func (s *Server) recordedPoints(t *store.Trip) []routeest.Point {
 	ss, _ := s.S.TrackBetween(t.StartTS, *t.EndTS)
-	var recorded []routeest.Point
+	// The car's positions and the phone's few fixes (a track too thin to draw on its own), in time order. A car repeats its last
+	// position for minutes while it drives, so a position already seen is not used again: it would send the road back and forth.
+	type fix struct {
+		ts int64
+		p  routeest.Point
+	}
+	var all []fix
 	for _, x := range ss {
 		if x.Lat != nil && x.Lon != nil {
-			recorded = append(recorded, routeest.Point{*x.Lat, *x.Lon})
+			all = append(all, fix{x.TS, routeest.Point{*x.Lat, *x.Lon}})
+		}
+	}
+	for _, p := range s.phoneRoute(t.StartTS, *t.EndTS) {
+		if p.TS >= t.StartTS && p.TS <= *t.EndTS {
+			all = append(all, fix{p.TS, routeest.Point{p.Lat, p.Lon}})
+		}
+	}
+	sort.SliceStable(all, func(i, j int) bool { return all[i].ts < all[j].ts })
+	seen := map[routeest.Point]bool{}
+	var recorded []routeest.Point
+	for _, f := range all {
+		if !seen[f.p] {
+			seen[f.p] = true
+			recorded = append(recorded, f.p)
 		}
 	}
 	if t.StartLat != nil && t.StartLon != nil && (len(recorded) == 0 || recorded[0] != (routeest.Point{*t.StartLat, *t.StartLon})) {

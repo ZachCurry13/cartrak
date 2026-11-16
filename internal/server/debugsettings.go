@@ -32,6 +32,7 @@ func (s *Server) debugSettings() []string {
 		add("prices per kWh: home %s, public %s; slow-charge efficiency %.0f%%", price(s.Cfg.PriceHome()), price(s.Cfg.PricePublic()), s.Cfg.ChargeEfficiency()*100)
 		add("alerts: battery reserve %.0f%%, bump level %.1f (0 is off), plug-in reminder %q below %.0f%%", s.Cfg.LowBatteryLevel(), s.Cfg.BumpThreshold(), s.Cfg.PlugReminderTime(), s.Cfg.PlugReminderBelow())
 		add("lookups: wind %s, road estimate %s, maps %s, city names %s", onOff(s.Cfg.WeatherLookup()), onOff(s.Cfg.RouteLookup()), onOff(s.Cfg.MapEnabled()), onOff(s.Cfg.GeocodeEnabled()))
+		add("calendar: %s (trips to appointments: %s); weather warnings %s; Google key for free plugs %s", onOff(s.Cfg.CalendarURL() != ""), map[bool]string{true: "named and counted as work", false: "named"}[s.Cfg.CalendarWork()], onOff(s.Cfg.WeatherAlerts()), onOff(s.Cfg.GooglePlacesKey() != ""))
 		key := "no key"
 		if s.Cfg.EIAKey() != "" {
 			key = "key set"

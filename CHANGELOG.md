@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.86.1
+
+### 🗺️ Trips your phone only half recorded get their road
+- A trip with just a few phone GPS positions, from a phone that slept with the screen off, was drawn as straight lines between them. **Estimate the route** and **Choose a different road** were hidden, because any phone track counted as the real one.
+- Now a phone track counts only when its positions are no more than about 2 miles apart. Fewer than that, and the road is estimated through those positions (they are exact, so the road follows where you went). The trip page, the Day view, the trips map and **Estimate their roads** all treat these trips the same way.
+
+### 🔌 Warming up before a drive is priced
+- On a cold morning the car warms its cabin and battery from the home charger just before you leave. The battery does not rise, so those few minutes showed as a charge with no price. They now show as a **Warm-up** with the power the car drew and what it cost at your home price.
+
+### ✍️ Smaller fixes
+- A short trip the car reported only after it was over no longer shows an impossible average speed (over 75 mph across a couple of miles).
+- The debug report now says whether the calendar, the weather warnings and the Google key for free plugs are on.
+
 ## 0.86.0
 
 ### 📅 Your calendar in CarTrak

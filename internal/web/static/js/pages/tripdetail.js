@@ -49,15 +49,19 @@ function route(samples) {
 // The phone's GPS track is finer than Ford's readings, so it is drawn when there is one.
 function routeFor(d, mc) {
   const phone = (d.phone || []).filter((p) => p.lat != null && p.lon != null);
-  const pts = phone.length >= 2 ? phone : (d.samples || []).filter((s) => s.lat != null && s.lon != null);
-  const note = phone.length >= 2 ? h('p', { class: 'muted' }, `Drawn from your phone's GPS (${phone.length} points).`) : null;
-  const est = phone.length < 2 && d.estimate && d.estimate.points && d.estimate.points.length >= 2 ? d.estimate : null;
+  // A phone that slept through most of the drive sends a few fixes kilometers apart: that is not a track (the server says so), and
+  // the road is estimated through them instead of drawn as straight lines between them.
+  const full = d.phoneFull ?? phone.length >= 2;
+  const pts = full ? phone : (d.samples || []).filter((s) => s.lat != null && s.lon != null);
+  const note = full ? h('p', { class: 'muted' }, `Drawn from your phone's GPS (${phone.length} points).`)
+    : phone.length ? h('p', { class: 'muted' }, `Your phone sent only ${phone.length} position${phone.length === 1 ? '' : 's'} on this trip, too few to draw the road from.`) : null;
+  const est = !full && d.estimate && d.estimate.points && d.estimate.points.length >= 2 ? d.estimate : null;
   if (est && mc.enabled) {
     const line = est.points;
     const m = createMap(mc, { height: 300 });
     m.show({ routes: [{ points: line, dash: '0.1 9', cap: 'round', width: 5, opacity: 0.85 }], markers: [{ lat: line[0][0], lon: line[0][1], color: '#059669' }, { lat: line[line.length - 1][0], lon: line[line.length - 1][1] }] });
     m.el.append(h('span', { class: 'maptag' }, 'Estimated route'));
-    return [m.el, h('p', { class: 'muted' }, 'Estimated by a routing service from the positions the car recorded, not where it really went. Phone GPS shows the real path.')];
+    return [m.el, h('p', { class: 'muted' }, phone.length ? `Estimated by a routing service through the positions the car and your phone recorded (${phone.length} from the phone), not exactly where it went.` : 'Estimated by a routing service from the positions the car recorded, not where it really went. Phone GPS shows the real path.')];
   }
   if (pts.length < 2) return [h('p', { class: 'muted' }, 'No GPS route recorded for this trip.')];
   if (!mc.enabled) return [route(pts), note];
@@ -110,7 +114,7 @@ export default async function tripDetail(root, [id, action], session) {
   } else {
     routeBox.append(...routeFor(data, mc).filter(Boolean));
   }
-  if (session.me.role === 'admin' && !t.open && (data.phone || []).filter((p) => p.lat != null && p.lon != null).length < 2) routeBox.append(routeChoiceBar(t, !!(data.estimate && data.estimate.points && data.estimate.points.length >= 2), () => dispatchEvent(new Event('hashchange')))); // no phone track: the road is an estimate, and can be chosen
+  if (session.me.role === 'admin' && !t.open && !(data.phoneFull ?? (data.phone || []).filter((p) => p.lat != null && p.lon != null).length >= 2)) routeBox.append(routeChoiceBar(t, !!(data.estimate && data.estimate.points && data.estimate.points.length >= 2), () => dispatchEvent(new Event('hashchange')))); // no phone track: the road is an estimate, and can be chosen
   const notes = h('input', { value: t.notes || '', placeholder: 'Notes (client, purpose…)', maxlength: 200 });
   const msg = h('p', { class: 'muted', role: 'status' });
   const admin = session.me.role === 'admin';
@@ -121,7 +125,8 @@ export default async function tripDetail(root, [id, action], session) {
   const why = saver || t.open ? null : await whyCard(t.id);
   const hours = t.endTs && t.startTs ? (t.endTs - t.startTs) / 3600 : 0;
   const rawKph = hours > 0 && t.distanceKm != null ? t.distanceKm / hours : null;
-  const lateReport = rawKph != null && rawKph > 250; // no car does that: it reported the drive after it was over, so the time is not the drive's
+  // No car does that, nor a short hop at highway speed from end to end: the car reported the drive after it was over, so the time is not the drive's.
+  const lateReport = rawKph != null && (rawKph > 250 || (rawKph > 120 && t.distanceKm < 10));
   const avgKph = lateReport ? null : rawKph;
   const hasStart = t.startLat != null && t.startLon != null;
   const hasEnd = t.endLat != null && t.endLon != null && !t.open;

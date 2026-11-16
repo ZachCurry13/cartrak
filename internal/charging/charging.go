@@ -64,6 +64,7 @@ type Session struct {
 	PriceFrom  string   `json:"priceFrom"`        // where the cost came from: receipt, place, home, home+night, public, or "" when unpriced
 	Efficiency *float64 `json:"efficiency"`       // added / delivered, only when the charger's number was entered
 	Remote     bool     `json:"remote,omitempty"` // a remote start with the car plugged in, not a charge (set by the server)
+	Warmup     bool     `json:"warmup,omitempty"` // the battery did not rise: the car drew the charger's power to warm itself before a drive
 	Measured   bool     `json:"measured"`
 }
 
@@ -107,11 +108,19 @@ func enrichBase(c *store.Charge, capacityKwh *float64, home *Point, p Prices) Se
 		}
 	}
 	if s.AddedKwh == nil {
-		return s
+		// Plugged in at home on a cold morning, the car warms its cabin and battery from the wall just before a drive: the battery
+		// does not rise (it can even drop a little), but the charger delivered power, and that power is paid for.
+		if c.PeakKw >= acKwLimit || c.PowerKwh == nil || *c.PowerKwh < minAddedKwh {
+			return s
+		}
+		s.Warmup = true
 	}
-	wall := *s.AddedKwh
+	wall := 0.0
+	if s.AddedKwh != nil {
+		wall = *s.AddedKwh
+	}
 	switch {
-	case c.ChargerKwh != nil && *c.ChargerKwh >= wall*0.95:
+	case s.AddedKwh != nil && c.ChargerKwh != nil && *c.ChargerKwh >= wall*0.95:
 		wall = *c.ChargerKwh
 		eff := *s.AddedKwh / wall
 		s.Efficiency, s.Measured = &eff, true

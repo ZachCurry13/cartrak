@@ -87,10 +87,11 @@ func (s *Server) routeKind(t *store.Trip) ([][2]float64, string) {
 		end = *t.EndTS
 	}
 	var line [][2]float64
-	for _, p := range s.phoneRoute(t.StartTS, end) {
+	phone := s.phoneRoute(t.StartTS, end)
+	for _, p := range phone {
 		line = append(line, [2]float64{p.Lat, p.Lon})
 	}
-	if len(line) < 2 {
+	if !phoneFull(phone) {
 		line = line[:0]
 		if est := s.estimateFor(t, false); est != nil { // an estimate kept earlier beats a straight line (never asks the service here)
 			return thinLine(est.Points, overviewPoints), "road"
