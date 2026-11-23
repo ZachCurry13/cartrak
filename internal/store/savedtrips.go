@@ -53,3 +53,16 @@ func (s *Store) DeleteSavedTrip(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM saved_trips WHERE id=?`, id)
 	return err
 }
+
+// UpdateSavedTrip replaces a saved trip's name and body, and counts it as saved now. found is false when there is no such trip.
+func (s *Store) UpdateSavedTrip(id int64, name, body string, now int64) (found bool, err error) {
+	if _, err := s.DB.Exec(savedTripDDL); err != nil {
+		return false, err
+	}
+	r, err := s.DB.Exec(`UPDATE saved_trips SET name=?,body=?,created=? WHERE id=?`, name, body, now, id)
+	if err != nil {
+		return false, err
+	}
+	n, _ := r.RowsAffected()
+	return n > 0, nil
+}

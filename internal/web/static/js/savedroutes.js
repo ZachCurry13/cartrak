@@ -9,10 +9,13 @@ const dayName = (d) => d.toLocaleDateString([], { weekday: 'long', month: 'short
 
 // st: { stops, when, best, back, draw(), note(text) } from the route planner.
 export function savedRoutes(st) {
-  const box = h('div');
+  const box = h('div'), panel = h('div');
+  let routes = [], current = null; // the saved routes, and the one opened or last saved here ({id, name}), which Save offers to update
   async function load() {
     try {
       const l = (await api('/api/saved-trips')).filter(isRoute);
+      routes = l;
+      if (current && !l.some((t) => t.id === current.id)) current = null; // deleted, or cleared after two weeks
       box.replaceChildren(l.length ? h('details', { class: 'card', style: 'margin:8px 0;padding:10px', open: true }, h('summary', {}, h('b', {}, `Saved routes (${l.length})`)),
         ...l.map(row), h('p', { class: 'muted', style: 'margin:6px 0 0' }, 'Saved routes open on any of your devices. Each is cleared two weeks after it was saved.')) : '');
     } catch { box.replaceChildren(); }
@@ -23,7 +26,7 @@ export function savedRoutes(st) {
     return h('div', { class: 'row', style: 'gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px' },
       h('div', { style: 'flex:1 1 10em;min-width:0;overflow-wrap:anywhere' }, h('b', {}, t.name), h('span', { class: 'muted' }, ` · ${n} stop${n === 1 ? '' : 's'}`)),
       h('div', { class: 'seg' }, h('button', { class: 'sec', type: 'button', onclick: () => open(t) }, 'Open'),
-        h('button', { class: 'text sm', type: 'button', onclick: async () => { if (confirm(`Delete ${t.name}?`)) { await api(`/api/saved-trips/${t.id}`, { method: 'DELETE' }).catch(() => {}); load(); } } }, 'Delete')));
+        h('button', { class: 'text sm', type: 'button', onclick: async () => { if (confirm(`Delete ${t.name}?`)) { await api(`/api/saved-trips/${t.id}`, { method: 'DELETE' }).catch(() => {}); if (current && current.id === t.id) { current = null; st.note(''); } load(); } } }, 'Delete')));
   };
   function open(t) {
     try {
@@ -33,17 +36,43 @@ export function savedRoutes(st) {
       if (b.when && new Date(b.when).getTime() > Date.now()) st.when.value = b.when; // a time already gone stays at now
       st.best.checked = !!b.best; st.back.checked = !!b.back; st.last.checked = !!b.last;
       st.back.dispatchEvent(new Event('change'));
-      st.draw(); st.note(`Opened ${t.name}. Plan the route to see today's battery and weather.`);
+      current = { id: t.id, name: t.name }; panel.replaceChildren();
+      st.draw(); st.note(`Opened ${t.name}. Plan the route to see today's battery and weather. Save this route updates it, or saves a new one.`);
     } catch { st.note('That saved route could not be opened.'); }
   }
-  async function save() {
+  const body = () => ({ kind: 'route', stops: st.stops.map((s) => ({ name: s.name, label: s.label, lat: s.lat, lon: s.lon, at: s.at || '', stay: s.stay ?? null })), when: st.when.value, best: st.best.checked, back: st.back.checked, last: st.last.checked });
+  async function put(name, id) {
+    try {
+      const r = await api(id ? `/api/saved-trips/${id}` : '/api/saved-trips', { method: id ? 'PUT' : 'POST', body: { name: name.slice(0, 80), body: body() } });
+      current = { id: id || r.id, name };
+      panel.replaceChildren();
+      st.note(`${id ? 'Updated' : 'Saved as'} ${name}. Open it on any of your devices from Saved routes.`);
+      load();
+    } catch (e) { st.note(e.message); }
+  }
+  // Save opens a name box under the button. When this route came from a saved one, or another saved route has the same name, it asks:
+  // update that one, or keep both.
+  function save() {
     if (st.stops.some((s) => s.lat == null)) { st.note('Find every stop before saving the route.'); return; }
+    if (panel.firstChild) { panel.replaceChildren(); return; }
     const d = new Date(st.when.value);
-    const name = prompt('Name this route', dayName(Number.isNaN(d.getTime()) ? new Date() : d));
-    if (!name || !name.trim()) return;
-    const body = { kind: 'route', stops: st.stops.map((s) => ({ name: s.name, label: s.label, lat: s.lat, lon: s.lon, at: s.at || '', stay: s.stay ?? null })), when: st.when.value, best: st.best.checked, back: st.back.checked, last: st.last.checked };
-    try { await api('/api/saved-trips', { method: 'POST', body: { name: name.trim().slice(0, 80), body } }); st.note(`Saved as ${name.trim()}. Open it on any of your devices from Saved routes.`); load(); } catch (e) { st.note(e.message); }
+    const name = h('input', { value: current ? current.name : dayName(Number.isNaN(d.getTime()) ? new Date() : d), maxlength: 80, 'aria-label': 'Name of the route', style: 'flex:1 1 12em;min-width:0' });
+    const choices = h('div', { class: 'seg', style: 'margin-top:8px' });
+    const draw = () => {
+      const n = name.value.trim();
+      const same = routes.find((r) => r.name.trim().toLowerCase() === n.toLowerCase() && (!current || r.id !== current.id));
+      const over = current ? current : same ? { id: same.id, name: same.name } : null;
+      choices.replaceChildren(...(over ? [h('button', { type: 'button', disabled: !n, onclick: () => put(n, over.id) }, `Update ${over.name}`), h('button', { class: 'sec', type: 'button', disabled: !n, onclick: () => put(n) }, 'Save as new')]
+        : [h('button', { type: 'button', disabled: !n, onclick: () => put(n) }, 'Save')]),
+        h('button', { class: 'text sm', type: 'button', onclick: () => panel.replaceChildren() }, 'Cancel'));
+    };
+    name.addEventListener('input', draw);
+    name.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); choices.querySelector('button')?.click(); } });
+    draw();
+    panel.replaceChildren(h('div', { class: 'card', style: 'margin:8px 0;padding:10px' }, h('label', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, 'Name', name), choices,
+      current ? h('p', { class: 'muted', style: 'margin:6px 0 0' }, `This route was opened from ${current.name}. Update keeps one copy; Save as new keeps both.`) : null));
+    name.focus();
   }
   load();
-  return { el: box, save };
+  return { el: box, save, panel };
 }

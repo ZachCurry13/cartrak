@@ -91,6 +91,7 @@ func (s *Server) dataRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /api/trip-chain/range", s.auth(true, s.tripRange))
 	m.HandleFunc("GET /api/saved-trips", s.auth(true, s.listSavedTrips))
 	m.HandleFunc("POST /api/saved-trips", s.auth(true, s.addSavedTrip))
+	m.HandleFunc("PUT /api/saved-trips/{id}", s.auth(true, s.updateSavedTrip))
 	m.HandleFunc("DELETE /api/saved-trips/{id}", s.auth(true, s.deleteSavedTrip))
 	m.HandleFunc("POST /api/saved-trips/{id}/share", s.auth(true, s.shareTrip))
 	m.HandleFunc("DELETE /api/saved-trips/{id}/share", s.auth(true, s.unshareTrip))

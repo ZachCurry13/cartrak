@@ -81,3 +81,27 @@ func (s *Server) deleteSavedTrip(w http.ResponseWriter, r *http.Request) {
 	}
 	ok(w, map[string]bool{"ok": true})
 }
+
+// updateSavedTrip: PUT /api/saved-trips/{id} {"name": "...", "body": {...}}. Saves over a trip or route kept before (Save, then
+// Update rather than a second copy). Its share link, if any, stays.
+func (s *Server) updateSavedTrip(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	var in struct {
+		Name string          `json:"name"`
+		Body json.RawMessage `json:"body"`
+	}
+	if err != nil || decode(r, &in) != nil || strings.TrimSpace(in.Name) == "" || len(in.Name) > 80 || len(in.Body) == 0 || len(in.Body) > savedTripSize || !json.Valid(in.Body) {
+		fail(w, 400, "give the trip a name")
+		return
+	}
+	found, err := s.S.UpdateSavedTrip(id, strings.TrimSpace(in.Name), string(in.Body), time.Now().Unix())
+	if err != nil {
+		fail(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !found {
+		fail(w, 404, "that saved trip is gone: save it as a new one")
+		return
+	}
+	ok(w, map[string]any{"ok": true, "id": id})
+}

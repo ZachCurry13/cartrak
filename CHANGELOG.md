@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.89.0
+
+### 💾 Save a route over the old one
+- **Save this route** no longer pops up a box asking only for a name. A name box opens under the button instead.
+- When you opened the route from **Saved routes**, or another saved route already has that name, it offers **Update** (saves your changes over that one) or **Save as new** (keeps both). No more "Monday" and a second "Monday".
+- An updated route counts as saved that day, so it stays for another two weeks.
+
 ## 0.88.0
 
 ### 🕛 Stops that keep their time

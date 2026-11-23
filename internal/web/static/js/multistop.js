@@ -132,7 +132,7 @@ export async function multiStopCard(get, latest) {
     stops: h('div', {}, keep.el, cal, h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
       list, tick(best, 'ms-best', 'Best order (least driving; set times kept)'), tick(back, 'ms-back', 'Return to the start'), lastTick,
       h('label', { for: 'ms-stay', style: 'display:flex;gap:8px;align-items:center;margin:4px 0;min-height:44px' }, 'Time at each stop (minutes)', stayAll),
-      h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', { class: 'seg' }, h('button', { onclick: plan }, 'Plan the route'), h('button', { class: 'sec', type: 'button', onclick: keep.save }, 'Save this route')), msg, out),
+      h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', { class: 'seg' }, h('button', { onclick: plan }, 'Plan the route'), h('button', { class: 'sec', type: 'button', onclick: keep.save }, 'Save this route')), keep.panel, msg, out),
     list: pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); toStops(`${found.length} stops filled in. Check them, then plan the route.`); }),
     long: tripChainCard(() => ({ ...get(), departTs: Math.floor(new Date(when.value).getTime() / 1000) || 0 }), () => stops[0], (day, i, pct) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; toStops(`Day ${i + 1} is filled in${i ? `: set the starting charge to about ${Math.round(pct)}% first` : ''}. Plan the route to see the roads, weather and charging.`); }, named),
   };
