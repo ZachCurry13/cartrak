@@ -1,5 +1,7 @@
 # Status
 
+- Released: v0.89.0 (2026-11-23, image :0.89.0 and :latest): saving a route offers Update or Save as new (js/savedroutes.js, PUT /api/saved-trips/{id}).
+
 - Released: v0.88.0 (2026-11-23, image :0.88.0 and :latest): set times and lengths on route planner stops kept by Best order (routeplan/timed.go, server/routeplan_time.go, js/stoptime.js), Time at each stop, Finish at the last stop, calendar and saved routes keep times. Known flaky test: fleet TestMigrationKeepsPeopleAndMakesTheFirstCar (TempDir cleanup).
 
 - Released: v0.87.0 (2026-11-16, image :0.87.0 and :latest, with the 0.86.1 fixes): Since the car was new (estimated) card and trophies from before tracking (analytics/lifetime.go, server/lifetime.go, js/lifetimecard.js), one top bar on a computer from 1280 px and extra tabs from 1700 px (js/topbar.js), sparse phone tracks get an estimated road (report 31; server/tripphone.go phoneFull), priced warm-ups, debug report lists the calendar and weather settings. Open from reports: #3 (Google Maps stops) to confirm with the owner; #10, #16, #20, #28 handled by earlier releases, to be marked fixed. Next on the owner's list: 12 V and tire-leak warnings, electricity rates.
