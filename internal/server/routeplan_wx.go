@@ -12,9 +12,11 @@ import (
 
 // stopPoint is a place on the route.
 type stopPoint struct {
-	Name string  `json:"name"`
-	Lat  float64 `json:"lat"`
-	Lon  float64 `json:"lon"`
+	Name    string   `json:"name"`
+	Lat     float64  `json:"lat"`
+	Lon     float64  `json:"lon"`
+	AtTS    int64    `json:"atTs,omitempty"`    // be here at this moment (lunch at noon); 0 for no set time
+	StayMin *float64 `json:"stayMin,omitempty"` // minutes spent here; nil uses the planner's time at each stop
 }
 
 // legWeather is the weather expected on one leg and what it is worth in energy.

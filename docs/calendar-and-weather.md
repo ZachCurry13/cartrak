@@ -10,7 +10,7 @@ Anyone with that address can read the calendar, so CarTrak keeps it on the serve
 
 **What it does**
 - **Home** shows **Today** (from 6 pm, **Tomorrow**): the appointments with the place each one goes to, and **Plan today's route**.
-- The route planner's **Stops** tab has **Today's appointments** and **Tomorrow's**. They fill the stops in the order of the day, untick **Best order**, and set the leaving time to half an hour before the first appointment.
+- The route planner's **Stops** tab has **Today's appointments** and **Tomorrow's**. They fill the stops in the order of the day, each with its appointment time and length (so even **Best order** keeps every meeting at its time), untick **Best order**, and set the leaving time to half an hour before the first appointment.
 - A trip that ends within about 400 m of an appointment's place, from an hour and a half before it starts until it ends, gets the appointment's title as its note. With **Trips to calendar appointments** set to **Work**, it is counted as work too (a choice you can still change on the trip).
 - At 7 pm, the **Tomorrow's appointments** alert (if you chose it under Notifications) gives the first appointment, the low and any snow there (with Weather on), any road warnings at the appointments, and how much battery the day takes with what to charge to.
 

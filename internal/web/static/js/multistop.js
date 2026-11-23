@@ -11,6 +11,7 @@ import { savedRoutes } from './savedroutes.js';
 import { calendarButtons } from './calendarfill.js';
 import { routeWarnings } from './wxalerts.js';
 import { liveCheck } from './livechargers.js';
+import { stopTimeEditor, stopTimeText, atTs, defaultStay, keepDefaultStay } from './stoptime.js';
 
 const kmBetween = (a, b, c, d) => { const r = (x) => (x * Math.PI) / 180, dl = r(d - b), dp = r(c - a), q = Math.sin(dp / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dl / 2) ** 2; return 12742 * Math.asin(Math.sqrt(q)); };
 const MAX = 11; // the start and up to ten destinations
@@ -31,6 +32,8 @@ export async function multiStopCard(get, latest) {
   const list = h('div'), out = h('div'), msg = h('p', { class: 'muted', role: 'status' });
   const best = h('input', { type: 'checkbox', id: 'ms-best', checked: true });
   const back = h('input', { type: 'checkbox', id: 'ms-back', checked: true });
+  const last = h('input', { type: 'checkbox', id: 'ms-last' });
+  const stayAll = h('input', { type: 'number', id: 'ms-stay', min: 0, max: 600, step: 5, value: defaultStay(), style: 'width:6em', onchange: () => keepDefaultStay(Math.max(0, Math.min(600, Number(stayAll.value) || 0))) });
   const tick = (box, id, text) => h('label', { for: id, style: 'display:flex;gap:8px;align-items:center;margin:4px 0;min-height:44px' }, box, text);
 
   const rowFor = (s, i) => {
@@ -60,9 +63,11 @@ export async function multiStopCard(get, latest) {
       // the name, and under it the address if there is one (not the name again); the buttons on their own line so the name has the width
       const title = s.name || s.label;
       const sub = s.label && s.label.startsWith(`${title}, `) ? s.label.slice(title.length + 2) : s.label && s.label !== title && !s.label.startsWith(title) ? s.label : '';
+      const timed = i > 0 ? stopTimeEditor(s, draw) : null, timeNote = stopTimeText(s);
       return h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
-        h('div', { class: 'row', style: 'gap:8px;align-items:flex-start;flex-wrap:wrap' }, mark, h('div', { style: 'flex:1 1 6em;min-width:0;overflow-wrap:anywhere' }, h('b', {}, title), sub ? h('div', { class: 'muted' }, sub) : null),
-          h('div', { style: 'display:flex;gap:6px;margin-left:auto' }, h('button', { class: 'sec', onclick: () => { Object.assign(s, { name: '', label: '', lat: null, lon: null }); draw(); } }, 'Change'), ...tools)));
+        h('div', { class: 'row', style: 'gap:8px;align-items:flex-start;flex-wrap:wrap' }, mark, h('div', { style: 'flex:1 1 6em;min-width:0;overflow-wrap:anywhere' }, h('b', {}, title), sub ? h('div', { class: 'muted' }, sub) : null, timeNote ? h('div', {}, timeNote) : null),
+          h('div', { style: 'display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end' }, h('button', { class: 'sec', onclick: () => { Object.assign(s, { name: '', label: '', lat: null, lon: null }); draw(); } }, 'Change'), timed ? timed.button : null, ...tools)),
+        timed ? timed.form : null);
     }
     return h('div', { class: 'card', style: 'margin:8px 0;padding:10px' },
       h('div', { class: 'row', style: line.replace('margin-top:6px', 'margin-top:0') }, mark, h('div', { style: 'flex:1 1 auto;min-width:0' }, q), h('button', { class: 'sec', style: 'flex:0 0 auto', onclick: find }, 'Find')),
@@ -83,7 +88,14 @@ export async function multiStopCard(get, latest) {
         h('b', { class: l.short ? 'bad' : '' }, `${Math.round(l.arrivePct)}%`)),
       bits ? h('div', {}, h('span', {}, bits), extra >= 2 ? h('span', { class: 'muted' }, ` · wind and rain add about ${extra}%`) : null) : null,
       h('div', { class: 'muted' }, `${num(l.kwh, 1, ' kWh')} used${w.tempBand ? ` · your usual efficiency at ${tempBandLabel(w.tempBand)}` : ''}${w.learned ? ' · rain from your own wet trips' : ''}`),
+      stayLine(l.at),
       l.charge && at && at.lat != null ? liveCheck(at.lat, at.lon, 1500) : null);
+  };
+  // what happens at a leg's destination: its set time, the wait for it or how late, and the time spent there
+  const stayLine = (a) => {
+    if (!a || (!a.atTs && !(a.stayMin > 0))) return null;
+    return h('div', {}, a.lateMin > 10 ? chip('bad', `${Math.round(a.lateMin)} min late for ${clock(a.atTs)}`) : a.atTs ? chip('ok', `at ${clock(a.atTs)}`) : null,
+      ' ', h('span', { class: 'muted' }, [a.waitMin >= 1 ? `wait ${hm(a.waitMin)}` : null, a.stayMin > 0 ? `${hm(a.stayMin)} there` : null].filter(Boolean).join(' · ')));
   };
   async function plan() {
     const bad = stops.findIndex((s) => s.lat == null);
@@ -91,9 +103,10 @@ export async function multiStopCard(get, latest) {
     const g = get();
     msg.textContent = 'Planning...'; out.replaceChildren();
     try {
-      const r = await api('/api/route-plan', { method: 'POST', body: { stops: stops.map((s) => ({ name: s.name, lat: s.lat, lon: s.lon })), departTs: Math.floor(new Date(when.value).getTime() / 1000) || 0, startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct, chargeKw: g.chargeKw, optimize: best.checked, roundTrip: back.checked } });
+      const leaving = Number.isNaN(new Date(when.value).getTime()) ? new Date() : new Date(when.value);
+      const r = await api('/api/route-plan', { method: 'POST', body: { stops: stops.map((s, i) => ({ name: s.name, lat: s.lat, lon: s.lon, atTs: i ? atTs(s, leaving) : 0, stayMin: i && s.stay != null ? s.stay : undefined })), departTs: Math.floor(leaving.getTime() / 1000), startPct: g.startPct, reservePct: g.reservePct, targetPct: g.targetPct, chargeKw: g.chargeKw, optimize: best.checked, roundTrip: back.checked, endLast: !back.checked && last.checked, stayMin: Math.max(0, Math.min(600, Number(stayAll.value) || 0)) } });
       msg.textContent = '';
-      if (best.checked && r.savedMinutes > 0) { const was = stops.slice(); stops.splice(0, stops.length, ...r.order.map((i) => was[i])); draw(); } // show the order it chose
+      if (best.checked && r.order.some((k, i) => k !== i)) { const was = stops.slice(); stops.splice(0, stops.length, ...r.order.map((i) => was[i])); draw(); } // show the order it chose
       const links = routeUrls(r.stops.map((s) => [s.lat, s.lon]));
       const charges = r.legs.filter((l) => l.charge).length;
       out.replaceChildren(h('section', { class: 'card' }, h('h2', {}, 'The route'), routeSummary(r, g.startPct),
@@ -105,15 +118,20 @@ export async function multiStopCard(get, latest) {
         h('p', { class: 'muted' }, `Each leg uses your car's real efficiency at that speed and temperature, plus the forecast wind and rain. Charging assumes a charger at the stop and ${g.chargeKw} kW. ${r.reservePct}% is kept in reserve. Google does not know the charging stops: add a charger to its route where you plug in.`)));
     } catch (e) { msg.textContent = e.message; }
   }
+  const lastTick = h('div', {}, tick(last, 'ms-last', 'Finish at the last stop')); // a wrapper: hidden does not beat the label's own display
+  const showLast = () => { lastTick.hidden = back.checked; };
+  back.addEventListener('change', showLast);
+  showLast();
   draw();
-  const st = { stops, when, best, back, draw: () => { out.replaceChildren(); draw(); }, note: (t) => { msg.textContent = t; } };
+  const st = { stops, when, best, back, last, draw: () => { out.replaceChildren(); draw(); }, note: (t) => { msg.textContent = t; } };
   const keep = savedRoutes(st);
   const cal = calendarButtons(st);
   const show = (k) => { for (const [id, p] of Object.entries(panels)) p.hidden = id !== k; for (const [id, b] of Object.entries(tabBtn)) { b.classList.toggle('on', id === k); b.setAttribute('aria-pressed', String(id === k)); } };
   const toStops = (note) => { out.replaceChildren(); draw(); msg.textContent = note; show('stops'); };
   const panels = {
     stops: h('div', {}, keep.el, cal, h('p', { class: 'muted' }, 'Up to 10 stops. Search a business or address, or pick a saved place.'),
-      list, tick(best, 'ms-best', 'Best order (least driving)'), tick(back, 'ms-back', 'Return to the start'),
+      list, tick(best, 'ms-best', 'Best order (least driving; set times kept)'), tick(back, 'ms-back', 'Return to the start'), lastTick,
+      h('label', { for: 'ms-stay', style: 'display:flex;gap:8px;align-items:center;margin:4px 0;min-height:44px' }, 'Time at each stop (minutes)', stayAll),
       h('label', { for: 'ms-when' }, 'Leaving at'), when, h('p', { class: 'seg' }, h('button', { onclick: plan }, 'Plan the route'), h('button', { class: 'sec', type: 'button', onclick: keep.save }, 'Save this route')), msg, out),
     list: pasteListCard((found) => { stops.splice(1, stops.length - 1, ...found); toStops(`${found.length} stops filled in. Check them, then plan the route.`); }),
     long: tripChainCard(() => ({ ...get(), departTs: Math.floor(new Date(when.value).getTime() / 1000) || 0 }), () => stops[0], (day, i, pct) => { stops.splice(0, stops.length, ...day); best.checked = false; back.checked = false; toStops(`Day ${i + 1} is filled in${i ? `: set the starting charge to about ${Math.round(pct)}% first` : ''}. Plan the route to see the roads, weather and charging.`); }, named),

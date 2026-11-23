@@ -23,7 +23,9 @@ export function calendarButtons(st) {
       const timed = r.events.filter((e) => !e.allDay);
       const placed = timed.filter((e) => e.place);
       if (!placed.length) { st.note(timed.length ? 'None of the appointments has a place CarTrak could find. Add them by hand.' : 'No appointments that day.'); return; }
-      st.stops.splice(1, st.stops.length - 1, ...placed.slice(0, 10).map((e) => ({ name: e.title, label: e.place.address ? `${e.title}, ${e.place.address}` : e.title, lat: e.place.lat, lon: e.place.lon })));
+      // each keeps its appointment's time and length, so Best order cannot move a meeting away from its time
+      const hhmm = (ts) => { const d = new Date(ts * 1000); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+      st.stops.splice(1, st.stops.length - 1, ...placed.slice(0, 10).map((e) => ({ name: e.title, label: e.place.address ? `${e.title}, ${e.place.address}` : e.title, lat: e.place.lat, lon: e.place.lon, at: hhmm(e.start), stay: Math.max(0, Math.round((e.end - e.start) / 60)) })));
       st.best.checked = false; // the appointments' own order
       st.back.checked = true;
       const leave = new Date((placed[0].start - 30 * 60) * 1000);

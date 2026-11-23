@@ -27,6 +27,8 @@ type routePlanIn struct {
 	ChargeKw  float64     `json:"chargeKw"`
 	Optimize  bool        `json:"optimize"`  // put the destinations in the order that takes least driving
 	RoundTrip bool        `json:"roundTrip"` // and drive back to the start at the end
+	EndLast   bool        `json:"endLast"`   // without the way back: the last stop given stays last (Costco on the way home)
+	StayMin   float64     `json:"stayMin"`   // minutes spent at each stop that does not say its own
 }
 
 type routeLegOut struct {
@@ -35,6 +37,7 @@ type routeLegOut struct {
 	DepartTS  int64      `json:"departTs"`
 	ArriveTS  int64      `json:"arriveTs"`
 	Estimated bool       `json:"estimated"` // the distance is a straight line made longer, not a road
+	At        stopTime   `json:"at"`        // at the destination: the wait for its set time, how late, the time spent there
 }
 
 // planRoute: POST /api/route-plan. Works the battery through up to ten destinations, with the forecast for each leg and how the
@@ -65,6 +68,9 @@ func (s *Server) planRoute(w http.ResponseWriter, r *http.Request) {
 	if in.Target < in.Reserve+10 || in.Target > 100 {
 		in.Target = 90
 	}
+	if in.StayMin < 0 || in.StayMin > maxStayMin {
+		in.StayMin = 0
+	}
 	if in.ChargeKw <= 0 || in.ChargeKw > 400 {
 		in.ChargeKw = 100
 	}
@@ -91,11 +97,17 @@ func (s *Server) planRoute(w http.ResponseWriter, r *http.Request) {
 	for i := range order {
 		order[i] = i
 	}
+	v := visits(in.Stops, depart, in.StayMin)
+	onTime := true
 	if in.Optimize && len(in.Stops) >= 3 {
-		in.Stops, order, saved = s.bestOrder(ctx, roads, in.Stops, in.RoundTrip)
+		in.Stops, order, saved, onTime = s.timedOrder(ctx, roads, in.Stops, v, in.RoundTrip, in.EndLast)
+		v = visits(in.Stops, depart, in.StayMin)
 	}
 	if in.RoundTrip {
-		in.Stops = append(in.Stops, in.Stops[0])
+		home := in.Stops[0]
+		home.AtTS, home.StayMin = 0, nil
+		in.Stops = append(in.Stops, home)
+		v = append(v, routeplan.Visit{AtMin: routeplan.NoTime})
 	}
 	var legs []routeplan.Leg
 	var wx []legWeather
@@ -121,12 +133,13 @@ func (s *Server) planRoute(w http.ResponseWriter, r *http.Request) {
 		}
 		legs = append(legs, routeplan.Leg{From: stopName(a, i), To: stopName(b, i+1), Km: km, Minutes: minutes, KwhPerKm: factor / exp})
 		wx, est = append(wx, lw), append(est, estimated)
-		at += int64(minutes * 60)
+		at, _ = arriveAt(v[i], in.Stops[i], depart, at+int64(minutes*60)) // the forecast is for when each leg is really driven
 	}
 	plan := routeplan.Plan(routeplan.Input{Legs: legs, StartPct: in.StartPct, ReservePct: in.Reserve, TargetPct: in.Target, CapacityKwh: *capacity, ChargeKw: in.ChargeKw})
 	out := make([]routeLegOut, len(plan.Legs))
 	t := depart
 	anyEst, anyFc := false, false
+	var late []string
 	for i, l := range plan.Legs {
 		if l.Charge != nil {
 			t += int64(l.Charge.Minutes * 60)
@@ -134,6 +147,10 @@ func (s *Server) planRoute(w http.ResponseWriter, r *http.Request) {
 		out[i] = routeLegOut{LegOut: l, Weather: wx[i], DepartTS: t, Estimated: est[i]}
 		t += int64(l.Minutes * 60)
 		out[i].ArriveTS = t
+		t, out[i].At = arriveAt(v[i+1], in.Stops[i+1], depart, t)
+		if out[i].At.LateMin > routeplan.OnTimeSlack {
+			late = append(late, lateWarning(stopName(in.Stops[i+1], i+1), out[i].At, s.defaultLoc()))
+		}
 		anyEst = anyEst || est[i]
 		anyFc = anyFc || wx[i].Known
 	}
@@ -144,7 +161,7 @@ func (s *Server) planRoute(w http.ResponseWriter, r *http.Request) {
 		notes = append(notes, "No forecast: turn on the Weather lookup in Settings so each leg uses the weather expected on it. Until then the temperature outside now is used.")
 	}
 	ok(w, map[string]any{"legs": out, "totalKm": plan.TotalKm, "drivingMinutes": plan.DrivingMinutes, "chargingMinutes": plan.ChargingMinutes,
-		"totalKwh": plan.TotalKwh, "arrivePct": plan.ArrivePct, "warnings": plan.Warnings, "notes": notes, "stops": in.Stops, "order": order, "savedMinutes": saved, "roundTrip": in.RoundTrip, "reservePct": in.Reserve, "targetPct": in.Target, "departTs": depart})
+		"totalKwh": plan.TotalKwh, "arrivePct": plan.ArrivePct, "warnings": append(append([]string{}, late...), plan.Warnings...), "onTime": onTime && len(late) == 0, "stayMin": in.StayMin, "endLast": in.EndLast, "notes": notes, "stops": in.Stops, "order": order, "savedMinutes": saved, "roundTrip": in.RoundTrip, "reservePct": in.Reserve, "targetPct": in.Target, "departTs": depart})
 }
 
 func stopName(p stopPoint, n int) string {

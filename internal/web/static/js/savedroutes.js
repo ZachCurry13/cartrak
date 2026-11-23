@@ -29,9 +29,10 @@ export function savedRoutes(st) {
     try {
       const b = JSON.parse(t.body);
       if (!Array.isArray(b.stops) || b.stops.length < 2) throw new Error('empty');
-      st.stops.splice(0, st.stops.length, ...b.stops.map((s) => ({ name: s.name || '', label: s.label || s.name || '', lat: s.lat, lon: s.lon })));
+      st.stops.splice(0, st.stops.length, ...b.stops.map((s) => ({ name: s.name || '', label: s.label || s.name || '', lat: s.lat, lon: s.lon, at: s.at || '', stay: s.stay ?? null })));
       if (b.when && new Date(b.when).getTime() > Date.now()) st.when.value = b.when; // a time already gone stays at now
-      st.best.checked = !!b.best; st.back.checked = !!b.back;
+      st.best.checked = !!b.best; st.back.checked = !!b.back; st.last.checked = !!b.last;
+      st.back.dispatchEvent(new Event('change'));
       st.draw(); st.note(`Opened ${t.name}. Plan the route to see today's battery and weather.`);
     } catch { st.note('That saved route could not be opened.'); }
   }
@@ -40,7 +41,7 @@ export function savedRoutes(st) {
     const d = new Date(st.when.value);
     const name = prompt('Name this route', dayName(Number.isNaN(d.getTime()) ? new Date() : d));
     if (!name || !name.trim()) return;
-    const body = { kind: 'route', stops: st.stops.map((s) => ({ name: s.name, label: s.label, lat: s.lat, lon: s.lon })), when: st.when.value, best: st.best.checked, back: st.back.checked };
+    const body = { kind: 'route', stops: st.stops.map((s) => ({ name: s.name, label: s.label, lat: s.lat, lon: s.lon, at: s.at || '', stay: s.stay ?? null })), when: st.when.value, best: st.best.checked, back: st.back.checked, last: st.last.checked };
     try { await api('/api/saved-trips', { method: 'POST', body: { name: name.trim().slice(0, 80), body } }); st.note(`Saved as ${name.trim()}. Open it on any of your devices from Saved routes.`); load(); } catch (e) { st.note(e.message); }
   }
   load();

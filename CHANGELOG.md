@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.88.0
+
+### 🕛 Stops that keep their time
+- On the route planner, the clock button on a stop sets **Be here at** (lunch at 12:00) and how long you stay. **Best order** now rearranges the other stops around it instead of moving lunch to wherever is shortest, and the plan shows **wait 20 min** when you would be early.
+- If a set time cannot be made with the stops before it, the plan says how late you would be instead of quietly moving it.
+- Stops filled in from your calendar keep their appointment times and lengths.
+
+### ⏱️ Time at each stop
+- A new **Time at each stop** (30 minutes unless you change it) makes leaving and arriving times realistic. Each stop can have its own length, and each leg shows the time spent there.
+
+### 🏁 End where you want
+- With **Return to the start** off, tick **Finish at the last stop** to keep the last stop last (Costco on the way home). Before, Best order could move it to wherever the day ended quickest.
+- **Save this route** keeps the times, the lengths and this tick.
+
 ## 0.87.0
 
 ### 🔋 Your car's whole life, estimated
